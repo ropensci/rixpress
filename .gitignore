@@ -1,0 +1,16 @@
+*.Rproj
+.Rproj.user
+.Rhistory
+.RData
+.Rprofile
+.DS_Store
+.httr-oauth
+inst/doc
+docs
+flint/cache_file_state.rds
+result
+/doc/
+/Meta/
+_test_with_nix.R
+.envrc
+.direnv

@@ -1,0 +1,12 @@
+Package: rixpress
+Title: Build Reproducible Analytical Pipelines With Nix
+Version: 0.0.0.9000
+Authors@R: 
+    person("Bruno", "Rodrigues", , "bruno@brodrigues.co", role = c("aut", "cre"))
+Description: Simplifies the creation of reproducible analytical pipelines
+    using the 'Nix' package manager, as described in
+    Dolstra (2006) <ISBN 90-393-4130-3>.
+License: GPL (>= 3)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
