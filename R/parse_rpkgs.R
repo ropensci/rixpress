@@ -1,0 +1,63 @@
+#' Generate an R script with library calls from a default.nix file
+#'
+#' @param nix_file Path to the default.nix file (default: "default.nix")
+#' @return List of packages defined in the rpkgs block of a default.nix file
+#' @examples
+#' # Assuming default.nix is in the current directory
+#' generate_libraries_R("default.nix")
+# Function to parse default.nix and extract R packages from the rpkgs block
+parse_rpkgs <- function(nix_file) {
+  # Read the file as lines
+  lines <- readLines(nix_file)
+
+  # Find the starting index of the rpkgs block
+  start_idx <- grep("^\\s*rpkgs\\s*=\\s*builtins\\.attrValues\\s*\\{", lines)
+  if (length(start_idx) == 0) {
+    stop("rpkgs block not found in the file")
+  }
+  start_idx <- start_idx[1]
+
+  # Find the end of the rpkgs block (a line that starts with "};")
+  end_idx <- grep("^\\s*\\};", lines)
+  end_idx <- end_idx[end_idx > start_idx][1]
+  if (is.na(end_idx)) {
+    stop("Could not find the end of the rpkgs block")
+  }
+
+  # Extract lines within the block
+  block_lines <- lines[(start_idx + 1):(end_idx - 1)]
+
+  # Remove comments and trim white spaces
+  block_lines <- gsub("#.*", "", block_lines)
+  block_lines <- trimws(block_lines)
+
+  # Remove any empty lines
+  block_lines <- block_lines[block_lines != ""]
+
+  # Remove the "inherit (pkgs.rPackages)" phrase if present
+  block_lines <- gsub("inherit \\(pkgs\\.rPackages\\)", "", block_lines)
+
+  # Remove semicolon characters
+  block_lines <- gsub(";", "", block_lines)
+
+  # Combine all lines into one string and split by whitespace
+  packages <- unlist(strsplit(paste(block_lines, collapse = " "), "\\s+"))
+
+  # Remove empty strings if any
+  packages[packages != ""]
+}
+
+# Function to write an R script that loads each package with library()
+generate_libraries_script <- function(packages, outfile = "libraries.R") {
+  library_lines <- paste0("library(", packages, ")")
+  writeLines(library_lines, outfile)
+}
+
+# Main function that parses the nix file and generates the libraries.R file
+generate_libraries_from_nix <- function(nix_file, outfile = "libraries.R") {
+  packages <- parse_rpkgs(nix_file)
+  generate_libraries_script(packages, outfile)
+}
+
+# Example usage:
+# generate_libraries_from_nix("default.nix")

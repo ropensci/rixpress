@@ -3,28 +3,10 @@ let
  
   rpkgs = builtins.attrValues {
     inherit (pkgs.rPackages) 
-      codetools
-      devtools
-      diffviewer
-      fledge
-      httr
-      jsonlite
-      knitr
-      lintr
-      rhub
-      rlang
-      rmarkdown
-      styler
-      sys
-      testthat
-      urlchecker;
+      purrr
+      data_table
+      dplyr;
   };
-  
-  tex = (pkgs.texlive.combine {
-    inherit (pkgs.texlive) 
-      scheme-small
-      inconsolata;
-  });
   
   system_packages = builtins.attrValues {
     inherit (pkgs) 
@@ -35,9 +17,8 @@ let
       R;
   };
   
-in
 
-pkgs.mkShell {
+shell = pkgs.mkShell {
   LOCALE_ARCHIVE = if pkgs.system == "x86_64-linux" then "${pkgs.glibcLocales}/lib/locale/locale-archive" else "";
   LANG = "en_US.UTF-8";
    LC_ALL = "en_US.UTF-8";
@@ -46,6 +27,10 @@ pkgs.mkShell {
    LC_PAPER = "en_US.UTF-8";
    LC_MEASUREMENT = "en_US.UTF-8";
 
-  buildInputs = [  rpkgs tex system_packages   ];
+  buildInputs = [ rpkgs system_packages ];
   
+};
+in
+{
+  inherit pkgs shell;
 }
