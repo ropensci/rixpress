@@ -64,6 +64,11 @@ parse_rpkgs <- function(nix_file) {
   # Combine all lines into one string and split by whitespace
   packages <- unlist(strsplit(paste(block_lines, collapse = " "), "\\s+"))
 
+  # In Nix, R packages use _ instead of ., so data_table needs to become
+  # data.table
+
+  packages <- gsub("_", ".", packages)
+
   # Remove empty strings if any
   packages[packages != ""]
 }

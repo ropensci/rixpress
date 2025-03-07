@@ -1,3 +1,3 @@
 library(purrr)
-library(data_table)
+library(data.table)
 library(dplyr)
