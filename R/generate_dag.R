@@ -11,33 +11,35 @@
 generate_dag <- function(deriv_list, output_file = "_rixpress/dag.json") {
   dir.create(dirname(output_file), recursive = TRUE, showWarnings = FALSE)
 
-  # Number of derivations
   n <- length(deriv_list)
-
-  # Initialize DAG and tracking of defined names
   dag <- vector("list", n)
   defined <- character(n)
 
-  # Process each derivation
   for (i in seq_along(deriv_list)) {
     d <- deriv_list[[i]]
     name <- d$name
+    snippet <- d$snippet
 
-    # Extract expression from snippet
-    expr <- gsub(".*<-\\s*([^\\n]+).*", "\\1", d$snippet)
+    # Extract the content inside the Rscript -e quotes (allowing for multiple lines)
+    m <- regexec('Rscript -e \\"([\\s\\S]*?)\\"', snippet, perl = TRUE)
+    match <- regmatches(snippet, m)
+    block <- if (length(match[[1]]) > 1) match[[1]][2] else ""
 
-    # Identify dependencies
+    # Split the block into lines and find the first assignment line
+    lines <- unlist(strsplit(block, "\n"))
+    assignment_lines <- grep("<-", lines, value = TRUE)
+    expr <- if (length(assignment_lines) > 0) trimws(assignment_lines[1]) else
+      ""
+
+    # Identify dependencies by finding all names in the expression that match previously defined derivations
     deps <- intersect(all.names(parse(text = expr)), defined[1:(i - 1)])
 
-    # Store in DAG
     dag[[i]] <- list(deriv_name = name, depends = deps)
     defined[i] <- name
   }
 
-  # Write DAG to JSON
   jsonlite::write_json(list(derivations = dag), output_file, pretty = TRUE)
 
-  # Return path only if testing
   if (identical(Sys.getenv("TESTTHAT"), "true")) {
     output_file
   }
