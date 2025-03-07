@@ -1,20 +1,73 @@
-
-# build_pipeline now expects a list of mk_r objects (each with $name and $snippet)
+#' Generate Nix Pipeline Code with a Generic Default Target
+#'
+#' This function generates a string containing Nix code for a `pipeline.nix` file
+#' based on a list of derivation objects. Each derivation is defined by a snippet
+#' of Nix code and a name, typically created using a function like `mk_r`. The
+#' resulting Nix code defines all derivations and sets a generic default target
+#' that builds all of them using `pkgs.symlinkJoin`. This is designed for
+#' building reproducible analytical pipelines with Nix, inspired by the
+#' `targets` R package.
+#'
+#' @param derivs A list of derivation objects, where each object must have two
+#'   elements: `$name` (a character string naming the derivation) and `$snippet`
+#'   (a character string containing the Nix code defining the derivation).
+#'   Typically, these objects are created by a function like `mk_r`.
+#'
+#' @return A character string containing the complete Nix code for a
+#'   `pipeline.nix` file. This string can be written to a file or passed to
+#'   another function for further processing.
+#'
+#' @details
+#' The generated Nix code includes:
+#' - A `default.nix` import for environment setup via the `rix` package.
+#' - A `makeRDerivation` function to standardize derivation creation.
+#' - All derivations from the `derivs` list.
+#' - A default target (`allDerivations`) that builds all derivations when
+#'   `nix-build pipeline.nix` is run without specifying an attribute.
+#'
+#' The function assumes the existence of a `libraries.R` file in the working
+#' directory, which is copied into the build environment by the Nix code.
+#'
+#' @examples
+#' # Define a simple mk_r function to create derivations
+#' mk_r <- function(name, expr) {
+#'   out_name <- deparse(substitute(name))
+#'   expr_str <- deparse(substitute(expr))
+#'   list(
+#'     name = out_name,
+#'     snippet = sprintf(
+#'       '  %s = makeRDerivation {\n    name = "%s";\n    buildPhase = \'\'\n      Rscript -e "\\n        source(\'libraries.R\')\\n        %s <- %s\\n        saveRDS(%s, \'%s.rds\')"\n    \'\';\n  };',
+#'       out_name, out_name, out_name, expr_str, out_name, out_name
+#'     )
+#'   )
+#' }
+#'
+#' # Create derivation objects
+#' d1 <- mk_r(mtcars_am, filter(mtcars, am == 1))
+#' d2 <- mk_r(mtcars_head, head(mtcars_am))
+#' deriv_list <- list(d1, d2)
+#'
+#' # Generate the pipeline code
+#' pipeline_code <- gen_flat_pipeline(deriv_list)
+#'
+#' # Optionally write to a file
+#' writeLines(pipeline_code, "pipeline.nix")
+#'
+#' @seealso \code{\link[rix]{rix}} for generating `default.nix` files,
+#'   \code{\link[targets]{tar_make}} for inspiration on pipeline workflows.
+#'
+#' @export
 gen_flat_pipeline <- function(derivs) {
-  # Extract the snippets and names directly from the objects.
+  # Extract derivation snippets and names from the derivs list
   derivation_texts <- sapply(derivs, function(d) d$snippet)
   deriv_names <- sapply(derivs, function(d) d$name)
 
+  # Combine all derivation snippets into a single string
   derivations_code <- paste(derivation_texts, collapse = "\n\n")
+  # Create a space-separated list of derivation names
   names_line <- paste(deriv_names, collapse = " ")
 
-  # Build the flat JSON mapping block.
-  mapping_lines <- sapply(deriv_names, function(n) {
-    sprintf("    %s = \"${%s}/%s.rds\";", n, n, n)
-  })
-  mapping_block <- paste(mapping_lines, collapse = "\n")
-
-  # Construct the full pipeline.nix text.
+  # Generate the Nix code as a string
   pipeline_nix <- sprintf(
     'let
   default = import ./default.nix;
@@ -24,7 +77,7 @@ gen_flat_pipeline <- function(derivs) {
   commonBuildInputs = shell.buildInputs;
   commonConfigurePhase = \'\'\n    cp ${./libraries.R} libraries.R\n    mkdir -p $out\n  \'\';
 
-  # Function to create R derivations, without depends parameter
+  # Function to create R derivations
   makeRDerivation = { name, buildPhase }:
     let rdsFile = "${name}.rds";
     in pkgs.stdenv.mkDerivation {
@@ -36,26 +89,23 @@ gen_flat_pipeline <- function(derivs) {
       installPhase = \'\'\n        cp ${rdsFile} $out/\n      \'\';
     };
 
-  # Define derivations
+  # Define all derivations
 %s
 
-  # Define a flat JSON mapping of derivation names to their output paths
-  pathMappingJson = builtins.toJSON {
-%s
+  # Generic default target that builds all derivations
+  allDerivations = pkgs.symlinkJoin {
+    name = "all-derivations";
+    paths = with builtins; attrValues { inherit %s; };
   };
-
-  # Write the flat JSON to a file
-  pathMapping = pkgs.writeText "pathMapping.json" pathMappingJson;
 
 in
 {
-  inherit %s;
-  inherit pathMapping;
-  default = pathMapping;  # Set pathMapping as the default target
+  inherit %s;  # Make individual derivations available as attributes
+  default = allDerivations;  # Set the default target to build everything
 }
 ',
     derivations_code,
-    mapping_block,
+    names_line,
     names_line
   )
 
