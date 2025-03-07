@@ -177,7 +177,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
       warning(paste("Rscript not found in buildPhase for", deriv_name))
       next
     }
-    rscript_idx <- build_phase_idx - 1 + rscript_local_idx[1]
+    rscript_idx <- build_phase_idx + rscript_local_idx[1]
 
     # Determine indentation from the line immediately after the Rscript line
     if (rscript_idx + 1 <= length(result_pipeline)) {
