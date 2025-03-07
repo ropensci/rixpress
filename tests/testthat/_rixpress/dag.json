@@ -1,0 +1,12 @@
+{
+  "derivations": [
+    {
+      "deriv_name": ["mtcars_am"],
+      "depends": []
+    },
+    {
+      "deriv_name": ["mtcars_head"],
+      "depends": ["mtcars_am"]
+    }
+  ]
+}

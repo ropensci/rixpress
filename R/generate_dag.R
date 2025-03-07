@@ -1,42 +1,45 @@
-library(jsonlite)
+#' Generate a DAG from a list of derivations
+#'
+#' Creates a JSON representation of a directed acyclic graph (DAG) based on dependencies 
+#' between derivations.
+#'
+#' @param deriv_list A list of derivations, each with a `name` and `snippet`, output of mk_r().
+#' @param output_file Path to the output JSON file. Defaults to "_rixpress/dag.json".
+#' @importFrom jsonlite write_json
+#' @return Writes a JSON file representing the DAG.
+#' @export
+generate_dag <- function(deriv_list, output_file = "_rixpress/dag.json") {
 
-generate_dag <- function(deriv_list, output_file = "dag.json") {
-  # Determine the number of derivations
+  dir.create(dirname(output_file), recursive = TRUE, showWarnings = FALSE)
+
+  # Number of derivations
   n <- length(deriv_list)
   
-  # Pre-allocate dag as a list of length n
+  # Initialize DAG and tracking of defined names
   dag <- vector("list", n)
-  
-  # Pre-allocate defined as a character vector of length n
   defined <- character(n)
   
-  # Iterate over the derivations using an index
+  # Process each derivation
   for (i in seq_along(deriv_list)) {
     d <- deriv_list[[i]]
     name <- d$name
     
-    # Extract the expression from the snippet
+    # Extract expression from snippet
     expr <- gsub(".*<-\\s*([^\\n]+).*", "\\1", d$snippet)
     
-    # Find dependencies by intersecting expression symbols with previously defined names
+    # Identify dependencies
     deps <- intersect(all.names(parse(text = expr)), defined[1:(i-1)])
     
-    # Assign the derivation object directly to dag[[i]]
+    # Store in DAG
     dag[[i]] <- list(deriv_name = name, depends = deps)
-    
-    # Assign the current name to defined[i]
     defined[i] <- name
   }
   
-  # Wrap the list of derivations in a "derivations" key
-  final_dag <- list(derivations = dag)
-  
-  # Write to JSON file
-  write_json(final_dag, output_file, pretty = TRUE)
-  cat("Wrote", output_file, "\n")
-}
+  # Write DAG to JSON
+  jsonlite::write_json(list(derivations = dag), output_file, pretty = TRUE)
 
-# Example usage
-d1 <- list(name = "mtcars_am", snippet = "mtcars_am <- filter(mtcars, am == 1)\nsaveRDS(mtcars_am, 'mtcars_am.rds')")
-d2 <- list(name = "mtcars_head", snippet = "mtcars_head <- head(mtcars_am)\nsaveRDS(mtcars_head, 'mtcars_head.rds')")
-generate_dag(list(d1, d2))
+  # Return path only if testing
+  if (identical(Sys.getenv("TESTTHAT"), "true")) {
+    output_file
+  }
+}

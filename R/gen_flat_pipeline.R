@@ -45,18 +45,25 @@
 #' # Create derivation objects
 #' d1 <- mk_r(mtcars_am, filter(mtcars, am == 1))
 #' d2 <- mk_r(mtcars_head, head(mtcars_am))
-#' deriv_list <- list(d1, d2)
+#' derivs <- list(d1, d2)
 #'
 #' # Generate the pipeline code
-#' pipeline_code <- gen_flat_pipeline(deriv_list)
-#'
-#' # Optionally write to a file
-#' writeLines(pipeline_code, "pipeline.nix")
-#'
-#' @seealso \code{\link[rix]{rix}} for generating `default.nix` files,
-#'   \code{\link[targets]{tar_make}} for inspiration on pipeline workflows.
+#' rixpress(derivs)
 #'
 #' @export
+rixpress <- function(derivs){
+  flat_pipeline <- gen_flat_pipeline(derivs)
+  pipeline <- gen_pipeline(dag_file = "_rixpress/dag.json", flat_pipeline = flat_pipeline)
+
+  writeLines(pipeline, "pipeline.nix")
+}
+
+#' gen_flat_pipeline Internal function used to generate most of the boilerplate in pipeline.nix
+#' @param derivs A list of derivation objects, where each object must have two
+#'   elements: `$name` (a character string naming the derivation) and `$snippet`
+#'   (a character string containing the Nix code defining the derivation).
+#'   Typically, these objects are created by a function like `mk_r`.
+#' @noRd
 gen_flat_pipeline <- function(derivs) {
   # Extract derivation snippets and names from the derivs list
   derivation_texts <- sapply(derivs, function(d) d$snippet)
@@ -109,8 +116,87 @@ in
     names_line
   )
 
-  return(pipeline_nix)
+  strsplit(pipeline_nix, split = "\n")[[1]]
+
 }
+
+
+#' gen_pipeline Internal function used to finalize a flat pipeline
+#' @param dag_file A json file giving the names and relationships between derivations.
+#' @param flat_pipeline A flat pipeline, output of `gen_flat_elements()`.
+#' @noRd
+#' gen_pipeline Internal function used to finalize a flat pipeline
+#' @param dag_file A JSON file giving the names and relationships between derivations.
+#' @param flat_pipeline A flat pipeline, output of `gen_flat_pipeline()`.
+#' @noRd
+gen_pipeline <- function(dag_file, flat_pipeline) {
+  dag <- jsonlite::read_json(dag_file)
+  result_pipeline <- flat_pipeline  # copy to work on
+  
+  for (deriv in dag$derivations) {
+    # Skip derivations with no dependencies
+    if (length(deriv$depends) == 0) next
+    
+    deriv_name <- as.character(deriv$deriv_name[1])
+    deps <- deriv$depends
+    
+    # Locate the derivation block by matching a line that starts with the derivation name
+    block_pattern <- paste0("^\\s*", deriv_name, " = makeRDerivation \\{")
+    start_idx <- grep(block_pattern, result_pipeline)
+    if (length(start_idx) == 0) {
+      warning(paste("Derivation", deriv_name, "not found"))
+      next
+    }
+    start_idx <- start_idx[1]
+    
+    # Find the end of the block: the first line after start_idx that starts with "};"
+    block_end_candidates <- grep("^\\s*};", result_pipeline)
+    block_end_idx <- block_end_candidates[block_end_candidates > start_idx][1]
+    if (is.na(block_end_idx)) {
+      warning(paste("Block end for", deriv_name, "not found"))
+      next
+    }
+    
+    # Restrict our search to the lines in this derivation block
+    block_lines <- result_pipeline[start_idx:block_end_idx]
+    
+    # Locate the buildPhase line within the block
+    build_phase_local_idx <- grep("buildPhase = ''", block_lines)
+    if (length(build_phase_local_idx) == 0) {
+      warning(paste("buildPhase not found for", deriv_name))
+      next
+    }
+    build_phase_idx <- start_idx + build_phase_local_idx[1] - 1
+    
+    # Within the block, search for the Rscript line after the buildPhase line
+    sub_block <- block_lines[build_phase_local_idx[1]:length(block_lines)]
+    rscript_local_idx <- grep("Rscript -e \"", sub_block, fixed = TRUE)
+    if (length(rscript_local_idx) == 0) {
+      warning(paste("Rscript not found in buildPhase for", deriv_name))
+      next
+    }
+    rscript_idx <- build_phase_idx - 1 + rscript_local_idx[1]
+    
+    # Determine indentation from the line immediately after the Rscript line
+    if (rscript_idx + 1 <= length(result_pipeline)) {
+      first_r_line <- result_pipeline[rscript_idx + 1]
+      indentation <- sub("^([[:space:]]*).*", "\\1", first_r_line)
+    } else {
+      indentation <- "        "  # fallback indentation
+    }
+    
+    # Generate a readRDS call for each dependency
+    readRDS_lines <- sapply(deps, function(dep) {
+      paste0(indentation, dep, " <- readRDS('${", dep, "}/", dep, ".rds')")
+    })
+    
+    # Insert the generated readRDS lines right after the Rscript line in the block
+    result_pipeline <- append(result_pipeline, readRDS_lines, after = rscript_idx)
+  }
+  
+  result_pipeline
+}
+
 
 # ----- Example Usage -----
 # Create derivation snippets using mk_r.
@@ -121,8 +207,7 @@ d2 <- mk_r(mtcars_head, head(mtcars_am))
 deriv_list <- list(d1, d2)
 
 # Build the full pipeline.nix code.
-flat_pipeline_code <- gen_flat_pipeline(deriv_list)
+flat_pipeline <- gen_flat_pipeline(deriv_list)
 
-# Write the pipeline.nix file or print it.
-writeLines(flat_pipeline_code, "flat_pipeline.nix")
-cat(flat_pipeline_code)
+gen_pipeline(dag_file = "_rixpress/dag.json", flat_pipeline = flat_pipeline)
+
