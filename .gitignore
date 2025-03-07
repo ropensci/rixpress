@@ -14,3 +14,5 @@ result
 _test_with_nix.R
 .envrc
 .direnv
+_rixpress
+result

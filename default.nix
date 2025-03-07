@@ -5,17 +5,12 @@ let
     inherit (pkgs.rPackages) 
       codetools
       devtools
-      diffviewer
-      fledge
-      httr
+      igraph
       jsonlite
       knitr
-      lintr
       rhub
       rlang
       rmarkdown
-      styler
-      sys
       testthat
       urlchecker;
   };
