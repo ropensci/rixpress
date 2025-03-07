@@ -9,6 +9,13 @@ Description: Simplifies the creation of reproducible analytical pipelines
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
+URL: https://github.com/b-rodrigues/rixpress/
+BugReports: https://github.com/b-rodrigues/rixpress/issues
+Depends:
+    R (>= 2.10)
+Imports:
+    jsonlite,
+    rlang
 RoxygenNote: 7.3.2
 Suggests: 
     testthat (>= 3.0.0)

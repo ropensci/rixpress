@@ -1,11 +1,32 @@
 #' Generate an R script with library calls from a default.nix file
 #'
 #' @param nix_file Path to the default.nix file (default: "default.nix")
+#' @param outfile Path to the output file, we recommend to leave the
+#'   default `"libraries.R"`
+#' @return A script to load the libraries inside of derivations.
+#' @noRd
+generate_libraries_from_nix <- function(nix_file, outfile = "libraries.R") {
+  packages <- parse_rpkgs(nix_file)
+  generate_libraries_script(packages, outfile)
+}
+
+#' Helper function to add 'library()' to packages.
+#'
+#' @param nix_file Path to the default.nix file (default: "default.nix")
+#' @param outfile Path to the output file, we recommend to leave the
+#'   default `"libraries.R"`
+#' @return A script to load the libraries inside of derivations.
+#' @noRd
+generate_libraries_script <- function(packages, outfile = "libraries.R") {
+  library_lines <- paste0("library(", packages, ")")
+  writeLines(library_lines, outfile)
+}
+
+#' Generate an R script with library calls from a default.nix file
+#'
+#' @param nix_file Path to the default.nix file (default: "default.nix")
 #' @return List of packages defined in the rpkgs block of a default.nix file
-#' @examples
-#' # Assuming default.nix is in the current directory
-#' generate_libraries_R("default.nix")
-# Function to parse default.nix and extract R packages from the rpkgs block
+#' @noRd
 parse_rpkgs <- function(nix_file) {
   # Read the file as lines
   lines <- readLines(nix_file)
@@ -46,18 +67,3 @@ parse_rpkgs <- function(nix_file) {
   # Remove empty strings if any
   packages[packages != ""]
 }
-
-# Function to write an R script that loads each package with library()
-generate_libraries_script <- function(packages, outfile = "libraries.R") {
-  library_lines <- paste0("library(", packages, ")")
-  writeLines(library_lines, outfile)
-}
-
-# Main function that parses the nix file and generates the libraries.R file
-generate_libraries_from_nix <- function(nix_file, outfile = "libraries.R") {
-  packages <- parse_rpkgs(nix_file)
-  generate_libraries_script(packages, outfile)
-}
-
-# Example usage:
-# generate_libraries_from_nix("default.nix")

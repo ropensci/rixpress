@@ -7,12 +7,12 @@
 #'   is equivalent to `mtcars <- filter(mtcars, am == 1)`. `mk_r()` generates
 #'   the required Nix boilerplate to output a so-called "derivation" in Nix
 #'   jargon. A Nix derivation is a recipe that defines how to create an output
-#'   (in this case `mtcars_am`) including its dependencies, build steps, and output paths.
-#' @return A list of two elements, `name`, the `name` of the derivation, and `snippet`
-#'   the Nix boilerplate code.
-#' @examples
+#'   (in this case `mtcars_am`) including its dependencies, build steps,
+#'   and output paths.
+#' @return A list of two elements, `name`, the `name` of the derivation,
+#'   and `snippet` the Nix boilerplate code.
+#' @examples mk_r(mtcars_am, filter(mtcars, am == 1))
 #' @importFrom rlang as_label enexpr
-#' mk_r(mtcars_am, filter(mtcars, am == 1))
 #' @export
 mk_r <- function(name, expr) {
   out_name <- rlang::as_label(rlang::enexpr(name))
@@ -35,4 +35,3 @@ mk_r <- function(name, expr) {
 
   list(name = out_name, snippet = snippet)
 }
-
