@@ -14,6 +14,7 @@ let
       glibcLocalesUtf8
       nix
       pandoc
+      quarto
       R;
   };
   
