@@ -3,7 +3,7 @@
 #' Creates a JSON representation of a directed acyclic graph (DAG) based on dependencies
 #' between derivations.
 #'
-#' @param deriv_list A list of derivations, each with a `name` and `snippet`, output of mk_r().
+#' @param deriv_list A list of derivations, each with a `name` and `snippet`, output of derive_r().
 #' @param output_file Path to the output JSON file. Defaults to "_rixpress/dag.json".
 #' @importFrom jsonlite write_json
 #' @return Writes a JSON file representing the DAG.

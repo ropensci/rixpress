@@ -1,5 +1,5 @@
-test_that("mk_r: generates correct list", {
-  d1 <- mk_r(mtcars_am, dplyr::filter(mtcars, am == 1))
+test_that("derive_r: generates correct list", {
+  d1 <- derive_r(mtcars_am, dplyr::filter(mtcars, am == 1))
   testthat::expect_equal(
     d1,
     list(

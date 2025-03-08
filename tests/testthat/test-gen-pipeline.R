@@ -1,6 +1,6 @@
 test_that("rixpress: gen_flat_pipeline", {
-  d1 <- mk_r(mtcars_am, dplyr::filter(mtcars, am == 1))
-  d2 <- mk_r(mtcars_head, head(mtcars_am))
+  d1 <- derive_r(mtcars_am, dplyr::filter(mtcars, am == 1))
+  d2 <- derive_r(mtcars_head, head(mtcars_am))
   derivs <- list(d1, d2)
 
   flat_pipeline <- gen_flat_pipeline(derivs)

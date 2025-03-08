@@ -10,7 +10,7 @@ rixpress(derivs)
 \item{derivs}{A list of derivation objects, where each object must have two
 elements: \verb{$name} (a character string naming the derivation) and \verb{$snippet}
 (a character string containing the Nix code defining the derivation).
-Typically, these objects are created by a function like \code{mk_r}.}
+Typically, these objects are created by a function like \code{derive_r}.}
 }
 \value{
 A character string containing the complete Nix code for a
@@ -20,7 +20,7 @@ another function for further processing.
 \description{
 This function generates a string containing Nix code for a \code{pipeline.nix} file
 based on a list of derivation objects. Each derivation is defined by a snippet
-of Nix code and a name, typically created using a function like \code{mk_r}. The
+of Nix code and a name, typically created using a function like \code{derive_r}. The
 resulting Nix code defines all derivations and sets a generic default target
 that builds all of them using \code{pkgs.symlinkJoin}. This is designed for
 building reproducible analytical pipelines with Nix, inspired by the
@@ -40,8 +40,8 @@ The function assumes the existence of a \code{libraries.R} file in the working
 directory, which is copied into the build environment by the Nix code.
 }
 \examples{
-# Define a simple mk_r function to create derivations
-mk_r <- function(name, expr) {
+# Define a simple derive_r function to create derivations
+derive_r <- function(name, expr) {
   out_name <- deparse(substitute(name))
   expr_str <- deparse(substitute(expr))
   list(
@@ -54,8 +54,8 @@ mk_r <- function(name, expr) {
 }
 
 # Create derivation objects
-d1 <- mk_r(mtcars_am, filter(mtcars, am == 1))
-d2 <- mk_r(mtcars_head, head(mtcars_am))
+d1 <- derive_r(mtcars_am, filter(mtcars, am == 1))
+d2 <- derive_r(mtcars_head, head(mtcars_am))
 derivs <- list(d1, d2)
 
 # Generate the pipeline code

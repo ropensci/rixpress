@@ -7,7 +7,7 @@
 generate_dag(deriv_list, output_file = "_rixpress/dag.json")
 }
 \arguments{
-\item{deriv_list}{A list of derivations, each with a \code{name} and \code{snippet}, output of mk_r().}
+\item{deriv_list}{A list of derivations, each with a \code{name} and \code{snippet}, output of derive_r().}
 
 \item{output_file}{Path to the output JSON file. Defaults to "_rixpress/dag.json".}
 }
