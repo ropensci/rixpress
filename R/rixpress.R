@@ -202,16 +202,3 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
 
   result_pipeline
 }
-
-# ----- Example Usage -----
-# Create derivation snippets using derive_r.
-#d1 <- derive_r(mtcars_am, filter(mtcars, am == 1))
-#d2 <- derive_r(mtcars_head, head(mtcars_am))
-#
-## Collect the snippets in a list.
-#deriv_list <- list(d1, d2)
-#
-## Build the full pipeline.nix code.
-#flat_pipeline <- gen_flat_pipeline(deriv_list)
-#
-#gen_pipeline(dag_file = "_rixpress/dag.json", flat_pipeline = flat_pipeline)

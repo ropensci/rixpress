@@ -1,57 +1,37 @@
-# Function to read an RDS file from the "result" directory
-derive_read <- function(derivation_name) {
-  # Resolve the "result" symlink to get the directory path
-  result_path <- Sys.readlink("result")
-  if (result_path == "") {
-    stop("Symlink 'result' not found or not a symlink")
-  }
-  
-  # Check if the result_path is a directory
-  if (!dir.exists(result_path)) {
-    stop("The 'result' path is not a directory")
-  }
-  
-  # List all files in the directory with full paths
-  files <- list.files(result_path, full.names = TRUE)
-  
-  # Use grepl to find files matching the derivation_name and ending with .rds
+#' @title Find matching RDS files for a derivation
+#' @description Searches for RDS files in the "result" directory that
+#'   match the given derivation name.
+#' @param derivation_name The name of the derivation.
+#' @return A character vector of paths to the matching RDS files.
+#' @noRd
+deriv_common <- function(derivation_name, result_path = "_rixpress") {
+  files <- list.files(paste0(result_path, "/result"), full.names = TRUE)
   pattern <- paste0(derivation_name, ".*\\.rds$")
   matching_files <- files[grepl(pattern, basename(files))]
-  
-  # If no matching files are found, stop with an error
   if (length(matching_files) == 0) {
-    stop(paste("No matching RDS file found for derivation:", derivation_name))
+    stop(paste(
+      "No derivation called ",
+      derivation_name,
+      " found. Did you build the pipeline?"
+    ))
+  } else {
+    matching_files
   }
-  
-  # Read and return the first matching RDS file
-  readRDS(matching_files[1])
 }
 
-# Function to load an RDS file and assign it to the global environment
+#' @title Read output of a derivation
+#' @param derivation_name Character, the name of the derivation.
+#' @return The derivation's output.
+deriv_read <- function(derivation_name) {
+  matching_files <- deriv_common(derivation_name)
+  readRDS(matching_files)
+}
+
+#' @title Load a derivation's output into global environment
+#' @param derivation_name Character, the name of the derivation.
+#' @return None. The derivation object is assigned to the
+#'   global environment with the name `derivation_name`.
 deriv_load <- function(derivation_name) {
-  # Resolve the "result" symlink to get the directory path
-  result_path <- Sys.readlink("result")
-  if (result_path == "") {
-    stop("Symlink 'result' not found or not a symlink")
-  }
-  
-  # Check if the result_path is a directory
-  if (!dir.exists(result_path)) {
-    stop("The 'result' path is not a directory")
-  }
-  
-  # List all files in the directory with full paths
-  files <- list.files(result_path, full.names = TRUE)
-  
-  # Use grepl to find files matching the derivation_name and ending with .rds
-  pattern <- paste0(derivation_name, ".*\\.rds$")
-  matching_files <- files[grepl(pattern, basename(files))]
-  
-  # If no matching files are found, stop with an error
-  if (length(matching_files) == 0) {
-    stop(paste("No matching RDS file found for derivation:", derivation_name))
-  }
-  
-  # Read the first matching RDS file and assign it to the global environment
-  assign(derivation_name, readRDS(matching_files[1]), envir = .GlobalEnv)
+  matching_files <- deriv_common(derivation_name)
+  assign(derivation_name, readRDS(matching_files), envir = .GlobalEnv)
 }
