@@ -29,19 +29,6 @@
 #' directory, which is copied into the build environment by the Nix code.
 #'
 #' @examples
-#' # Define a simple derive_r function to create derivations
-#' derive_r <- function(name, expr) {
-#'   out_name <- deparse(substitute(name))
-#'   expr_str <- deparse(substitute(expr))
-#'   list(
-#'     name = out_name,
-#'     snippet = sprintf(
-#'       '  %s = makeRDerivation {\n    name = "%s";\n    buildPhase = \'\'\n      Rscript -e "\\n        source(\'libraries.R\')\\n        %s <- %s\\n        saveRDS(%s, \'%s.rds\')"\n    \'\';\n  };',
-#'       out_name, out_name, out_name, expr_str, out_name, out_name
-#'     )
-#'   )
-#' }
-#'
 #' # Create derivation objects
 #' d1 <- derive_r(mtcars_am, filter(mtcars, am == 1))
 #' d2 <- derive_r(mtcars_head, head(mtcars_am))
