@@ -26,6 +26,7 @@ drv_common <- function(derivation_name, result_path = "_rixpress") {
 #' @title Read output of a derivation
 #' @param derivation_name Character, the name of the derivation.
 #' @return The derivation's output.
+#' @export
 drv_read <- function(derivation_name, result_path = "_rixpress") {
   matching_files <- drv_common(derivation_name, result_path = "_rixpress")
   readRDS(matching_files)
@@ -35,6 +36,7 @@ drv_read <- function(derivation_name, result_path = "_rixpress") {
 #' @param derivation_name Character, the name of the derivation.
 #' @return None. The derivation object is assigned to the
 #'   global environment with the name `derivation_name`.
+#' @export
 drv_load <- function(derivation_name, result_path = "_rixpress") {
   matching_files <- drv_common(derivation_name, result_path = "_rixpress")
   assign(derivation_name, readRDS(matching_files), envir = .GlobalEnv)

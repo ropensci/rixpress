@@ -17,6 +17,20 @@ let
       quarto
       R;
   };
+
+  rixpress = (pkgs.rPackages.buildRPackage {
+    name = "rixpress";
+    src = pkgs.fetchgit {
+      url = "https://github.com/b-rodrigues/rixpress/";
+      rev = "e960d96d619c57861c592b916bc1875143158fd9";
+      sha256 = "sha256-NQVJ+NFbzEm+oLyKqkoWd8X+NSL4KQEPPmYILT0oe2U=";
+    };
+    propagatedBuildInputs = builtins.attrValues {
+      inherit (pkgs.rPackages) 
+        jsonlite
+        rlang;
+    };
+  });
   
 
 shell = pkgs.mkShell {
@@ -28,7 +42,7 @@ shell = pkgs.mkShell {
    LC_PAPER = "en_US.UTF-8";
    LC_MEASUREMENT = "en_US.UTF-8";
 
-  buildInputs = [ rpkgs system_packages ];
+  buildInputs = [ rpkgs rixpress system_packages ];
   
 };
 in

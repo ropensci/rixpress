@@ -4,7 +4,7 @@
 \alias{drv_load}
 \title{Load a derivation's output into global environment}
 \usage{
-drv_load(derivation_name)
+drv_load(derivation_name, result_path = "_rixpress")
 }
 \arguments{
 \item{derivation_name}{Character, the name of the derivation.}

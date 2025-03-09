@@ -4,7 +4,7 @@
 \alias{drv_read}
 \title{Read output of a derivation}
 \usage{
-drv_read(derivation_name)
+drv_read(derivation_name, result_path = "_rixpress")
 }
 \arguments{
 \item{derivation_name}{Character, the name of the derivation.}
