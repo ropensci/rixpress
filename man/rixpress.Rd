@@ -40,6 +40,7 @@ The function assumes the existence of a \code{libraries.R} file in the working
 directory, which is copied into the build environment by the Nix code.
 }
 \examples{
+\dontrun{
 # Create derivation objects
 d1 <- derive_r(mtcars_am, filter(mtcars, am == 1))
 d2 <- derive_r(mtcars_head, head(mtcars_am))
@@ -48,4 +49,5 @@ derivs <- list(d1, d2)
 # Generate the pipeline code
 rixpress(derivs)
 
+}
 }

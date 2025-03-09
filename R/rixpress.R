@@ -29,6 +29,7 @@
 #' directory, which is copied into the build environment by the Nix code.
 #'
 #' @examples
+#' \dontrun{
 #' # Create derivation objects
 #' d1 <- derive_r(mtcars_am, filter(mtcars, am == 1))
 #' d2 <- derive_r(mtcars_head, head(mtcars_am))
@@ -37,6 +38,7 @@
 #' # Generate the pipeline code
 #' rixpress(derivs)
 #'
+#' }
 #' @export
 rixpress <- function(derivs) {
   flat_pipeline <- gen_flat_pipeline(derivs)
