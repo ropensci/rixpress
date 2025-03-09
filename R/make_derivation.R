@@ -33,7 +33,7 @@ drv_r <- function(name, expr) {
     build_phase
   )
 
-  list(name = out_name, snippet = snippet)
+  list(name = out_name, snippet = snippet, type = "drv_r")
 }
 
 #' Render a Quarto document as a Nix derivation
@@ -90,5 +90,5 @@ drv_quarto <- function(name, qmd_file) {
     build_phase
   )
 
-  list(name = name_str, snippet = snippet)
+  list(name = name_str, snippet = snippet, type = "drv_quarto")
 }

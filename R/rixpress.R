@@ -126,7 +126,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
 
   for (deriv in dag$derivations) {
     # Skip derivations with no dependencies
-    if (length(deriv$depends) == 0) next
+    if (any(length(deriv$depends) == 0 | deriv$type == "drv_quarto")) next
 
     deriv_name <- as.character(deriv$deriv_name[1])
     deps <- deriv$depends

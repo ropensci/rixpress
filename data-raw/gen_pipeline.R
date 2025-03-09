@@ -9,4 +9,4 @@ drv_list <- list(d1, d2, d3, doc)
 
 rixpress(drv_list)
 
-plot_dag()
+#plot_dag()

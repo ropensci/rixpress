@@ -14,8 +14,6 @@ plot_dag <- function(json_path = "_rixpress/dag.json") {
     function(x) x$deriv_name
   )))
 
-  browser()
-
   edges <- do.call(
     rbind,
     lapply(json_data$derivations, function(x) {
