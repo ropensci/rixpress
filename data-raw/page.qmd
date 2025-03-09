@@ -8,6 +8,6 @@ format:
 Let's hope this works:
 
 ```{r}
-summary(deriv_read("mtcars_head"))
+summary(drv_read("mtcars_head"))
 ```
 

@@ -4,7 +4,7 @@
 #' @param derivation_name The name of the derivation.
 #' @return A character vector of paths to the matching RDS files.
 #' @noRd
-deriv_common <- function(derivation_name, result_path = "_rixpress") {
+drv_common <- function(derivation_name, result_path = "_rixpress") {
   files <- list.files(paste0(result_path, "/result"), full.names = TRUE)
   pattern <- paste0(derivation_name, ".*\\.rds$")
   matching_files <- files[grepl(pattern, basename(files))]
@@ -22,8 +22,8 @@ deriv_common <- function(derivation_name, result_path = "_rixpress") {
 #' @title Read output of a derivation
 #' @param derivation_name Character, the name of the derivation.
 #' @return The derivation's output.
-deriv_read <- function(derivation_name) {
-  matching_files <- deriv_common(derivation_name)
+drv_read <- function(derivation_name) {
+  matching_files <- drv_common(derivation_name)
   readRDS(matching_files)
 }
 
@@ -31,7 +31,7 @@ deriv_read <- function(derivation_name) {
 #' @param derivation_name Character, the name of the derivation.
 #' @return None. The derivation object is assigned to the
 #'   global environment with the name `derivation_name`.
-deriv_load <- function(derivation_name) {
-  matching_files <- deriv_common(derivation_name)
+drv_load <- function(derivation_name) {
+  matching_files <- drv_common(derivation_name)
   assign(derivation_name, readRDS(matching_files), envir = .GlobalEnv)
 }
