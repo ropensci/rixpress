@@ -76,11 +76,11 @@ remotes::install_github("b-rodrigues/rixpress")
 
 ```r
 # Create derivations
-d1 <- derive_r(mtcars_am, filter(mtcars, am == 1))
-d2 <- derive_r(mtcars_head, head(mtcars_am))
+d1 <- drv_r(mtcars_am, filter(mtcars, am == 1))
+d2 <- drv_r(mtcars_head, head(mtcars_am))
 
 # Collect into a list
-deriv_list <- list(d1, d2)
+drv_list <- list(d1, d2)
 
 # Save or process further (e.g., generate pipeline.nix and dag.json)
 ```

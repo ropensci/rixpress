@@ -3,20 +3,20 @@
 #' Creates a JSON representation of a directed acyclic graph (DAG) based on dependencies
 #' between derivations.
 #'
-#' @param deriv_list A list of derivations, each with a `name` and `snippet`, output of derive_r().
+#' @param drv_list A list of derivations, each with a `name` and `snippet`, output of drv_r().
 #' @param output_file Path to the output JSON file. Defaults to "_rixpress/dag.json".
 #' @importFrom jsonlite write_json
 #' @return Writes a JSON file representing the DAG.
 #' @export
-generate_dag <- function(deriv_list, output_file = "_rixpress/dag.json") {
+generate_dag <- function(drv_list, output_file = "_rixpress/dag.json") {
   dir.create(dirname(output_file), recursive = TRUE, showWarnings = FALSE)
 
-  n <- length(deriv_list)
+  n <- length(drv_list)
   dag <- vector("list", n)
   defined <- character(n)
 
-  for (i in seq_along(deriv_list)) {
-    d <- deriv_list[[i]]
+  for (i in seq_along(drv_list)) {
+    d <- drv_list[[i]]
     name <- d$name
     snippet <- d$snippet
 
