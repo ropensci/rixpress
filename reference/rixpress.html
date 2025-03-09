@@ -40,7 +40,7 @@ targets R package."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Generate Nix Pipeline Code with a Generic Default Target</h1>
-      <small class="dont-index">Source: <a href="https://github.com/b-rodrigues/rixpress/blob/master/R/gen_flat_pipeline.R" class="external-link"><code>R/gen_flat_pipeline.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/b-rodrigues/rixpress/blob/master/R/rixpress.R" class="external-link"><code>R/rixpress.R</code></a></small>
       <div class="d-none name"><code>rixpress.Rd</code></div>
     </div>
 
@@ -89,29 +89,15 @@ directory, which is copied into the build environment by the Nix code.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Define a simple derive_r function to create derivations</span></span></span>
-<span class="r-in"><span><span class="va">derive_r</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">name</span>, <span class="va">expr</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="va">out_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/deparse.html" class="external-link">deparse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substitute.html" class="external-link">substitute</a></span><span class="op">(</span><span class="va">name</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="va">expr_str</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/deparse.html" class="external-link">deparse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substitute.html" class="external-link">substitute</a></span><span class="op">(</span><span class="va">expr</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    name <span class="op">=</span> <span class="va">out_name</span>,</span></span>
-<span class="r-in"><span>    snippet <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>      <span class="st">'  %s = makeRDerivation {\n    name = "%s";\n    buildPhase = \'\'\n      Rscript -e "\\n        source(\'libraries.R\')\\n        %s &lt;- %s\\n        saveRDS(%s, \'%s.rds\')"\n    \'\';\n  };'</span>,</span></span>
-<span class="r-in"><span>      <span class="va">out_name</span>, <span class="va">out_name</span>, <span class="va">out_name</span>, <span class="va">expr_str</span>, <span class="va">out_name</span>, <span class="va">out_name</span></span></span>
-<span class="r-in"><span>    <span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Create derivation objects</span></span></span>
-<span class="r-in"><span><span class="va">d1</span> <span class="op">&lt;-</span> <span class="fu"><a href="mk_r.html">derive_r</a></span><span class="op">(</span><span class="va">mtcars_am</span>, <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">am</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">d2</span> <span class="op">&lt;-</span> <span class="fu"><a href="mk_r.html">derive_r</a></span><span class="op">(</span><span class="va">mtcars_head</span>, <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mtcars_am</span><span class="op">)</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Create derivation objects</span></span></span>
+<span class="r-in"><span><span class="va">d1</span> <span class="op">&lt;-</span> <span class="fu"><a href="derive_r.html">derive_r</a></span><span class="op">(</span><span class="va">mtcars_am</span>, <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">am</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">d2</span> <span class="op">&lt;-</span> <span class="fu"><a href="derive_r.html">derive_r</a></span><span class="op">(</span><span class="va">mtcars_head</span>, <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mtcars_am</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">derivs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">d1</span>, <span class="va">d2</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Generate the pipeline code</span></span></span>
 <span class="r-in"><span><span class="fu">rixpress</span><span class="op">(</span><span class="va">derivs</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in parse(text = expr):</span> &lt;text&gt;:1:2: unexpected symbol</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> 1: \n</span>
-<span class="r-err co"><span class="r-pr">#&gt;</span>      ^</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>cannot open file 'default.nix': No such file or directory</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in file(con, "r"):</span> cannot open the connection</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
