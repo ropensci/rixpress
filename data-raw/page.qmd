@@ -11,3 +11,7 @@ Let's hope this works:
 summary(rixpress::drv_read("mtcars_head"))
 ```
 
+
+```{r}
+summary(rixpress::drv_read("mtcars_tail"))
+```

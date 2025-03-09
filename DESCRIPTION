@@ -14,9 +14,10 @@ BugReports: https://github.com/b-rodrigues/rixpress/issues
 Depends:
     R (>= 2.10)
 Imports:
+    igraph,
     jsonlite,
     rlang
 RoxygenNote: 7.3.2
-Suggests: 
+Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

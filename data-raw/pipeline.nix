@@ -45,6 +45,17 @@ let
     '';
   };
 
+  mtcars_tail = makeRDerivation {
+    name = "mtcars_tail";
+    buildPhase = ''
+      Rscript -e "
+        source('libraries.R')
+        mtcars_head <- readRDS('${mtcars_head}/mtcars_head.rds')
+        mtcars_tail <- tail(mtcars_head)
+        saveRDS(mtcars_tail, 'mtcars_tail.rds')"
+    '';
+  };
+
   page = pkgs.stdenv.mkDerivation {
     name = "page";
     src = ./.;
@@ -53,6 +64,7 @@ let
   mkdir home
   export HOME=$PWD/home
   substituteInPlace page.qmd --replace-fail 'drv_read("mtcars_head")' 'drv_read("${mtcars_head}/mtcars_head.rds")'
+  substituteInPlace page.qmd --replace-fail 'drv_read("mtcars_tail")' 'drv_read("${mtcars_tail}/mtcars_tail.rds")'
   quarto render page.qmd --output-dir $out
     '';
   };
@@ -60,11 +72,11 @@ let
   # Generic default target that builds all derivations
   allDerivations = pkgs.symlinkJoin {
     name = "all-derivations";
-    paths = with builtins; attrValues { inherit mtcars_am mtcars_head page; };
+    paths = with builtins; attrValues { inherit mtcars_am mtcars_head mtcars_tail page; };
   };
 
 in
 {
-  inherit mtcars_am mtcars_head page;  # Make individual derivations available as attributes
+  inherit mtcars_am mtcars_head mtcars_tail page;  # Make individual derivations available as attributes
   default = allDerivations;  # Set the default target to build everything
 }

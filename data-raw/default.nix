@@ -22,12 +22,13 @@ let
     name = "rixpress";
     src = pkgs.fetchgit {
       url = "https://github.com/b-rodrigues/rixpress/";
-      rev = "e960d96d619c57861c592b916bc1875143158fd9";
-      sha256 = "sha256-NQVJ+NFbzEm+oLyKqkoWd8X+NSL4KQEPPmYILT0oe2U=";
+      rev = "8bee322c28e6e516dc7cb519185ec9edfa0302ee";
+      sha256 = "sha256-cF2AS2DsM3Lyq2yEvnYQGnW8p8MvIRRGJVb70lYDfvk=";
     };
     propagatedBuildInputs = builtins.attrValues {
       inherit (pkgs.rPackages) 
         jsonlite
+        igraph
         rlang;
     };
   });
