@@ -35,3 +35,60 @@ drv_r <- function(name, expr) {
 
   list(name = out_name, snippet = snippet)
 }
+
+#' Render a Quarto document as a Nix derivation
+#'
+#' @param name Symbol, derivation name.
+#' @param qmd_file Character, path to .qmd file.
+#'
+#' @details Detects `drv_read("ref")` in the .qmd file and replaces with derivation output paths.
+#'
+#' @return List with `name` (string) and `snippet` (Nix code).
+#'
+#' @examples
+#' drv_quarto(report, "doc.qmd")
+#'
+#' @importFrom rlang as_label enexpr
+#' @export
+drv_quarto <- function(name, qmd_file) {
+  name_str <- rlang::as_label(rlang::enexpr(name))
+
+  # Parse qmd file for refs
+  content <- readLines(qmd_file, warn = FALSE)
+  content_str <- paste(content, collapse = "\n")
+  matches <- gregexpr('drv_read\\("([^"]+)"\\)', content_str)
+  refs <- regmatches(content_str, matches)[[1]]
+  refs <- sub('drv_read\\("([^"]+)"\\)', '\\1', refs)
+  refs <- unique(refs)
+
+  # Substitution commands
+  sub_cmds <- sapply(refs, function(ref) {
+    sprintf(
+      "substituteInPlace %s --replace-fail 'drv_read(\"%s\")' 'drv_read(\"${%s}/%s.rds\")'",
+      qmd_file,
+      ref,
+      ref,
+      ref
+    )
+  })
+
+  # Build phase
+  build_phase <- paste(
+    "  mkdir home",
+    "  export HOME=$PWD/home",
+    if (length(sub_cmds) > 0)
+      paste("  ", sub_cmds, sep = "", collapse = "\n") else "",
+    sprintf("  quarto render %s --output-dir $out", qmd_file),
+    sep = "\n"
+  )
+
+  # Nix snippet
+  snippet <- sprintf(
+    "  %s = pkgs.stdenv.mkDerivation {\n    name = \"%s\";\n    src = ./.;\n    buildInputs = [ commonBuildInputs pkgs.which pkgs.quarto ];\n    buildPhase = ''\n%s\n    '';\n  };",
+    name_str,
+    name_str,
+    build_phase
+  )
+
+  list(name = name_str, snippet = snippet)
+}
