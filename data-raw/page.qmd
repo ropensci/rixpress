@@ -8,6 +8,6 @@ format:
 Let's hope this works:
 
 ```{r}
-summary(drv_read("mtcars_head"))
+summary(rixpress::drv_read("mtcars_head"))
 ```
 
