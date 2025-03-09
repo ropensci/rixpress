@@ -82,6 +82,9 @@ and output paths.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $snippet</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "  mtcars_am = makeRDerivation {\n    name = \"mtcars_am\";\n    buildPhase = ''\n      Rscript -e \"\n        source('libraries.R')\n        mtcars_am &lt;- filter(mtcars, am == 1)\n        saveRDS(mtcars_am, 'mtcars_am.rds')\"\n    '';\n  };"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "drv_r"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
