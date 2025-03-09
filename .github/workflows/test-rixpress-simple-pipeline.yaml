@@ -1,0 +1,40 @@
+# Integration tests for installing packages
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+name: test-rixpress-simple-pipeline
+
+permissions:
+  contents: write
+
+jobs:
+  devtools:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+
+      - uses: cachix/cachix-action@v15
+        with:
+          name: rstats-on-nix
+
+      - name: Build default.nix with 2 packages
+        run: |
+          nix-shell default.nix --run "Rscript -e \"setwd('data-raw');devtools::load_all();source('gen_pipeline.R')\""
+
+      - name: Check generated default.nix
+        run: cat data-raw/pipeline.nix
+
+      - name: Build default.nix
+        run: nix-build -o _rixpress/result data-raw/pipeline.nix
