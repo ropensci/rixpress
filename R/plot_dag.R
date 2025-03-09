@@ -17,12 +17,14 @@ create_dag <- function(json_path) {
     })
   )
 
-  igraph::graph_from_data_frame(
+  g <- igraph::graph_from_data_frame(
     edges,
     vertices = data.frame(name = nodes),
     directed = TRUE
   )
-}
 
-#g <- create_dag("_rixpress/dag.json")
-#plot(g, vertex.color = "lightblue", vertex.size = 15, edge.arrow.size = 0.5, vertex.label.color = "black")
+  plot(g, vertex.color = "lightblue", 
+       vertex.size = 15, edge.arrow.size = 0.5,
+       vertex.label.color = "black")
+
+}
