@@ -7,14 +7,18 @@
 #' @importFrom igraph graph_from_data_frame
 #' @examples \dontrun{create_dag()}
 plot_dag <- function(json_path = "_rixpress/dag.json") {
-  data <- jsonlite::read_json(json_path)
+  json_data <- jsonlite::read_json(json_path)
 
-  nodes <- unique(unlist(lapply(data$derivations, function(x) x$deriv_name)))
+  nodes <- unique(unlist(lapply(
+    json_data$derivations,
+    function(x) x$deriv_name
+  )))
 
   browser()
+
   edges <- do.call(
     rbind,
-    lapply(data$derivations, function(x) {
+    lapply(json_data$derivations, function(x) {
       if (length(x$depends) > 0) {
         data.frame(
           from = x$depends,
