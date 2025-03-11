@@ -14,26 +14,35 @@ For example this R script:
 ```{r, eval = FALSE}
 library(rixpress)
 
+d0 <- rxp_file(mtcars, 'mtcars.csv', \(x) (read.csv(file = x, sep = "|")))
 d1 <- rxp_r(mtcars_am, filter(mtcars, am == 1))
 d2 <- rxp_r(mtcars_head, head(mtcars_am))
 d3 <- rxp_r(mtcars_tail, tail(mtcars_head))
 d4 <- rxp_r(mtcars_mpg, select(mtcars_tail, mpg))
 doc <- rxp_quarto(page, "page.qmd")
 
-rxp_list <- list(d1, d2, d3, d4, doc)
+rxp_list <- list(d0, d1, d2, d3, d4, doc)
 
 rixpress(rxp_list)
 
 rxp_make()
 ```
 
-This workflow generates a `pipeline.nix` file, assuming a `default.nix` is already
-available to define the environment. Each output (e.g., `mtcars_am`, `mtcars_head`,
-`mtcars_tail`, `mtcars_mpg`, `page`) is built by Nix within this environment.
+This workflow generates a `pipeline.nix` file, assuming a `default.nix` is
+already available to define the environment. Each output (e.g., `mtcars`,
+`mtcars_am`, `mtcars_head`, `mtcars_tail`, `mtcars_mpg`, `page`) is built by Nix
+within this environment.
 
 When you run `rixpress(rxp_list)`, it creates `pipeline.nix` and a `_rixpress/`
 folder containing a JSON representation of the pipeline’s DAG (Directed Acyclic
-Graph). You can visualize the pipeline using `plot_dag()`.
+Graph). You can visualize the pipeline using `plot_dag()`:
+
+```{r, eval = FALSE}
+plot_dag()
+```
+
+![DAG](dag.png)
+
 
 You can read outputs with `rxp_read("mtcars_mpg")` or load them into the global
 environment with `rxp_load("mtcars_mpg")`. For complex outputs such as documents,
