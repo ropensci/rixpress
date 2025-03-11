@@ -9,31 +9,28 @@
 plot_dag <- function(json_path = "_rixpress/dag.json") {
   json_data <- jsonlite::read_json(json_path)
 
-  nodes <- unique(unlist(lapply(
-    json_data$derivations,
-    function(x) x$deriv_name
-  )))
+  make_df <- function(one_derivation) {
+    data.frame(
+      depends = if (identical(one_derivation$depends, list())) "" else
+        unlist(one_derivation$depends),
+      deriv_name = unlist(one_derivation$deriv_name),
+      type = unlist(one_derivation$type)
+    )
+  }
 
-  edges <- do.call(
+  df_data <- do.call(
     rbind,
-    lapply(json_data$derivations, function(x) {
-      if (length(x$depends) > 0) {
-        data.frame(
-          from = x$depends,
-          to = x$deriv_name,
-          stringsAsFactors = FALSE
-        )
-      } else {
-        NULL
-      }
-    })
+    lapply(json_data$derivations, make_df)
   )
 
   g <- igraph::graph_from_data_frame(
-    edges,
-    vertices = data.frame(name = nodes),
-    directed = TRUE
+    df_data,
+    directed = TRUE,
   )
+
+  # Set shape attribute
+  shape_mapping <- c("drv_r" = "circle", "drv_quarto" = "square")
+  g <- set_vertex_attr(g, "shape", value =  shape_mapping[df_data$type])
 
   plot(
     g,

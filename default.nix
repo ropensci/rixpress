@@ -12,6 +12,7 @@ let
       rlang
       rmarkdown
       testthat
+      tidyr
       urlchecker;
   };
   
