@@ -5,11 +5,11 @@ let
     inherit (pkgs.rPackages) 
       codetools
       devtools
+      diffviewer
       igraph
       jsonlite
       knitr
       rhub
-      rlang
       rmarkdown
       testthat
       tidyr
