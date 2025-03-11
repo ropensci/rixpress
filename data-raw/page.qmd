@@ -15,3 +15,7 @@ summary(rixpress::drv_read("mtcars_head"))
 ```{r}
 summary(rixpress::drv_read("mtcars_tail"))
 ```
+
+```{r}
+summary(rixpress::drv_read("mtcars_mpg"))
+```

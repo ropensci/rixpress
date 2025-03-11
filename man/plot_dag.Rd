@@ -4,20 +4,23 @@
 \alias{plot_dag}
 \title{Create a Directed Acyclic Graph (DAG) representing the pipeline}
 \usage{
-plot_dag(json_path = "_rixpress/dag.json")
+plot_dag(json_path = "_rixpress/dag.json", return_igraph = FALSE)
 }
 \arguments{
 \item{json_path}{Character string specifying the JSON file path.}
+
+\item{return_igraph}{Logical, defaults to FALSE. Should the underlying
+igraph object be returned? This can be useful to further process it
+or plot it using other tools.}
 }
 \value{
-None. Plots the DAG directly.
+None by default, only prints the plot. If \code{return_igraph} is set
+to \code{TRUE}, returns the underlying igraph object.
 }
 \description{
-Reads JSON derivation data, extracts nodes and edges, and plots a DAG using igraph.
-}
-\details{
-Expects JSON with \code{deriv_name} and \code{depends} fields per derivation. Plots the DAG with default styling.
+Reads the json of the DAG under \verb{_rixpress/dag.json}, and
+uses \code{{igraph}} to generate the plot
 }
 \examples{
-\dontrun{create_dag()}
+\dontrun{plot_dag()}
 }
