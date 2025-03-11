@@ -3,24 +3,24 @@
 #' Creates a JSON representation of a directed acyclic graph (DAG) based on dependencies
 #' between derivations.
 #'
-#' @param drv_list A list of derivations, each with a `name` and `snippet`, output of drv_r().
+#' @param rxp_list A list of derivations, each with a `name` and `snippet`, output of rxp_r().
 #' @param output_file Path to the output JSON file. Defaults to "_rixpress/dag.json".
 #' @importFrom jsonlite write_json
 #' @return Writes a JSON file representing the DAG.
 #' @export
-generate_dag <- function(drv_list, output_file = "_rixpress/dag.json") {
+generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
   dir.create(dirname(output_file), recursive = TRUE, showWarnings = FALSE)
 
-  n <- length(drv_list)
+  n <- length(rxp_list)
   dag <- vector("list", n)
   defined <- character(n)
 
-  for (i in seq_along(drv_list)) {
-    d <- drv_list[[i]]
+  for (i in seq_along(rxp_list)) {
+    d <- rxp_list[[i]]
     name <- d$name
     type <- d$type
 
-    if (type == "drv_r") {
+    if (type == "rxp_r") {
       snippet <- d$snippet
       # Extract the content inside the Rscript -e quotes (allowing for multiple lines)
       m <- regexec('Rscript -e \\"([\\s\\S]*?)\\"', snippet, perl = TRUE)
@@ -33,7 +33,7 @@ generate_dag <- function(drv_list, output_file = "_rixpress/dag.json") {
         ""
       # Identify dependencies by finding all names in the expression that match previously defined derivations
       deps <- intersect(all.names(parse(text = expr)), defined[1:(i - 1)])
-    } else if (type == "drv_quarto") {
+    } else if (type == "rxp_quarto") {
       # Try both .qmd and .Qmd extensions
       qmd_file <- paste0(name, ".qmd")
       if (!file.exists(qmd_file)) {
@@ -53,15 +53,15 @@ generate_dag <- function(drv_list, output_file = "_rixpress/dag.json") {
         gregexpr(chunk_pattern, qmd_text, perl = TRUE)
       )[[1]]
 
-      # Process each chunk to find drv_read() or drv_load() calls
+      # Process each chunk to find rxp_read() or rxp_load() calls
       deps <- character(0)
       for (chunk in chunks) {
         # Remove the ```{r} and ``` delimiters
         code <- sub("```\\{r\\}\\s*", "", chunk)
         code <- sub("```\\s*$", "", code)
 
-        # Match drv_read("name") or drv_load("name"), with or without rixpress::
-        pattern <- "(rixpress::)?drv_(read|load)\\s*\\(\\s*['\"](\\w+)['\"]\\s*\\)"
+        # Match rxp_read("name") or rxp_load("name"), with or without rixpress::
+        pattern <- "(rixpress::)?rxp_(read|load)\\s*\\(\\s*['\"](\\w+)['\"]\\s*\\)"
         matches <- regmatches(code, gregexpr(pattern, code, perl = TRUE))[[1]]
 
         # Extract the dependency names (group 3 in the pattern)

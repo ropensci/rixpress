@@ -35,7 +35,7 @@ plot_dag <- function(json_path = "_rixpress/dag.json", return_igraph = FALSE) {
     directed = TRUE,
   )
 
-  shape_mapping <- c("drv_r" = "circle", "drv_quarto" = "square")
+  shape_mapping <- c("rxp_r" = "circle", "rxp_quarto" = "square")
   df_data$shape <- shape_mapping[df_data$type]
   shapes_df <- unique(df_data[, c("deriv_name", "shape")])
   # Always add root vertex

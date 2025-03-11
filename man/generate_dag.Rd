@@ -4,10 +4,10 @@
 \alias{generate_dag}
 \title{Generate a DAG from a list of derivations}
 \usage{
-generate_dag(drv_list, output_file = "_rixpress/dag.json")
+generate_dag(rxp_list, output_file = "_rixpress/dag.json")
 }
 \arguments{
-\item{drv_list}{A list of derivations, each with a \code{name} and \code{snippet}, output of drv_r().}
+\item{rxp_list}{A list of derivations, each with a \code{name} and \code{snippet}, output of rxp_r().}
 
 \item{output_file}{Path to the output JSON file. Defaults to "_rixpress/dag.json".}
 }

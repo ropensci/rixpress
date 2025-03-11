@@ -74,9 +74,9 @@ let
     buildPhase = ''
   mkdir home
   export HOME=$PWD/home
-  substituteInPlace page.qmd --replace-fail 'drv_read("mtcars_head")' 'drv_read("${mtcars_head}/mtcars_head.rds")'
-  substituteInPlace page.qmd --replace-fail 'drv_read("mtcars_tail")' 'drv_read("${mtcars_tail}/mtcars_tail.rds")'
-  substituteInPlace page.qmd --replace-fail 'drv_read("mtcars_mpg")' 'drv_read("${mtcars_mpg}/mtcars_mpg.rds")'
+  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_head")' 'rxp_read("${mtcars_head}/mtcars_head.rds")'
+  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail")' 'rxp_read("${mtcars_tail}/mtcars_tail.rds")'
+  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_mpg")' 'rxp_read("${mtcars_mpg}/mtcars_mpg.rds")'
   quarto render page.qmd --output-dir $out
     '';
   };

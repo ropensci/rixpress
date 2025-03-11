@@ -2,7 +2,7 @@
 #'
 #' This function generates a string containing Nix code for a `pipeline.nix` file
 #' based on a list of derivation objects. Each derivation is defined by a snippet
-#' of Nix code and a name, typically created using a function like `drv_r`. The
+#' of Nix code and a name, typically created using a function like `rxp_r`. The
 #' resulting Nix code defines all derivations and sets a generic default target
 #' that builds all of them using `pkgs.symlinkJoin`. This is designed for
 #' building reproducible analytical pipelines with Nix, inspired by the
@@ -11,7 +11,7 @@
 #' @param derivs A list of derivation objects, where each object must have two
 #'   elements: `$name` (a character string naming the derivation) and `$snippet`
 #'   (a character string containing the Nix code defining the derivation).
-#'   Typically, these objects are created by a function like `drv_r`.
+#'   Typically, these objects are created by a function like `rxp_r`.
 #'
 #' @return A character string containing the complete Nix code for a
 #'   `pipeline.nix` file. This string can be written to a file or passed to
@@ -31,8 +31,8 @@
 #' @examples
 #' \dontrun{
 #' # Create derivation objects
-#' d1 <- drv_r(mtcars_am, filter(mtcars, am == 1))
-#' d2 <- drv_r(mtcars_head, head(mtcars_am))
+#' d1 <- rxp_r(mtcars_am, filter(mtcars, am == 1))
+#' d2 <- rxp_r(mtcars_head, head(mtcars_am))
 #' derivs <- list(d1, d2)
 #'
 #' # Generate the pipeline code
@@ -58,7 +58,7 @@ rixpress <- function(derivs) {
 #' @param derivs A list of derivation objects, where each object must have two
 #'   elements: `$name` (a character string naming the derivation) and `$snippet`
 #'   (a character string containing the Nix code defining the derivation).
-#'   Typically, these objects are created by a function like `drv_r`.
+#'   Typically, these objects are created by a function like `rxp_r`.
 #' @noRd
 gen_flat_pipeline <- function(derivs) {
   # Extract derivation snippets and names from the derivs list
@@ -126,7 +126,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
 
   for (deriv in dag$derivations) {
     # Skip derivations with no dependencies
-    if (any(length(deriv$depends) == 0 | deriv$type == "drv_quarto")) next
+    if (any(length(deriv$depends) == 0 | deriv$type == "rxp_quarto")) next
 
     deriv_name <- as.character(deriv$deriv_name[1])
     deps <- deriv$depends

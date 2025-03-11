@@ -8,14 +8,14 @@ format:
 Let's hope this works:
 
 ```{r}
-summary(rixpress::drv_read("mtcars_head"))
+summary(rixpress::rxp_read("mtcars_head"))
 ```
 
 
 ```{r}
-summary(rixpress::drv_read("mtcars_tail"))
+summary(rixpress::rxp_read("mtcars_tail"))
 ```
 
 ```{r}
-summary(rixpress::drv_read("mtcars_mpg"))
+summary(rixpress::rxp_read("mtcars_mpg"))
 ```
