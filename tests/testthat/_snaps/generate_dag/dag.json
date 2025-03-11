@@ -2,11 +2,13 @@
   "derivations": [
     {
       "deriv_name": ["mtcars_am"],
-      "depends": []
+      "depends": [],
+      "type": ["rxp_r"]
     },
     {
       "deriv_name": ["mtcars_head"],
-      "depends": ["mtcars_am"]
+      "depends": ["mtcars_am"],
+      "type": ["rxp_r"]
     }
   ]
 }

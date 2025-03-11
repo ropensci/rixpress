@@ -10,10 +10,10 @@ let
   '';
 
   # Function to create R derivations
-  makeRDerivation = { name, buildPhase }:
+  makeRDerivation = { name, buildPhase, src ? null }:
     let rdsFile = "${name}.rds";
     in pkgs.stdenv.mkDerivation {
-      inherit name;
+      inherit name src;
       buildInputs = commonBuildInputs;
       dontUnpack = true;
       configurePhase = commonConfigurePhase;
@@ -21,7 +21,7 @@ let
       installPhase = ''
         cp ${rdsFile} $out/
       '';
-    };
+  };
 
   # Define all derivations
   mtcars_am = makeRDerivation {

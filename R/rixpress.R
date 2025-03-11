@@ -81,16 +81,18 @@ gen_flat_pipeline <- function(derivs) {
   commonConfigurePhase = \'\'\n    cp ${./libraries.R} libraries.R\n    mkdir -p $out\n  \'\';
 
   # Function to create R derivations
-  makeRDerivation = { name, buildPhase }:
+  makeRDerivation = { name, buildPhase, src ? null }:
     let rdsFile = "${name}.rds";
     in pkgs.stdenv.mkDerivation {
-      inherit name;
+      inherit name src;
       buildInputs = commonBuildInputs;
       dontUnpack = true;
       configurePhase = commonConfigurePhase;
       inherit buildPhase;
-      installPhase = \'\'\n        cp ${rdsFile} $out/\n      \'\';
-    };
+      installPhase = \'\'
+        cp ${rdsFile} $out/
+      \'\';
+  };
 
   # Define all derivations
 %s
