@@ -10,8 +10,7 @@ rxp_common <- function(derivation_name, result_path = "_rixpress") {
     return(derivation_name)
   }
   files <- list.files(paste0(result_path, "/result"), full.names = TRUE)
-  pattern <- paste0(derivation_name, ".*\\.rds$")
-  matching_files <- files[grepl(pattern, basename(files))]
+  matching_files <- files[grepl(derivation_name, basename(files))]
   if (length(matching_files) == 0) {
     stop(paste(
       "No derivation called ",
@@ -29,7 +28,11 @@ rxp_common <- function(derivation_name, result_path = "_rixpress") {
 #' @export
 rxp_read <- function(derivation_name, result_path = "_rixpress") {
   matching_files <- rxp_common(derivation_name, result_path = "_rixpress")
-  readRDS(matching_files)
+  if (all(grepl(".*\\.rds$", matching_files) & length(matching_files) == 1)) {
+    readRDS(matching_files)
+  } else {
+    matching_files
+  }
 }
 
 #' @title Load a derivation's output into global environment
@@ -39,5 +42,9 @@ rxp_read <- function(derivation_name, result_path = "_rixpress") {
 #' @export
 rxp_load <- function(derivation_name, result_path = "_rixpress") {
   matching_files <- rxp_common(derivation_name, result_path = "_rixpress")
-  assign(derivation_name, readRDS(matching_files), envir = .GlobalEnv)
+  if (all(grepl(".*\\.rds$", matching_files) & length(matching_files) == 1)) {
+    assign(derivation_name, readRDS(matching_files), envir = .GlobalEnv)
+  } else {
+    matching_files
+  }
 }
