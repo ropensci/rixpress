@@ -69,7 +69,7 @@ let
 
   page = pkgs.stdenv.mkDerivation {
     name = "page";
-    src = ./.;
+    src = pkgs.lib.cleanSource ./.;
     buildInputs = [ commonBuildInputs pkgs.which pkgs.quarto ];
     buildPhase = ''
   mkdir home

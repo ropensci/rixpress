@@ -84,7 +84,7 @@ rxp_quarto <- function(name, qmd_file) {
 
   # Nix snippet
   snippet <- sprintf(
-    "  %s = pkgs.stdenv.mkDerivation {\n    name = \"%s\";\n    src = ./.;\n    buildInputs = [ commonBuildInputs pkgs.which pkgs.quarto ];\n    buildPhase = ''\n%s\n    '';\n  };",
+    "  %s = pkgs.stdenv.mkDerivation {\n    name = \"%s\";\n    src = pkgs.lib.cleanSource ./.;\n    buildInputs = [ commonBuildInputs pkgs.which pkgs.quarto ];\n    buildPhase = ''\n%s\n    '';\n  };",
     name_str,
     name_str,
     build_phase
