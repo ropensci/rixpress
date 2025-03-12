@@ -4,11 +4,11 @@
 \alias{import_nix_archive}
 \title{Import Nix store paths from an archive}
 \usage{
-import_nix_archive(archive_file)
+import_nix_archive(archive_file = "_rixpress/pipeline-outputs.nar")
 }
 \arguments{
-\item{archive_file}{The file name of the archive to import
-(e.g., "my_archive.nar").}
+\item{archive_file}{Character, path to the archive, defaults to
+"_rixpress/pipeline-outputs.nar"}
 }
 \description{
 Imports the store paths contained in an archive file into the local Nix store.

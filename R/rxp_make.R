@@ -16,11 +16,15 @@ rxp_make <- function() {
 #'   its Nix store.
 #'
 #' @param store_paths Character, defaults to "_rixpress", the folder holding the
-#'   result syslinks.
-#' @param archive_file The file name for the output archive (e.g., "my_archive.nar").
+#'   result symlinks.
+#' @param archive_file Character, path to the archive, defaults to
+#'   "_rixpress/pipeline-outputs.nar"
 #'
 #' @export
-export_nix_archive <- function(store_paths = "_rixpress", archive_file) {
+export_nix_archive <- function(
+  store_paths = "_rixpress",
+  archive_file = "_rixpress/pipeline-outputs.nar"
+) {
   if (!is.character(store_paths) || length(store_paths) == 0) {
     stop("store_paths must be a non-empty character vector")
   }
@@ -42,11 +46,13 @@ export_nix_archive <- function(store_paths = "_rixpress", archive_file) {
 #' Imports the store paths contained in an archive file into the local Nix store.
 #' Useful for transferring built outputs between machines.
 #'
-#' @param archive_file The file name of the archive to import
-#'   (e.g., "my_archive.nar").
+#' @param archive_file Character, path to the archive, defaults to
+#'   "_rixpress/pipeline-outputs.nar"
 #'
 #' @export
-import_nix_archive <- function(archive_file) {
+import_nix_archive <- function(
+  archive_file = "_rixpress/pipeline-outputs.nar"
+) {
   if (!is.character(archive_file) || length(archive_file) != 1) {
     stop("archive_file must be a single character string")
   }

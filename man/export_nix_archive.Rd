@@ -4,13 +4,17 @@
 \alias{export_nix_archive}
 \title{Export Nix store paths to an archive}
 \usage{
-export_nix_archive(store_paths = "_rixpress", archive_file)
+export_nix_archive(
+  store_paths = "_rixpress",
+  archive_file = "_rixpress/pipeline-outputs.nar"
+)
 }
 \arguments{
 \item{store_paths}{Character, defaults to "_rixpress", the folder holding the
-result syslinks.}
+result symlinks.}
 
-\item{archive_file}{The file name for the output archive (e.g., "my_archive.nar").}
+\item{archive_file}{Character, path to the archive, defaults to
+"_rixpress/pipeline-outputs.nar"}
 }
 \description{
 Creates a single archive file containing the specified Nix store paths
