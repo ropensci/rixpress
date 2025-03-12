@@ -53,7 +53,6 @@ rxp_r <- function(name, expr) {
 rxp_quarto <- function(name, qmd_file) {
   out_name <- deparse(substitute(name))
 
-  # Parse qmd file for refs
   content <- readLines(qmd_file, warn = FALSE)
   content_str <- paste(content, collapse = "\n")
   matches <- gregexpr('rxp_read\\("([^"]+)"\\)', content_str)
@@ -61,7 +60,6 @@ rxp_quarto <- function(name, qmd_file) {
   refs <- sub('rxp_read\\("([^"]+)"\\)', '\\1', refs)
   refs <- unique(refs)
 
-  # Substitution commands
   sub_cmds <- sapply(refs, function(ref) {
     sprintf(
       "substituteInPlace %s --replace-fail 'rxp_read(\"%s\")' 'rxp_read(\"${%s}/%s.rds\")'",
@@ -72,7 +70,6 @@ rxp_quarto <- function(name, qmd_file) {
     )
   })
 
-  # Build phase
   build_phase <- paste(
     "  mkdir home",
     "  export HOME=$PWD/home",
@@ -82,9 +79,8 @@ rxp_quarto <- function(name, qmd_file) {
     sep = "\n"
   )
 
-  # Nix snippet
   snippet <- sprintf(
-    "  %s = pkgs.stdenv.mkDerivation {\n    name = \"%s\";\n    src = pkgs.lib.cleanSource ./.;\n    buildInputs = [ commonBuildInputs pkgs.which pkgs.quarto ];\n    buildPhase = ''\n%s\n    '';\n  };",
+    "  %s = pkgs.stdenv.mkDerivation {\n    name = \"%s\";\n    src = pkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = if builtins.pathExists ./_rixpress\n                then pkgs.lib.fileset.difference ./. ./_rixpress\n                else ./.;\n    };\n    buildInputs = [ commonBuildInputs pkgs.which pkgs.quarto ];\n    buildPhase = ''\n%s\n    '';\n  };",
     out_name,
     out_name,
     build_phase
@@ -92,6 +88,7 @@ rxp_quarto <- function(name, qmd_file) {
 
   list(name = out_name, snippet = snippet, type = "rxp_quarto")
 }
+
 
 #' rxp_file Creates a Nix expression that reads in a file.
 #'
