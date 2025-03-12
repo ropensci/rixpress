@@ -82,7 +82,12 @@ Rscript -e "
 
   page = pkgs.stdenv.mkDerivation {
     name = "page";
-    src = pkgs.lib.cleanSource ./.;
+    src = pkgs.lib.fileset.toSource {
+      root = ./.;
+      fileset = if builtins.pathExists ./_rixpress
+                then pkgs.lib.fileset.difference ./. ./_rixpress
+                else ./.;
+    };
     buildInputs = [ commonBuildInputs pkgs.which pkgs.quarto ];
     buildPhase = ''
   mkdir home
