@@ -6,6 +6,9 @@
 \usage{
 rxp_make()
 }
+\value{
+A character vector of paths to the built outputs.
+}
 \description{
 Runs \code{nix-build} with a quiet flag, outputting to \verb{_rixpress/result}.
 }

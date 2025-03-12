@@ -15,6 +15,22 @@ let
       tidyr
       urlchecker;
   };
+
+    rix = (pkgs.rPackages.buildRPackage {
+      name = "rix";
+      src = pkgs.fetchgit {
+        url = "https://github.com/ropensci/rix/";
+        rev = "6a7e8d0bf310006bd14445017ab753e8640ced71";
+        sha256 = "sha256-9wXKJd+H05ArIORQwxoSPo7hOo+a5wJSoAnTNy7501A=";
+      };
+      propagatedBuildInputs = builtins.attrValues {
+        inherit (pkgs.rPackages) 
+          codetools
+          curl
+          jsonlite
+          sys;
+      };
+    });
   
   tex = (pkgs.texlive.combine {
     inherit (pkgs.texlive) 
@@ -42,6 +58,6 @@ pkgs.mkShell {
    LC_PAPER = "en_US.UTF-8";
    LC_MEASUREMENT = "en_US.UTF-8";
 
-  buildInputs = [  rpkgs tex system_packages   ];
+  buildInputs = [ rix rpkgs tex system_packages ];
   
 }
