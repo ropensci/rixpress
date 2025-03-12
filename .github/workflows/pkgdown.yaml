@@ -25,6 +25,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+
+      - uses: cachix/cachix-action@v15
+        with:
+          name: rstats-on-nix
+          
       - name: Build site
         run: |
           nix-shell --run "Rscript -e 'pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)'"
