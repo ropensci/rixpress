@@ -9,6 +9,7 @@ let
       igraph
       jsonlite
       knitr
+      pkgdown
       rhub
       rmarkdown
       testthat
