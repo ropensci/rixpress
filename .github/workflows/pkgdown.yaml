@@ -34,7 +34,7 @@ jobs:
           
       - name: Build site
         run: |
-          nix-shell --run "Rscript -e 'pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)'"
+          nix-shell --run "Rscript -e 'devtools::load_all();pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)'"
 
       - name: Deploy to GitHub pages 🚀
         if: github.event_name != 'pull_request'
