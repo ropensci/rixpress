@@ -15,8 +15,9 @@ Depends:
     R (>= 2.10)
 Imports:
     igraph,
-    jsonlite,
-    rix (>= 0.15.6)
+    jsonlite
+Remotes:
+    rix@763b9cd48caec23d7fcea7d5b62191e768f90b94
 RoxygenNote: 7.3.2
 Suggests:
     testthat (>= 3.0.0)
