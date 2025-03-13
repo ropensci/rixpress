@@ -5,7 +5,7 @@ let
 
   commonBuildInputs = shell.buildInputs;
   commonConfigurePhase = ''
-    cp ${./libraries.R} libraries.R
+    cp ${./_rixpress/libraries.R} libraries.R
     mkdir -p $out
   '';
 

@@ -78,7 +78,7 @@ gen_flat_pipeline <- function(derivs) {
   shell = default.shell;
 
   commonBuildInputs = shell.buildInputs;
-  commonConfigurePhase = \'\'\n    cp ${./libraries.R} libraries.R\n    mkdir -p $out\n  \'\';
+  commonConfigurePhase = \'\'\n    cp ${./_rixpress/libraries.R} libraries.R\n    mkdir -p $out\n  \'\';
 
   # Function to create R derivations
   makeRDerivation = { name, buildPhase, src ? null }:

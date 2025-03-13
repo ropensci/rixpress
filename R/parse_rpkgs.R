@@ -2,10 +2,13 @@
 #'
 #' @param nix_file Path to the default.nix file (default: "default.nix")
 #' @param outfile Path to the output file, we recommend to leave the
-#'   default `"libraries.R"`
+#'   default `"_rixpress/libraries.R"`
 #' @return A script to load the libraries inside of derivations.
 #' @noRd
-generate_libraries_from_nix <- function(nix_file, outfile = "libraries.R") {
+generate_libraries_from_nix <- function(
+  nix_file,
+  outfile = "_rixpress/libraries.R"
+) {
   packages <- parse_rpkgs(nix_file)
   generate_libraries_script(packages, outfile)
 }
@@ -14,10 +17,13 @@ generate_libraries_from_nix <- function(nix_file, outfile = "libraries.R") {
 #'
 #' @param nix_file Path to the default.nix file (default: "default.nix")
 #' @param outfile Path to the output file, we recommend to leave the
-#'   default `"libraries.R"`
+#'   default `"_rixpress/libraries.R"`
 #' @return A script to load the libraries inside of derivations.
 #' @noRd
-generate_libraries_script <- function(packages, outfile = "libraries.R") {
+generate_libraries_script <- function(
+  packages,
+  outfile = "_rixpress/libraries.R"
+) {
   library_lines <- paste0("library(", packages, ")")
   writeLines(library_lines, outfile)
 }
