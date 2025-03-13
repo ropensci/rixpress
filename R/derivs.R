@@ -93,10 +93,11 @@ rxp_quarto <- function(name, qmd_file) {
 #' rxp_file Creates a Nix expression that reads in a file.
 #'
 #' @param name Symbol, the name of the derivation.
-#' @param path Character, the file path to include.
-#' @param read_function Function, must be a function of only one
-#'   argument, the path. If you wish to pass several arguments
-#'   to this function, make it an anonymous function. See @details.
+#' @param path Character, the file path to include, can be an url.
+#' @param read_function Function to read in the data, must be a
+#'   function of only one argument, the path. If you wish to pass
+#'   several arguments to this function, make it an anonymous function.
+#'   See @details.
 #'
 #' @details The function must only take one single argument, the
 #'   path to the file to read. Because of this limitation, if
@@ -116,20 +117,47 @@ rxp_quarto <- function(name, qmd_file) {
 rxp_file <- function(name, path, read_function) {
   out_name <- deparse(substitute(name))
   read_func_str <- deparse(substitute(read_function))
-  # Replace " by ' or else Nix complains
+  # Replace double quotes with single quotes for Nix compatibility
   read_func_str <- gsub("\"", "'", read_func_str)
 
+  # Define the build phase for the Nix derivation
   build_phase <- sprintf(
     "cp $src input_file\nRscript -e \"\n        source('libraries.R')\n        data <- do.call(%s, list('input_file'))\n        saveRDS(data, '%s.rds')\"",
     read_func_str,
     out_name
   )
 
+  # Handle the source (src) part based on whether path is a URL or local file
+  if (grepl("^https?://", path)) {
+    # If path is a URL, use nix-prefetch-url to get the hash
+    hash <- tryCatch(
+      {
+        system(paste("nix-prefetch-url", shQuote(path)), intern = TRUE)
+      },
+      error = function(e) {
+        stop("Failed to run nix-prefetch-url: ", e$message)
+      }
+    )
+    if (length(hash) == 0 || hash == "") {
+      stop("nix-prefetch-url did not return a hash for URL: ", path)
+    }
+    hash <- trimws(hash[1]) # Take the first line and trim whitespace
+    # Generate the fetchurl expression with the URL and computed hash
+    src_part <- sprintf(
+      "pkgs.fetchurl {\n      url = \"%s\";\n      sha256 = \"%s\";\n    }",
+      path,
+      hash
+    )
+  } else {
+    # If path is a local file, use it directly as the source
+    src_part <- sprintf("./%s", path)
+  }
+
   snippet <- sprintf(
-    "  %s = makeRDerivation {\n    name = \"%s\";\n    src = ./%s;\n    buildPhase = ''\n      %s\n    '';\n  };",
+    "  %s = makeRDerivation {\n    name = \"%s\";\n    src = %s;\n    buildPhase = ''\n      %s\n    '';\n  };",
     out_name,
     out_name,
-    path,
+    src_part,
     build_phase
   )
 
