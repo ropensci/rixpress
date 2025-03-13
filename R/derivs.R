@@ -50,16 +50,19 @@ rxp_r <- function(name, expr) {
 #' rxp_quarto(report, "doc.qmd")
 #'
 #' @export
-rxp_quarto <- function(name, qmd_file) {
+rxp_quarto <- function(name, qmd_file, additional_files = character(0)) {
   out_name <- deparse(substitute(name))
 
   content <- readLines(qmd_file, warn = FALSE)
   content_str <- paste(content, collapse = "\n")
+
+  # Extract unique rxp_read references
   matches <- gregexpr('rxp_read\\("([^"]+)"\\)', content_str)
   refs <- regmatches(content_str, matches)[[1]]
   refs <- sub('rxp_read\\("([^"]+)"\\)', '\\1', refs)
   refs <- unique(refs)
 
+  # Generate substitution commands for each reference
   sub_cmds <- sapply(refs, function(ref) {
     sprintf(
       "substituteInPlace %s --replace-fail 'rxp_read(\"%s\")' 'rxp_read(\"${%s}/%s.rds\")'",
@@ -79,16 +82,31 @@ rxp_quarto <- function(name, qmd_file) {
     sep = "\n"
   )
 
+  # Prepare the fileset for src
+  fileset_parts <- c(qmd_file, additional_files)
+  fileset_nix <- paste(
+    sapply(fileset_parts, function(part) {
+      if (dir.exists(part)) {
+        sprintf("./%s", part)
+      } else {
+        sprintf("./%s", part)
+      }
+    }),
+    collapse = " "
+  )
+
+  # Generate the Nix derivation snippet with updated src
   snippet <- sprintf(
-    "  %s = pkgs.stdenv.mkDerivation {\n    name = \"%s\";\n    src = pkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = if builtins.pathExists ./_rixpress\n                then pkgs.lib.fileset.difference ./. ./_rixpress\n                else ./.;\n    };\n    buildInputs = [ commonBuildInputs pkgs.which pkgs.quarto ];\n    buildPhase = ''\n%s\n    '';\n  };",
+    "  %s = pkgs.stdenv.mkDerivation {\n    name = \"%s\";\n    src = pkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = pkgs.lib.fileset.unions [ %s ];\n    };\n    buildInputs = [ commonBuildInputs pkgs.which pkgs.quarto ];\n    buildPhase = ''\n%s\n    '';\n  };",
     out_name,
     out_name,
+    fileset_nix,
     build_phase
   )
 
+  # Return the result as a list
   list(name = out_name, snippet = snippet, type = "rxp_quarto")
 }
-
 
 #' rxp_file Creates a Nix expression that reads in a file.
 #'

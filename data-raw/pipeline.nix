@@ -84,9 +84,7 @@ Rscript -e "
     name = "page";
     src = pkgs.lib.fileset.toSource {
       root = ./.;
-      fileset = if builtins.pathExists ./_rixpress
-                then pkgs.lib.fileset.difference ./. ./_rixpress
-                else ./.;
+      fileset = pkgs.lib.fileset.unions [ ./page.qmd ./content.qmd ./images ];
     };
     buildInputs = [ commonBuildInputs pkgs.which pkgs.quarto ];
     buildPhase = ''

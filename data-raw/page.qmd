@@ -5,6 +5,8 @@ format:
     toc: true
 ---
 
+![Meme](images/meme.png)
+
 Let's hope this works:
 
 ```{r}
@@ -19,3 +21,5 @@ summary(rixpress::rxp_read("mtcars_tail"))
 ```{r}
 summary(rixpress::rxp_read("mtcars_mpg"))
 ```
+
+{{< include content.qmd >}}
