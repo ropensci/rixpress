@@ -51,7 +51,32 @@ rixpress <- function(derivs) {
   )
 
   writeLines(pipeline, "pipeline.nix")
-  generate_libraries_from_nix("default.nix")
+  extract_nix_file <- function(text) {
+    pattern <- "import \\./([^;]+);"
+
+    # Find the match and its position
+    m <- regexec(pattern, text)
+
+    if (m[[1]][1] == -1) {
+      stop("No import statement found")
+    }
+
+    matches <- regmatches(text, m)
+
+    matches[[1]][2]
+  }
+
+  nix_expressions <- unique(sapply(
+    sapply(derivs, function(d) d$nix_env),
+    extract_nix_file,
+    USE.NAMES = FALSE
+  ))
+
+  suppressWarnings(
+    invisible(
+      lapply(nix_expressions, generate_libraries_from_nix)
+    )
+  )
 }
 
 #' gen_flat_pipeline Internal function used to generate most of the boilerplate in pipeline.nix

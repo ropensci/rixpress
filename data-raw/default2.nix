@@ -3,8 +3,9 @@ let
  
   rpkgs = builtins.attrValues {
     inherit (pkgs.rPackages) 
-      #just a placehold need to fix parse_rpkgs()
-      AER;
+      purrr
+      data_table
+      dplyr;
   };
   
   system_packages = builtins.attrValues {
@@ -12,6 +13,8 @@ let
       glibcLocales
       glibcLocalesUtf8
       nix
+      pandoc
+      quarto
       R;
   };
 
@@ -24,7 +27,7 @@ shell = pkgs.mkShell {
    LC_PAPER = "en_US.UTF-8";
    LC_MEASUREMENT = "en_US.UTF-8";
 
-  buildInputs = [ system_packages rpkgs ];
+  buildInputs = [ rpkgs system_packages ];
   
 };
 in

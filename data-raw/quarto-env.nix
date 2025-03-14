@@ -34,7 +34,7 @@ let
  
   rpkgs = builtins.attrValues {
     inherit (pkgs.rPackages) 
-      data_table
+      chronicler
       quarto;
   };
   

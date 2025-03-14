@@ -49,7 +49,9 @@ rxp_r <- function(name, expr, nix_env = "default.nix") {
     paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
     paste0(
       base,
-      "ConfigurePhase = ''\n    cp ${./_rixpress/libraries.R} libraries.R\n    mkdir -p $out\n  '';"
+      "ConfigurePhase = ''\n    cp ${./_rixpress/",
+      base,
+      "_libraries.R} libraries.R\n    mkdir -p $out\n  '';"
     )
   )
   nix_code <- paste(nix_lines, collapse = "\n  ")
@@ -140,7 +142,9 @@ rxp_quarto <- function(
     paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
     paste0(
       base,
-      "ConfigurePhase = ''\n    cp ${./_rixpress/libraries.R} libraries.R\n    mkdir -p $out\n  '';"
+      "ConfigurePhase = ''\n    cp ${./_rixpress/",
+      base,
+      "_libraries.R} libraries.R\n    mkdir -p $out\n  '';"
     )
   )
   nix_code <- paste(nix_lines, collapse = "\n  ")
@@ -234,7 +238,9 @@ rxp_file <- function(name, path, read_function, nix_env = "default.nix") {
     paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
     paste0(
       base,
-      "ConfigurePhase = ''\n    cp ${./_rixpress/libraries.R} libraries.R\n    mkdir -p $out\n  '';"
+      "ConfigurePhase = ''\n    cp ${./_rixpress/",
+      base,
+      "_libraries.R} libraries.R\n    mkdir -p $out\n  '';"
     )
   )
   nix_code <- paste(nix_lines, collapse = "\n  ")

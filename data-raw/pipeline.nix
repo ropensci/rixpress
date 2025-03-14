@@ -4,7 +4,15 @@ let
   defaultShell = default.shell;
   defaultBuildInputs = defaultShell.buildInputs;
   defaultConfigurePhase = ''
-    cp ${./_rixpress/libraries.R} libraries.R
+    cp ${./_rixpress/default_libraries.R} libraries.R
+    mkdir -p $out
+  '';
+default2 = import ./default2.nix;
+  default2Pkgs = default2.pkgs;
+  default2Shell = default2.shell;
+  default2BuildInputs = default2Shell.buildInputs;
+  default2ConfigurePhase = ''
+    cp ${./_rixpress/default2_libraries.R} libraries.R
     mkdir -p $out
   '';
 quarto-env = import ./quarto-env.nix;
@@ -12,7 +20,7 @@ quarto-env = import ./quarto-env.nix;
   quarto-envShell = quarto-env.shell;
   quarto-envBuildInputs = quarto-envShell.buildInputs;
   quarto-envConfigurePhase = ''
-    cp ${./_rixpress/libraries.R} libraries.R
+    cp ${./_rixpress/quarto-env_libraries.R} libraries.R
     mkdir -p $out
   '';
 
@@ -45,8 +53,8 @@ Rscript -e "
 
   mtcars_am = makeRDerivation {
     name = "mtcars_am";
-    buildInputs = defaultBuildInputs;
-    configurePhase = defaultConfigurePhase;
+    buildInputs = default2BuildInputs;
+    configurePhase = default2ConfigurePhase;
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
@@ -84,8 +92,8 @@ Rscript -e "
 
   mtcars_mpg = makeRDerivation {
     name = "mtcars_mpg";
-    buildInputs = defaultBuildInputs;
-    configurePhase = defaultConfigurePhase;
+    buildInputs = default2BuildInputs;
+    configurePhase = default2ConfigurePhase;
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
