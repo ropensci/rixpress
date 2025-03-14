@@ -3,21 +3,21 @@
 #'   output of the function expression
 #' @param name Symbol, name of the derivation.
 #' @param expr R code to generate the expression.
+#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
 #' @details At a basic level, `rxp_r(mtcars_am, filter(mtcars, am == 1))`
 #'   is equivalent to `mtcars <- filter(mtcars, am == 1)`. `rxp_r()` generates
 #'   the required Nix boilerplate to output a so-called "derivation" in Nix
 #'   jargon. A Nix derivation is a recipe that defines how to create an output
 #'   (in this case `mtcars_am`) including its dependencies, build steps,
 #'   and output paths.
-#' @return A list of two elements, `name`, the `name` of the derivation,
-#'   and `snippet` the Nix boilerplate code.
+#' @return A list with elements: `name`, the `name` of the derivation,
+#'   `snippet`, the Nix boilerplate code, `type`, and `nix_env`.
 #' @examples rxp_r(mtcars_am, filter(mtcars, am == 1))
 #' @export
-rxp_r <- function(name, expr) {
+rxp_r <- function(name, expr, nix_env = "default.nix") {
   out_name <- deparse(substitute(name))
   expr_str <- deparse(substitute(expr))
-  # Replace " by ' or else Nix complains
-  expr_str <- gsub("\"", "'", expr_str)
+  expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
 
   build_phase <- sprintf(
     "Rscript -e \"\n        source('libraries.R')\n        %s <- %s\n        saveRDS(%s, '%s.rds')\"",
@@ -27,30 +27,53 @@ rxp_r <- function(name, expr) {
     out_name
   )
 
+  # Derive base from nix_env
+  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
+  base <- sub("_nix$", "", base)
+
+  # Updated snippet with buildInputs and configurePhase
   snippet <- sprintf(
-    "  %s = makeRDerivation {\n    name = \"%s\";\n    buildPhase = ''\n      %s\n    '';\n  };",
+    "  %s = makeRDerivation {\n    name = \"%s\";\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
     out_name,
     out_name,
+    base,
+    base,
     build_phase
   )
 
-  list(name = out_name, snippet = snippet, type = "rxp_r")
+  # nix_env code
+  nix_lines <- c(
+    paste0(base, " = import ./", nix_env, ";"),
+    paste0(base, "Pkgs = ", base, ".pkgs;"),
+    paste0(base, "Shell = ", base, ".shell;"),
+    paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
+    paste0(
+      base,
+      "ConfigurePhase = ''\n    cp ${./_rixpress/libraries.R} libraries.R\n    mkdir -p $out\n  '';"
+    )
+  )
+  nix_code <- paste(nix_lines, collapse = "\n  ")
+
+  list(name = out_name, snippet = snippet, type = "rxp_r", nix_env = nix_code)
 }
 
 #' Render a Quarto document as a Nix derivation
 #'
 #' @param name Symbol, derivation name.
 #' @param qmd_file Character, path to .qmd file.
-#'
+#' @param additional_files Character vector, additional files to include.
+#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
 #' @details Detects `rxp_read("ref")` in the .qmd file and replaces with derivation output paths.
-#'
-#' @return List with `name` (string) and `snippet` (Nix code).
-#'
+#' @return List with `name` (string), `snippet` (Nix code), `type`, and `nix_env`.
 #' @examples
 #' rxp_quarto(report, "doc.qmd")
-#'
 #' @export
-rxp_quarto <- function(name, qmd_file, additional_files = character(0)) {
+rxp_quarto <- function(
+  name,
+  qmd_file,
+  additional_files = character(0),
+  nix_env = "default.nix"
+) {
   out_name <- deparse(substitute(name))
 
   content <- readLines(qmd_file, warn = FALSE)
@@ -95,19 +118,41 @@ rxp_quarto <- function(name, qmd_file, additional_files = character(0)) {
     collapse = " "
   )
 
-  # Generate the Nix derivation snippet with updated src
+  # Compute base from nix_env
+  base <- sub("\\.nix$", "", basename(nix_env))
+
+  # Generate the Nix derivation snippet with updated buildInputs and configurePhase
   snippet <- sprintf(
-    "  %s = pkgs.stdenv.mkDerivation {\n    name = \"%s\";\n    src = pkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = pkgs.lib.fileset.unions [ %s ];\n    };\n    buildInputs = [ commonBuildInputs pkgs.which pkgs.quarto ];\n    buildPhase = ''\n%s\n    '';\n  };",
+    "  %s = defaultPkgs.stdenv.mkDerivation {\n    name = \"%s\";\n    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n%s\n    '';\n  };",
     out_name,
     out_name,
     fileset_nix,
+    base,
+    base,
     build_phase
   )
 
-  # Return the result as a list
-  list(name = out_name, snippet = snippet, type = "rxp_quarto")
-}
+  # Generate nix_env code
+  nix_lines <- c(
+    paste0(base, " = import ./", nix_env, ";"),
+    paste0(base, "Pkgs = ", base, ".pkgs;"),
+    paste0(base, "Shell = ", base, ".shell;"),
+    paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
+    paste0(
+      base,
+      "ConfigurePhase = ''\n    cp ${./_rixpress/libraries.R} libraries.R\n    mkdir -p $out\n  '';"
+    )
+  )
+  nix_code <- paste(nix_lines, collapse = "\n  ")
 
+  # Return the result as a list
+  list(
+    name = out_name,
+    snippet = snippet,
+    type = "rxp_quarto",
+    nix_env = nix_code
+  )
+}
 #' rxp_file Creates a Nix expression that reads in a file.
 #'
 #' @param name Symbol, the name of the derivation.
@@ -115,24 +160,20 @@ rxp_quarto <- function(name, qmd_file, additional_files = character(0)) {
 #' @param read_function Function to read in the data, must be a
 #'   function of only one argument, the path. If you wish to pass
 #'   several arguments to this function, make it an anonymous function.
-#'   See @details.
-#'
+#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
 #' @details The function must only take one single argument, the
 #'   path to the file to read. Because of this limitation, if
 #'   you need to pass more than one argument to the function,
 #'   make it an anonymous function, for example:
 #'   `d0 <- rxp_file(mtcars, 'mtcars.csv', \(x) (read.csv(file = x, sep = "|")))`
-#'
-#' @return A list with three elements: `name`, the derivation name,
-#'   and `snippet`, the generated Nix code and the derivation type.
-#'
+#' @return A list with elements: `name`, the derivation name,
+#'   `snippet`, the generated Nix code, `type`, and `nix_env`.
 #' @examples
 #' \dontrun{
 #' rxp_file(data, "./data.csv", read.csv)
 #' }
-#'
 #' @export
-rxp_file <- function(name, path, read_function) {
+rxp_file <- function(name, path, read_function, nix_env = "default.nix") {
   out_name <- deparse(substitute(name))
   read_func_str <- deparse(substitute(read_function))
   # Replace double quotes with single quotes for Nix compatibility
@@ -162,7 +203,7 @@ rxp_file <- function(name, path, read_function) {
     hash <- trimws(hash[1]) # Take the first line and trim whitespace
     # Generate the fetchurl expression with the URL and computed hash
     src_part <- sprintf(
-      "pkgs.fetchurl {\n      url = \"%s\";\n      sha256 = \"%s\";\n    }",
+      "defaultPkgs.fetchurl {\n      url = \"%s\";\n      sha256 = \"%s\";\n    }",
       path,
       hash
     )
@@ -171,13 +212,37 @@ rxp_file <- function(name, path, read_function) {
     src_part <- sprintf("./%s", path)
   }
 
+  # Compute base from nix_env for environment-specific attributes
+  base <- sub("\\.nix$", "", basename(nix_env))
+
+  # Generate the Nix derivation snippet with buildInputs and configurePhase
   snippet <- sprintf(
-    "  %s = makeRDerivation {\n    name = \"%s\";\n    src = %s;\n    buildPhase = ''\n      %s\n    '';\n  };",
+    "  %s = makeRDerivation {\n    name = \"%s\";\n    src = %s;\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
     out_name,
     out_name,
     src_part,
+    base,
+    base,
     build_phase
   )
 
-  list(name = out_name, snippet = snippet, type = "rxp_r")
+  # Generate nix_env code
+  nix_lines <- c(
+    paste0(base, " = import ./", nix_env, ";"),
+    paste0(base, "Pkgs = ", base, ".pkgs;"),
+    paste0(base, "Shell = ", base, ".shell;"),
+    paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
+    paste0(
+      base,
+      "ConfigurePhase = ''\n    cp ${./_rixpress/libraries.R} libraries.R\n    mkdir -p $out\n  '';"
+    )
+  )
+  nix_code <- paste(nix_lines, collapse = "\n  ")
+
+  list(
+    name = out_name,
+    snippet = snippet,
+    type = "rxp_r",
+    nix_env = nix_code
+  )
 }

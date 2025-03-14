@@ -1,23 +1,28 @@
 let
   default = import ./default.nix;
-  pkgs = default.pkgs;
-  shell = default.shell;
-
-  commonBuildInputs = shell.buildInputs;
-  commonConfigurePhase = ''
+  defaultPkgs = default.pkgs;
+  defaultShell = default.shell;
+  defaultBuildInputs = defaultShell.buildInputs;
+  defaultConfigurePhase = ''
+    cp ${./_rixpress/libraries.R} libraries.R
+    mkdir -p $out
+  '';
+quarto-env = import ./quarto-env.nix;
+  quarto-envPkgs = quarto-env.pkgs;
+  quarto-envShell = quarto-env.shell;
+  quarto-envBuildInputs = quarto-envShell.buildInputs;
+  quarto-envConfigurePhase = ''
     cp ${./_rixpress/libraries.R} libraries.R
     mkdir -p $out
   '';
 
   # Function to create R derivations
-  makeRDerivation = { name, buildPhase, src ? null }:
+  makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
     let rdsFile = "${name}.rds";
-    in pkgs.stdenv.mkDerivation {
+    in defaultPkgs.stdenv.mkDerivation {
       inherit name src;
-      buildInputs = commonBuildInputs;
       dontUnpack = true;
-      configurePhase = commonConfigurePhase;
-      inherit buildPhase;
+      inherit buildInputs configurePhase buildPhase;
       installPhase = ''
         cp ${rdsFile} $out/
       '';
@@ -27,6 +32,8 @@ let
   mtcars = makeRDerivation {
     name = "mtcars";
     src = ./mtcars.csv;
+    buildInputs = defaultBuildInputs;
+    configurePhase = defaultConfigurePhase;
     buildPhase = ''
       cp $src input_file
 Rscript -e "
@@ -38,6 +45,8 @@ Rscript -e "
 
   mtcars_am = makeRDerivation {
     name = "mtcars_am";
+    buildInputs = defaultBuildInputs;
+    configurePhase = defaultConfigurePhase;
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
@@ -49,6 +58,8 @@ Rscript -e "
 
   mtcars_head = makeRDerivation {
     name = "mtcars_head";
+    buildInputs = defaultBuildInputs;
+    configurePhase = defaultConfigurePhase;
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
@@ -60,6 +71,8 @@ Rscript -e "
 
   mtcars_tail = makeRDerivation {
     name = "mtcars_tail";
+    buildInputs = defaultBuildInputs;
+    configurePhase = defaultConfigurePhase;
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
@@ -71,6 +84,8 @@ Rscript -e "
 
   mtcars_mpg = makeRDerivation {
     name = "mtcars_mpg";
+    buildInputs = defaultBuildInputs;
+    configurePhase = defaultConfigurePhase;
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
@@ -80,13 +95,14 @@ Rscript -e "
     '';
   };
 
-  page = pkgs.stdenv.mkDerivation {
+  page = defaultPkgs.stdenv.mkDerivation {
     name = "page";
-    src = pkgs.lib.fileset.toSource {
+    src = defaultPkgs.lib.fileset.toSource {
       root = ./.;
-      fileset = pkgs.lib.fileset.unions [ ./page.qmd ./content.qmd ./images ];
+      fileset = defaultPkgs.lib.fileset.unions [ ./page.qmd ./content.qmd ./images ];
     };
-    buildInputs = [ commonBuildInputs pkgs.which pkgs.quarto ];
+    buildInputs = quarto-envBuildInputs;
+    configurePhase = quarto-envConfigurePhase;
     buildPhase = ''
   mkdir home
   export HOME=$PWD/home
@@ -98,7 +114,7 @@ Rscript -e "
   };
 
   # Generic default target that builds all derivations
-  allDerivations = pkgs.symlinkJoin {
+  allDerivations = defaultPkgs.symlinkJoin {
     name = "all-derivations";
     paths = with builtins; attrValues { inherit mtcars mtcars_am mtcars_head mtcars_tail mtcars_mpg page; };
   };

@@ -64,6 +64,10 @@ gen_flat_pipeline <- function(derivs) {
   # Extract derivation snippets and names from the derivs list
   derivation_texts <- sapply(derivs, function(d) d$snippet)
   deriv_names <- sapply(derivs, function(d) d$name)
+  nix_envs <- paste0(
+    unique(sapply(derivs, function(d) d$nix_env)),
+    collapse = "\n"
+  )
 
   # Combine all derivation snippets into a single string
   derivations_code <- paste(derivation_texts, collapse = "\n\n")
@@ -73,22 +77,15 @@ gen_flat_pipeline <- function(derivs) {
   # Generate the Nix code as a string
   pipeline_nix <- sprintf(
     'let
-  default = import ./default.nix;
-  pkgs = default.pkgs;
-  shell = default.shell;
-
-  commonBuildInputs = shell.buildInputs;
-  commonConfigurePhase = \'\'\n    cp ${./_rixpress/libraries.R} libraries.R\n    mkdir -p $out\n  \'\';
+  %s
 
   # Function to create R derivations
-  makeRDerivation = { name, buildPhase, src ? null }:
+  makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
     let rdsFile = "${name}.rds";
-    in pkgs.stdenv.mkDerivation {
+    in defaultPkgs.stdenv.mkDerivation {
       inherit name src;
-      buildInputs = commonBuildInputs;
       dontUnpack = true;
-      configurePhase = commonConfigurePhase;
-      inherit buildPhase;
+      inherit buildInputs configurePhase buildPhase;
       installPhase = \'\'
         cp ${rdsFile} $out/
       \'\';
@@ -98,7 +95,7 @@ gen_flat_pipeline <- function(derivs) {
 %s
 
   # Generic default target that builds all derivations
-  allDerivations = pkgs.symlinkJoin {
+  allDerivations = defaultPkgs.symlinkJoin {
     name = "all-derivations";
     paths = with builtins; attrValues { inherit %s; };
   };
@@ -109,6 +106,7 @@ in
   default = allDerivations;  # Set the default target to build everything
 }
 ',
+    nix_envs,
     derivations_code,
     names_line,
     names_line
