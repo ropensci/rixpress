@@ -86,7 +86,7 @@ and output paths.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "rxp_r"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $nix_env</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "default = import ./default.nix;\n  defaultPkgs = default.pkgs;\n  defaultShell = default.shell;\n  defaultBuildInputs = defaultShell.buildInputs;\n  defaultConfigurePhase = ''\n    cp ${./_rixpress/libraries.R} libraries.R\n    mkdir -p $out\n  '';"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "default = import ./default.nix;\n  defaultPkgs = default.pkgs;\n  defaultShell = default.shell;\n  defaultBuildInputs = defaultShell.buildInputs;\n  defaultConfigurePhase = ''\n    cp ${./_rixpress/default_libraries.R} libraries.R\n    mkdir -p $out\n  '';"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>
     </div>
