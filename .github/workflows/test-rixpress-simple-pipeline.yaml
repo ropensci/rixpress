@@ -37,4 +37,4 @@ jobs:
         run: cat data-raw/pipeline.nix
 
       - name: Build default.nix
-        run: nix-build -o _rixpress/result data-raw/pipeline.nix
+        run: nix-shell default.nix --run "Rscript -e \"setwd('data-raw');rxp_make()\""
