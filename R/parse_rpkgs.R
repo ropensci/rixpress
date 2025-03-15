@@ -23,7 +23,7 @@ generate_libraries_from_nix <- function(
 #' @noRd
 generate_libraries_script <- function(
   packages,
-  outfile = "_rixpress/libraries.R"
+  outfile
 ) {
   library_lines <- paste0("library(", packages, ")")
   writeLines(library_lines, outfile)
