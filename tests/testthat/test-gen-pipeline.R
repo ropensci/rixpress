@@ -39,7 +39,7 @@ test_that("rixpress: gen_flat_pipeline", {
 test_that("rixpress: several environments", {
   path_tmpdir <- "tempdir"
   dir.create(path_tmpdir)
-  on.exit(unlink(tmpdir, recursive = TRUE), add = TRUE, after = TRUE)
+  on.exit(unlink(path_tmpdir, recursive = TRUE), add = TRUE, after = TRUE)
 
   path_to_default.nix <- paste0(path_tmpdir, "/default.nix")
   path_to_default2.nix <- paste0(path_tmpdir, "/default2.nix")
