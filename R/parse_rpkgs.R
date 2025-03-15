@@ -7,7 +7,7 @@
 #' @noRd
 generate_libraries_from_nix <- function(
   nix_file,
-  outfile = "_rixpress/libraries.R"
+  outfile
 ) {
   packages <- parse_rpkgs(nix_file)
   nix_file_name <- gsub("\\.nix", "", nix_file)
