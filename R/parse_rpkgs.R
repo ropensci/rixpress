@@ -1,14 +1,19 @@
 #' Generate an R script with library calls from a default.nix file
 #'
 #' @param nix_file Path to the default.nix file (default: "default.nix")
+#' @param project_path Path to root of project, typically "."
 #' @return A script to load the libraries inside of derivations.
 #' @noRd
-generate_libraries_from_nix <- function(nix_file) {
-  packages <- parse_rpkgs(nix_file)
+generate_libraries_from_nix <- function(nix_file, project_path) {
+  packages <- parse_rpkgs(nix_file, project_path)
   nix_file_name <- gsub("\\.nix", "", nix_file)
   generate_libraries_script(
     packages,
-    paste0("_rixpress/", nix_file_name, "_libraries.R")
+    file.path(
+      project_path,
+      "/_rixpress/",
+      paste0(nix_file_name, "_libraries.R")
+    )
   )
 }
 
@@ -30,11 +35,12 @@ generate_libraries_script <- function(
 #' Generate an R script with library calls from a default.nix file
 #'
 #' @param nix_file Path to the default.nix file (default: "default.nix")
+#' @param project_path Path to root of project, typically "."
 #' @return List of packages defined in the rpkgs block of a default.nix file
 #' @noRd
-parse_rpkgs <- function(nix_file) {
+parse_rpkgs <- function(nix_file, project_path) {
   # Read the file as lines
-  lines <- readLines(nix_file)
+  lines <- readLines(file.path(project_path, nix_file))
 
   # Find the starting index of the rpkgs block
   start_idx <- grep("^\\s*rpkgs\\s*=\\s*builtins\\.attrValues\\s*\\{", lines)

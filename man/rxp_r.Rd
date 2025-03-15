@@ -4,19 +4,21 @@
 \alias{rxp_r}
 \title{rxp_r Creates a Nix expression running an R function}
 \usage{
-rxp_r(name, expr)
+rxp_r(name, expr, nix_env = "default.nix")
 }
 \arguments{
 \item{name}{Symbol, name of the derivation.}
 
 \item{expr}{R code to generate the expression.}
 
+\item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
+
 \item{output}{Character, a variable name to save the
 output of the function expression}
 }
 \value{
-A list of two elements, \code{name}, the \code{name} of the derivation,
-and \code{snippet} the Nix boilerplate code.
+A list with elements: \code{name}, the \code{name} of the derivation,
+\code{snippet}, the Nix boilerplate code, \code{type}, and \code{nix_env}.
 }
 \description{
 rxp_r Creates a Nix expression running an R function

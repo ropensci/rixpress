@@ -4,13 +4,15 @@
 \alias{rixpress}
 \title{Generate Nix Pipeline Code with a Generic Default Target}
 \usage{
-rixpress(derivs)
+rixpress(derivs, project_path)
 }
 \arguments{
 \item{derivs}{A list of derivation objects, where each object must have two
 elements: \verb{$name} (a character string naming the derivation) and \verb{$snippet}
 (a character string containing the Nix code defining the derivation).
 Typically, these objects are created by a function like \code{rxp_r}.}
+
+\item{project_path}{Path to root of project, typically "."}
 }
 \value{
 A character string containing the complete Nix code for a
@@ -44,10 +46,10 @@ directory, which is copied into the build environment by the Nix code.
 # Create derivation objects
 d1 <- rxp_r(mtcars_am, filter(mtcars, am == 1))
 d2 <- rxp_r(mtcars_head, head(mtcars_am))
-derivs <- list(d1, d2)
+list_derivs <- list(d1, d2)
 
 # Generate the pipeline code
-rixpress(derivs)
+rixpress(derivs = list_derivs, project_path = ".")
 
 }
 }

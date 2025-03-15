@@ -4,20 +4,22 @@
 \alias{rxp_file}
 \title{rxp_file Creates a Nix expression that reads in a file.}
 \usage{
-rxp_file(name, path, read_function)
+rxp_file(name, path, read_function, nix_env = "default.nix")
 }
 \arguments{
 \item{name}{Symbol, the name of the derivation.}
 
-\item{path}{Character, the file path to include.}
+\item{path}{Character, the file path to include, can be an url.}
 
-\item{read_function}{Function, must be a function of only one
-argument, the path. If you wish to pass several arguments
-to this function, make it an anonymous function. See @details.}
+\item{read_function}{Function to read in the data, must be a
+function of only one argument, the path. If you wish to pass
+several arguments to this function, make it an anonymous function.}
+
+\item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
 }
 \value{
-A list with three elements: \code{name}, the derivation name,
-and \code{snippet}, the generated Nix code and the derivation type.
+A list with elements: \code{name}, the derivation name,
+\code{snippet}, the generated Nix code, \code{type}, and \code{nix_env}.
 }
 \description{
 rxp_file Creates a Nix expression that reads in a file.
@@ -33,5 +35,4 @@ make it an anonymous function, for example:
 \dontrun{
 rxp_file(data, "./data.csv", read.csv)
 }
-
 }

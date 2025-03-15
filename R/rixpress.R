@@ -13,6 +13,8 @@
 #'   (a character string containing the Nix code defining the derivation).
 #'   Typically, these objects are created by a function like `rxp_r`.
 #'
+#' @param project_path Path to root of project, typically "."
+#'
 #' @return A character string containing the complete Nix code for a
 #'   `pipeline.nix` file. This string can be written to a file or passed to
 #'   another function for further processing.
@@ -33,14 +35,14 @@
 #' # Create derivation objects
 #' d1 <- rxp_r(mtcars_am, filter(mtcars, am == 1))
 #' d2 <- rxp_r(mtcars_head, head(mtcars_am))
-#' derivs <- list(d1, d2)
+#' list_derivs <- list(d1, d2)
 #'
 #' # Generate the pipeline code
-#' rixpress(derivs)
+#' rixpress(derivs = list_derivs, project_path = ".")
 #'
 #' }
 #' @export
-rixpress <- function(derivs) {
+rixpress <- function(derivs, project_path) {
   flat_pipeline <- gen_flat_pipeline(derivs)
 
   generate_dag(derivs, output_file = "_rixpress/dag.json")
@@ -74,7 +76,11 @@ rixpress <- function(derivs) {
 
   suppressWarnings(
     invisible(
-      lapply(nix_expressions, generate_libraries_from_nix)
+      lapply(
+        nix_expressions,
+        generate_libraries_from_nix,
+        project_path = project_path
+      )
     )
   )
 }

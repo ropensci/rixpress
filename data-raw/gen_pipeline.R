@@ -19,6 +19,6 @@ doc <- rxp_quarto(
 
 rxp_list <- list(d0, d1, d2, d3, d4, doc)
 
-rixpress(rxp_list)
+rixpress(rxp_list, project_path = ".")
 
 #plot_dag()

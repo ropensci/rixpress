@@ -4,15 +4,24 @@
 \alias{rxp_quarto}
 \title{Render a Quarto document as a Nix derivation}
 \usage{
-rxp_quarto(name, qmd_file)
+rxp_quarto(
+  name,
+  qmd_file,
+  additional_files = character(0),
+  nix_env = "default.nix"
+)
 }
 \arguments{
 \item{name}{Symbol, derivation name.}
 
 \item{qmd_file}{Character, path to .qmd file.}
+
+\item{additional_files}{Character vector, additional files to include.}
+
+\item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
 }
 \value{
-List with \code{name} (string) and \code{snippet} (Nix code).
+List with \code{name} (string), \code{snippet} (Nix code), \code{type}, and \code{nix_env}.
 }
 \description{
 Render a Quarto document as a Nix derivation
@@ -22,5 +31,4 @@ Detects \code{rxp_read("ref")} in the .qmd file and replaces with derivation out
 }
 \examples{
 rxp_quarto(report, "doc.qmd")
-
 }
