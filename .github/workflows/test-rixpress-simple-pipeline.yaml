@@ -31,10 +31,15 @@ jobs:
 
       - name: Build default.nix with 2 packages
         run: |
-          nix-shell default.nix --run "Rscript -e \"setwd('data-raw');devtools::load_all();source('gen_pipeline.R')\""
+          nix-shell && \
+          cd data-raw && \
+          Rscript -e "setwd('data-raw');devtools::load_all();source('gen_pipeline.R')"
 
       - name: Check generated default.nix
         run: cat data-raw/pipeline.nix
 
       - name: Build default.nix
-        run: nix-shell default.nix --run "Rscript -e \"devtools::load_all();setwd('data-raw');rixpress::rxp_make()\""
+        run: |
+          nix-shell && \
+          cd data-raw &&\ 
+          Rscript -e "devtools::load_all();setwd('data-raw');rixpress::rxp_make()"
