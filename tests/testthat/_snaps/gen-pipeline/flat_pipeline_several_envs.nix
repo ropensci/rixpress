@@ -7,6 +7,14 @@ let
     cp ${./_rixpress/default_libraries.R} libraries.R
     mkdir -p $out
   '';
+tempdir_default2 = import ./tempdir/default2.nix;
+  tempdir_default2Pkgs = tempdir_default2.pkgs;
+  tempdir_default2Shell = tempdir_default2.shell;
+  tempdir_default2BuildInputs = tempdir_default2Shell.buildInputs;
+  tempdir_default2ConfigurePhase = ''
+    cp ${./_rixpress/tempdir_default2_libraries.R} libraries.R
+    mkdir -p $out
+  '';
 
   # Function to create R derivations
   makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
@@ -35,12 +43,11 @@ let
 
   mtcars_head = makeRDerivation {
     name = "mtcars_head";
-    buildInputs = defaultBuildInputs;
-    configurePhase = defaultConfigurePhase;
+    buildInputs = tempdir_default2BuildInputs;
+    configurePhase = tempdir_default2ConfigurePhase;
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
-        mtcars_am <- readRDS('${mtcars_am}/mtcars_am.rds')
         mtcars_head <- head(mtcars_am)
         saveRDS(mtcars_head, 'mtcars_head.rds')"
     '';

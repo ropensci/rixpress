@@ -1,15 +1,17 @@
 #' Generate an R script with library calls from a default.nix file
 #'
 #' @param nix_file Path to the default.nix file (default: "default.nix")
+#' @param outfile Path to the output file, we recommend to leave the
+#'   default `"_rixpress/libraries.R"`
 #' @return A script to load the libraries inside of derivations.
 #' @noRd
-generate_libraries_from_nix <- function(nix_file) {
+generate_libraries_from_nix <- function(
+  nix_file,
+  outfile = "_rixpress/libraries.R"
+) {
   packages <- parse_rpkgs(nix_file)
   nix_file_name <- gsub("\\.nix", "", nix_file)
-  generate_libraries_script(
-    packages,
-    paste0("_rixpress/", nix_file_name, "_libraries.R")
-  )
+  generate_libraries_script(packages, outfile)
 }
 
 #' Helper function to add 'library()' to packages.

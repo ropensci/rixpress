@@ -1,23 +1,20 @@
 let
   default = import ./default.nix;
-  pkgs = default.pkgs;
-  shell = default.shell;
-
-  commonBuildInputs = shell.buildInputs;
-  commonConfigurePhase = ''
-    cp ${./libraries.R} libraries.R
+  defaultPkgs = default.pkgs;
+  defaultShell = default.shell;
+  defaultBuildInputs = defaultShell.buildInputs;
+  defaultConfigurePhase = ''
+    cp ${./_rixpress/default_libraries.R} libraries.R
     mkdir -p $out
   '';
 
   # Function to create R derivations
-  makeRDerivation = { name, buildPhase, src ? null }:
+  makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
     let rdsFile = "${name}.rds";
-    in pkgs.stdenv.mkDerivation {
+    in defaultPkgs.stdenv.mkDerivation {
       inherit name src;
-      buildInputs = commonBuildInputs;
       dontUnpack = true;
-      configurePhase = commonConfigurePhase;
-      inherit buildPhase;
+      inherit buildInputs configurePhase buildPhase;
       installPhase = ''
         cp ${rdsFile} $out/
       '';
@@ -26,6 +23,8 @@ let
   # Define all derivations
   mtcars_am = makeRDerivation {
     name = "mtcars_am";
+    buildInputs = defaultBuildInputs;
+    configurePhase = defaultConfigurePhase;
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
@@ -36,6 +35,8 @@ let
 
   mtcars_head = makeRDerivation {
     name = "mtcars_head";
+    buildInputs = defaultBuildInputs;
+    configurePhase = defaultConfigurePhase;
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
@@ -45,7 +46,7 @@ let
   };
 
   # Generic default target that builds all derivations
-  allDerivations = pkgs.symlinkJoin {
+  allDerivations = defaultPkgs.symlinkJoin {
     name = "all-derivations";
     paths = with builtins; attrValues { inherit mtcars_am mtcars_head; };
   };
