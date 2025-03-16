@@ -42,7 +42,7 @@ jobs:
       - name: Convert dag to HTML ASCII art and add to summary
         run: |
           nix-shell -p libcaca --run "HTML_OUTPUT=$(img2txt -f html data-raw/dag.png)"
-          nix-shell -p pandoc --ru "MD_OUTPUT=$(echo "${HTML_OUTPUT}" | pandoc -f html -t markdown)"
+          nix-shell -p pandoc --run "MD_OUTPUT=$(echo "${HTML_OUTPUT}" | pandoc -f html -t markdown)"
 
           echo "${MD_OUTPUT}" >> $GITHUB_STEP_SUMMARY
 
