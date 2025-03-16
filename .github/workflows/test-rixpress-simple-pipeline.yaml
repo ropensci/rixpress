@@ -41,9 +41,9 @@ jobs:
 
       - name: Convert dag to ASCII art
         run: |
-          nix-shell -p graphviz -p chafa --run "cd data-raw && dot -Tpng dag.dot -o dag.png"
+          nix-shell -p graphviz -p --run "cd data-raw && dot -Tpng dag.dot -o dag.png"
           echo '```' >> $GITHUB_STEP_SUMMARY
-          chafa --symbols braille --no-colors data-raw/dag.png >> $GITHUB_STEP_SUMMARY
+          nix-shell -p chafa --ran "chafa --symbols braille --no-colors data-raw/dag.png >> $GITHUB_STEP_SUMMARY"
           echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Make pipeline
