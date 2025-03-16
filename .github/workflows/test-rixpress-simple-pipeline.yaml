@@ -43,7 +43,7 @@ jobs:
         run: |
           nix-shell -p graphviz -p --run "cd data-raw && dot -Tpng dag.dot -o dag.png"
           echo '```' >> $GITHUB_STEP_SUMMARY
-          nix-shell -p chafa --run "chafa --symbols braille --no-colors data-raw/dag.png >> $GITHUB_STEP_SUMMARY"
+          nix-shell -p chafa --run "chafa --symbols braille data-raw/dag.png >> $GITHUB_STEP_SUMMARY"
           echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Make pipeline
