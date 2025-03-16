@@ -23,6 +23,4 @@ rixpress(rxp_list, project_path = ".")
 
 dag_obj <- plot_dag(return_igraph = TRUE)
 
-saveRDS(dag_obj, "dag.rds")
-
-#igraph::write_graph(dag_obj, file = "dag.dot", format = "dot")
+igraph::write_graph(dag_obj, file = "dag.dot", format = "dot")
