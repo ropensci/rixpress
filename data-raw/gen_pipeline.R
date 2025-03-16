@@ -21,6 +21,8 @@ rxp_list <- list(d0, d1, d2, d3, d4, doc)
 
 rixpress(rxp_list, project_path = ".")
 
-dag_obj <- plot_dag(return_igraph = TRUE)
+png("dag.png")
+dag_obj <- plot_dag(return_igraph = FALSE)
+dev.off()
 
 igraph::write_graph(dag_obj, file = "dag.dot", format = "dot")
