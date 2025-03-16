@@ -39,12 +39,11 @@ jobs:
       - name: Check generated default.nix
         run: cat data-raw/pipeline.nix
 
-      - name: Convert dag to ASCII art
+      - name: Convert dag and stream PNG data
         run: |
-          nix-shell -p graphviz -p --run "cd data-raw && dot -Tpng dag.dot -o dag.png"
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          nix-shell -p chafa --run "chafa --symbols braille data-raw/dag.png >> $GITHUB_STEP_SUMMARY"
-          echo '```' >> $GITHUB_STEP_SUMMARY
+          # Generate the PNG from the DOT file, stream it to tee (to save a copy) and to base64
+          IMAGE_BASE64=$(nix-shell -p graphviz --run "cd data-raw && dot -Tpng dag.dot | tee dag.png | base64 -w 0")
+          echo "![dag](data:image/png;base64,${IMAGE_BASE64})" >> $GITHUB_STEP_SUMMARY
 
       - name: Make pipeline
         run: |
