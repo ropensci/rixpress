@@ -17,7 +17,7 @@ Imports:
     igraph,
     jsonlite
 Remotes:
-    ropensci/rix@763b9cd
+    ropensci/rix
 RoxygenNote: 7.3.2
 Suggests:
     testthat (>= 3.0.0)
