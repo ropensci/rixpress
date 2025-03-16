@@ -23,6 +23,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Create this folder to silence warning
+        run: mkdir -p ~/.nix-defexpr/channels
+
       - name: Create .Renviron
         run: |
           echo "GITHUB_PAT=${{ secrets.GITHUB_TOKEN }}" >> ~/.Renviron
