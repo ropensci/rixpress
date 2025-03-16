@@ -42,10 +42,7 @@ jobs:
       - name: Convert dag
         run: |
           nix-shell -p graphviz --run "cd data-raw && dot -Tpng dag.dot -o dag.png"
-
-      - name: View Dag
-        run: |
-          nix-shell -p catimg --run "cd data-raw && catimg dag.png"
+          echo "![dag](data-raw/dag.png)" >> $GITHUB_STEP_SUMMARY
 
       - name: Make pipeline
         run: |
