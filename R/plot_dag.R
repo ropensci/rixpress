@@ -59,13 +59,15 @@ plot_dag <- function(json_path = "_rixpress/dag.json", return_igraph = FALSE) {
     value = shapes_vector[igraph::V(g)$name]
   )
 
-  plot(
-    g,
-    vertex.color = "lightblue",
-    vertex.size = 15,
-    edge.arrow.size = 0.5,
-    vertex.label.color = "black"
-  )
+  if (!return_igraph) {
+    plot(
+      g,
+      vertex.color = "lightblue",
+      vertex.size = 15,
+      edge.arrow.size = 0.5,
+      vertex.label.color = "black"
+    )
+  }
 
   if (return_igraph) {
     g
