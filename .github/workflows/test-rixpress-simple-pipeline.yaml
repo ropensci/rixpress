@@ -39,10 +39,12 @@ jobs:
       - name: Check generated default.nix
         run: cat data-raw/pipeline.nix
 
-      - name: Convert dag
+      - name: Convert dag to ASCII art
         run: |
-          nix-shell -p graphviz --run "cd data-raw && dot -Tpng dag.dot -o dag.png"
-          echo "![dag](data-raw/dag.png)" >> $GITHUB_STEP_SUMMARY
+          nix-shell -p graphviz -p chafa --run "cd data-raw && dot -Tpng dag.dot -o dag.png"
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          chafa --symbols braille --no-colors data-raw/dag.png >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Make pipeline
         run: |
