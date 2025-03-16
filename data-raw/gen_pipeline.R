@@ -25,4 +25,4 @@ png("dag.png")
 dag_obj <- plot_dag(return_igraph = FALSE)
 dev.off()
 
-igraph::write_graph(dag_obj, file = "dag.dot", format = "dot")
+#igraph::write_graph(dag_obj, file = "dag.dot", format = "dot")
