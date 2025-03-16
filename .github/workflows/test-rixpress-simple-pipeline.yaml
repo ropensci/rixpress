@@ -41,7 +41,7 @@ jobs:
 
       - name: Check DAG
         run: |
-          nix-shell --run "cd data-raw && Rscript -e \"library('igraph');readRDS('dag.rds')\""
+          nix-shell -p stacked-dag --run "cd data-raw && stacked-dag dot dag.dot"
 
       - name: Make pipeline
         run: |
