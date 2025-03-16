@@ -41,7 +41,7 @@ jobs:
 
       - name: Check DAG
         run: |
-          nix-shell -p stacked-dag --run "cd data-raw && stacked-dag dot dag.dot"
+          nix-shell -p haskellPackages.stacked-dag --run "cd data-raw && stacked-dag dot dag.dot"
 
       - name: Make pipeline
         run: |
