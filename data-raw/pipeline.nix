@@ -23,7 +23,7 @@ quarto-env = import ./quarto-env.nix;
     cp ${./_rixpress/quarto-env_libraries.R} libraries.R
     mkdir -p $out
   '';
-
+  
   # Function to create R derivations
   makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
     let rdsFile = "${name}.rds";
@@ -34,10 +34,10 @@ quarto-env = import ./quarto-env.nix;
       installPhase = ''
         cp ${rdsFile} $out/
       '';
-  };
+    };
 
   # Define all derivations
-  mtcars = makeRDerivation {
+    mtcars = makeRDerivation {
     name = "mtcars";
     src = ./mtcars.csv;
     buildInputs = defaultBuildInputs;
@@ -129,6 +129,6 @@ Rscript -e "
 
 in
 {
-  inherit mtcars mtcars_am mtcars_head mtcars_tail mtcars_mpg page;  # Make individual derivations available as attributes
-  default = allDerivations;  # Set the default target to build everything
+  inherit mtcars mtcars_am mtcars_head mtcars_tail mtcars_mpg page;
+  default = allDerivations;
 }

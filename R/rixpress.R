@@ -92,38 +92,69 @@ rixpress <- function(derivs, project_path) {
 #'   Typically, these objects are created by a function like `rxp_r`.
 #' @noRd
 gen_flat_pipeline <- function(derivs) {
-  # Extract derivation snippets and names from the derivs list
+  # Extract derivation snippets and names
   derivation_texts <- sapply(derivs, function(d) d$snippet)
   deriv_names <- sapply(derivs, function(d) d$name)
   nix_envs <- paste0(
     unique(sapply(derivs, function(d) d$nix_env)),
     collapse = "\n"
   )
-
-  # Combine all derivation snippets into a single string
   derivations_code <- paste(derivation_texts, collapse = "\n\n")
-  # Create a space-separated list of derivation names
   names_line <- paste(deriv_names, collapse = " ")
 
-  # Generate the Nix code as a string
-  pipeline_nix <- sprintf(
-    'let
-  %s
+  # Determine required functions
+  types <- sapply(derivs, function(d) d$type)
+  need_r <- any(types %in% c("rxp_r", "rxp_file", "rxp_quarto"))
+  need_py <- any(types %in% c("rxp_py"))
 
+  # Build function definitions
+  function_defs <- ""
+  if (need_r) {
+    function_defs <- paste0(
+      function_defs,
+      "
   # Function to create R derivations
   makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
-    let rdsFile = "${name}.rds";
+    let rdsFile = \"${name}.rds\";
     in defaultPkgs.stdenv.mkDerivation {
       inherit name src;
       dontUnpack = true;
       inherit buildInputs configurePhase buildPhase;
-      installPhase = \'\'
+      installPhase = ''
         cp ${rdsFile} $out/
-      \'\';
-  };
+      '';
+    };"
+    )
+  }
+  if (need_py) {
+    function_defs <- paste0(
+      function_defs,
+      "
+  # Function to create Python derivations
+  makePyDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
+    let
+      pickleFile = \"${name}.pkl\";
+    in
+      defaultPkgs.stdenv.mkDerivation {
+        inherit name src;
+        dontUnpack = true;
+        buildInputs = buildInputs;
+        inherit configurePhase buildPhase;
+        installPhase = ''
+          cp ${pickleFile} $out
+        '';
+      };"
+    )
+  }
+
+  # Generate Nix code
+  pipeline_nix <- sprintf(
+    'let
+  %s
+  %s
 
   # Define all derivations
-%s
+  %s
 
   # Generic default target that builds all derivations
   allDerivations = defaultPkgs.symlinkJoin {
@@ -133,11 +164,12 @@ gen_flat_pipeline <- function(derivs) {
 
 in
 {
-  inherit %s;  # Make individual derivations available as attributes
-  default = allDerivations;  # Set the default target to build everything
+  inherit %s;
+  default = allDerivations;
 }
 ',
     nix_envs,
+    function_defs,
     derivations_code,
     names_line,
     names_line
@@ -146,24 +178,57 @@ in
   strsplit(pipeline_nix, split = "\n")[[1]]
 }
 
-
 #' gen_pipeline Internal function used to finalize a flat pipeline
 #' @param dag_file A json file giving the names and relationships between derivations.
 #' @param flat_pipeline A flat pipeline, output of `gen_flat_elements()`.
 #' @noRd
 gen_pipeline <- function(dag_file, flat_pipeline) {
   dag <- jsonlite::read_json(dag_file)
-  result_pipeline <- flat_pipeline # copy to work on
+  result_pipeline <- flat_pipeline # Copy to work on
 
   for (deriv in dag$derivations) {
-    # Skip derivations with no dependencies
-    if (any(length(deriv$depends) == 0 | deriv$type == "rxp_quarto")) next
+    # Skip derivations with no dependencies or of type "rxp_quarto"
+    if (length(deriv$depends) == 0 || deriv$type == "rxp_quarto") next
 
     deriv_name <- as.character(deriv$deriv_name[1])
     deps <- deriv$depends
+    type <- deriv$type[1]
 
-    # Locate the derivation block by matching a line that starts with the derivation name
-    block_pattern <- paste0("^\\s*", deriv_name, " = makeRDerivation \\{")
+    # Determine the maker and script command based on type
+    if (type == "rxp_r") {
+      maker <- "makeRDerivation"
+      script_cmd <- "Rscript -e \""
+      load_func <- function(dep, indentation) {
+        paste0(indentation, dep, " <- readRDS('${", dep, "}/", dep, ".rds')")
+      }
+    } else if (type == "rxp_py") {
+      maker <- "makePyDerivation"
+      script_cmd <- "python -c \""
+      load_func <- function(deps, indentation) {
+        c(
+          paste0(indentation, "import pickle"),
+          unlist(lapply(deps, function(dep) {
+            c(
+              paste0(
+                indentation,
+                "with open('${",
+                dep,
+                "}/",
+                dep,
+                ".pkl', 'rb') as f:"
+              ),
+              paste0(indentation, "    ", dep, " = pickle.load(f)")
+            )
+          }))
+        )
+      }
+    } else {
+      warning(paste("Unsupported type for derivation", deriv_name))
+      next
+    }
+
+    # Locate the derivation block
+    block_pattern <- paste0("^\\s*", deriv_name, " = ", maker, " \\{")
     start_idx <- grep(block_pattern, result_pipeline)
     if (length(start_idx) == 0) {
       warning(paste("Derivation", deriv_name, "not found"))
@@ -171,7 +236,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     }
     start_idx <- start_idx[1]
 
-    # Find the end of the block: the first line after start_idx that starts with "};"
+    # Find the end of the block
     block_end_candidates <- grep("^\\s*};", result_pipeline)
     block_end_idx <- block_end_candidates[block_end_candidates > start_idx][1]
     if (is.na(block_end_idx)) {
@@ -179,10 +244,10 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
       next
     }
 
-    # Restrict our search to the lines in this derivation block
+    # Extract block lines
     block_lines <- result_pipeline[start_idx:block_end_idx]
 
-    # Locate the buildPhase line within the block
+    # Locate the buildPhase line
     build_phase_local_idx <- grep("buildPhase = ''", block_lines)
     if (length(build_phase_local_idx) == 0) {
       warning(paste("buildPhase not found for", deriv_name))
@@ -190,34 +255,32 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     }
     build_phase_idx <- start_idx + build_phase_local_idx[1] - 1
 
-    # Within the block, search for the Rscript line after the buildPhase line
+    # Search for the script command line
     sub_block <- block_lines[build_phase_local_idx[1]:length(block_lines)]
-    rscript_local_idx <- grep("Rscript -e \"", sub_block, fixed = TRUE)
-    if (length(rscript_local_idx) == 0) {
-      warning(paste("Rscript not found in buildPhase for", deriv_name))
+    script_local_idx <- grep(script_cmd, sub_block, fixed = TRUE)
+    if (length(script_local_idx) == 0) {
+      warning(paste("Script command not found in buildPhase for", deriv_name))
       next
     }
-    rscript_idx <- build_phase_idx + rscript_local_idx[1]
+    script_idx <- build_phase_idx + script_local_idx[1]
 
-    # Determine indentation from the line immediately after the Rscript line
-    if (rscript_idx + 1 <= length(result_pipeline)) {
-      first_r_line <- result_pipeline[rscript_idx + 1]
-      indentation <- sub("^([[:space:]]*).*", "\\1", first_r_line)
+    # Determine indentation
+    if (script_idx + 1 <= length(result_pipeline)) {
+      first_code_line <- result_pipeline[script_idx + 1]
+      indentation <- sub("^([[:space:]]*).*", "\\1", first_code_line)
     } else {
-      indentation <- "        " # fallback indentation
+      indentation <- "        " # Fallback indentation
     }
 
-    # Generate a readRDS call for each dependency
-    readRDS_lines <- sapply(deps, function(dep) {
-      paste0(indentation, dep, " <- readRDS('${", dep, "}/", dep, ".rds')")
-    })
+    # Generate loading lines
+    if (type == "rxp_r") {
+      load_lines <- sapply(deps, function(dep) load_func(dep, indentation))
+    } else if (type == "rxp_py") {
+      load_lines <- load_func(deps, indentation)
+    }
 
-    # Insert the generated readRDS lines right after the Rscript line in the block
-    result_pipeline <- append(
-      result_pipeline,
-      readRDS_lines,
-      after = rscript_idx
-    )
+    # Insert the loading lines after the script command line
+    result_pipeline <- append(result_pipeline, load_lines, after = script_idx)
   }
 
   result_pipeline
