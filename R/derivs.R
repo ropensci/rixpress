@@ -252,3 +252,79 @@ rxp_file <- function(name, path, read_function, nix_env = "default.nix") {
     nix_env = nix_code
   )
 }
+
+#' Create a Nix derivation for Python code execution
+#'
+#' This function generates a Nix derivation that executes a given Python
+#' expression and serializes the result using Python's `pickle` module. The
+#' derivation is designed to work with Python environments defined in a
+#' `default.nix` file.
+#'
+#' @param name A symbol representing the name of the variable to be serialized
+#'   and the derivation name. It must be a valid Python variable name (e.g., no dots).
+#' @param py_expr A string containing the Python expression to be assigned to
+#'   the variable specified by `name`. The function will execute `<name> = <py_expr>`
+#'   in Python.
+#' @param nix_env The path to the Nix environment file (default: "default.nix").
+#'   This file should define the Python packages required for the derivation.
+#'
+#' @return A list containing the derivation name, the Nix derivation snippet,
+#'   the type of derivation ("rxp_py"), and the Nix environment setup code.
+#'
+#' @details The function generates a Nix derivation that:
+#'   - Loads Python packages from a `libraries.py` file (analogous to
+#'     `source('libraries.R')` in R).
+#'   - Executes the assignment `<name> = <py_expr>` in Python.
+#'   - Serializes the result using `pickle` and saves it to a file named
+#'     `<name>.pkl`.
+#'
+#'   The derivation relies on a placeholder `makePyDerivation` function, which
+#'   should be defined to configure the Python interpreter and dependencies.
+#'
+#' @examples
+#' # Generate a derivation that assigns 42 to 'my_result' and pickles it
+#' rxp_py(my_result, "42")
+#' # The generated Python code will be:
+#' # exec(open('libraries.py').read()); exec('my_result = 42');
+#' # import pickle; with open('my_result.pkl', 'wb') as f:
+#' #     pickle.dump(globals()['my_result'], f)
+rxp_py <- function(name, py_expr, nix_env = "default.nix") {
+  out_name <- deparse(substitute(name))
+  py_expr_escaped <- gsub("'", "\\'", py_expr, fixed = TRUE)
+
+  build_phase <- sprintf(
+    "python -c \"exec(open('libraries.py').read()); exec('%s = %s'); import pickle; with open('%s.pkl', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
+    out_name,
+    py_expr_escaped,
+    out_name,
+    out_name
+  )
+
+  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
+  base <- sub("_nix$", "", base)
+
+  snippet <- sprintf(
+    "  %s = makePyDerivation {\n    name = \"%s\";\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
+    out_name,
+    out_name,
+    base,
+    base,
+    build_phase
+  )
+
+  nix_lines <- c(
+    paste0(base, " = import ./", nix_env, ";"),
+    paste0(base, "Pkgs = ", base, ".pkgs;"),
+    paste0(base, "Shell = ", base, ".shell;"),
+    paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
+    paste0(
+      base,
+      "ConfigurePhase = ''\n    cp ${./_rixpress/",
+      base,
+      "_libraries.py} libraries.py\n    mkdir -p $out\n  '';"
+    )
+  )
+  nix_code <- paste(nix_lines, collapse = "\n  ")
+
+  list(name = out_name, snippet = snippet, type = "rxp_py", nix_env = nix_code)
+}
