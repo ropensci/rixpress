@@ -2,12 +2,12 @@
 #'
 #' @param nix_file Path to the default.nix file (default: "default.nix")
 #' @param project_path Path to root of project, typically "."
-#' @return A script to load the libraries inside of derivations.
+#' @return An script to load the libraries inside of derivations.
 #' @noRd
-generate_libraries_from_nix <- function(nix_file, project_path) {
+generate_r_libraries_from_nix <- function(nix_file, project_path) {
   packages <- parse_rpkgs(nix_file, project_path)
   nix_file_name <- gsub("\\.nix", "", nix_file)
-  generate_libraries_script(
+  generate_r_libraries_script(
     packages,
     file.path(
       project_path,
@@ -24,10 +24,7 @@ generate_libraries_from_nix <- function(nix_file, project_path) {
 #'   default `"_rixpress/libraries.R"`
 #' @return A script to load the libraries inside of derivations.
 #' @noRd
-generate_libraries_script <- function(
-  packages,
-  outfile
-) {
+generate_r_libraries_script <- function(packages, outfile) {
   library_lines <- paste0("library(", packages, ")")
   writeLines(library_lines, outfile)
 }

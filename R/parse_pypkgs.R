@@ -1,3 +1,39 @@
+#' Generate a Python script with import statements from a default.nix file
+#'
+#' @param nix_file Path to the default.nix file (default: "default.nix")
+#' @param project_path Path to root of project, typically "."
+#' @return A Python script to import the libraries inside of derivations
+#' @noRd
+generate_py_libraries_from_nix <- function(nix_file, project_path) {
+  packages <- parse_pypkgs(nix_file, project_path)
+  nix_file_name <- gsub("\\.nix", "", nix_file)
+  generate_py_libraries_script(
+    packages,
+    file.path(
+      project_path,
+      "/_rixpress/",
+      paste0(nix_file_name, "_libraries.py")
+    )
+  )
+}
+
+#' Generate a Python script with import statements for Python packages
+#'
+#' @param packages List of Python package names
+#' @param outfile Path to the output file, we recommend to leave the
+#'   default `"_rixpress/libraries.py"`
+#' @return A Python script with import statements for the specified packages
+#' @noRd
+generate_py_libraries_script <- function(packages, outfile) {
+  # pip and ipykernel are added automatically by rix, because
+  # they're needed for Positron, and likely other editors
+  # but in the context of building derivations non-interactively
+  # with rixpress, these are not needed
+  packages <- packages[!(packages %in% c("pip", "ipykernel"))]
+  import_lines <- paste0("import ", packages)
+  writeLines(import_lines, outfile)
+}
+
 #' Extract Python packages from a default.nix file
 #'
 #' @param nix_file Path to the default.nix file (default: "default.nix")
@@ -34,7 +70,11 @@ parse_pypkgs <- function(nix_file, project_path) {
 
   # Remove the "inherit (pkgs.python312Packages)" phrase if present
   # Use a regex to match any Python version (e.g., python311Packages, python312Packages)
-  block_lines <- gsub("inherit \\(pkgs\\.python[0-9]+Packages\\)", "", block_lines)
+  block_lines <- gsub(
+    "inherit \\(pkgs\\.python[0-9]+Packages\\)",
+    "",
+    block_lines
+  )
 
   # Remove semicolon characters
   block_lines <- gsub(";", "", block_lines)
@@ -48,43 +88,4 @@ parse_pypkgs <- function(nix_file, project_path) {
   # Unlike R, Python package names typically don't need transformation (e.g., _ to .)
   # Return the packages as-is
   packages
-}
-
-#' Generate a Python script with import statements for Python packages
-#'
-#' @param packages List of Python package names
-#' @param outfile Path to the output file, typically in "_rixpress/"
-#' @return A Python script with import statements for the specified packages
-#' @noRd
-generate_python_libraries_script <- function(packages, outfile) {
-  # Generate "import package_name" for each package
-  import_lines <- paste0("import ", packages)
-  
-  # Write the import statements to the output file
-  writeLines(import_lines, outfile)
-}
-
-#' Generate a Python script with import statements from a default.nix file
-#'
-#' @param nix_file Path to the default.nix file (default: "default.nix")
-#' @param project_path Path to root of project, typically "."
-#' @return A Python script to import the libraries inside of derivations
-#' @noRd
-generate_python_libraries_from_nix <- function(nix_file, project_path) {
-  # Extract the Python packages from the nix file
-  packages <- parse_pypkgs(nix_file, project_path)
-  
-  # Determine the output file name based on the nix_file
-  nix_file_name <- gsub("\\.nix", "", nix_file)
-  output_file <- file.path(
-    project_path,
-    "_rixpress",
-    paste0(nix_file_name, "_libraries.py")
-  )
-  
-  # Ensure the _rixpress directory exists
-  dir.create(dirname(output_file), showWarnings = FALSE, recursive = TRUE)
-  
-  # Generate the Python script
-  generate_python_libraries_script(packages, output_file)
 }
