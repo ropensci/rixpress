@@ -15,7 +15,7 @@ tempdir_default2 = import ./tempdir/default2.nix;
     cp ${./_rixpress/tempdir_default2_libraries.R} libraries.R
     mkdir -p $out
   '';
-
+  
   # Function to create R derivations
   makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
     let rdsFile = "${name}.rds";
@@ -26,10 +26,10 @@ tempdir_default2 = import ./tempdir/default2.nix;
       installPhase = ''
         cp ${rdsFile} $out/
       '';
-  };
+    };
 
   # Define all derivations
-  mtcars_am = makeRDerivation {
+    mtcars_am = makeRDerivation {
     name = "mtcars_am";
     buildInputs = defaultBuildInputs;
     configurePhase = defaultConfigurePhase;
@@ -61,6 +61,6 @@ tempdir_default2 = import ./tempdir/default2.nix;
 
 in
 {
-  inherit mtcars_am mtcars_head;  # Make individual derivations available as attributes
-  default = allDerivations;  # Set the default target to build everything
+  inherit mtcars_am mtcars_head;
+  default = allDerivations;
 }
