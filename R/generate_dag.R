@@ -92,16 +92,20 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
       # Extract the content inside the python -c quotes (allowing for multiple lines)
       m <- regexec('python -c \\"([\\s\\S]*?)\\"', snippet, perl = TRUE)
       match <- regmatches(snippet, m)
-      block <- if (length(match[[1]]) > 1) match[[1]][2] else ""
-      # Split the block into lines
-      lines <- unlist(strsplit(block, "\n"))
-      # Find lines that load pickled objects, e.g., with open('${dep}/dep.pkl', 'rb') as f:
-      load_pattern <- "with open\\('\\$\\{(\\w+)\\}/\\1\\.pkl', 'rb'\\) as f:"
-      load_lines <- grep(load_pattern, lines, value = TRUE)
-      # Extract the dependency names
-      deps <- unique(sub(load_pattern, "\\1", load_lines))
-      # Filter to only those previously defined
-      deps <- intersect(deps, defined[1:(i - 1)])
+
+      derivs_to_consider <- Filter(
+        function(x) `!=`(x, name),
+        all_derivs_names
+      )
+
+      deps <- sapply(
+        derivs_to_consider,
+        function(name) any(grepl(paste0("\\b", name, "\\b"), unlist(match)))
+      )
+
+      # Only keep deps
+      deps <- Filter(isTRUE, deps)
+      deps <- names(deps)
     } else {
       stop("Unknown derivation type: ", type)
     }
