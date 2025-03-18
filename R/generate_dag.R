@@ -11,6 +11,8 @@
 generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
   dir.create(dirname(output_file), recursive = TRUE, showWarnings = FALSE)
 
+  all_derivs_names <- sapply(rxp_list, function(x) (x$name))
+
   n <- length(rxp_list)
   dag <- vector("list", n)
   defined <- character(n)
@@ -22,17 +24,24 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
 
     if (type == "rxp_r") {
       snippet <- d$snippet
-      # Extract the content inside the Rscript -e quotes (allowing for multiple lines)
+      # Extract the content inside the Rscript -e quotes
+      # (allowing for multiple lines)
       m <- regexec('Rscript -e \\"([\\s\\S]*?)\\"', snippet, perl = TRUE)
       match <- regmatches(snippet, m)
-      block <- if (length(match[[1]]) > 1) match[[1]][2] else ""
-      # Split the block into lines and find the first assignment line
-      lines <- unlist(strsplit(block, "\n"))
-      assignment_lines <- grep("<-", lines, value = TRUE)
-      expr <- if (length(assignment_lines) > 0) trimws(assignment_lines[1]) else
-        ""
-      # Identify dependencies by finding all names in the expression that match previously defined derivations
-      deps <- intersect(all.names(parse(text = expr)), defined[1:(i - 1)])
+
+      derivs_to_consider <- Filter(
+        function(x) `!=`(x, name),
+        all_derivs_names
+      )
+
+      deps <- sapply(
+        derivs_to_consider,
+        function(name) any(grepl(paste0("\\b", name, "\\b"), unlist(match)))
+      )
+
+      # Only keep deps
+      deps <- Filter(isTRUE, deps)
+      deps <- names(deps)
     } else if (type == "rxp_quarto") {
       # Try both .qmd and .Qmd extensions
       qmd_file <- paste0(name, ".qmd")
