@@ -29,19 +29,23 @@ let
     buildInputs = defaultBuildInputs;
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
-      python -c "exec(open('libraries.py').read()); exec('diabetes_raw = sklearn.datasets.load_diabetes()'); import pickle; with open('diabetes_raw.pkl', 'wb') as f: pickle.dump(globals()['diabetes_raw'], f)"
+      python -c "
+exec(open('libraries.py').read())
+exec('diabetes_raw = sklearn.datasets.load_diabetes()')
+with open('diabetes_raw.pkl', 'wb') as f: pickle.dump(globals()['diabetes_raw'], f)"
     '';
   };
 
-  test_data_head = makePyDerivation {
-    name = "test_data_head";
+  diabetes = makePyDerivation {
+    name = "diabetes";
     buildInputs = defaultBuildInputs;
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
-  import pickle
-  with open('${diabetes_raw}/diabetes_raw.pkl', 'rb') as f:
-      diabetes_raw = pickle.load(f)
-      python -c "exec(open('libraries.py').read()); exec('test_data_head = pandas.DataFrame(diabetes.data, columns=diabetes_raw.feature_names)'); import pickle; with open('test_data_head.pkl', 'wb') as f: pickle.dump(globals()['test_data_head'], f)"
+      python -c "
+exec(open('libraries.py').read())
+with open('${diabetes_raw}/diabetes_raw.pkl', 'rb') as f: diabetes_raw = pickle.load(f)
+exec('diabetes = pandas.DataFrame(diabetes_raw.data, columns=diabetes_raw.feature_names)')
+with open('diabetes.pkl', 'wb') as f: pickle.dump(globals()['diabetes'], f)"
     '';
   };
 
@@ -50,18 +54,49 @@ let
     buildInputs = defaultBuildInputs;
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
-      python -c "exec(open('libraries.py').read()); exec('diabetes_head = diabetes.head()'); import pickle; with open('diabetes_head.pkl', 'wb') as f: pickle.dump(globals()['diabetes_head'], f)"
+      python -c "
+exec(open('libraries.py').read())
+with open('${diabetes}/diabetes.pkl', 'rb') as f: diabetes = pickle.load(f)
+exec('diabetes_head = diabetes.head()')
+with open('diabetes_head.pkl', 'wb') as f: pickle.dump(globals()['diabetes_head'], f)"
+    '';
+  };
+
+  diabetes_tail = makePyDerivation {
+    name = "diabetes_tail";
+    buildInputs = defaultBuildInputs;
+    configurePhase = defaultConfigurePhase;
+    buildPhase = ''
+      python -c "
+exec(open('libraries.py').read())
+with open('${diabetes}/diabetes.pkl', 'rb') as f: diabetes = pickle.load(f)
+exec('diabetes_tail = diabetes.tail()')
+with open('diabetes_tail.pkl', 'wb') as f: pickle.dump(globals()['diabetes_tail'], f)"
+    '';
+  };
+
+  concat_diabetes = makePyDerivation {
+    name = "concat_diabetes";
+    buildInputs = defaultBuildInputs;
+    configurePhase = defaultConfigurePhase;
+    buildPhase = ''
+      python -c "
+exec(open('libraries.py').read())
+with open('${diabetes_head}/diabetes_head.pkl', 'rb') as f: diabetes_head = pickle.load(f)
+with open('${diabetes_tail}/diabetes_tail.pkl', 'rb') as f: diabetes_tail = pickle.load(f)
+exec('concat_diabetes = pandas.concat([diabetes_head, diabetes_tail], ignore_index=True)')
+with open('concat_diabetes.pkl', 'wb') as f: pickle.dump(globals()['concat_diabetes'], f)"
     '';
   };
 
   # Generic default target that builds all derivations
   allDerivations = defaultPkgs.symlinkJoin {
     name = "all-derivations";
-    paths = with builtins; attrValues { inherit diabetes_raw test_data_head diabetes_head; };
+    paths = with builtins; attrValues { inherit diabetes_raw diabetes diabetes_head diabetes_tail concat_diabetes; };
   };
 
 in
 {
-  inherit diabetes_raw test_data_head diabetes_head;
+  inherit diabetes_raw diabetes diabetes_head diabetes_tail concat_diabetes;
   default = allDerivations;
 }

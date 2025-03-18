@@ -293,7 +293,10 @@ rxp_py <- function(name, py_expr, nix_env = "default.nix") {
   py_expr_escaped <- gsub("'", "\\'", py_expr, fixed = TRUE)
 
   build_phase <- sprintf(
-    "python -c \"exec(open('libraries.py').read()); exec('%s = %s'); import pickle; with open('%s.pkl', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
+    "python -c \"
+exec(open('libraries.py').read())
+exec('%s = %s')
+with open('%s.pkl', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
     out_name,
     py_expr_escaped,
     out_name,

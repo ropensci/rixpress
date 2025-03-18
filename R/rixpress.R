@@ -205,22 +205,20 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
       maker <- "makePyDerivation"
       script_cmd <- "python -c \""
       load_func <- function(deps, indentation) {
-        c(
-          paste0(indentation, "import pickle"),
-          unlist(lapply(deps, function(dep) {
-            c(
-              paste0(
-                indentation,
-                "with open('${",
-                dep,
-                "}/",
-                dep,
-                ".pkl', 'rb') as f:"
-              ),
-              paste0(indentation, "    ", dep, " = pickle.load(f)")
+        # Generate unindented loading lines without import pickle
+        unlist(lapply(deps, function(dep) {
+          c(
+            paste0(
+              "with open('${",
+              dep,
+              "}/",
+              dep,
+              ".pkl', 'rb') as f: ",
+              dep,
+              " = pickle.load(f)"
             )
-          }))
-        )
+          )
+        }))
       }
     } else {
       warning(paste("Unsupported type for derivation", deriv_name))
@@ -264,26 +262,26 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     }
     script_idx <- build_phase_idx + script_local_idx[1]
 
-    # Determine indentation
-    if (script_idx + 1 <= length(result_pipeline)) {
-      first_code_line <- result_pipeline[script_idx + 1]
-      indentation <- sub("^([[:space:]]*).*", "\\1", first_code_line)
-    } else {
-      indentation <- "        " # Fallback indentation
-    }
-
-    # Generate loading lines
+    # Generate loading lines (no indentation for Python)
     if (type == "rxp_r") {
+      # Keep indentation for R
+      if (script_idx + 1 <= length(result_pipeline)) {
+        first_code_line <- result_pipeline[script_idx + 1]
+        indentation <- sub("^([[:space:]]*).*", "\\1", first_code_line)
+      } else {
+        indentation <- "        " # Fallback indentation
+      }
       load_lines <- sapply(deps, function(dep) load_func(dep, indentation))
     } else if (type == "rxp_py") {
-      load_lines <- load_func(deps, indentation)
+      # No indentation for Python
+      load_lines <- load_func(deps, "")
     }
 
     # Insert the loading lines after the script command line
     result_pipeline <- append(
       result_pipeline,
       load_lines,
-      after = build_phase_idx
+      after = build_phase_idx + 2
     )
   }
 

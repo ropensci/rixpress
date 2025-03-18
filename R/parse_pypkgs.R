@@ -35,6 +35,7 @@ generate_py_libraries_script <- function(packages, outfile) {
   packages <- packages[!(packages %in% c("pip", "ipykernel"))]
   # Include pickle to serialize and unserialize objects
   packages <- sort(c("pickle", packages))
+  packages <- gsub("scikit-learn", "sklearn", packages)
   import_lines <- paste0("import ", packages)
   writeLines(import_lines, outfile)
 }

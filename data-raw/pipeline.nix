@@ -56,9 +56,9 @@ Rscript -e "
     buildInputs = default2BuildInputs;
     configurePhase = default2ConfigurePhase;
     buildPhase = ''
-        mtcars <- readRDS('${mtcars}/mtcars.rds')
       Rscript -e "
         source('libraries.R')
+        mtcars <- readRDS('${mtcars}/mtcars.rds')
         mtcars_am <- filter(mtcars, am == 1)
         saveRDS(mtcars_am, 'mtcars_am.rds')"
     '';
@@ -69,9 +69,9 @@ Rscript -e "
     buildInputs = defaultBuildInputs;
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
-        mtcars_am <- readRDS('${mtcars_am}/mtcars_am.rds')
       Rscript -e "
         source('libraries.R')
+        mtcars_am <- readRDS('${mtcars_am}/mtcars_am.rds')
         mtcars_head <- head(mtcars_am)
         saveRDS(mtcars_head, 'mtcars_head.rds')"
     '';
@@ -82,9 +82,9 @@ Rscript -e "
     buildInputs = defaultBuildInputs;
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
-        mtcars_head <- readRDS('${mtcars_head}/mtcars_head.rds')
       Rscript -e "
         source('libraries.R')
+        mtcars_head <- readRDS('${mtcars_head}/mtcars_head.rds')
         mtcars_tail <- tail(mtcars_head)
         saveRDS(mtcars_tail, 'mtcars_tail.rds')"
     '';
@@ -95,9 +95,9 @@ Rscript -e "
     buildInputs = default2BuildInputs;
     configurePhase = default2ConfigurePhase;
     buildPhase = ''
-        mtcars_tail <- readRDS('${mtcars_tail}/mtcars_tail.rds')
       Rscript -e "
         source('libraries.R')
+        mtcars_tail <- readRDS('${mtcars_tail}/mtcars_tail.rds')
         mtcars_mpg <- select(mtcars_tail, mpg)
         saveRDS(mtcars_mpg, 'mtcars_mpg.rds')"
     '';
