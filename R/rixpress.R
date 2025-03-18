@@ -280,7 +280,11 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     }
 
     # Insert the loading lines after the script command line
-    result_pipeline <- append(result_pipeline, load_lines, after = script_idx)
+    result_pipeline <- append(
+      result_pipeline,
+      load_lines,
+      after = build_phase_idx
+    )
   }
 
   result_pipeline

@@ -38,6 +38,9 @@ let
     buildInputs = defaultBuildInputs;
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
+  import pickle
+  with open('${test_data}/test_data.pkl', 'rb') as f:
+      test_data = pickle.load(f)
       python -c "exec(open('libraries.py').read()); exec('test_data_head = test_data.head()'); import pickle; with open('test_data_head.pkl', 'wb') as f: pickle.dump(globals()['test_data_head'], f)"
     '';
   };

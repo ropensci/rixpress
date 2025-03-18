@@ -8,6 +8,8 @@ rxp_list <- list(d0, d1)
 
 rixpress(rxp_list, project_path = ".")
 
+plot_dag()
+
 dag_obj <- plot_dag(return_igraph = TRUE)
 
 dag_obj <- set_vertex_attr(dag_obj, "label", value = V(dag_obj)$name)

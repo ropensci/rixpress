@@ -6,6 +6,9 @@
 #' @noRd
 generate_r_libraries_from_nix <- function(nix_file, project_path) {
   packages <- parse_rpkgs(nix_file, project_path)
+  if (is.null(packages)) {
+    return(NULL)
+  }
   nix_file_name <- gsub("\\.nix", "", nix_file)
   generate_r_libraries_script(
     packages,
