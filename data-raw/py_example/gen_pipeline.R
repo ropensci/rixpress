@@ -1,10 +1,14 @@
 library(rixpress)
 library(igraph)
 
-d0 <- rxp_py(test_data, 'pd.util.testing.makeDataFrame()')
-d1 <- rxp_py(test_data_head, 'test_data.head()')
+d0 <- rxp_py(diabetes_raw, 'sklearn.datasets.load_diabetes()')
+d1 <- rxp_py(
+  test_data_head,
+  'pandas.DataFrame(diabetes.data, columns=diabetes_raw.feature_names)'
+)
+d2 <- rxp_py(diabetes_head, 'diabetes.head()')
 
-rxp_list <- list(d0, d1)
+rxp_list <- list(d0, d1, d2)
 
 rixpress(rxp_list, project_path = ".")
 

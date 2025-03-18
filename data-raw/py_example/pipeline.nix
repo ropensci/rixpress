@@ -24,12 +24,12 @@ let
       };
 
   # Define all derivations
-    test_data = makePyDerivation {
-    name = "test_data";
+    diabetes_raw = makePyDerivation {
+    name = "diabetes_raw";
     buildInputs = defaultBuildInputs;
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
-      python -c "exec(open('libraries.py').read()); exec('test_data = pd.util.testing.makeDataFrame()'); import pickle; with open('test_data.pkl', 'wb') as f: pickle.dump(globals()['test_data'], f)"
+      python -c "exec(open('libraries.py').read()); exec('diabetes_raw = sklearn.datasets.load_diabetes()'); import pickle; with open('diabetes_raw.pkl', 'wb') as f: pickle.dump(globals()['diabetes_raw'], f)"
     '';
   };
 
@@ -39,20 +39,29 @@ let
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
   import pickle
-  with open('${test_data}/test_data.pkl', 'rb') as f:
-      test_data = pickle.load(f)
-      python -c "exec(open('libraries.py').read()); exec('test_data_head = test_data.head()'); import pickle; with open('test_data_head.pkl', 'wb') as f: pickle.dump(globals()['test_data_head'], f)"
+  with open('${diabetes_raw}/diabetes_raw.pkl', 'rb') as f:
+      diabetes_raw = pickle.load(f)
+      python -c "exec(open('libraries.py').read()); exec('test_data_head = pandas.DataFrame(diabetes.data, columns=diabetes_raw.feature_names)'); import pickle; with open('test_data_head.pkl', 'wb') as f: pickle.dump(globals()['test_data_head'], f)"
+    '';
+  };
+
+  diabetes_head = makePyDerivation {
+    name = "diabetes_head";
+    buildInputs = defaultBuildInputs;
+    configurePhase = defaultConfigurePhase;
+    buildPhase = ''
+      python -c "exec(open('libraries.py').read()); exec('diabetes_head = diabetes.head()'); import pickle; with open('diabetes_head.pkl', 'wb') as f: pickle.dump(globals()['diabetes_head'], f)"
     '';
   };
 
   # Generic default target that builds all derivations
   allDerivations = defaultPkgs.symlinkJoin {
     name = "all-derivations";
-    paths = with builtins; attrValues { inherit test_data test_data_head; };
+    paths = with builtins; attrValues { inherit diabetes_raw test_data_head diabetes_head; };
   };
 
 in
 {
-  inherit test_data test_data_head;
+  inherit diabetes_raw test_data_head diabetes_head;
   default = allDerivations;
 }

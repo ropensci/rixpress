@@ -33,6 +33,8 @@ generate_py_libraries_script <- function(packages, outfile) {
   # but in the context of building derivations non-interactively
   # with rixpress, these are not needed
   packages <- packages[!(packages %in% c("pip", "ipykernel"))]
+  # Include pickle to serialize and unserialize objects
+  packages <- sort(c("pickle", packages))
   import_lines <- paste0("import ", packages)
   writeLines(import_lines, outfile)
 }

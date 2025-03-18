@@ -3,7 +3,8 @@ let
  
   pypkgs = builtins.attrValues {
     inherit (pkgs.python312Packages) 
-      pandas;
+      pandas
+      scikit-learn;
   };
   
   system_packages = builtins.attrValues {
