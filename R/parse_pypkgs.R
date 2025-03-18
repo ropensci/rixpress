@@ -47,7 +47,7 @@ parse_pypkgs <- function(nix_file, project_path) {
   # Find the starting index of the pypkgs block
   start_idx <- grep("^\\s*pypkgs\\s*=\\s*builtins\\.attrValues\\s*\\{", lines)
   if (length(start_idx) == 0) {
-    stop("pypkgs block not found in the file")
+    return(NULL)
   }
   start_idx <- start_idx[1]
 

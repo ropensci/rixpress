@@ -42,7 +42,7 @@ parse_rpkgs <- function(nix_file, project_path) {
   # Find the starting index of the rpkgs block
   start_idx <- grep("^\\s*rpkgs\\s*=\\s*builtins\\.attrValues\\s*\\{", lines)
   if (length(start_idx) == 0) {
-    stop("rpkgs block not found in the file")
+    return(NULL)
   }
   start_idx <- start_idx[1]
 
