@@ -186,10 +186,12 @@ rxp_quarto <- function(
 rxp_py <- function(name, py_expr, nix_env = "default.nix") {
   out_name <- deparse(substitute(name))
 
+  py_expr <- gsub("'", "\\'", py_expr, fixed = TRUE) 
+
   build_phase <- sprintf(
     "python -c \"
 exec(open('libraries.py').read())
-exec('''%s''')
+exec('%s = %s')
 with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
     out_name,
     py_expr,
@@ -288,12 +290,14 @@ rxp_file_common <- function(out_name, path, nix_env, build_phase, type, derivati
       "_libraries.", library_ext, "} libraries.", library_ext, "\n    mkdir -p $out\n  '';"
     )
   )
-  
+
+  nix_code <- paste(nix_lines, collapse = "\n  ")
+
   list(
     name = out_name,
     snippet = snippet,
     type = type,
-    nix_env = nix_env
+    nix_env = nix_code
   )
 }
 
@@ -344,6 +348,8 @@ saveRDS(data, '%s.rds')\"",
 rxp_py_file <- function(name, path, read_function, nix_env = "default.nix") {
   out_name <- deparse(substitute(name))
 
+  read_function <- gsub("'", "\\'", read_function, fixed = TRUE) 
+
   if (!is.character(read_function) || length(read_function) != 1) {
     stop("read_function must be a single character string")
   }
@@ -353,7 +359,7 @@ rxp_py_file <- function(name, path, read_function, nix_env = "default.nix") {
 python -c \"
 exec(open('libraries.py').read())
 file_path = 'input_file'
-data = eval('''%s''')(file_path)
+data = eval('%s')(file_path)
 import pickle
 import os
 out_dir = os.environ['out']

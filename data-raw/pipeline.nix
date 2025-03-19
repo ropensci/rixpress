@@ -45,9 +45,9 @@ quarto-env = import ./quarto-env.nix;
     buildPhase = ''
       cp $src input_file
 Rscript -e "
-        source('libraries.R')
-        data <- do.call(function(x) (read.csv(file = x, sep = '|')), list('input_file'))
-        saveRDS(data, 'mtcars.rds')"
+source('libraries.R')
+data <- do.call(function(x) (read.csv(file = x, sep = '|')), list('input_file'))
+saveRDS(data, 'mtcars.rds')"
     '';
   };
 

@@ -2,17 +2,19 @@
 % Please edit documentation in R/deriv_read_load.R
 \name{rxp_load}
 \alias{rxp_load}
-\title{Load a derivation's output into global environment}
+\title{Load a derivation's output into the global environment}
 \usage{
 rxp_load(derivation_name, result_path = "_rixpress")
 }
 \arguments{
 \item{derivation_name}{Character, the name of the derivation.}
+
+\item{result_path}{The folder containing the pipelines' outputs.}
 }
 \value{
 None. The derivation object is assigned to the
 global environment with the name \code{derivation_name}.
 }
 \description{
-Load a derivation's output into global environment
+Load a derivation's output into the global environment
 }
