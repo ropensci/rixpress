@@ -3,6 +3,8 @@
 #'   output of the function expression
 #' @param name Symbol, name of the derivation.
 #' @param expr R code to generate the expression.
+#' @param additional_files Character vector, additional files to include. These
+#'   are the files that contain custom functions required for this derivation.
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
 #' @details At a basic level, `rxp_r(mtcars_am, filter(mtcars, am == 1))`
 #'   is equivalent to `mtcars <- filter(mtcars, am == 1)`. `rxp_r()` generates
@@ -14,7 +16,12 @@
 #'   `snippet`, the Nix boilerplate code, `type`, and `nix_env`.
 #' @examples rxp_r(mtcars_am, filter(mtcars, am == 1))
 #' @export
-rxp_r <- function(name, expr, nix_env = "default.nix") {
+rxp_r <- function(
+  name,
+  expr,
+  additional_files = character(0),
+  nix_env = "default.nix"
+) {
   out_name <- deparse(substitute(name))
   expr_str <- deparse(substitute(expr))
   expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
@@ -56,7 +63,13 @@ rxp_r <- function(name, expr, nix_env = "default.nix") {
   )
   nix_code <- paste(nix_lines, collapse = "\n  ")
 
-  list(name = out_name, snippet = snippet, type = "rxp_r", nix_env = nix_code)
+  list(
+    name = out_name,
+    snippet = snippet,
+    type = "rxp_r",
+    additional_files = additional_files,
+    nix_env = nix_code
+  )
 }
 
 #' Render a Quarto document as a Nix derivation
@@ -154,6 +167,7 @@ rxp_quarto <- function(
     name = out_name,
     snippet = snippet,
     type = "rxp_quarto",
+    additional_files = additional_files,
     nix_env = nix_code
   )
 }
@@ -166,15 +180,18 @@ rxp_quarto <- function(
 #' `default.nix` file.
 #'
 #' @param name A symbol representing the name of the variable to be serialized
-#'   and the derivation name. It must be a valid Python variable name (e.g., no dots).
+#'   and the derivation name.
+#'   It must be a valid Python variable name (e.g., no dots).
 #' @param py_expr A string containing the Python expression to be assigned to
-#'   the variable specified by `name`. The function will execute `<name> = <py_expr>`
-#'   in Python.
+#'   the variable specified by `name`.
+#'   The function will execute `<name> = <py_expr>` in Python.
+#' @param additional_files Character vector, additional files to include. These
+#'   are the files that contain custom functions required for this derivation.
 #' @param nix_env The path to the Nix environment file (default: "default.nix").
-#'   This file should define the Python packages required for the derivation.
 #'
 #' @return A list containing the derivation name, the Nix derivation snippet,
-#'   the type of derivation ("rxp_py"), and the Nix environment setup code.
+#'   the type of derivation ("rxp_py"), potential additional files,
+#'   and the Nix environment setup code.
 #'
 #' @examples
 #' # Generate a derivation that assigns 42 to 'my_result' and pickles it
@@ -183,16 +200,21 @@ rxp_quarto <- function(
 #' # exec(open('libraries.py').read()); exec('my_result = 42');
 #' # import pickle; with open('my_result.pickle', 'wb') as f:
 #' #     pickle.dump(globals()['my_result'], f)
-rxp_py <- function(name, py_expr, nix_env = "default.nix") {
+rxp_py <- function(
+  name,
+  py_expr,
+  additional_files = character(0),
+  nix_env = "default.nix"
+) {
   out_name <- deparse(substitute(name))
 
-  py_expr <- gsub("'", "\\'", py_expr, fixed = TRUE) 
+  py_expr <- gsub("'", "\\'", py_expr, fixed = TRUE)
 
   build_phase <- sprintf(
     "python -c \"
-exec(open('libraries.py').read())
-exec('%s = %s')
-with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
+  exec(open('libraries.py').read())
+  exec('%s = %s')
+  with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
     out_name,
     py_expr,
     out_name,
@@ -225,7 +247,13 @@ with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
   )
   nix_code <- paste(nix_lines, collapse = "\n  ")
 
-  list(name = out_name, snippet = snippet, type = "rxp_py", nix_env = nix_code)
+  list(
+    name = out_name,
+    snippet = snippet,
+    type = "rxp_py",
+    additional_files = additional_files,
+    nix_env = nix_code
+  )
 }
 
 #' rxp_file_common Creates a Nix expression with shared logic for R and Python file reading.
@@ -238,7 +266,15 @@ with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
 #' @param derivation_func Character, the Nix derivation function ("makeRDerivation" or "makePyDerivation").
 #' @param library_ext Character, the library file extension ("R" or "py").
 #' @return A list with `name`, `snippet`, `type`, and `nix_env`.
-rxp_file_common <- function(out_name, path, nix_env, build_phase, type, derivation_func, library_ext) {
+rxp_file_common <- function(
+  out_name,
+  path,
+  nix_env,
+  build_phase,
+  type,
+  derivation_func,
+  library_ext
+) {
   # Handle source: URL or local file
   if (grepl("^https?://", path)) {
     hash <- tryCatch(
@@ -287,7 +323,11 @@ rxp_file_common <- function(out_name, path, nix_env, build_phase, type, derivati
       base,
       "ConfigurePhase = ''\n    cp ${./_rixpress/",
       base,
-      "_libraries.", library_ext, "} libraries.", library_ext, "\n    mkdir -p $out\n  '';"
+      "_libraries.",
+      library_ext,
+      "} libraries.",
+      library_ext,
+      "\n    mkdir -p $out\n  '';"
     )
   )
 
@@ -348,7 +388,7 @@ saveRDS(data, '%s.rds')\"",
 rxp_py_file <- function(name, path, read_function, nix_env = "default.nix") {
   out_name <- deparse(substitute(name))
 
-  read_function <- gsub("'", "\\'", read_function, fixed = TRUE) 
+  read_function <- gsub("'", "\\'", read_function, fixed = TRUE)
 
   if (!is.character(read_function) || length(read_function) != 1) {
     stop("read_function must be a single character string")
