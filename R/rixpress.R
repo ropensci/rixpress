@@ -133,7 +133,7 @@ gen_flat_pipeline <- function(derivs) {
   # Function to create Python derivations
   makePyDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
     let
-      pickleFile = \"${name}.pkl\";
+      pickleFile = \"${name}.pickle\";
     in
       defaultPkgs.stdenv.mkDerivation {
         inherit name src;
@@ -213,7 +213,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
               dep,
               "}/",
               dep,
-              ".pkl', 'rb') as f: ",
+              ".pickle', 'rb') as f: ",
               dep,
               " = pickle.load(f)"
             )
