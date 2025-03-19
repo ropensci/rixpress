@@ -104,8 +104,8 @@ gen_flat_pipeline <- function(derivs) {
 
   # Determine required functions
   types <- sapply(derivs, function(d) d$type)
-  need_r <- any(types %in% c("rxp_r", "rxp_file", "rxp_quarto"))
-  need_py <- any(types %in% c("rxp_py"))
+  need_r <- any(types %in% c("rxp_r", "rxp_r_file", "rxp_quarto"))
+  need_py <- any(types %in% c("rxp_py", "rxp_py_file"))
 
   # Build function definitions
   function_defs <- ""
