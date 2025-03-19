@@ -72,7 +72,7 @@ saveRDS(data, 'mtcars.rds')"
       Rscript -e "
         source('libraries.R')
         mtcars_am <- readRDS('${mtcars_am}/mtcars_am.rds')
-        mtcars_head <- head(mtcars_am)
+        mtcars_head <- my_head(mtcars_am)
         saveRDS(mtcars_head, 'mtcars_head.rds')"
     '';
   };

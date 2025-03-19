@@ -54,16 +54,16 @@ rixpress <- function(derivs, project_path) {
 
   writeLines(pipeline, "pipeline.nix")
 
-  nix_expressions_and_additional_files <- sapply(
+  nix_expressions_and_additional_files <- lapply(
     derivs,
     function(d)
-      list("additional_files" = d$additional_files, "nix_env" = d$nix_env)
+      list("nix_env" = d$nix_env, "additional_files" = d$additional_files)
   )
 
   suppressWarnings(
     invisible(
       lapply(
-        nix_expressions,
+        nix_expressions_and_additional_files,
         generate_libraries_from_nix,
         project_path = project_path
       )
