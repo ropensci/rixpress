@@ -16,7 +16,7 @@ d2 <- rxp_r(
   nix_env = "default.nix"
 )
 
-d3 <- rxp_r(mtcars_tail, tail(mtcars_head), nix_env = "default.nix")
+d3 <- rxp_r(mtcars_tail, tail(mtcars_head), additional_files = "my_head.R", nix_env = "default.nix")
 
 d4 <- rxp_r(mtcars_mpg, select(mtcars_tail, mpg), nix_env = "default2.nix")
 
