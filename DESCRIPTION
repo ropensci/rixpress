@@ -15,10 +15,10 @@ Depends:
     R (>= 2.10)
 Imports:
     igraph,
-    jsonlite
-Remotes:
-    ropensci/rix
+    jsonlite,
+    rix
 RoxygenNote: 7.3.2
 Suggests:
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    reticulate
 Config/testthat/edition: 3
