@@ -1,7 +1,7 @@
 library(rixpress)
 library(igraph)
 
-d0 <- rxp_file(
+d0 <- rxp_r_file(
   mtcars,
   'mtcars.csv',
   \(x) (read.csv(file = x, sep = "|")),
