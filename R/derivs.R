@@ -271,16 +271,6 @@ rxp_file <- function(name, path, read_function, nix_env = "default.nix") {
 #' @return A list containing the derivation name, the Nix derivation snippet,
 #'   the type of derivation ("rxp_py"), and the Nix environment setup code.
 #'
-#' @details The function generates a Nix derivation that:
-#'   - Loads Python packages from a `libraries.py` file (analogous to
-#'     `source('libraries.R')` in R).
-#'   - Executes the assignment `<name> = <py_expr>` in Python.
-#'   - Serializes the result using `pickle` and saves it to a file named
-#'     `<name>.pickle`.
-#'
-#'   The derivation relies on a placeholder `makePyDerivation` function, which
-#'   should be defined to configure the Python interpreter and dependencies.
-#'
 #' @examples
 #' # Generate a derivation that assigns 42 to 'my_result' and pickles it
 #' rxp_py(my_result, "42")
@@ -290,15 +280,14 @@ rxp_file <- function(name, path, read_function, nix_env = "default.nix") {
 #' #     pickle.dump(globals()['my_result'], f)
 rxp_py <- function(name, py_expr, nix_env = "default.nix") {
   out_name <- deparse(substitute(name))
-  py_expr_escaped <- gsub("'", "\\'", py_expr, fixed = TRUE)
 
   build_phase <- sprintf(
     "python -c \"
 exec(open('libraries.py').read())
-exec('%s = %s')
+exec('''%s''')
 with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
     out_name,
-    py_expr_escaped,
+    py_expr,
     out_name,
     out_name
   )
@@ -330,4 +319,132 @@ with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
   nix_code <- paste(nix_lines, collapse = "\n  ")
 
   list(name = out_name, snippet = snippet, type = "rxp_py", nix_env = nix_code)
+}
+
+#' rxp_py_file Creates a Nix expression that reads in a file using Python.
+#'
+#' This function generates a Nix derivation that reads a file using a specified
+#' Python function and serializes the result using Python's `pickle` module.
+#' It is designed to work within an R environment but targets Python execution
+#'
+#' @param name Symbol, the name of the derivation and the output variable.
+#' @param path Character, the file path to include, which can be a local path or a URL.
+#' @param read_function Character, a string that evaluates to a Python function
+#'   taking one argument, the path to the file. Examples include `"pandas.read_csv"`
+#'   for simple function calls or `"lambda x: pandas.read_csv(x, sep=\"|\")"` for
+#'   functions requiring additional arguments.
+#' @param nix_env Character, path to the Nix environment file, defaults to `"default.nix"`.
+#'   This file should define the Python environment and dependencies.
+#'
+#' @details 
+#' The `read_function` parameter must be a string that, when evaluated in Python,
+#' returns a callable function accepting a single argument (the file path).
+#' For example:
+#' - `"pandas.read_csv"` evaluates to the `pandas.read_csv` function.
+#' - `"lambda x: pandas.read_csv(x, sep=\"|\")"` evaluates to a lambda function that
+#'   calls `pandas.read_csv` with a custom separator.
+#' 
+#' Use double quotes (`"`) for strings within `read_function` to avoid conflicts
+#' with the single quotes used in the Python execution string.
+#'
+#' @return A list containing:
+#'   - `name`: The derivation name as a string.
+#'   - `snippet`: The generated Nix derivation code.
+#'   - `type`: Set to `"rxp_py"` to indicate a Python derivation.
+#'   - `nix_env`: The Nix environment setup code.
+#'
+#' @examples
+#' \dontrun{
+#' # Read a CSV file with pandas
+#' rxp_py_file(data, "./data.csv", "pandas.read_csv")
+#' 
+#' # Read a CSV file with a custom separator
+#' rxp_py_file(data, "https://example.com/data.csv", "lambda x: pd.read_csv(x, sep=\"|\")")
+#' }
+#'
+#' @export
+rxp_py_file <- function(name, path, read_function, nix_env = "default.nix") {
+  out_name <- deparse(substitute(name))
+
+  # Validate that read_function is a single character string
+  if (!is.character(read_function) || length(read_function) != 1) {
+    stop("read_function must be a single character string")
+  }
+
+  # No need to escape quotes with triple quotes in use
+
+  # Determine source: local file or URL
+  if (grepl("^https?://", path)) {
+    hash <- tryCatch(
+      {
+        system(paste("nix-prefetch-url", shQuote(path)), intern = TRUE)
+      },
+      error = function(e) {
+        stop("Failed to run nix-prefetch-url: ", e$message)
+      }
+    )
+    if (length(hash) == 0 || hash == "") {
+      stop("nix-prefetch-url did not return a hash for URL: ", path)
+    }
+    hash <- trimws(hash[1])
+    src_part <- sprintf(
+      "defaultPkgs.fetchurl {\n      url = \"%s\";\n      sha256 = \"%s\";\n    }",
+      path,
+      hash
+    )
+  } else {
+    src_part <- sprintf("./%s", path)
+  }
+  
+  # Define the build phase with triple quotes
+  build_phase <- sprintf(
+    "cp $src input_file
+python -c \"
+exec(open('libraries.py').read())
+file_path = 'input_file'
+data = eval('''%s''')(file_path)
+import pickle
+import os
+out_dir = os.environ['out']
+with open(os.path.join(out_dir, '%s.pickle'), 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
+    read_function,
+    out_name
+  )
+  
+  # Extract base name from nix_env
+  base <- sub("\\.nix$", "", basename(nix_env))
+  
+  # Generate the Nix derivation snippet
+  snippet <- sprintf(
+    "%s = makePyDerivation {\n    name = \"%s\";\n    src = %s;\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
+    out_name,
+    out_name,
+    src_part,
+    base,
+    base,
+    build_phase
+  )
+  
+  # Generate the nix_env setup code
+  nix_lines <- c(
+    paste0(base, " = import ./", nix_env, ";"),
+    paste0(base, "Pkgs = ", base, ".pkgs;"),
+    paste0(base, "Shell = ", base, ".shell;"),
+    paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
+    paste0(
+      base,
+      "ConfigurePhase = ''\n    cp ${./_rixpress/",
+      base,
+      "_libraries.py} libraries.py\n    mkdir -p $out\n  '';"
+    )
+  )
+  nix_code <- paste(nix_lines, collapse = "\n  ")
+  
+  # Return the result as a list
+  list(
+    name = out_name,
+    snippet = snippet,
+    type = "rxp_py",
+    nix_env = nix_code
+  )
 }
