@@ -12,7 +12,11 @@ rxp_common <- function(derivation_name, result_path = "_rixpress") {
   if (grepl("^/nix/store/", derivation_name)) {
     return(derivation_name)
   }
-  files <- list.files(file.path(result_path, "result"), full.names = TRUE)
+  files <- list.files(
+    Sys.readlink(list.files(result_path, pattern = "result", full.names = TRUE)),
+    full.names = TRUE)
+  # Remove "all-derivations" from output, only needed to build everything at once
+  files <- files[!grepl("all-derivations", files)]
   matching_files <- files[grepl(derivation_name, basename(files))]
   if (length(matching_files) == 0) {
     stop(paste(
