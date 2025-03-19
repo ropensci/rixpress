@@ -10,11 +10,19 @@ let
       jsonlite
       knitr
       pkgdown
+      reticulate
       rhub
       rmarkdown
       testthat
       tidyr
       urlchecker;
+  };
+
+  pypkgs = builtins.attrValues {
+    inherit (pkgs.python312Packages) 
+      pandas
+      numpy
+      scikit-learn;
   };
 
     rix = (pkgs.rPackages.buildRPackage {
@@ -45,6 +53,7 @@ let
       glibcLocalesUtf8
       nix
       pandoc
+      python312
       R;
   };
   
@@ -58,7 +67,8 @@ pkgs.mkShell {
    LC_MONETARY = "en_US.UTF-8";
    LC_PAPER = "en_US.UTF-8";
    LC_MEASUREMENT = "en_US.UTF-8";
+   RETICULATE_PYTHON = "${pkgs.python312}/bin/python";
 
-  buildInputs = [ rix rpkgs tex system_packages ];
+  buildInputs = [ rix pypkgs rpkgs tex system_packages ];
   
 }
