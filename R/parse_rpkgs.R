@@ -1,10 +1,16 @@
 #' Generate an R script with library calls from a default.nix file
 #'
 #' @param nix_file Path to the default.nix file (default: "default.nix")
+#' @param additional_files Character vector, additional files to include. These
+#'   are the files that contain custom functions required for this derivation.
 #' @param project_path Path to root of project, typically "."
 #' @return An script to load the libraries inside of derivations.
 #' @noRd
-generate_r_libraries_from_nix <- function(nix_file, project_path) {
+generate_r_libraries_from_nix <- function(
+  nix_file,
+  additional_files = character(0),
+  project_path
+) {
   packages <- parse_rpkgs(nix_file, project_path)
   if (is.null(packages)) {
     return(NULL)
@@ -12,6 +18,7 @@ generate_r_libraries_from_nix <- function(nix_file, project_path) {
   nix_file_name <- gsub("\\.nix", "", nix_file)
   generate_r_libraries_script(
     packages,
+    additional_files,
     file.path(
       project_path,
       "/_rixpress/",
@@ -23,13 +30,26 @@ generate_r_libraries_from_nix <- function(nix_file, project_path) {
 #' Helper function to add 'library()' to packages.
 #'
 #' @param nix_file Path to the default.nix file (default: "default.nix")
+#' @param additional_files Character vector, additional files to include. These
+#'   are the files that contain custom functions required for this derivation.
 #' @param outfile Path to the output file, we recommend to leave the
 #'   default `"_rixpress/libraries.R"`
 #' @return A script to load the libraries inside of derivations.
 #' @noRd
-generate_r_libraries_script <- function(packages, outfile) {
+generate_r_libraries_script <- function(
+  packages,
+  additional_files = character(0),
+  outfile
+) {
   library_lines <- paste0("library(", packages, ")")
-  writeLines(library_lines, outfile)
+  additional_files_content <- unlist(
+    sapply(additional_files, readLines),
+    use.names = FALSE
+  )
+
+  output <- append(library_lines, additional_files_content)
+
+  writeLines(output, outfile)
 }
 
 #' Generate an R script with library calls from a default.nix file

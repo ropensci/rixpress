@@ -1,10 +1,16 @@
 #' Generate a Python script with import statements from a default.nix file
 #'
 #' @param nix_file Path to the default.nix file (default: "default.nix")
+#' @param additional_files Character vector, additional files to include. These
+#'   are the files that contain custom functions required for this derivation.
 #' @param project_path Path to root of project, typically "."
 #' @return A Python script to import the libraries inside of derivations
 #' @noRd
-generate_py_libraries_from_nix <- function(nix_file, project_path) {
+generate_py_libraries_from_nix <- function(
+  nix_file,
+  additional_files = character(0),
+  project_path
+) {
   packages <- parse_pypkgs(nix_file, project_path)
   if (is.null(packages)) {
     return(NULL)
@@ -12,6 +18,7 @@ generate_py_libraries_from_nix <- function(nix_file, project_path) {
   nix_file_name <- gsub("\\.nix", "", nix_file)
   generate_py_libraries_script(
     packages,
+    additional_files,
     file.path(
       project_path,
       "/_rixpress/",
@@ -27,7 +34,11 @@ generate_py_libraries_from_nix <- function(nix_file, project_path) {
 #'   default `"_rixpress/libraries.py"`
 #' @return A Python script with import statements for the specified packages
 #' @noRd
-generate_py_libraries_script <- function(packages, outfile) {
+generate_py_libraries_script <- function(
+  packages,
+  additional_files = character(0),
+  outfile
+) {
   # pip and ipykernel are added automatically by rix, because
   # they're needed for Positron, and likely other editors
   # but in the context of building derivations non-interactively
@@ -37,7 +48,15 @@ generate_py_libraries_script <- function(packages, outfile) {
   packages <- sort(c("pickle", packages))
   packages <- gsub("scikit-learn", "sklearn", packages)
   import_lines <- paste0("import ", packages)
-  writeLines(import_lines, outfile)
+
+  additional_files_content <- unlist(
+    sapply(additional_files, readLines),
+    use.names = FALSE
+  )
+
+  output <- append(import_lines, additional_files_content)
+
+  writeLines(output, outfile)
 }
 
 #' Extract Python packages from a default.nix file

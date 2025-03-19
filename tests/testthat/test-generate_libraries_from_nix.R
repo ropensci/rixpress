@@ -12,7 +12,10 @@ test_that("generate_r_libraries_from_nix: generate R script by parsing default.n
     overwrite = TRUE
   )
 
-  generate_r_libraries_from_nix("default.nix", file.path(path_tmpdir, "/"))
+  generate_r_libraries_from_nix(
+    nix_file = "default.nix",
+    project_path = file.path(path_tmpdir, "/")
+  )
 
   library_lines <- readLines(file.path(
     path_tmpdir,
@@ -41,7 +44,10 @@ test_that("generate_py_libraries_from_nix: generate Py script by parsing default
     overwrite = TRUE
   )
 
-  generate_py_libraries_from_nix("default.nix", file.path(path_tmpdir, "/"))
+  generate_py_libraries_from_nix(
+    nix_file = "default.nix",
+    project_path = file.path(path_tmpdir, "/")
+  )
 
   library_lines <- readLines(file.path(
     path_tmpdir,

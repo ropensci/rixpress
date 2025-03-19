@@ -53,26 +53,12 @@ rixpress <- function(derivs, project_path) {
   )
 
   writeLines(pipeline, "pipeline.nix")
-  extract_nix_file <- function(text) {
-    pattern <- "import \\./([^;]+);"
 
-    # Find the match and its position
-    m <- regexec(pattern, text)
-
-    if (m[[1]][1] == -1) {
-      stop("No import statement found")
-    }
-
-    matches <- regmatches(text, m)
-
-    matches[[1]][2]
-  }
-
-  nix_expressions <- unique(sapply(
-    sapply(derivs, function(d) d$nix_env),
-    extract_nix_file,
-    USE.NAMES = FALSE
-  ))
+  nix_expressions_and_additional_files <- sapply(
+    derivs,
+    function(d)
+      list("additional_files" = d$additional_files, "nix_env" = d$nix_env)
+  )
 
   suppressWarnings(
     invisible(
@@ -291,10 +277,39 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
 #' Generate an R or Py script with library calls from a default.nix file
 #'
 #' @param nix_file Path to the default.nix file (default: "default.nix")
+#' @param additional_files Character vector, additional files to include. These
+#'   are the files that contain custom functions required for this derivation.
 #' @param project_path Path to root of project, typically "."
 #' @return An script to load the libraries inside of derivations.
 #' @noRd
-generate_libraries_from_nix <- function(nix_file, project_path) {
-  generate_r_libraries_from_nix(nix_file, project_path)
-  generate_py_libraries_from_nix(nix_file, project_path)
+generate_libraries_from_nix <- function(
+  nix_file,
+  additional_files = character(0),
+  project_path
+) {
+  nix_file <- extract_nix_file(nix_file)
+
+  generate_r_libraries_from_nix(nix_file, additional_files, project_path)
+  generate_py_libraries_from_nix(nix_file, additional_files, project_path)
+}
+
+
+#' Extract the default.nix file name from the deriv$nix_env
+#'
+#' @param text Actual nix code inside of deriv$nix_env
+#' @return The name of the default.nix file
+#' @noRd
+extract_nix_file <- function(text) {
+  pattern <- "import \\./([^;]+);"
+
+  # Find the match and its position
+  m <- regexec(pattern, text)
+
+  if (m[[1]][1] == -1) {
+    stop("No import statement found")
+  }
+
+  matches <- regmatches(text, m)
+
+  matches[[1]][2]
 }
