@@ -51,6 +51,6 @@ test_that("generate_py_libraries_from_nix: generate Py script by parsing default
 
   testthat::expect_equal(
     library_lines,
-    c("import great-tables", "import polars")
+    c("import great-tables", "import pickle", "import polars")
   )
 })
