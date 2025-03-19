@@ -276,7 +276,7 @@ rxp_file <- function(name, path, read_function, nix_env = "default.nix") {
 #'     `source('libraries.R')` in R).
 #'   - Executes the assignment `<name> = <py_expr>` in Python.
 #'   - Serializes the result using `pickle` and saves it to a file named
-#'     `<name>.pkl`.
+#'     `<name>.pickle`.
 #'
 #'   The derivation relies on a placeholder `makePyDerivation` function, which
 #'   should be defined to configure the Python interpreter and dependencies.
@@ -286,7 +286,7 @@ rxp_file <- function(name, path, read_function, nix_env = "default.nix") {
 #' rxp_py(my_result, "42")
 #' # The generated Python code will be:
 #' # exec(open('libraries.py').read()); exec('my_result = 42');
-#' # import pickle; with open('my_result.pkl', 'wb') as f:
+#' # import pickle; with open('my_result.pickle', 'wb') as f:
 #' #     pickle.dump(globals()['my_result'], f)
 rxp_py <- function(name, py_expr, nix_env = "default.nix") {
   out_name <- deparse(substitute(name))
@@ -296,7 +296,7 @@ rxp_py <- function(name, py_expr, nix_env = "default.nix") {
     "python -c \"
 exec(open('libraries.py').read())
 exec('%s = %s')
-with open('%s.pkl', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
+with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
     out_name,
     py_expr_escaped,
     out_name,
