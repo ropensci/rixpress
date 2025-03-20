@@ -7,7 +7,7 @@
 rxp_quarto(
   name,
   qmd_file,
-  additional_files = character(0),
+  additional_files = "",
   nix_env = "default.nix"
 )
 }

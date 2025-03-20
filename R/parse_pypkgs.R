@@ -8,7 +8,7 @@
 #' @noRd
 generate_py_libraries_from_nix <- function(
   nix_file,
-  additional_files = character(0),
+  additional_files = "",
   project_path
 ) {
   packages <- parse_pypkgs(nix_file, project_path)
@@ -36,7 +36,7 @@ generate_py_libraries_from_nix <- function(
 #' @noRd
 generate_py_libraries_script <- function(
   packages,
-  additional_files = character(0),
+  additional_files = "",
   outfile
 ) {
   # pip and ipykernel are added automatically by rix, because

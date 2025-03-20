@@ -8,7 +8,7 @@
 #' @noRd
 generate_r_libraries_from_nix <- function(
   nix_file,
-  additional_files = character(0),
+  additional_files = "",
   project_path
 ) {
   packages <- parse_rpkgs(nix_file, project_path)
@@ -16,6 +16,7 @@ generate_r_libraries_from_nix <- function(
     return(NULL)
   }
   nix_file_name <- gsub("\\.nix", "", nix_file)
+
   generate_r_libraries_script(
     packages,
     additional_files,
@@ -38,7 +39,7 @@ generate_r_libraries_from_nix <- function(
 #' @noRd
 generate_r_libraries_script <- function(
   packages,
-  additional_files = character(0),
+  additional_files = "",
   outfile
 ) {
   library_lines <- paste0("library(", packages, ")")

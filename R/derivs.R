@@ -19,7 +19,7 @@
 rxp_r <- function(
   name,
   expr,
-  additional_files = character(0),
+  additional_files = "",
   nix_env = "default.nix"
 ) {
   out_name <- deparse(substitute(name))
@@ -86,7 +86,7 @@ rxp_r <- function(
 rxp_quarto <- function(
   name,
   qmd_file,
-  additional_files = character(0),
+  additional_files = "",
   nix_env = "default.nix"
 ) {
   out_name <- deparse(substitute(name))
@@ -203,7 +203,7 @@ rxp_quarto <- function(
 rxp_py <- function(
   name,
   py_expr,
-  additional_files = character(0),
+  additional_files = "",
   nix_env = "default.nix"
 ) {
   out_name <- deparse(substitute(name))
@@ -337,6 +337,7 @@ rxp_file_common <- function(
     name = out_name,
     snippet = snippet,
     type = type,
+    additional_files = "",
     nix_env = nix_code
   )
 }

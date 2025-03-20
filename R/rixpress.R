@@ -54,20 +54,62 @@ rixpress <- function(derivs, project_path) {
 
   writeLines(pipeline, "pipeline.nix")
 
+  # Need to combine nix envs and additional files into a
+  # list of two elements, "nix_env" and "additional_files"
+  # which list all the unique combinations
   nix_expressions_and_additional_files <- lapply(
     derivs,
     function(d)
       list("nix_env" = d$nix_env, "additional_files" = d$additional_files)
   )
 
+  flat_list <- list(
+    nix_env = sapply(
+      nix_expressions_and_additional_files,
+      `[[`,
+      "nix_env",
+      USE.NAMES = FALSE
+    ),
+    additional_files = sapply(
+      nix_expressions_and_additional_files,
+      `[[`,
+      "additional_files",
+      USE.NAMES = FALSE
+    )
+  )
+
+  flat_list$nix_env <- sapply(
+    flat_list$nix_env,
+    extract_nix_file,
+    USE.NAMES = FALSE
+  )
+
+  nix_env_all <- flat_list$nix_env
+  add_files_all <- flat_list$additional_files
+
+  unique_env <- unique(nix_env_all)
+
+  additional_files_combined <- sapply(unique_env, function(env) {
+    idx <- which(nix_env_all == env)
+    files <- unlist(add_files_all[idx])
+    files <- files[!is.na(files) & files != ""]
+    if (length(files) == 0) return("")
+    files
+  })
+
+  result <- list(
+    nix_env = unique_env,
+    additional_files = additional_files_combined
+  )
+
   suppressWarnings(
-    invisible(
-      lapply(
-        nix_expressions_and_additional_files,
-        generate_libraries_from_nix,
+    for (i in seq_along(result$nix_env)) {
+      generate_libraries_from_nix(
+        result$nix_env[i],
+        result$additional_files[i],
         project_path = project_path
       )
-    )
+    }
   )
 }
 
@@ -276,21 +318,27 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
 
 #' Generate an R or Py script with library calls from a default.nix file
 #'
-#' @param nix_file Path to the default.nix file (default: "default.nix")
+#' @param nix_env Nix environment where the derivation runs
 #' @param additional_files Character vector, additional files to include. These
 #'   are the files that contain custom functions required for this derivation.
 #' @param project_path Path to root of project, typically "."
 #' @return An script to load the libraries inside of derivations.
 #' @noRd
 generate_libraries_from_nix <- function(
-  nix_file,
-  additional_files = character(0),
+  nix_env,
+  additional_files = "",
   project_path
 ) {
-  nix_file <- extract_nix_file(nix_file)
-
-  generate_r_libraries_from_nix(nix_file, additional_files, project_path)
-  generate_py_libraries_from_nix(nix_file, additional_files, project_path)
+  generate_r_libraries_from_nix(
+    nix_env,
+    additional_files,
+    project_path
+  )
+  generate_py_libraries_from_nix(
+    nix_env,
+    additional_files,
+    project_path
+  )
 }
 
 
