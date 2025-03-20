@@ -70,7 +70,9 @@ rixpress <- function(derivs, project_path) {
   nix_expressions_and_additional_files <- nix_expressions_and_additional_files[
     sapply(
       nix_expressions_and_additional_files,
-      function(x) x$type != "rxp_quarto"
+      function(x) if(x$type == "rxp_quarto"){
+        x$additional_files <- ""
+      }
     )
   ]
 
