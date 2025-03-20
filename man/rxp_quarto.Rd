@@ -25,5 +25,7 @@ Render a Quarto document as a Nix derivation
 Detects \code{rxp_read("ref")} in the .qmd file and replaces with derivation output paths.
 }
 \examples{
-rxp_quarto(report, "doc.qmd")
+\dontrun{
+  rxp_quarto(report, "doc.qmd")
+}
 }

@@ -4,3 +4,4 @@
 ^pkgdown$
 ^\.github$
 dag.png
+.envrc

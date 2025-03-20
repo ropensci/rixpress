@@ -79,7 +79,9 @@ rxp_r <- function(
 #' @details Detects `rxp_read("ref")` in the .qmd file and replaces with derivation output paths.
 #' @return List with `name` (string), `snippet` (Nix code), `type`, and `nix_env`.
 #' @examples
-#' rxp_quarto(report, "doc.qmd")
+#' \dontrun{
+#'   rxp_quarto(report, "doc.qmd")
+#' }
 #' @export
 rxp_quarto <- function(
   name,
