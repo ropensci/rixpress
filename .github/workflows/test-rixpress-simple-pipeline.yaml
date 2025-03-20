@@ -51,4 +51,4 @@ jobs:
         run: |
           cd data-raw
           ls
-          nix-shell pipeline.nix#all-derivations --run 'echo "hello from pipeline.nix!"'
+        #nix-shell pipeline.nix#all-derivations --run 'echo "hello from pipeline.nix!"'
