@@ -15,7 +15,9 @@ generate_r_libraries_from_nix <- function(
   if (is.null(packages)) {
     return(NULL)
   }
-  nix_file_name <- gsub("\\.nix", "", nix_file)
+
+  nix_file_name <- gsub("[^a-zA-Z0-9]", "_", nix_file)
+  nix_file_name <- sub("_nix$", "", nix_file_name)
 
   generate_r_libraries_script(
     packages,

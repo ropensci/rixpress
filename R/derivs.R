@@ -133,8 +133,9 @@ rxp_quarto <- function(
     collapse = " "
   )
 
-  # Compute base from nix_env
-  base <- sub("\\.nix$", "", basename(nix_env))
+  # Derive base from nix_env
+  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
+  base <- sub("_nix$", "", base)
 
   # Generate the Nix derivation snippet with updated buildInputs and configurePhase
   snippet <- sprintf(
@@ -301,8 +302,8 @@ rxp_file_common <- function(
     src_part <- sprintf("./%s", path)
   }
 
-  # Compute base from nix_env
-  base <- sub("\\.nix$", "", basename(nix_env))
+  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
+  base <- sub("_nix$", "", base)
 
   # Generate Nix derivation snippet
   snippet <- sprintf(
@@ -420,36 +421,50 @@ with open('%s.pickle', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
   )
 }
 
-#result <- unserialize_pkl(
-#  name = mtcars_csv,
-#  input_derivation = mtcars_pkl,
- # save_code = "to_csv",
-#  output_file = "mtcars.csv"
-#)
-unserialize_pkl <- function(name, input_derivation, save_method, output_file, nix_env = "default.nix") {
-  # Convert symbol arguments to strings for derivation names
+#' Transfer Python object into an R session.
+#' @param name Symbol, name of the derivation.
+#' @param expr Python object to be loaded into R.
+#' @param additional_files Character vector, additional files to include. These
+#'   are the files that contain custom functions required for this derivation.
+#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
+#' @details `rxp_py2r(my_obj, "my_python_object")` loads a serialized
+#'   Python object and saves it as an RDS file using `reticulate::py_load_object()`.
+#' @return A list with elements: `name`, the `name` of the derivation,
+#'   `snippet`, the Nix boilerplate code, `type`, and `nix_env`.
+#' @examples rxp_py2r(my_obj, "my_python_object")
+#' @export
+rxp_py2r <- function(
+  name,
+  expr,
+  additional_files = "",
+  nix_env = "default.nix"
+) {
   out_name <- deparse(substitute(name))
-  input_deriv <- deparse(substitute(input_derivation))
-  
-  # Define the build phase: copy the input .pickle file and run Python code
+  expr_str <- deparse(substitute(expr))
+  expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
+
   build_phase <- sprintf(
-    "cp ${%s}/%s.pickle input.pickle\npython -c \"
-exec(open('libraries.py').read())
-with open('input.pickle', 'rb') as f:\n    obj = pickle.load(f)\n%s.%s('%s')\n\"",
-    input_deriv, input_deriv, input_deriv, save_method, output_file
+    "export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n       Rscript -e \"\n         source('libraries.R')\n         %s <- reticulate::py_load_object('${%s}/%s.pickle', pickle = 'pickle', convert = TRUE)\n         saveRDS(%s, '%s.rds')\"",
+    out_name,
+    expr_str,
+    expr_str,
+    out_name,
+    out_name
   )
-  
-  # Derive the base name from nix_env for environment variable names
+
+  # Derive base from nix_env
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
-  
-  # Generate the Nix derivation snippet with an overridden installPhase
+
   snippet <- sprintf(
-    "  %s = (makePyDerivation {\n    name = \"%s\";\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n%s\n    '';\n  }).overrideAttrs (old: {\n    installPhase = ''\n      cp %s $out\n    '';\n  });",
-    out_name, out_name, base, base, build_phase, output_file
+    "  %s = makeRDerivation {\n    name = \"%s\";\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
+    out_name,
+    out_name,
+    base,
+    base,
+    build_phase
   )
-  
-  # Generate Nix environment setup code
+
   nix_lines <- c(
     paste0(base, " = import ./", nix_env, ";"),
     paste0(base, "Pkgs = ", base, ".pkgs;"),
@@ -459,17 +474,16 @@ with open('input.pickle', 'rb') as f:\n    obj = pickle.load(f)\n%s.%s('%s')\n\"
       base,
       "ConfigurePhase = ''\n    cp ${./_rixpress/",
       base,
-      "_libraries.py} libraries.py\n    mkdir -p $out\n  '';"
+      "_libraries.R} libraries.R\n    mkdir -p $out\n  '';"
     )
   )
   nix_code <- paste(nix_lines, collapse = "\n  ")
-  
-  # Return the result as a structured list
+
   list(
     name = out_name,
     snippet = snippet,
-    type = "unserialize_pkl",
-    additional_files = "",
+    type = "rxp_py2r",
+    additional_files = additional_files,
     nix_env = nix_code
   )
 }

@@ -67,17 +67,16 @@ rixpress <- function(derivs, project_path) {
       )
   )
   # Drop quarto objects, as these are handled separately
-nix_expressions_and_additional_files <- lapply(derivs, function(d) {
-  if (d$type == "rxp_quarto") {
-    d$additional_files <- ""
-  }
-  list(
-    nix_env = d$nix_env,
-    additional_files = d$additional_files,
-    type = d$type
-  )
-})
-
+  nix_expressions_and_additional_files <- lapply(derivs, function(d) {
+    if (d$type == "rxp_quarto") {
+      d$additional_files <- ""
+    }
+    list(
+      nix_env = d$nix_env,
+      additional_files = d$additional_files,
+      type = d$type
+    )
+  })
 
   flat_list <- list(
     nix_env = sapply(
@@ -235,7 +234,10 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
   pipeline <- flat_pipeline
 
   for (d in dag$derivations) {
-    if (length(d$depends) == 0 || d$type == "rxp_quarto") next
+    if (
+      length(d$depends) == 0 || d$type == "rxp_quarto" || d$type == "rxp_py2r"
+    )
+      next
 
     deriv_name <- as.character(d$deriv_name[1])
     deps <- d$depends
@@ -252,7 +254,15 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
       maker <- "makePyDerivation"
       script_cmd <- "python -c \""
       load_line <- function(dep, indent) {
-        paste0("with open('${", dep, "}/", dep, ".pickle', 'rb') as f: ", dep, " = pickle.load(f)")
+        paste0(
+          "with open('${",
+          dep,
+          "}/",
+          dep,
+          ".pickle', 'rb') as f: ",
+          dep,
+          " = pickle.load(f)"
+        )
       }
     } else {
       warning("Unsupported type for derivation ", deriv_name)

@@ -1,0 +1,25 @@
+---
+title: "Loading derivations outputs in a quarto doc"
+format:
+  html:
+    toc: true
+---
+
+![Meme](images/meme.png)
+
+Let's hope this works:
+
+```{r}
+summary(rixpress::rxp_read("mtcars_head"))
+```
+
+
+```{r}
+summary(rixpress::rxp_read("mtcars_tail"))
+```
+
+```{r}
+summary(rixpress::rxp_read("mtcars_mpg"))
+```
+
+{{< include content.qmd >}}

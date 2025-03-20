@@ -22,7 +22,7 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
     name <- d$name
     type <- d$type
 
-    if (type == "rxp_r") {
+    if (type == "rxp_r" || type == "rxp_py2r") {
       snippet <- d$snippet
       # Extract the content inside the Rscript -e quotes
       # (allowing for multiple lines)

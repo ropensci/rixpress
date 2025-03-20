@@ -1,0 +1,9 @@
+This is code from the file `content.qmd`.
+
+```{r}
+library("chronicler")
+
+data("avia")
+
+head(avia)
+```
