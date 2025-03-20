@@ -67,14 +67,17 @@ rixpress <- function(derivs, project_path) {
       )
   )
   # Drop quarto objects, as these are handled separately
-  nix_expressions_and_additional_files <- sapply(
-      nix_expressions_and_additional_files,
-      function(x) (if(x$type == "rxp_quarto"){
-        x$additional_files <- ""
-      } else {
-        x$additional_files
-      })
-    )
+nix_expressions_and_additional_files <- lapply(derivs, function(d) {
+  if (d$type == "rxp_quarto") {
+    d$additional_files <- ""
+  }
+  list(
+    nix_env = d$nix_env,
+    additional_files = d$additional_files,
+    type = d$type
+  )
+})
+
 
   flat_list <- list(
     nix_env = sapply(
