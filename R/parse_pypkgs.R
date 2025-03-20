@@ -50,7 +50,7 @@ generate_py_libraries_script <- function(
   import_lines <- paste0("import ", packages)
 
   if (length(additional_files) == 1 && additional_files == "") {
-    additional_files_content <- ""
+    additional_files_content <- character(0)
   } else {
     additional_files_content <- unlist(
       sapply(additional_files, readLines),
