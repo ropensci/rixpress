@@ -49,7 +49,7 @@ jobs:
 
       - name: Check if directory exists
         run: |
-          if [ ! -d "data-raw/py_example/result" ]; then
-            echo "Error: Directory 'pipeline failed!' does not exist."
+          if [ ! -d "./data-raw/py_example/_rixpress/result" ]; then
+            echo "Error: pipeline failed!"
             exit 1
           fi
