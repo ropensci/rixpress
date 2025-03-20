@@ -15,9 +15,6 @@ rxp_r(name, expr, additional_files = "", nix_env = "default.nix")
 are the files that contain custom functions required for this derivation.}
 
 \item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
-
-\item{output}{Character, a variable name to save the
-output of the function expression}
 }
 \value{
 A list with elements: \code{name}, the \code{name} of the derivation,

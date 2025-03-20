@@ -1,6 +1,4 @@
 #' rxp_r Creates a Nix expression running an R function
-#' @param output Character, a variable name to save the
-#'   output of the function expression
 #' @param name Symbol, name of the derivation.
 #' @param expr R code to generate the expression.
 #' @param additional_files Character vector, additional files to include. These
@@ -195,7 +193,9 @@ rxp_quarto <- function(
 #'
 #' @examples
 #' # Generate a derivation that assigns 42 to 'my_result' and pickles it
-#' rxp_py(my_result, "42")
+#' \dontrun{
+#'   rxp_py(my_result, "42")
+#' }
 #' # The generated Python code will be:
 #' # exec(open('libraries.py').read()); exec('my_result = 42');
 #' # import pickle; with open('my_result.pickle', 'wb') as f:

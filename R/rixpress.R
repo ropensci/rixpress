@@ -232,109 +232,84 @@ in
 #' @noRd
 gen_pipeline <- function(dag_file, flat_pipeline) {
   dag <- jsonlite::read_json(dag_file)
-  result_pipeline <- flat_pipeline # Copy to work on
+  pipeline <- flat_pipeline
 
-  for (deriv in dag$derivations) {
-    # Skip derivations with no dependencies or of type "rxp_quarto"
-    if (length(deriv$depends) == 0 || deriv$type == "rxp_quarto") next
+  for (d in dag$derivations) {
+    if (length(d$depends) == 0 || d$type == "rxp_quarto") next
 
-    deriv_name <- as.character(deriv$deriv_name[1])
-    deps <- deriv$depends
-    type <- deriv$type[1]
+    deriv_name <- as.character(d$deriv_name[1])
+    deps <- d$depends
+    type <- d$type[1]
 
-    # Determine the maker and script command based on type
+    # Set parameters based on derivation type
     if (type == "rxp_r") {
       maker <- "makeRDerivation"
       script_cmd <- "Rscript -e \""
-      load_func <- function(dep, indentation) {
-        paste0(indentation, dep, " <- readRDS('${", dep, "}/", dep, ".rds')")
+      load_line <- function(dep, indent) {
+        paste0(indent, dep, " <- readRDS('${", dep, "}/", dep, ".rds')")
       }
     } else if (type == "rxp_py") {
       maker <- "makePyDerivation"
       script_cmd <- "python -c \""
-      load_func <- function(deps, indentation) {
-        # Generate unindented loading lines without import pickle
-        unlist(lapply(deps, function(dep) {
-          c(
-            paste0(
-              "with open('${",
-              dep,
-              "}/",
-              dep,
-              ".pickle', 'rb') as f: ",
-              dep,
-              " = pickle.load(f)"
-            )
-          )
-        }))
+      load_line <- function(dep, indent) {
+        paste0("with open('${", dep, "}/", dep, ".pickle', 'rb') as f: ", dep, " = pickle.load(f)")
       }
     } else {
-      warning(paste("Unsupported type for derivation", deriv_name))
+      warning("Unsupported type for derivation ", deriv_name)
       next
     }
 
     # Locate the derivation block
-    block_pattern <- paste0("^\\s*", deriv_name, " = ", maker, " \\{")
-    start_idx <- grep(block_pattern, result_pipeline)
-    if (length(start_idx) == 0) {
-      warning(paste("Derivation", deriv_name, "not found"))
+    pattern <- paste0("^\\s*", deriv_name, " = ", maker, " \\{")
+    start_idx <- grep(pattern, pipeline)
+    if (!length(start_idx)) {
+      warning("Derivation ", deriv_name, " not found")
       next
     }
     start_idx <- start_idx[1]
 
     # Find the end of the block
-    block_end_candidates <- grep("^\\s*};", result_pipeline)
-    block_end_idx <- block_end_candidates[block_end_candidates > start_idx][1]
+    end_candidates <- grep("^\\s*};", pipeline)
+    block_end_idx <- end_candidates[end_candidates > start_idx][1]
     if (is.na(block_end_idx)) {
-      warning(paste("Block end for", deriv_name, "not found"))
+      warning("Block end for ", deriv_name, " not found")
       next
     }
 
-    # Extract block lines
-    block_lines <- result_pipeline[start_idx:block_end_idx]
-
-    # Locate the buildPhase line
-    build_phase_local_idx <- grep("buildPhase = ''", block_lines)
-    if (length(build_phase_local_idx) == 0) {
-      warning(paste("buildPhase not found for", deriv_name))
+    block <- pipeline[start_idx:block_end_idx]
+    bp_idx <- grep("buildPhase = ''", block)
+    if (!length(bp_idx)) {
+      warning("buildPhase not found for ", deriv_name)
       next
     }
-    build_phase_idx <- start_idx + build_phase_local_idx[1] - 1
+    build_phase_idx <- start_idx + bp_idx[1] - 1
 
-    # Search for the script command line
-    sub_block <- block_lines[build_phase_local_idx[1]:length(block_lines)]
-    script_local_idx <- grep(script_cmd, sub_block, fixed = TRUE)
-    if (length(script_local_idx) == 0) {
-      warning(paste("Script command not found in buildPhase for", deriv_name))
+    sub_block <- block[bp_idx[1]:length(block)]
+    script_idx <- grep(script_cmd, sub_block, fixed = TRUE)
+    if (!length(script_idx)) {
+      warning("Script command not found in buildPhase for ", deriv_name)
       next
     }
-    script_idx <- build_phase_idx + script_local_idx[1]
+    script_idx <- build_phase_idx + script_idx[1]
 
-    # Generate loading lines (no indentation for Python)
-    if (type == "rxp_r") {
-      # Keep indentation for R
-      if (script_idx + 1 <= length(result_pipeline)) {
-        first_code_line <- result_pipeline[script_idx + 1]
-        indentation <- sub("^([[:space:]]*).*", "\\1", first_code_line)
+    # Determine indentation for R scripts, none for Python
+    indent <- if (type == "rxp_r") {
+      if (script_idx + 1 <= length(pipeline)) {
+        sub("^([[:space:]]*).*", "\\1", pipeline[script_idx + 1])
       } else {
-        indentation <- "        " # Fallback indentation
+        "        "
       }
-      load_lines <- sapply(deps, function(dep) load_func(dep, indentation))
-    } else if (type == "rxp_py") {
-      # No indentation for Python
-      load_lines <- load_func(deps, "")
+    } else {
+      ""
     }
 
-    # Insert the loading lines after the script command line
-    result_pipeline <- append(
-      result_pipeline,
-      load_lines,
-      after = build_phase_idx + 2
-    )
+    load_lines <- sapply(deps, load_line, indent)
+    pipeline <- append(pipeline, load_lines, after = build_phase_idx + 2)
   }
 
-  result_pipeline
+  pipeline
 }
+
 
 #' Generate an R or Py script with library calls from a default.nix file
 #'

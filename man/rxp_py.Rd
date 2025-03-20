@@ -33,7 +33,9 @@ derivation is designed to work with Python environments defined in a
 }
 \examples{
 # Generate a derivation that assigns 42 to 'my_result' and pickles it
-rxp_py(my_result, "42")
+\dontrun{
+  rxp_py(my_result, "42")
+}
 # The generated Python code will be:
 # exec(open('libraries.py').read()); exec('my_result = 42');
 # import pickle; with open('my_result.pickle', 'wb') as f:
