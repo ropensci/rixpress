@@ -404,10 +404,7 @@ python -c \"
 exec(open('libraries.py').read())
 file_path = 'input_file'
 data = eval('%s')(file_path)
-import pickle
-import os
-out_dir = os.environ['out']
-with open(os.path.join(out_dir, '%s.pickle'), 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
+with open('%s.pickle', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
     read_function,
     out_name
   )
