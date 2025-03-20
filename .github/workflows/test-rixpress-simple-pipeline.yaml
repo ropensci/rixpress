@@ -49,5 +49,4 @@ jobs:
 
       - name: Check directory in nix-shell and run command
         run: |
-          nix-shell data-raw/pipeline.nix#default --run 'echo "hello from pipeline.nix!"'
-
+          nix-shell -A default data-raw/pipeline.nix --run 'echo "hello from pipeline.nix!"'
