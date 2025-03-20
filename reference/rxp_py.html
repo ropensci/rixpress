@@ -84,7 +84,7 @@ the type of derivation ("rxp_py"), and the Nix environment setup code.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "my_result"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $snippet</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "  my_result = makePyDerivation {\n    name = \"my_result\";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = ''\n      python -c \"\n  exec(open('libraries.py').read())\n  exec('my_result = 42')\n  with open('my_result.pickle', 'wb') as f: pickle.dump(globals()['my_result'], f)\"\n    '';\n  };"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "  my_result = makePyDerivation {\n    name = \"my_result\";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = ''\n      python -c \"\nexec(open('libraries.py').read())\nexec('my_result = 42')\nwith open('my_result.pickle', 'wb') as f: pickle.dump(globals()['my_result'], f)\"\n    '';\n  };"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $type</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "rxp_py"</span>
