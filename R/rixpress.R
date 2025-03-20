@@ -60,8 +60,19 @@ rixpress <- function(derivs, project_path) {
   nix_expressions_and_additional_files <- lapply(
     derivs,
     function(d)
-      list("nix_env" = d$nix_env, "additional_files" = d$additional_files)
+      list(
+        "nix_env" = d$nix_env,
+        "additional_files" = d$additional_files,
+        "type" = d$type
+      )
   )
+  # Drop quarto objects, as these are handled separately
+  nix_expressions_and_additional_files <- nix_expressions_and_additional_files[
+    sapply(
+      nix_expressions_and_additional_files,
+      function(x) x$type != "rxp_quarto"
+    )
+  ]
 
   flat_list <- list(
     nix_env = sapply(
@@ -89,13 +100,17 @@ rixpress <- function(derivs, project_path) {
 
   unique_env <- unique(nix_env_all)
 
-  additional_files_combined <- sapply(unique_env, function(env) {
-    idx <- which(nix_env_all == env)
-    files <- unlist(add_files_all[idx])
-    files <- files[!is.na(files) & files != ""]
-    if (length(files) == 0) return("")
-    files
-  })
+  additional_files_combined <- sapply(
+    unique_env,
+    function(env) {
+      idx <- which(nix_env_all == env)
+      files <- unlist(add_files_all[idx])
+      files <- files[!is.na(files) & files != ""]
+      if (length(files) == 0) return("")
+      unique(files)
+    },
+    USE.NAMES = FALSE
+  )
 
   result <- list(
     nix_env = unique_env,
@@ -106,7 +121,7 @@ rixpress <- function(derivs, project_path) {
     for (i in seq_along(result$nix_env)) {
       generate_libraries_from_nix(
         result$nix_env[i],
-        result$additional_files[i],
+        result$additional_files[[i]],
         project_path = project_path
       )
     }

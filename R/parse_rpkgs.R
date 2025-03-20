@@ -43,10 +43,15 @@ generate_r_libraries_script <- function(
   outfile
 ) {
   library_lines <- paste0("library(", packages, ")")
-  additional_files_content <- unlist(
-    sapply(additional_files, readLines),
-    use.names = FALSE
-  )
+
+  if (length(additional_files) == 1 && additional_files == "") {
+    additional_files_content <- ""
+  } else {
+    additional_files_content <- unlist(
+      sapply(additional_files, readLines),
+      use.names = FALSE
+    )
+  }
 
   output <- append(library_lines, additional_files_content)
 

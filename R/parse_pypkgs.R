@@ -49,10 +49,14 @@ generate_py_libraries_script <- function(
   packages <- gsub("scikit-learn", "sklearn", packages)
   import_lines <- paste0("import ", packages)
 
-  additional_files_content <- unlist(
-    sapply(additional_files, readLines),
-    use.names = FALSE
-  )
+  if (length(additional_files) == 1 && additional_files == "") {
+    additional_files_content <- ""
+  } else {
+    additional_files_content <- unlist(
+      sapply(additional_files, readLines),
+      use.names = FALSE
+    )
+  }
 
   output <- append(import_lines, additional_files_content)
 
