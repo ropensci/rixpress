@@ -212,9 +212,9 @@ rxp_py <- function(
 
   build_phase <- sprintf(
     "python -c \"
-  exec(open('libraries.py').read())
-  exec('%s = %s')
-  with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
+exec(open('libraries.py').read())
+exec('%s = %s')
+with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
     out_name,
     py_expr,
     out_name,
