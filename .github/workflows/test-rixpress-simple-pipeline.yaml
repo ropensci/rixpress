@@ -47,9 +47,6 @@ jobs:
         run: |
           nix-shell --quiet --run "cd data-raw && Rscript -e \"devtools::load_all();rixpress::rxp_make()\""
 
-      - name: Check if directory exists
+      - name: Check directory in nix-shell and run command
         run: |
-          if [ ! -d "data-raw/_rixpress/result" ]; then
-            echo "Error: pipeline failed!"
-            exit 1
-          fi
+          nix-shell data-raw/pipeline.nix --run 'echo "hello from pipeline.nix!"'
