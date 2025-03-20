@@ -46,3 +46,10 @@ jobs:
       - name: Make pipeline
         run: |
           nix-shell --quiet --run "cd data-raw/py_example && Rscript -e \"devtools::load_all();rixpress::rxp_make()\""
+
+      - name: Check if directory exists
+        run: |
+          if [ ! -d "data-raw/py_example/result" ]; then
+            echo "Error: Directory 'pipeline failed!' does not exist."
+            exit 1
+          fi

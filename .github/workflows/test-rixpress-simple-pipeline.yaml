@@ -46,3 +46,12 @@ jobs:
       - name: Make pipeline
         run: |
           nix-shell --quiet --run "cd data-raw && Rscript -e \"devtools::load_all();rixpress::rxp_make()\""
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check if directory exists
+        run: |
+          if [ ! -d "data-raw/result" ]; then
+            echo "Error: Directory 'pipeline failed!' does not exist."
+            exit 1
+          fi
