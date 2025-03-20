@@ -51,7 +51,7 @@ jobs:
 
       - name: Check if directory exists
         run: |
-          if [ ! -d "data-raw/result" ]; then
-            echo "Error: Directory 'pipeline failed!' does not exist."
+          if [ ! -d "./data-raw/_rixpress/result" ]; then
+            echo "Error: 'pipeline failed!' does not exist."
             exit 1
           fi
