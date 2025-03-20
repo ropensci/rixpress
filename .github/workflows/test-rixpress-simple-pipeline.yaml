@@ -49,5 +49,5 @@ jobs:
 
       - name: Check directory in nix-shell and run command
         run: |
-          cd data-raw
-          nix-shell pipeline.nix#_rixpress/all-derivations --run 'echo "hello from pipeline.nix!"'
+          nix-shell data-raw/pipeline.nix#default --run 'echo "hello from pipeline.nix!"'
+
