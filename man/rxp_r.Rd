@@ -4,12 +4,15 @@
 \alias{rxp_r}
 \title{rxp_r Creates a Nix expression running an R function}
 \usage{
-rxp_r(name, expr, nix_env = "default.nix")
+rxp_r(name, expr, additional_files = "", nix_env = "default.nix")
 }
 \arguments{
 \item{name}{Symbol, name of the derivation.}
 
 \item{expr}{R code to generate the expression.}
+
+\item{additional_files}{Character vector, additional files to include. These
+are the files that contain custom functions required for this derivation.}
 
 \item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
 

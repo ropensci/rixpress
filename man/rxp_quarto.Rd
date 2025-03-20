@@ -4,12 +4,7 @@
 \alias{rxp_quarto}
 \title{Render a Quarto document as a Nix derivation}
 \usage{
-rxp_quarto(
-  name,
-  qmd_file,
-  additional_files = "",
-  nix_env = "default.nix"
-)
+rxp_quarto(name, qmd_file, additional_files = "", nix_env = "default.nix")
 }
 \arguments{
 \item{name}{Symbol, derivation name.}

@@ -4,22 +4,26 @@
 \alias{rxp_py}
 \title{Create a Nix derivation for Python code execution}
 \usage{
-rxp_py(name, py_expr, nix_env = "default.nix")
+rxp_py(name, py_expr, additional_files = "", nix_env = "default.nix")
 }
 \arguments{
 \item{name}{A symbol representing the name of the variable to be serialized
-and the derivation name. It must be a valid Python variable name (e.g., no dots).}
+and the derivation name.
+It must be a valid Python variable name (e.g., no dots).}
 
 \item{py_expr}{A string containing the Python expression to be assigned to
-the variable specified by \code{name}. The function will execute \verb{<name> = <py_expr>}
-in Python.}
+the variable specified by \code{name}.
+The function will execute \verb{<name> = <py_expr>} in Python.}
 
-\item{nix_env}{The path to the Nix environment file (default: "default.nix").
-This file should define the Python packages required for the derivation.}
+\item{additional_files}{Character vector, additional files to include. These
+are the files that contain custom functions required for this derivation.}
+
+\item{nix_env}{The path to the Nix environment file (default: "default.nix").}
 }
 \value{
 A list containing the derivation name, the Nix derivation snippet,
-the type of derivation ("rxp_py"), and the Nix environment setup code.
+the type of derivation ("rxp_py"), potential additional files,
+and the Nix environment setup code.
 }
 \description{
 This function generates a Nix derivation that executes a given Python

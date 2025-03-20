@@ -9,6 +9,8 @@
 #'   to `TRUE`, returns the underlying igraph object.
 #' @importFrom jsonlite read_json
 #' @importFrom igraph graph_from_data_frame V shape_noclip set_vertex_attr
+#' @importFrom graphics symbols
+#' @importFrom stats setNames
 #' @examples \dontrun{plot_dag()}
 #' @export
 plot_dag <- function(json_path = "_rixpress/dag.json", return_igraph = FALSE) {
