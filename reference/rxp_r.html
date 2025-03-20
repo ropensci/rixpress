@@ -38,7 +38,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rxp_r</span><span class="op">(</span><span class="va">name</span>, <span class="va">expr</span>, nix_env <span class="op">=</span> <span class="st">"default.nix"</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rxp_r</span><span class="op">(</span><span class="va">name</span>, <span class="va">expr</span>, additional_files <span class="op">=</span> <span class="st">""</span>, nix_env <span class="op">=</span> <span class="st">"default.nix"</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -53,13 +53,13 @@
 <dd><p>R code to generate the expression.</p></dd>
 
 
+<dt id="arg-additional-files">additional_files<a class="anchor" aria-label="anchor" href="#arg-additional-files"></a></dt>
+<dd><p>Character vector, additional files to include. These
+are the files that contain custom functions required for this derivation.</p></dd>
+
+
 <dt id="arg-nix-env">nix_env<a class="anchor" aria-label="anchor" href="#arg-nix-env"></a></dt>
 <dd><p>Character, path to the Nix environment file, default is "default.nix".</p></dd>
-
-
-<dt id="arg-output">output<a class="anchor" aria-label="anchor" href="#arg-output"></a></dt>
-<dd><p>Character, a variable name to save the
-output of the function expression</p></dd>
 
 </dl></div>
     <div class="section level2">
