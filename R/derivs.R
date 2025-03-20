@@ -202,6 +202,7 @@ rxp_quarto <- function(
 #' # exec(open('libraries.py').read()); exec('my_result = 42');
 #' # import pickle; with open('my_result.pickle', 'wb') as f:
 #' #     pickle.dump(globals()['my_result'], f)
+#' @export
 rxp_py <- function(
   name,
   py_expr,
