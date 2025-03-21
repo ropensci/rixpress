@@ -27,7 +27,7 @@ rxp_common <- function(derivation_name, result_path = "_rixpress") {
   }
   # If any matching file is a .pickle, check if reticulate is installed
   if (any(grepl(".*\\.pickle$", matching_files)) && !requireNamespace("reticulate", quietly = TRUE)) {
-    stop("The 'reticulate' package is required to load .pickle files.\nPlease install it using install.packages('reticulate').")
+    stop("The 'reticulate' package is required to load .pickle files.\nPlease install it to use this feature.")
   }
   matching_files
 }
