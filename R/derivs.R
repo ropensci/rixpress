@@ -390,7 +390,7 @@ saveRDS(data, '%s.rds')\"",
 #' @details See original documentation for usage notes.
 #' @return A list with `name`, `snippet`, `type`, and `nix_env`.
 #' @export
-rxp_py_file <- function(name, path, read_function, nix_env = "default.nix") {
+rxp_py_file <- function(name, path, read_function, nix_env = "default.nix") {  
   out_name <- deparse(substitute(name))
 
   read_function <- gsub("'", "\\'", read_function, fixed = TRUE)
@@ -439,6 +439,12 @@ rxp_py2r <- function(
   additional_files = "",
   nix_env = "default.nix"
 ) {
+ 
+  # check if reticulate is installed
+  if (!requireNamespace("reticulate", quietly = TRUE)) {
+    stop("The 'reticulate' package is required to convert between Python and R objects.\nPlease install it to use `rxp_py2r()`.")
+  }
+  
   out_name <- deparse(substitute(name))
   expr_str <- deparse(substitute(expr))
   expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
