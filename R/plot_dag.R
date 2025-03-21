@@ -129,11 +129,11 @@ mystar <- function(coords, v = NULL, params) {
   )
 }
 
-#' @title Create an Inverted Triangle Shape (Large with Black Contour)
-#' @description Draws a larger inverted triangle at given coordinates with a black contour.
+#' @title Create a Triangle Shape
 #' @param coords A two-column matrix or data frame with x and y coordinates.
 #' @param v Logical vector or index used to subset parameters (if applicable).
 #' @param params A function used to retrieve plotting parameters.
+#' @importFrom graphics polygon
 #' @return Invisibly returns the polygon objects created.
 #' @noRd
 myinverted_triangle <- function(coords, v = NULL, params) {
