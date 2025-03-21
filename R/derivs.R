@@ -424,13 +424,12 @@ with open('%s.pickle', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
 #' Transfer Python object into an R session.
 #' @param name Symbol, name of the derivation.
 #' @param expr Symbol, python object to be loaded into R.
-#' @param additional_files Character vector, additional files to include. These
-#'   are the files that contain custom functions required for this derivation.
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
-#' @details `rxp_py2r(my_obj, "my_python_object")` loads a serialized
+#' @details `rxp_py2r(my_obj, my_python_object)` loads a serialized
 #'   Python object and saves it as an RDS file using `reticulate::py_load_object()`.
 #' @return A list with elements: `name`, the `name` of the derivation,
-#'   `snippet`, the Nix boilerplate code, `type`, and `nix_env`.
+#'   `snippet`, the Nix boilerplate code, `type`, `additional_files`
+#'    (for compatibility reasons only) and `nix_env`.
 #' @examples 
 #' \dontrun{
 #'   rxp_py2r(my_obj, my_python_object)
@@ -439,7 +438,6 @@ with open('%s.pickle', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
 rxp_py2r <- function(
   name,
   expr,
-  additional_files = "",
   nix_env = "default.nix"
 ) {
  
@@ -492,7 +490,7 @@ rxp_py2r <- function(
     name = out_name,
     snippet = snippet,
     type = "rxp_py2r",
-    additional_files = additional_files,
+    additional_files = "",
     nix_env = nix_code
   )
 }
