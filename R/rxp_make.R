@@ -5,7 +5,27 @@
 #' @return A character vector of paths to the built outputs.
 #' @export
 rxp_make <- function() {
-  rix::nix_build(args = c("--quiet", "-o", "_rixpress/result", "pipeline.nix"))
+  rix::nix_build(
+    args = c(
+      "--log-format",
+      "bar",
+      "--no-out-link",
+      "--quiet",
+      "pipeline.nix"
+    )
+  )
+
+  build_log <- rxp_inspect_internal()
+
+  saveRDS(build_log, "_rixpress/build_log.rds")
+
+  failures <- subset(build_log, subset = !build_success)
+  if (nrow(failures) > 0) {
+    warning(
+      "Build failures:\n",
+      paste(capture.output(print(failures)), collapse = "\n")
+    )
+  }
 }
 
 #' Export Nix store paths to an archive

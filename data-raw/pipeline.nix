@@ -1,5 +1,5 @@
 let
-    default = import ./default.nix;
+  default = import ./default.nix;
   defaultPkgs = default.pkgs;
   defaultShell = default.shell;
   defaultBuildInputs = defaultShell.buildInputs;
@@ -23,21 +23,21 @@ quarto_env = import ./quarto-env.nix;
     cp ${./_rixpress/quarto_env_libraries.R} libraries.R
     mkdir -p $out
   '';
-    
-    # Function to create R derivations
-    makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
-      let rdsFile = "${name}.rds";
-      in defaultPkgs.stdenv.mkDerivation {
-        inherit name src;
-        dontUnpack = true;
-        inherit buildInputs configurePhase buildPhase;
-        installPhase = ''
-          cp ${rdsFile} $out/
-        '';
-      };
+  
+  # Function to create R derivations
+  makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
+    let rdsFile = "${name}.rds";
+    in defaultPkgs.stdenv.mkDerivation {
+      inherit name src;
+      dontUnpack = true;
+      inherit buildInputs configurePhase buildPhase;
+      installPhase = ''
+        cp ${rdsFile} $out/
+      '';
+    };
 
-    # Define all derivations
-      mtcars = makeRDerivation {
+  # Define all derivations
+    mtcars = makeRDerivation {
     name = "mtcars";
     src = ./mtcars.csv;
     buildInputs = defaultBuildInputs;
@@ -120,8 +120,15 @@ saveRDS(data, 'mtcars.rds')"
   quarto render page.qmd --output-dir $out
     '';
   };
-  in
-  {
-    inherit mtcars mtcars_am mtcars_head mtcars_tail mtcars_mpg page;
-  }
-  
+
+  # Generic default target that builds all derivations
+  allDerivations = defaultPkgs.symlinkJoin {
+    name = "all-derivations";
+    paths = with builtins; attrValues { inherit mtcars mtcars_am mtcars_head mtcars_tail mtcars_mpg page; };
+  };
+
+in
+{
+  inherit mtcars mtcars_am mtcars_head mtcars_tail mtcars_mpg page;
+  default = allDerivations;
+}
