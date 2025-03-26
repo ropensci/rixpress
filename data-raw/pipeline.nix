@@ -1,5 +1,5 @@
 let
-  default = import ./default.nix;
+    default = import ./default.nix;
   defaultPkgs = default.pkgs;
   defaultShell = default.shell;
   defaultBuildInputs = defaultShell.buildInputs;
@@ -15,29 +15,29 @@ default2 = import ./default2.nix;
     cp ${./_rixpress/default2_libraries.R} libraries.R
     mkdir -p $out
   '';
-quarto-env = import ./quarto-env.nix;
-  quarto-envPkgs = quarto-env.pkgs;
-  quarto-envShell = quarto-env.shell;
-  quarto-envBuildInputs = quarto-envShell.buildInputs;
-  quarto-envConfigurePhase = ''
-    cp ${./_rixpress/quarto-env_libraries.R} libraries.R
+quarto_env = import ./quarto-env.nix;
+  quarto_envPkgs = quarto_env.pkgs;
+  quarto_envShell = quarto_env.shell;
+  quarto_envBuildInputs = quarto_envShell.buildInputs;
+  quarto_envConfigurePhase = ''
+    cp ${./_rixpress/quarto_env_libraries.R} libraries.R
     mkdir -p $out
   '';
-  
-  # Function to create R derivations
-  makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
-    let rdsFile = "${name}.rds";
-    in defaultPkgs.stdenv.mkDerivation {
-      inherit name src;
-      dontUnpack = true;
-      inherit buildInputs configurePhase buildPhase;
-      installPhase = ''
-        cp ${rdsFile} $out/
-      '';
-    };
+    
+    # Function to create R derivations
+    makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
+      let rdsFile = "${name}.rds";
+      in defaultPkgs.stdenv.mkDerivation {
+        inherit name src;
+        dontUnpack = true;
+        inherit buildInputs configurePhase buildPhase;
+        installPhase = ''
+          cp ${rdsFile} $out/
+        '';
+      };
 
-  # Define all derivations
-    mtcars = makeRDerivation {
+    # Define all derivations
+      mtcars = makeRDerivation {
     name = "mtcars";
     src = ./mtcars.csv;
     buildInputs = defaultBuildInputs;
@@ -109,8 +109,8 @@ saveRDS(data, 'mtcars.rds')"
       root = ./.;
       fileset = defaultPkgs.lib.fileset.unions [ ./page.qmd ./content.qmd ./images ];
     };
-    buildInputs = quarto-envBuildInputs;
-    configurePhase = quarto-envConfigurePhase;
+    buildInputs = quarto_envBuildInputs;
+    configurePhase = quarto_envConfigurePhase;
     buildPhase = ''
   mkdir home
   export HOME=$PWD/home
@@ -120,15 +120,8 @@ saveRDS(data, 'mtcars.rds')"
   quarto render page.qmd --output-dir $out
     '';
   };
-
-  # Generic default target that builds all derivations
-  allDerivations = defaultPkgs.symlinkJoin {
-    name = "all-derivations";
-    paths = with builtins; attrValues { inherit mtcars mtcars_am mtcars_head mtcars_tail mtcars_mpg page; };
-  };
-
-in
-{
-  inherit mtcars mtcars_am mtcars_head mtcars_tail mtcars_mpg page;
-  default = allDerivations;
-}
+  in
+  {
+    inherit mtcars mtcars_am mtcars_head mtcars_tail mtcars_mpg page;
+  }
+  
