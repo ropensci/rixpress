@@ -160,56 +160,65 @@ gen_flat_pipeline <- function(derivs) {
     function_defs <- paste0(
       function_defs,
       "
-    # Function to create R derivations
-    makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
-      let rdsFile = \"${name}.rds\";
-      in defaultPkgs.stdenv.mkDerivation {
-        inherit name src;
-        dontUnpack = true;
-        inherit buildInputs configurePhase buildPhase;
-        installPhase = ''
-          cp ${rdsFile} $out/
-        '';
-      };"
+  # Function to create R derivations
+  makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
+    let rdsFile = \"${name}.rds\";
+    in defaultPkgs.stdenv.mkDerivation {
+      inherit name src;
+      dontUnpack = true;
+      inherit buildInputs configurePhase buildPhase;
+      installPhase = ''
+        cp ${rdsFile} $out/
+      '';
+    };"
     )
   }
   if (need_py) {
     function_defs <- paste0(
       function_defs,
       "
-    # Function to create Python derivations
-    makePyDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
-      let
-        pickleFile = \"${name}.pickle\";
-      in
-        defaultPkgs.stdenv.mkDerivation {
-          inherit name src;
-          dontUnpack = true;
-          buildInputs = buildInputs;
-          inherit configurePhase buildPhase;
-          installPhase = ''
-            cp ${pickleFile} $out
-          '';
-        };"
+  # Function to create Python derivations
+  makePyDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
+    let
+      pickleFile = \"${name}.pickle\";
+    in
+      defaultPkgs.stdenv.mkDerivation {
+        inherit name src;
+        dontUnpack = true;
+        buildInputs = buildInputs;
+        inherit configurePhase buildPhase;
+        installPhase = ''
+          cp ${pickleFile} $out
+        '';
+      };"
     )
   }
 
-  # Generate Nix code without default derivation
+  # Generate Nix code
   pipeline_nix <- sprintf(
     'let
-    %s
-    %s
+  %s
+  %s
 
-    # Define all derivations
-    %s
-  in
-  {
-    inherit %s;
-  }
-  ',
+  # Define all derivations
+  %s
+
+  # Generic default target that builds all derivations
+  allDerivations = defaultPkgs.symlinkJoin {
+    name = "all-derivations";
+    paths = with builtins; attrValues { inherit %s; };
+  };
+
+in
+{
+  inherit %s;
+  default = allDerivations;
+}
+',
     nix_envs,
     function_defs,
     derivations_code,
+    names_line,
     names_line
   )
 
