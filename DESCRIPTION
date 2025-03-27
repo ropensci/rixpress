@@ -1,7 +1,7 @@
 Package: rixpress
 Title: Build Reproducible Analytical Pipelines With Nix
 Version: 0.0.0.9000
-Authors@R: 
+Authors@R:
     person("Bruno", "Rodrigues", , "bruno@brodrigues.co", role = c("aut", "cre"))
 Description: Simplifies the creation of reproducible analytical pipelines
     using the 'Nix' package manager as a build automation tool. Heavily inspired by
@@ -16,10 +16,11 @@ Depends:
 Imports:
     igraph,
     jsonlite,
-    rix
+    processx
 RoxygenNote: 7.3.2
 Suggests:
     dplyr,
     reticulate,
+    rix,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

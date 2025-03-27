@@ -1,11 +1,99 @@
 #' Build pipeline using Nix
 #'
 #' Runs `nix-build` with a quiet flag, outputting to `_rixpress/result`.
-#' @importFrom rix nix_build
+#' @param verbose Logical, defaults to FALSE. Set to TRUE to see nix's
+#'   standard output, can be useful to check what is happening if the
+#'   build process takes long.
+#' @importFrom processx run
 #' @return A character vector of paths to the built outputs.
 #' @export
-rxp_make <- function() {
-  rix::nix_build(args = c("--quiet", "-o", "_rixpress/result", "pipeline.nix"))
+rxp_make <- function(verbose = FALSE) {
+  message("Build process started...\n", "\n")
+
+  instantiate <- processx::run(
+    command = "nix-instantiate",
+    args = "pipeline.nix",
+    error_on_status = FALSE,
+    spinner = TRUE
+  )
+
+  # Check for instantiation failure
+  if (instantiate$status != 0) {
+    cat(instantiate$stderr)
+    stop("nix-instantiate failed")
+  }
+
+  # Extract derivation paths from stdout (split into lines)
+  drv_paths <- strsplit(instantiate$stdout, "\n")[[1]]
+
+  if (verbose) {
+    cb <- function(line, proc) cat(line, "\n")
+  } else {
+    cb <- NULL
+  }
+
+  build_process <- processx::run(
+    command = "nix-store",
+    args = c(
+      "--realize",
+      "--verbose",
+      "--keep-going",
+      drv_paths
+    ),
+    stdout_line_callback = cb,
+    stderr_line_callback = cb,
+    error_on_status = FALSE,
+    spinner = TRUE
+  )
+
+  if (build_process$status != 0) {
+    cat(build_process$stderr)
+    stop("Build failed! Check the log above for hints\nor run `rxp_inspect()`.")
+  }
+
+  build_log <- lapply(drv_paths, function(drv_path) {
+    # Get the output paths for this derivation
+    output_result <- processx::run(
+      command = "nix-store",
+      args = c("-q", "--outputs", drv_path),
+      error_on_status = FALSE
+    )
+    output_paths <- strsplit(output_result$stdout, "\n")[[1]]
+
+    output_checks <- lapply(output_paths, function(path) {
+      files <- list.files(path, all.files = FALSE)
+      list(path = path, files = files, build_success = length(files) > 0)
+    })
+
+    data.frame(
+      derivation = gsub("\\.drv$", "", gsub("^[^-]*-", "", drv_path)),
+      build_success = sapply(output_checks, `[[`, "build_success"),
+      path = sapply(output_checks, `[[`, "path"),
+      output = I(lapply(output_checks, `[[`, "files"))
+    )
+  })
+
+  build_log <- do.call(rbind, build_log)
+
+  saveRDS(build_log, "_rixpress/build_log.rds")
+
+  failures <- subset(build_log, subset = !build_success)
+  if (nrow(failures) > 0) {
+    warning(
+      "Build failures:\n",
+      paste(capture.output(print(failures)), collapse = "\n")
+    )
+  }
+
+  if (build_process$status == 0) {
+    message(
+      "Build successful! Run `rxp_inspect()` for a summary.\n",
+      "Read individual derivations using `rxp_read()` or\n",
+      "load them into the global environment using `rxp_load()`."
+    )
+  }
+
+  invisible(build_log)
 }
 
 #' Export Nix store paths to an archive

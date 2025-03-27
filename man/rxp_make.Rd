@@ -4,7 +4,12 @@
 \alias{rxp_make}
 \title{Build pipeline using Nix}
 \usage{
-rxp_make()
+rxp_make(verbose = FALSE)
+}
+\arguments{
+\item{verbose}{Logical, defaults to FALSE. Set to TRUE to see nix's
+standard output, can be useful to check what is happening if the
+build process takes long.}
 }
 \value{
 A character vector of paths to the built outputs.

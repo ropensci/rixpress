@@ -10,6 +10,7 @@ let
       jsonlite
       knitr
       pkgdown
+      processx
       reticulate
       rhub
       rmarkdown
