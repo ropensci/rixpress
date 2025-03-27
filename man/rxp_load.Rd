@@ -4,12 +4,10 @@
 \alias{rxp_load}
 \title{Load a derivation's output into the global environment}
 \usage{
-rxp_load(derivation_name, result_path = "_rixpress")
+rxp_load(derivation_name)
 }
 \arguments{
 \item{derivation_name}{Character, the name of the derivation.}
-
-\item{result_path}{The folder containing the pipelines' outputs.}
 }
 \value{
 None. The derivation object is assigned to the

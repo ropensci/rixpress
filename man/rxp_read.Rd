@@ -4,12 +4,10 @@
 \alias{rxp_read}
 \title{Read output of a derivation}
 \usage{
-rxp_read(derivation_name, result_path = "_rixpress")
+rxp_read(derivation_name)
 }
 \arguments{
 \item{derivation_name}{Character, the name of the derivation.}
-
-\item{result_path}{The folder containing the pipelines' outputs.}
 }
 \value{
 The derivation's output.
