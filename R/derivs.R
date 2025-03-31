@@ -46,27 +46,12 @@ rxp_r <- function(
     build_phase
   )
 
-  # nix_env code
-  nix_lines <- c(
-    paste0(base, " = import ./", nix_env, ";"),
-    paste0(base, "Pkgs = ", base, ".pkgs;"),
-    paste0(base, "Shell = ", base, ".shell;"),
-    paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
-    paste0(
-      base,
-      "ConfigurePhase = ''\n    cp ${./_rixpress/",
-      base,
-      "_libraries.R} libraries.R\n    mkdir -p $out\n  '';"
-    )
-  )
-  nix_code <- paste(nix_lines, collapse = "\n  ")
-
   list(
     name = out_name,
     snippet = snippet,
     type = "rxp_r",
     additional_files = additional_files,
-    nix_env = nix_code
+    nix_env = nix_env
   )
 }
 
@@ -148,28 +133,13 @@ rxp_quarto <- function(
     build_phase
   )
 
-  # Generate nix_env code
-  nix_lines <- c(
-    paste0(base, " = import ./", nix_env, ";"),
-    paste0(base, "Pkgs = ", base, ".pkgs;"),
-    paste0(base, "Shell = ", base, ".shell;"),
-    paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
-    paste0(
-      base,
-      "ConfigurePhase = ''\n    cp ${./_rixpress/",
-      base,
-      "_libraries.R} libraries.R\n    mkdir -p $out\n  '';"
-    )
-  )
-  nix_code <- paste(nix_lines, collapse = "\n  ")
-
   # Return the result as a list
   list(
     name = out_name,
     snippet = snippet,
     type = "rxp_quarto",
     additional_files = additional_files,
-    nix_env = nix_code
+    nix_env = nix_env
   )
 }
 
@@ -237,26 +207,12 @@ with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
     build_phase
   )
 
-  nix_lines <- c(
-    paste0(base, " = import ./", nix_env, ";"),
-    paste0(base, "Pkgs = ", base, ".pkgs;"),
-    paste0(base, "Shell = ", base, ".shell;"),
-    paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
-    paste0(
-      base,
-      "ConfigurePhase = ''\n    cp ${./_rixpress/",
-      base,
-      "_libraries.py} libraries.py\n    mkdir -p $out\n  '';"
-    )
-  )
-  nix_code <- paste(nix_lines, collapse = "\n  ")
-
   list(
     name = out_name,
     snippet = snippet,
     type = "rxp_py",
     additional_files = additional_files,
-    nix_env = nix_code
+    nix_env = nix_env
   )
 }
 
@@ -317,32 +273,12 @@ rxp_file_common <- function(
     build_phase
   )
 
-  # Generate nix_env setup code
-  nix_lines <- c(
-    paste0(base, " = import ./", nix_env, ";"),
-    paste0(base, "Pkgs = ", base, ".pkgs;"),
-    paste0(base, "Shell = ", base, ".shell;"),
-    paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
-    paste0(
-      base,
-      "ConfigurePhase = ''\n    cp ${./_rixpress/",
-      base,
-      "_libraries.",
-      library_ext,
-      "} libraries.",
-      library_ext,
-      "\n    mkdir -p $out\n  '';"
-    )
-  )
-
-  nix_code <- paste(nix_lines, collapse = "\n  ")
-
   list(
     name = out_name,
     snippet = snippet,
     type = type,
     additional_files = "",
-    nix_env = nix_code
+    nix_env = nix_env
   )
 }
 
@@ -390,7 +326,7 @@ saveRDS(data, '%s.rds')\"",
 #' @details See original documentation for usage notes.
 #' @return A list with `name`, `snippet`, `type`, and `nix_env`.
 #' @export
-rxp_py_file <- function(name, path, read_function, nix_env = "default.nix") {  
+rxp_py_file <- function(name, path, read_function, nix_env = "default.nix") {
   out_name <- deparse(substitute(name))
 
   read_function <- gsub("'", "\\'", read_function, fixed = TRUE)
@@ -430,7 +366,7 @@ with open('%s.pickle', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
 #' @return A list with elements: `name`, the `name` of the derivation,
 #'   `snippet`, the Nix boilerplate code, `type`, `additional_files`
 #'    (for compatibility reasons only) and `nix_env`.
-#' @examples 
+#' @examples
 #' \dontrun{
 #'   rxp_py2r(my_obj, my_python_object)
 #'  }
@@ -440,12 +376,13 @@ rxp_py2r <- function(
   expr,
   nix_env = "default.nix"
 ) {
- 
   # check if reticulate is installed
   if (!requireNamespace("reticulate", quietly = TRUE)) {
-    stop("The 'reticulate' package is required to convert between Python and R objects.\nPlease install it to use `rxp_py2r()`.")
+    stop(
+      "The 'reticulate' package is required to convert between Python and R objects.\nPlease install it to use `rxp_py2r()`."
+    )
   }
-  
+
   out_name <- deparse(substitute(name))
   expr_str <- deparse(substitute(expr))
   expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
@@ -472,25 +409,11 @@ rxp_py2r <- function(
     build_phase
   )
 
-  nix_lines <- c(
-    paste0(base, " = import ./", nix_env, ";"),
-    paste0(base, "Pkgs = ", base, ".pkgs;"),
-    paste0(base, "Shell = ", base, ".shell;"),
-    paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
-    paste0(
-      base,
-      "ConfigurePhase = ''\n    cp ${./_rixpress/",
-      base,
-      "_libraries.R} libraries.R\n    mkdir -p $out\n  '';"
-    )
-  )
-  nix_code <- paste(nix_lines, collapse = "\n  ")
-
   list(
     name = out_name,
     snippet = snippet,
     type = "rxp_py2r",
     additional_files = "",
-    nix_env = nix_code
+    nix_env = nix_env
   )
 }

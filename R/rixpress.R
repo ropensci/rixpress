@@ -132,46 +132,46 @@ rixpress <- function(derivs, project_path) {
   )
 }
 
-parse_nix_envs <- function(derivs){
-
-  nix_envs <- sapply(derivs, function(d) basename(d$name), USE.NAMES = FALSE)
+parse_nix_envs <- function(derivs) {
+  nix_envs <- sapply(derivs, function(d) basename(d$nix_env), USE.NAMES = FALSE)
 
   types <- sapply(derivs, function(d) d$type, USE.NAMES = FALSE)
-  need_r <- any(types %in% c("rxp_r", "rxp_r_file", "rxp_quarto"))
+  need_r <- any(types %in% c("rxp_r", "rxp_r_file", "rxp_quarto", "rxp_py2r"))
   need_py <- any(types %in% c("rxp_py", "rxp_py_file"))
-  if(need_r & !need_py){
-    libraries <- "libraries.R"
-  }
-  if(need_r & need_py){
-    libraries <- c("libraries.R", "libraries.py")
-  }
-  if(!need_r & need_py){
-    libraries <- "libraries.py"
-  }
 
-  if(unique(nix_envs) == "default.nix"){
-    
+  libraries_r <- character(0)
+  libraries_py <- character(0)
+  if (need_r) {
+    libraries_r <- "libraries.R"
   }
+  if (need_py) {
+    libraries_py <- "libraries.py"
+  }
+  libraries <- c(libraries_r, libraries_py)
+  libraries <- paste0(libraries, collapse = " ")
 
+  base_name <- basename(nix_env)
+  base_name <- gsub("[^a-zA-Z0-9]", "_", base_name)
+  base_name <- sub("_nix$", "", base_name)
 
-  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
-  base <- sub("_nix$", "", base)
-
-  define_envs_lines 
   nix_lines <- c(
-    paste0(base, " = import ./", nix_env, ";"),
-    paste0(base, "Pkgs = ", base, ".pkgs;"),
-    paste0(base, "Shell = ", base, ".shell;"),
-    paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
+    paste0(base_name, " = import ./", nix_env, ";"),
+    paste0(base_name, "Pkgs = ", base_name, ".pkgs;"),
+    paste0(base_name, "Shell = ", base_name, ".shell;"),
+    paste0(base_name, "BuildInputs = ", base_name, "Shell.buildInputs;"),
     paste0(
-      base,
+      base_name,
       "ConfigurePhase = ''\n    cp ${./_rixpress/",
-      base,
-      "_libraries.R} libraries.R\n    mkdir -p $out\n  '';"
+      base_name,
+      "_",
+      libraries,
+      "} ",
+      libraries,
+      "\n    mkdir -p $out\n  ",
+      "'';"
     )
   )
-  nix_code <- paste(nix_lines, collapse = "\n  ")
-
+  paste(nix_lines, collapse = "\n  ")
 }
 
 #' gen_flat_pipeline Internal function used to generate most of the boilerplate in pipeline.nix
