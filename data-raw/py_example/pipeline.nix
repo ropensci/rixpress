@@ -57,7 +57,7 @@ with open('diabetes.pickle', 'wb') as f: pickle.dump(globals()['diabetes'], f)"
       python -c "
 exec(open('libraries.py').read())
 with open('${diabetes}/diabetes.pickle', 'rb') as f: diabetes = pickle.load(f)
-exec('diabetes_head = diabetes.head()')
+exec('diabetes_head = my_head(diabetes)')
 with open('diabetes_head.pickle', 'wb') as f: pickle.dump(globals()['diabetes_head'], f)"
     '';
   };

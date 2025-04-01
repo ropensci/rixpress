@@ -51,7 +51,7 @@ let
   
   system_packages = builtins.attrValues {
     inherit (pkgs) 
-      basedpyright
+      pyright
       glibcLocales
       glibcLocalesUtf8
       nix

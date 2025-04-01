@@ -1,26 +1,26 @@
 let
   py_env = import ./py-env.nix;
+  default = import ./default.nix;
+  quarto_env = import ./quarto-env.nix;
   py_envPkgs = py_env.pkgs;
-  py_envShell = py_env.shell;
-  py_envBuildInputs = py_envShell.buildInputs;
-  py_envConfigurePhase = ''
-    cp ${./_rixpress/py_env_libraries.py} libraries.py
-    mkdir -p $out
-  '';
-default = import ./default.nix;
   defaultPkgs = default.pkgs;
+  quarto_envPkgs = quarto_env.pkgs;
+  py_envShell = py_env.shell;
   defaultShell = default.shell;
+  quarto_envShell = quarto_env.shell;
+  py_envBuildInputs = py_envShell.buildInputs;
   defaultBuildInputs = defaultShell.buildInputs;
-  defaultConfigurePhase = ''
-    cp ${./_rixpress/default_libraries.R} libraries.R
+  quarto_envBuildInputs = quarto_envShell.buildInputs;
+  py_envConfigurePhase = ''
+    cp ${./_rixpress/py_env_libraries.R libraries.py} libraries.R libraries.py
     mkdir -p $out
   '';
-quarto_env = import ./quarto-env.nix;
-  quarto_envPkgs = quarto_env.pkgs;
-  quarto_envShell = quarto_env.shell;
-  quarto_envBuildInputs = quarto_envShell.buildInputs;
+  defaultConfigurePhase = ''
+    cp ${./_rixpress/default_libraries.R libraries.py} libraries.R libraries.py
+    mkdir -p $out
+  '';
   quarto_envConfigurePhase = ''
-    cp ${./_rixpress/quarto_env_libraries.R} libraries.R
+    cp ${./_rixpress/quarto_env_libraries.R libraries.py} libraries.R libraries.py
     mkdir -p $out
   '';
   

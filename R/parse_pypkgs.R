@@ -69,8 +69,6 @@ generate_py_libraries_script <- function(
     output <- append(import_lines, functions_py_content)
   }
 
-  output <- append(import_lines, additional_files_content)
-
   writeLines(output, outfile)
 }
 
