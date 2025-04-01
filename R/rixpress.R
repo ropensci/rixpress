@@ -99,12 +99,6 @@ rixpress <- function(derivs, project_path) {
     )
   )
 
-  flat_list$nix_env <- sapply(
-    flat_list$nix_env,
-    extract_nix_file,
-    USE.NAMES = FALSE
-  )
-
   nix_env_all <- flat_list$nix_env
   add_files_all <- flat_list$additional_files
 
@@ -412,25 +406,4 @@ generate_libraries_from_nix <- function(
     additional_files,
     project_path
   )
-}
-
-
-#' Extract the default.nix file name from the deriv$nix_env
-#'
-#' @param text Actual nix code inside of deriv$nix_env
-#' @return The name of the default.nix file
-#' @noRd
-extract_nix_file <- function(text) {
-  pattern <- "import \\./([^;]+);"
-
-  # Find the match and its position
-  m <- regexec(pattern, text)
-
-  if (m[[1]][1] == -1) {
-    stop("No import statement found")
-  }
-
-  matches <- regmatches(text, m)
-
-  matches[[1]][2]
 }

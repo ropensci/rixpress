@@ -12,14 +12,14 @@ d1 <- rxp_r(mtcars_am, filter(mtcars, am == 1), nix_env = "default2.nix")
 d2 <- rxp_r(
   mtcars_head,
   my_head(mtcars_am),
-  additional_files = "my_head.R",
+  additional_files = "functions.R",
   nix_env = "default.nix"
 )
 
 d3 <- rxp_r(
   mtcars_tail,
-  tail(mtcars_head),
-  additional_files = "my_head.R",
+  my_tail(mtcars_head),
+  additional_files = "functions.R",
   nix_env = "default.nix"
 )
 
@@ -35,6 +35,8 @@ doc <- rxp_quarto(
 derivs <- list(d0, d1, d2, d3, d4, doc)
 
 rixpress(derivs, project_path = ".")
+
+rxp_make()
 
 dag_obj <- plot_dag(return_igraph = TRUE)
 

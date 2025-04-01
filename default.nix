@@ -9,6 +9,7 @@ let
       igraph
       jsonlite
       knitr
+      languageserver
       pkgdown
       processx
       reticulate

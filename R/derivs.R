@@ -12,7 +12,7 @@
 #'   (in this case `mtcars_am`) including its dependencies, build steps,
 #'   and output paths.
 #' @return A list with elements: `name`, the `name` of the derivation,
-#'   `snippet`, the Nix boilerplate code, `type`, and `nix_env`.
+#'   `snippet`, the Nix boilerplate code, `type`, `additional_files` and `nix_env`.
 #' @examples rxp_r(mtcars_am, filter(mtcars, am == 1))
 #' @export
 rxp_r <- function(
@@ -40,7 +40,7 @@ rxp_r <- function(
   # Prepare the fileset for src
   # Remove functions.R as this is handled separately
   fileset_parts <- setdiff(additional_files, "functions.R")
-  if (fileset_parts == "") {
+  if (identical(fileset_parts, character(0)) || fileset_parts == "") {
     src_snippet <- ""
   } else {
     fileset_nix <- paste(
@@ -85,11 +85,14 @@ rxp_r <- function(
 #' @param qmd_file Character, path to .qmd file.
 #' @param additional_files Character vector, additional files to include.
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
-#' @details Detects `rxp_read("ref")` in the .qmd file and replaces with derivation output paths.
-#' @return List with `name` (string), `snippet` (Nix code), `type`, and `nix_env`.
+#' @details Detects `rxp_read("ref")` in the .qmd file and replaces with
+#'   derivation output paths.
+#' @return A list with elements: `name`, the `name` of the derivation,
+#'   `snippet`, the Nix boilerplate code, `type`, `additional_files` and `nix_env`.
 #' @examples
 #' \dontrun{
-#'   rxp_quarto(report, "doc.qmd")
+#'   # `images` is a folder containing images to include in the Quarto doc
+#'   rxp_quarto(report, "doc.qmd", "images")
 #' }
 #' @export
 rxp_quarto <- function(
@@ -167,36 +170,23 @@ rxp_quarto <- function(
   )
 }
 
-#' Create a Nix derivation for Python code execution
-#'
-#' This function generates a Nix derivation that executes a given Python
-#' expression and serializes the result using Python's `pickle` module. The
-#' derivation is designed to work with Python environments defined in a
-#' `default.nix` file.
-#'
-#' @param name A symbol representing the name of the variable to be serialized
-#'   and the derivation name.
-#'   It must be a valid Python variable name (e.g., no dots).
-#' @param py_expr A string containing the Python expression to be assigned to
-#'   the variable specified by `name`.
-#'   The function will execute `<name> = <py_expr>` in Python.
-#' @param additional_files Character vector, additional files to include. These
-#'   are the files that contain custom functions required for this derivation.
-#' @param nix_env The path to the Nix environment file (default: "default.nix").
-#'
-#' @return A list containing the derivation name, the Nix derivation snippet,
-#'   the type of derivation ("rxp_py"), potential additional files,
-#'   and the Nix environment setup code.
-#'
-#' @examples
-#' # Generate a derivation that assigns 42 to 'my_result' and pickles it
-#' \dontrun{
-#'   rxp_py(my_result, "42")
-#' }
-#' # The generated Python code will be:
-#' # exec(open('libraries.py').read()); exec('my_result = 42');
-#' # import pickle; with open('my_result.pickle', 'wb') as f:
-#' #     pickle.dump(globals()['my_result'], f)
+#' rxp_py Creates a Nix expression running a Python function
+#' @param name Symbol, name of the derivation.
+#' @param expr R code to generate the expression.
+#' @param additional_files Character vector, additional files to include. Custom
+#'   functions must go into a script called "functions.R", and additional files
+#'   that need to be accessible during the build process can be named anything.
+#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
+#' @details At a basic level,
+#'   `rxp_py(mtcars_am, "mtcars.filter(polars.col('am') == 1)")`
+#'   is equivalent to `mtcars_am = mtcars.filter(polars.col('am') == 1).
+#'   `rxp_py()` generates the required Nix boilerplate to output a
+#'   so-called "derivation" in Nix jargon. A Nix derivation is a recipe
+#'   that defines how to create an output (in this case `mtcars_am`)
+#'   including its dependencies, build steps, and output paths.
+#' @return A list with elements: `name`, the `name` of the derivation,
+#'   `snippet`, the Nix boilerplate code, `type`, `additional_files` and `nix_env`.
+#' @examples rxp_py(mtcars_pl_am, py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()")
 #' @export
 rxp_py <- function(
   name,
@@ -222,10 +212,33 @@ with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
 
+  # Prepare the fileset for src
+  # Remove functions.py as this is handled separately
+  fileset_parts <- setdiff(additional_files, "functions.py")
+  if (identical(fileset_parts, character(0)) || fileset_parts == "") {
+    src_snippet <- ""
+  } else {
+    fileset_nix <- paste(
+      sapply(fileset_parts, function(part) {
+        if (dir.exists(part)) {
+          sprintf("./%s", part)
+        } else {
+          sprintf("./%s", part)
+        }
+      }),
+      collapse = " "
+    )
+    src_snippet <- sprintf(
+      "   src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ",
+      fileset_nix
+    )
+  }
+
   snippet <- sprintf(
-    "  %s = makePyDerivation {\n    name = \"%s\";\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
+    "  %s = makePyDerivation {\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
     out_name,
     out_name,
+    src_snippet,
     base,
     base,
     build_phase
