@@ -1,8 +1,9 @@
 #' rxp_r Creates a Nix expression running an R function
 #' @param name Symbol, name of the derivation.
 #' @param expr R code to generate the expression.
-#' @param additional_files Character vector, additional files to include. These
-#'   are the files that contain custom functions required for this derivation.
+#' @param additional_files Character vector, additional files to include. Custom
+#'   functions must go into a script called "functions.R", and additional files
+#'   that need to be accessible during the build process can be named anything.
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
 #' @details At a basic level, `rxp_r(mtcars_am, filter(mtcars, am == 1))`
 #'   is equivalent to `mtcars <- filter(mtcars, am == 1)`. `rxp_r()` generates
@@ -36,11 +37,34 @@ rxp_r <- function(
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
 
+  # Prepare the fileset for src
+  # Remove functions.R as this is handled separately
+  fileset_parts <- setdiff(additional_files, "functions.R")
+  if (fileset_parts == "") {
+    src_snippet <- ""
+  } else {
+    fileset_nix <- paste(
+      sapply(fileset_parts, function(part) {
+        if (dir.exists(part)) {
+          sprintf("./%s", part)
+        } else {
+          sprintf("./%s", part)
+        }
+      }),
+      collapse = " "
+    )
+    src_snippet <- sprintf(
+      "   src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ",
+      fileset_nix
+    )
+  }
+
   # Updated snippet with buildInputs and configurePhase
   snippet <- sprintf(
-    "  %s = makeRDerivation {\n    name = \"%s\";\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
+    "  %s = makeRDerivation {\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
     out_name,
     out_name,
+    src_snippet,
     base,
     base,
     build_phase

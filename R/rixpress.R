@@ -8,10 +8,16 @@
 #' building reproducible analytical pipelines with Nix, inspired by the
 #' `targets` R package.
 #'
-#' @param derivs A list of derivation objects, where each object must have two
-#'   elements: `$name` (a character string naming the derivation) and `$snippet`
-#'   (a character string containing the Nix code defining the derivation).
-#'   Typically, these objects are created by a function like `rxp_r`.
+#' @param derivs A list of derivation objects, where each object is a list of
+#'   five elements:
+#'     - `$name`, character, name of the derivation
+#'     - `$snippet`, character, the nix code snippet to build this derivation
+#'     - `$type`, character, can be R, Python or Quarto
+#'     - `$additional_files`, character vector of paths to files to make
+#'        available to build sandbox
+#'     - `$nix_env`, character, path to Nix environment to build this derivation
+#'   A single deriv is the output of `rxp_r()`, `rxp_quarto()` or `rxp_py()`
+#'   function.
 #'
 #' @param project_path Path to root of project, typically "."
 #'
@@ -132,8 +138,24 @@ rixpress <- function(derivs, project_path) {
   )
 }
 
+
+#' parse_nix_envs Parses the nix_env element of a deriv object
+#' @param derivs A list of derivation objects, where each object is a list of
+#'   five elements:
+#'     - `$name`, character, name of the derivation
+#'     - `$snippet`, character, the nix code snippet to build this derivation
+#'     - `$type`, character, can be R, Python or Quarto
+#'     - `$additional_files`, character vector of paths to files to make
+#'        available to build sandbox
+#'     - `$nix_env`, character, path to Nix environment to build this derivation
+#'   Typically, these objects are created by a function like `rxp_r`.
+#' @noRd
 parse_nix_envs <- function(derivs) {
-  nix_envs <- sapply(derivs, function(d) basename(d$nix_env), USE.NAMES = FALSE)
+  nix_envs <- unique(sapply(
+    derivs,
+    function(d) basename(d$nix_env),
+    USE.NAMES = FALSE
+  ))
 
   types <- sapply(derivs, function(d) d$type, USE.NAMES = FALSE)
   need_r <- any(types %in% c("rxp_r", "rxp_r_file", "rxp_quarto", "rxp_py2r"))
@@ -150,12 +172,12 @@ parse_nix_envs <- function(derivs) {
   libraries <- c(libraries_r, libraries_py)
   libraries <- paste0(libraries, collapse = " ")
 
-  base_name <- basename(nix_env)
+  base_name <- basename(nix_envs)
   base_name <- gsub("[^a-zA-Z0-9]", "_", base_name)
   base_name <- sub("_nix$", "", base_name)
 
   nix_lines <- c(
-    paste0(base_name, " = import ./", nix_env, ";"),
+    paste0(base_name, " = import ./", nix_envs, ";"),
     paste0(base_name, "Pkgs = ", base_name, ".pkgs;"),
     paste0(base_name, "Shell = ", base_name, ".shell;"),
     paste0(base_name, "BuildInputs = ", base_name, "Shell.buildInputs;"),
@@ -175,21 +197,25 @@ parse_nix_envs <- function(derivs) {
 }
 
 #' gen_flat_pipeline Internal function used to generate most of the boilerplate in pipeline.nix
-#' @param derivs A list of derivation objects, where each object must have two
-#'   elements: `$name` (a character string naming the derivation) and `$snippet`
-#'   (a character string containing the Nix code defining the derivation).
-#'   Typically, these objects are created by a function like `rxp_r`.
+#' @param derivs A list of derivation objects, where each object is a list of
+#'   five elements:
+#'     - `$name`, character, name of the derivation
+#'     - `$snippet`, character, the nix code snippet to build this derivation
+#'     - `$type`, character, can be R, Python or Quarto
+#'     - `$additional_files`, character vector of paths to files to make
+#'        available to build sandbox
+#'     - `$nix_env`, character, path to Nix environment to build this derivation
+#'   A single deriv is the output of `rxp_r()`, `rxp_quarto()` or `rxp_py()`
+#'   function.
 #' @noRd
 gen_flat_pipeline <- function(derivs) {
-  # Extract derivation snippets and names
   derivation_texts <- sapply(derivs, function(d) d$snippet)
-  deriv_names <- sapply(derivs, function(d) d$name)
-  nix_envs <- paste0(
-    unique(sapply(derivs, function(d) d$nix_env)),
-    collapse = "\n"
-  )
   derivations_code <- paste(derivation_texts, collapse = "\n\n")
+
+  deriv_names <- sapply(derivs, function(d) d$name)
   names_line <- paste(deriv_names, collapse = " ")
+
+  nix_envs <- parse_nix_envs(derivs)
 
   # Determine required functions
   types <- sapply(derivs, function(d) d$type)

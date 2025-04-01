@@ -7,10 +7,16 @@
 rixpress(derivs, project_path)
 }
 \arguments{
-\item{derivs}{A list of derivation objects, where each object must have two
-elements: \verb{$name} (a character string naming the derivation) and \verb{$snippet}
-(a character string containing the Nix code defining the derivation).
-Typically, these objects are created by a function like \code{rxp_r}.}
+\item{derivs}{A list of derivation objects, where each object is a list of
+five elements:
+- \verb{$name}, character, name of the derivation
+- \verb{$snippet}, character, the nix code snippet to build this derivation
+- \verb{$type}, character, can be R, Python or Quarto
+- \verb{$additional_files}, character vector of paths to files to make
+available to build sandbox
+- \verb{$nix_env}, character, path to Nix environment to build this derivation
+A single deriv is the output of \code{rxp_r()}, \code{rxp_quarto()} or \code{rxp_py()}
+function.}
 
 \item{project_path}{Path to root of project, typically "."}
 }
