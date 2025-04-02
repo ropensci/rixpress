@@ -1,28 +1,32 @@
 let
   py_env = import ./py-env.nix;
-  default = import ./default.nix;
-  quarto_env = import ./quarto-env.nix;
-  py_envPkgs = py_env.pkgs;
-  defaultPkgs = default.pkgs;
-  quarto_envPkgs = quarto_env.pkgs;
-  py_envShell = py_env.shell;
-  defaultShell = default.shell;
-  quarto_envShell = quarto_env.shell;
-  py_envBuildInputs = py_envShell.buildInputs;
-  defaultBuildInputs = defaultShell.buildInputs;
-  quarto_envBuildInputs = quarto_envShell.buildInputs;
-  py_envConfigurePhase = ''
-    cp ${./_rixpress/py_env_libraries.R libraries.py} libraries.R libraries.py
+py_envPkgs = py_env.pkgs;
+py_envShell = py_env.shell;
+py_envBuildInputs = py_envShell.buildInputs;
+py_envConfigurePhase = ''
+    cp ${./_rixpress/py_env_libraries.py} libraries.py
     mkdir -p $out
   '';
-  defaultConfigurePhase = ''
-    cp ${./_rixpress/default_libraries.R libraries.py} libraries.R libraries.py
+  
+default = import ./default.nix;
+defaultPkgs = default.pkgs;
+defaultShell = default.shell;
+defaultBuildInputs = defaultShell.buildInputs;
+defaultConfigurePhase = ''
+    cp ${./_rixpress/default_libraries.py} libraries.py
+cp ${./_rixpress/default_libraries.R} libraries.R
     mkdir -p $out
   '';
-  quarto_envConfigurePhase = ''
-    cp ${./_rixpress/quarto_env_libraries.R libraries.py} libraries.R libraries.py
+  
+quarto_env = import ./quarto-env.nix;
+quarto_envPkgs = quarto_env.pkgs;
+quarto_envShell = quarto_env.shell;
+quarto_envBuildInputs = quarto_envShell.buildInputs;
+quarto_envConfigurePhase = ''
+    cp ${./_rixpress/quarto_env_libraries.R} libraries.R
     mkdir -p $out
   '';
+  
   
   # Function to create R derivations
   makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:

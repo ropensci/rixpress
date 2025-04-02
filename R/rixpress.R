@@ -49,16 +49,7 @@
 #' }
 #' @export
 rixpress <- function(derivs, project_path) {
-  flat_pipeline <- gen_flat_pipeline(derivs)
-
   generate_dag(derivs, output_file = "_rixpress/dag.json")
-
-  pipeline <- gen_pipeline(
-    dag_file = "_rixpress/dag.json",
-    flat_pipeline = flat_pipeline
-  )
-
-  writeLines(pipeline, "pipeline.nix")
 
   # Need to combine nix envs and additional files into a
   # list of two elements, "nix_env" and "additional_files"
@@ -130,6 +121,16 @@ rixpress <- function(derivs, project_path) {
       )
     }
   )
+
+  # Finalize pipeline
+  flat_pipeline <- gen_flat_pipeline(derivs)
+
+  pipeline <- gen_pipeline(
+    dag_file = "_rixpress/dag.json",
+    flat_pipeline = flat_pipeline
+  )
+
+  writeLines(pipeline, "pipeline.nix")
 }
 
 
@@ -145,49 +146,88 @@ rixpress <- function(derivs, project_path) {
 #'   Typically, these objects are created by a function like `rxp_r`.
 #' @noRd
 parse_nix_envs <- function(derivs) {
-  nix_envs <- unique(sapply(
+  # Add required elements
+  # base name of libraries file
+  derivs <- lapply(
     derivs,
-    function(d) basename(d$nix_env),
-    USE.NAMES = FALSE
-  ))
+    function(d) {
+      d$base_name <- sub(
+        "_nix$",
+        "",
+        gsub("[^a-zA-Z0-9]", "_", basename(d$nix_env))
+      )
+      d
+    }
+  )
+  # path to libraries file
+  derivs <- sapply(
+    derivs,
+    function(d) {
+      d$library <- list.files("_rixpress", pattern = d$base_name)
+      d$library_in_sandbox <- gsub(paste0(d$base_name, "_"), "", d$library)
+      list(
+        "nix_env" = d$nix_env,
+        "base_name" = d$base_name,
+        "library" = d$library,
+        "library_in_sandbox" = d$library_in_sandbox
+      )
+    },
+    simplify = FALSE
+  )
+
+  derivs <- unique(derivs)
 
   types <- sapply(derivs, function(d) d$type, USE.NAMES = FALSE)
-  need_r <- any(types %in% c("rxp_r", "rxp_r_file", "rxp_quarto", "rxp_py2r"))
-  need_py <- any(types %in% c("rxp_py", "rxp_py_file"))
+  need_r <- get_need_r(types)
+  need_py <- get_need_py(types)
 
-  libraries_r <- character(0)
-  libraries_py <- character(0)
-  if (need_r) {
-    libraries_r <- "libraries.R"
-  }
-  if (need_py) {
-    libraries_py <- "libraries.py"
-  }
-  libraries <- c(libraries_r, libraries_py)
-  libraries <- paste0(libraries, collapse = " ")
+  #libraries_r <- character(0)
+  #libraries_py <- character(0)
+  #if (need_r) {
+  #  libraries_r <- "libraries.R"
+  #}
+  #if (need_py) {
+  #  libraries_py <- "libraries.py"
+  #}
+  #libraries <- c(libraries_r, libraries_py)
+  #libraries <- paste0(libraries, collapse = " ")
 
-  base_name <- basename(nix_envs)
-  base_name <- gsub("[^a-zA-Z0-9]", "_", base_name)
-  base_name <- sub("_nix$", "", base_name)
-
-  nix_lines <- c(
-    paste0(base_name, " = import ./", nix_envs, ";"),
-    paste0(base_name, "Pkgs = ", base_name, ".pkgs;"),
-    paste0(base_name, "Shell = ", base_name, ".shell;"),
-    paste0(base_name, "BuildInputs = ", base_name, "Shell.buildInputs;"),
-    paste0(
-      base_name,
-      "ConfigurePhase = ''\n    cp ${./_rixpress/",
-      base_name,
-      "_",
-      libraries,
-      "} ",
-      libraries,
+  generate_configurePhase <- function(d) {
+    # Compute the configure_phases_str
+    configure_phases_str <- paste0(
+      d$base_name,
+      "ConfigurePhase = ''\n    ",
+      paste0(
+        "cp ${./_rixpress/",
+        unlist(d$library),
+        "} ",
+        unlist(d$library_in_sandbox),
+        collapse = "\n"
+      ),
       "\n    mkdir -p $out\n  ",
-      "'';"
+      "'';\n  "
     )
-  )
-  paste(nix_lines, collapse = "\n  ")
+
+    # Create the individual lines
+    lines <- c(
+      paste0(d$base_name, " = import ./", d$nix_env, ";"),
+      paste0(d$base_name, "Pkgs = ", d$base_name, ".pkgs;"),
+      paste0(d$base_name, "Shell = ", d$base_name, ".shell;"),
+      paste0(d$base_name, "BuildInputs = ", d$base_name, "Shell.buildInputs;"),
+      configure_phases_str
+    )
+
+    # Combine all lines into a single string with newline separators
+    paste(lines, collapse = "\n")
+  }
+
+  nix_lines <- character(0)
+  for (d in seq_along(derivs)) {
+    current_lines <- generate_configurePhase(derivs[[d]])
+    nix_lines <- c(nix_lines, current_lines)
+  }
+
+  paste(nix_lines, collapse = "\n")
 }
 
 #' gen_flat_pipeline Internal function used to generate most of the boilerplate in pipeline.nix
@@ -213,8 +253,8 @@ gen_flat_pipeline <- function(derivs) {
 
   # Determine required functions
   types <- sapply(derivs, function(d) d$type)
-  need_r <- any(types %in% c("rxp_r", "rxp_r_file", "rxp_quarto"))
-  need_py <- any(types %in% c("rxp_py", "rxp_py_file"))
+  need_r <- get_need_r(types)
+  need_py <- get_need_py(types)
 
   # Build function definitions
   function_defs <- ""
@@ -406,4 +446,15 @@ generate_libraries_from_nix <- function(
     additional_files,
     project_path
   )
+}
+
+
+#' @noRd
+get_need_r <- function(types) {
+  any(types %in% c("rxp_r", "rxp_r_file", "rxp_quarto", "rxp_py2r"))
+}
+
+#' @noRd
+get_need_py <- function(types) {
+  any(types %in% c("rxp_py", "rxp_py_file"))
 }
