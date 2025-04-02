@@ -1,5 +1,5 @@
 let
- pkgs = import (fetchTarball "https://github.com/rstats-on-nix/nixpkgs/archive/2025-03-17.tar.gz") {};
+ pkgs = import (fetchTarball "https://github.com/rstats-on-nix/nixpkgs/archive/2025-03-31.tar.gz") {};
  
   rpkgs = builtins.attrValues {
     inherit (pkgs.rPackages) 
@@ -9,6 +9,7 @@ let
       igraph
       jsonlite
       knitr
+      languageserver
       pkgdown
       processx
       reticulate
@@ -50,6 +51,7 @@ let
   
   system_packages = builtins.attrValues {
     inherit (pkgs) 
+      pyright
       glibcLocales
       glibcLocalesUtf8
       nix

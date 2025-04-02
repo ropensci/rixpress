@@ -1,8 +1,9 @@
 #' rxp_r Creates a Nix expression running an R function
 #' @param name Symbol, name of the derivation.
 #' @param expr R code to generate the expression.
-#' @param additional_files Character vector, additional files to include. These
-#'   are the files that contain custom functions required for this derivation.
+#' @param additional_files Character vector, additional files to include. Custom
+#'   functions must go into a script called "functions.R", and additional files
+#'   that need to be accessible during the build process can be named anything.
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
 #' @details At a basic level, `rxp_r(mtcars_am, filter(mtcars, am == 1))`
 #'   is equivalent to `mtcars <- filter(mtcars, am == 1)`. `rxp_r()` generates
@@ -11,7 +12,7 @@
 #'   (in this case `mtcars_am`) including its dependencies, build steps,
 #'   and output paths.
 #' @return A list with elements: `name`, the `name` of the derivation,
-#'   `snippet`, the Nix boilerplate code, `type`, and `nix_env`.
+#'   `snippet`, the Nix boilerplate code, `type`, `additional_files` and `nix_env`.
 #' @examples rxp_r(mtcars_am, filter(mtcars, am == 1))
 #' @export
 rxp_r <- function(
@@ -36,37 +37,45 @@ rxp_r <- function(
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
 
+  # Prepare the fileset for src
+  # Remove functions.R as this is handled separately
+  fileset_parts <- setdiff(additional_files, "functions.R")
+  if (identical(fileset_parts, character(0)) || fileset_parts == "") {
+    src_snippet <- ""
+  } else {
+    fileset_nix <- paste(
+      sapply(fileset_parts, function(part) {
+        if (dir.exists(part)) {
+          sprintf("./%s", part)
+        } else {
+          sprintf("./%s", part)
+        }
+      }),
+      collapse = " "
+    )
+    src_snippet <- sprintf(
+      "   src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ",
+      fileset_nix
+    )
+  }
+
   # Updated snippet with buildInputs and configurePhase
   snippet <- sprintf(
-    "  %s = makeRDerivation {\n    name = \"%s\";\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
+    "  %s = makeRDerivation {\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
     out_name,
     out_name,
+    src_snippet,
     base,
     base,
     build_phase
   )
-
-  # nix_env code
-  nix_lines <- c(
-    paste0(base, " = import ./", nix_env, ";"),
-    paste0(base, "Pkgs = ", base, ".pkgs;"),
-    paste0(base, "Shell = ", base, ".shell;"),
-    paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
-    paste0(
-      base,
-      "ConfigurePhase = ''\n    cp ${./_rixpress/",
-      base,
-      "_libraries.R} libraries.R\n    mkdir -p $out\n  '';"
-    )
-  )
-  nix_code <- paste(nix_lines, collapse = "\n  ")
 
   list(
     name = out_name,
     snippet = snippet,
     type = "rxp_r",
     additional_files = additional_files,
-    nix_env = nix_code
+    nix_env = nix_env
   )
 }
 
@@ -76,11 +85,14 @@ rxp_r <- function(
 #' @param qmd_file Character, path to .qmd file.
 #' @param additional_files Character vector, additional files to include.
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
-#' @details Detects `rxp_read("ref")` in the .qmd file and replaces with derivation output paths.
-#' @return List with `name` (string), `snippet` (Nix code), `type`, and `nix_env`.
+#' @details Detects `rxp_read("ref")` in the .qmd file and replaces with
+#'   derivation output paths.
+#' @return A list with elements: `name`, the `name` of the derivation,
+#'   `snippet`, the Nix boilerplate code, `type`, `additional_files` and `nix_env`.
 #' @examples
 #' \dontrun{
-#'   rxp_quarto(report, "doc.qmd")
+#'   # `images` is a folder containing images to include in the Quarto doc
+#'   rxp_quarto(report, "doc.qmd", "images")
 #' }
 #' @export
 rxp_quarto <- function(
@@ -148,61 +160,33 @@ rxp_quarto <- function(
     build_phase
   )
 
-  # Generate nix_env code
-  nix_lines <- c(
-    paste0(base, " = import ./", nix_env, ";"),
-    paste0(base, "Pkgs = ", base, ".pkgs;"),
-    paste0(base, "Shell = ", base, ".shell;"),
-    paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
-    paste0(
-      base,
-      "ConfigurePhase = ''\n    cp ${./_rixpress/",
-      base,
-      "_libraries.R} libraries.R\n    mkdir -p $out\n  '';"
-    )
-  )
-  nix_code <- paste(nix_lines, collapse = "\n  ")
-
   # Return the result as a list
   list(
     name = out_name,
     snippet = snippet,
     type = "rxp_quarto",
     additional_files = additional_files,
-    nix_env = nix_code
+    nix_env = nix_env
   )
 }
 
-#' Create a Nix derivation for Python code execution
-#'
-#' This function generates a Nix derivation that executes a given Python
-#' expression and serializes the result using Python's `pickle` module. The
-#' derivation is designed to work with Python environments defined in a
-#' `default.nix` file.
-#'
-#' @param name A symbol representing the name of the variable to be serialized
-#'   and the derivation name.
-#'   It must be a valid Python variable name (e.g., no dots).
-#' @param py_expr A string containing the Python expression to be assigned to
-#'   the variable specified by `name`.
-#'   The function will execute `<name> = <py_expr>` in Python.
-#' @param additional_files Character vector, additional files to include. These
-#'   are the files that contain custom functions required for this derivation.
-#' @param nix_env The path to the Nix environment file (default: "default.nix").
-#'
-#' @return A list containing the derivation name, the Nix derivation snippet,
-#'   the type of derivation ("rxp_py"), potential additional files,
-#'   and the Nix environment setup code.
-#'
-#' @examples
-#' # Generate a derivation that assigns 42 to 'my_result' and pickles it
-#' \dontrun{
-#'   rxp_py(my_result, "42")
-#' }
-#' # The generated Python code will be:
-#' # exec(open('libraries.py').read()); exec('my_result = 42');
-#' # import pickle; with open('my_result.pickle', 'wb') as f:
-#' #     pickle.dump(globals()['my_result'], f)
+#' rxp_py Creates a Nix expression running a Python function
+#' @param name Symbol, name of the derivation.
+#' @param expr R code to generate the expression.
+#' @param additional_files Character vector, additional files to include. Custom
+#'   functions must go into a script called "functions.R", and additional files
+#'   that need to be accessible during the build process can be named anything.
+#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
+#' @details At a basic level,
+#'   `rxp_py(mtcars_am, "mtcars.filter(polars.col('am') == 1)")`
+#'   is equivalent to `mtcars_am = mtcars.filter(polars.col('am') == 1).
+#'   `rxp_py()` generates the required Nix boilerplate to output a
+#'   so-called "derivation" in Nix jargon. A Nix derivation is a recipe
+#'   that defines how to create an output (in this case `mtcars_am`)
+#'   including its dependencies, build steps, and output paths.
+#' @return A list with elements: `name`, the `name` of the derivation,
+#'   `snippet`, the Nix boilerplate code, `type`, `additional_files` and `nix_env`.
+#' @examples rxp_py(mtcars_pl_am, py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()")
 #' @export
 rxp_py <- function(
   name,
@@ -228,35 +212,44 @@ with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
 
+  # Prepare the fileset for src
+  # Remove functions.py as this is handled separately
+  fileset_parts <- setdiff(additional_files, "functions.py")
+  if (identical(fileset_parts, character(0)) || fileset_parts == "") {
+    src_snippet <- ""
+  } else {
+    fileset_nix <- paste(
+      sapply(fileset_parts, function(part) {
+        if (dir.exists(part)) {
+          sprintf("./%s", part)
+        } else {
+          sprintf("./%s", part)
+        }
+      }),
+      collapse = " "
+    )
+    src_snippet <- sprintf(
+      "   src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ",
+      fileset_nix
+    )
+  }
+
   snippet <- sprintf(
-    "  %s = makePyDerivation {\n    name = \"%s\";\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
+    "  %s = makePyDerivation {\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
     out_name,
     out_name,
+    src_snippet,
     base,
     base,
     build_phase
   )
-
-  nix_lines <- c(
-    paste0(base, " = import ./", nix_env, ";"),
-    paste0(base, "Pkgs = ", base, ".pkgs;"),
-    paste0(base, "Shell = ", base, ".shell;"),
-    paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
-    paste0(
-      base,
-      "ConfigurePhase = ''\n    cp ${./_rixpress/",
-      base,
-      "_libraries.py} libraries.py\n    mkdir -p $out\n  '';"
-    )
-  )
-  nix_code <- paste(nix_lines, collapse = "\n  ")
 
   list(
     name = out_name,
     snippet = snippet,
     type = "rxp_py",
     additional_files = additional_files,
-    nix_env = nix_code
+    nix_env = nix_env
   )
 }
 
@@ -317,32 +310,12 @@ rxp_file_common <- function(
     build_phase
   )
 
-  # Generate nix_env setup code
-  nix_lines <- c(
-    paste0(base, " = import ./", nix_env, ";"),
-    paste0(base, "Pkgs = ", base, ".pkgs;"),
-    paste0(base, "Shell = ", base, ".shell;"),
-    paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
-    paste0(
-      base,
-      "ConfigurePhase = ''\n    cp ${./_rixpress/",
-      base,
-      "_libraries.",
-      library_ext,
-      "} libraries.",
-      library_ext,
-      "\n    mkdir -p $out\n  '';"
-    )
-  )
-
-  nix_code <- paste(nix_lines, collapse = "\n  ")
-
   list(
     name = out_name,
     snippet = snippet,
     type = type,
     additional_files = "",
-    nix_env = nix_code
+    nix_env = nix_env
   )
 }
 
@@ -390,7 +363,7 @@ saveRDS(data, '%s.rds')\"",
 #' @details See original documentation for usage notes.
 #' @return A list with `name`, `snippet`, `type`, and `nix_env`.
 #' @export
-rxp_py_file <- function(name, path, read_function, nix_env = "default.nix") {  
+rxp_py_file <- function(name, path, read_function, nix_env = "default.nix") {
   out_name <- deparse(substitute(name))
 
   read_function <- gsub("'", "\\'", read_function, fixed = TRUE)
@@ -430,7 +403,7 @@ with open('%s.pickle', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
 #' @return A list with elements: `name`, the `name` of the derivation,
 #'   `snippet`, the Nix boilerplate code, `type`, `additional_files`
 #'    (for compatibility reasons only) and `nix_env`.
-#' @examples 
+#' @examples
 #' \dontrun{
 #'   rxp_py2r(my_obj, my_python_object)
 #'  }
@@ -440,12 +413,13 @@ rxp_py2r <- function(
   expr,
   nix_env = "default.nix"
 ) {
- 
   # check if reticulate is installed
   if (!requireNamespace("reticulate", quietly = TRUE)) {
-    stop("The 'reticulate' package is required to convert between Python and R objects.\nPlease install it to use `rxp_py2r()`.")
+    stop(
+      "The 'reticulate' package is required to convert between Python and R objects.\nPlease install it to use `rxp_py2r()`."
+    )
   }
-  
+
   out_name <- deparse(substitute(name))
   expr_str <- deparse(substitute(expr))
   expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
@@ -472,25 +446,11 @@ rxp_py2r <- function(
     build_phase
   )
 
-  nix_lines <- c(
-    paste0(base, " = import ./", nix_env, ";"),
-    paste0(base, "Pkgs = ", base, ".pkgs;"),
-    paste0(base, "Shell = ", base, ".shell;"),
-    paste0(base, "BuildInputs = ", base, "Shell.buildInputs;"),
-    paste0(
-      base,
-      "ConfigurePhase = ''\n    cp ${./_rixpress/",
-      base,
-      "_libraries.R} libraries.R\n    mkdir -p $out\n  '';"
-    )
-  )
-  nix_code <- paste(nix_lines, collapse = "\n  ")
-
   list(
     name = out_name,
     snippet = snippet,
     type = "rxp_py2r",
     additional_files = "",
-    nix_env = nix_code
+    nix_env = nix_env
   )
 }

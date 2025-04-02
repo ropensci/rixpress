@@ -1,8 +1,9 @@
 #' Generate a Python script with import statements from a default.nix file
 #'
 #' @param nix_file Path to the default.nix file (default: "default.nix")
-#' @param additional_files Character vector, additional files to include. These
-#'   are the files that contain custom functions required for this derivation.
+#' @param additional_files Character vector, additional files to include. Custom
+#'   functions must go into a script called "functions.py", and additional files
+#'   that need to be accessible during the build process can be named anything.
 #' @param project_path Path to root of project, typically "."
 #' @return A Python script to import the libraries inside of derivations
 #' @noRd
@@ -15,6 +16,7 @@ generate_py_libraries_from_nix <- function(
   if (is.null(packages)) {
     return(NULL)
   }
+
   nix_file_name <- gsub("[^a-zA-Z0-9]", "_", nix_file)
   nix_file_name <- sub("_nix$", "", nix_file_name)
 
@@ -32,6 +34,9 @@ generate_py_libraries_from_nix <- function(
 #' Generate a Python script with import statements for Python packages
 #'
 #' @param packages List of Python package names
+#' @param additional_files Character vector, additional files to include. Custom
+#'   functions must go into a script called "functions.py", and additional files
+#'   that need to be accessible during the build process can be named anything.
 #' @param outfile Path to the output file, we recommend to leave the
 #'   default `"_rixpress/libraries.py"`
 #' @return A Python script with import statements for the specified packages
@@ -51,16 +56,18 @@ generate_py_libraries_script <- function(
   packages <- gsub("scikit-learn", "sklearn", packages)
   import_lines <- paste0("import ", packages)
 
-  if (length(additional_files) == 1 && additional_files == "") {
-    additional_files_content <- character(0)
-  } else {
-    additional_files_content <- unlist(
-      sapply(additional_files, readLines),
-      use.names = FALSE
-    )
-  }
+  functions_py <- any(grepl("functions.py", additional_files))
 
-  output <- append(import_lines, additional_files_content)
+  if (!functions_py) {
+    output <- import_lines
+  } else if (functions_py) {
+    functions_py_script <- Filter(
+      \(x) (grepl("functions.py", x)),
+      x = additional_files
+    )
+    functions_py_content <- readLines(functions_py_script)
+    output <- append(import_lines, functions_py_content)
+  }
 
   writeLines(output, outfile)
 }

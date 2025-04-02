@@ -1,28 +1,32 @@
 let
   default = import ./default.nix;
-  defaultPkgs = default.pkgs;
-  defaultShell = default.shell;
-  defaultBuildInputs = defaultShell.buildInputs;
-  defaultConfigurePhase = ''
+defaultPkgs = default.pkgs;
+defaultShell = default.shell;
+defaultBuildInputs = defaultShell.buildInputs;
+defaultConfigurePhase = ''
     cp ${./_rixpress/default_libraries.R} libraries.R
+cp ${./_rixpress/default2_libraries.R} default2_libraries.R
     mkdir -p $out
   '';
+  
 default2 = import ./default2.nix;
-  default2Pkgs = default2.pkgs;
-  default2Shell = default2.shell;
-  default2BuildInputs = default2Shell.buildInputs;
-  default2ConfigurePhase = ''
+default2Pkgs = default2.pkgs;
+default2Shell = default2.shell;
+default2BuildInputs = default2Shell.buildInputs;
+default2ConfigurePhase = ''
     cp ${./_rixpress/default2_libraries.R} libraries.R
     mkdir -p $out
   '';
+  
 quarto_env = import ./quarto-env.nix;
-  quarto_envPkgs = quarto_env.pkgs;
-  quarto_envShell = quarto_env.shell;
-  quarto_envBuildInputs = quarto_envShell.buildInputs;
-  quarto_envConfigurePhase = ''
+quarto_envPkgs = quarto_env.pkgs;
+quarto_envShell = quarto_env.shell;
+quarto_envBuildInputs = quarto_envShell.buildInputs;
+quarto_envConfigurePhase = ''
     cp ${./_rixpress/quarto_env_libraries.R} libraries.R
     mkdir -p $out
   '';
+  
   
   # Function to create R derivations
   makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
@@ -85,7 +89,7 @@ saveRDS(data, 'mtcars.rds')"
       Rscript -e "
         source('libraries.R')
         mtcars_head <- readRDS('${mtcars_head}/mtcars_head.rds')
-        mtcars_tail <- tail(mtcars_head)
+        mtcars_tail <- my_tail(mtcars_head)
         saveRDS(mtcars_tail, 'mtcars_tail.rds')"
     '';
   };

@@ -1,10 +1,11 @@
 #' Generate an R script with library calls from a default.nix file
 #'
 #' @param nix_file Path to the default.nix file (default: "default.nix")
-#' @param additional_files Character vector, additional files to include. These
-#'   are the files that contain custom functions required for this derivation.
+#' @param additional_files Character vector, additional files to include. Custom
+#'   functions must go into a script called "functions.R", and additional files
+#'   that need to be accessible during the build process can be named anything.
 #' @param project_path Path to root of project, typically "."
-#' @return An script to load the libraries inside of derivations.
+#' @return An R script to load the libraries inside of derivations.
 #' @noRd
 generate_r_libraries_from_nix <- function(
   nix_file,
@@ -33,8 +34,9 @@ generate_r_libraries_from_nix <- function(
 #' Helper function to add 'library()' to packages.
 #'
 #' @param nix_file Path to the default.nix file (default: "default.nix")
-#' @param additional_files Character vector, additional files to include. These
-#'   are the files that contain custom functions required for this derivation.
+#' @param additional_files Character vector, additional files to include. Custom
+#'   functions must go into a script called "functions.R", and additional files
+#'   that need to be accessible during the build process can be named anything.
 #' @param outfile Path to the output file, we recommend to leave the
 #'   default `"_rixpress/libraries.R"`
 #' @return A script to load the libraries inside of derivations.
@@ -44,27 +46,29 @@ generate_r_libraries_script <- function(
   additional_files = "",
   outfile
 ) {
+  functions_R <- any(grepl("functions.R", additional_files))
+
   library_lines <- paste0("library(", packages, ")")
 
-  if (length(additional_files) == 1 && additional_files == "") {
-    additional_files_content <- character(0)
-  } else {
-    additional_files_content <- unlist(
-      sapply(additional_files, readLines),
-      use.names = FALSE
+  if (!functions_R) {
+    output <- library_lines
+  } else if (functions_R) {
+    functions_R_script <- Filter(
+      \(x) (grepl("functions.R", x)),
+      x = additional_files
     )
+    functions_R_content <- readLines(functions_R_script)
+    output <- append(library_lines, functions_R_content)
   }
-
-  output <- append(library_lines, additional_files_content)
 
   writeLines(output, outfile)
 }
 
-#' Generate an R script with library calls from a default.nix file
+#' Extract R packages from a default.nix file
 #'
 #' @param nix_file Path to the default.nix file (default: "default.nix")
 #' @param project_path Path to root of project, typically "."
-#' @return List of packages defined in the rpkgs block of a default.nix file
+#' @return List of R packages defined in the rpkgs block of a default.nix file
 #' @noRd
 parse_rpkgs <- function(nix_file, project_path) {
   # Read the file as lines

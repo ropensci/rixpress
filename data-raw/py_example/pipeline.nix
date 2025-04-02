@@ -1,12 +1,13 @@
 let
   default = import ./default.nix;
-  defaultPkgs = default.pkgs;
-  defaultShell = default.shell;
-  defaultBuildInputs = defaultShell.buildInputs;
-  defaultConfigurePhase = ''
+defaultPkgs = default.pkgs;
+defaultShell = default.shell;
+defaultBuildInputs = defaultShell.buildInputs;
+defaultConfigurePhase = ''
     cp ${./_rixpress/default_libraries.py} libraries.py
     mkdir -p $out
   '';
+  
   
   # Function to create Python derivations
   makePyDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
@@ -57,7 +58,7 @@ with open('diabetes.pickle', 'wb') as f: pickle.dump(globals()['diabetes'], f)"
       python -c "
 exec(open('libraries.py').read())
 with open('${diabetes}/diabetes.pickle', 'rb') as f: diabetes = pickle.load(f)
-exec('diabetes_head = diabetes.head()')
+exec('diabetes_head = my_head(diabetes)')
 with open('diabetes_head.pickle', 'wb') as f: pickle.dump(globals()['diabetes_head'], f)"
     '';
   };

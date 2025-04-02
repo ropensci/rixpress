@@ -6,7 +6,11 @@ d1 <- rxp_py(
   diabetes,
   'pandas.DataFrame(diabetes_raw.data, columns=diabetes_raw.feature_names)'
 )
-d2 <- rxp_py(diabetes_head, 'diabetes.head()')
+d2 <- rxp_py(
+  diabetes_head,
+  'my_head(diabetes)',
+  additional_files = "functions.py"
+)
 d3 <- rxp_py(diabetes_tail, 'diabetes.tail()')
 d4 <- rxp_py(
   concat_diabetes,
@@ -17,7 +21,9 @@ rxp_list <- list(d0, d1, d2, d3, d4)
 
 rixpress(rxp_list, project_path = ".")
 
-#plot_dag()
+plot_dag()
+
+rxp_make()
 
 dag_obj <- plot_dag(return_igraph = TRUE)
 
