@@ -64,10 +64,16 @@ building reproducible analytical pipelines with Nix, inspired by the
 
 
 <dl><dt id="arg-derivs">derivs<a class="anchor" aria-label="anchor" href="#arg-derivs"></a></dt>
-<dd><p>A list of derivation objects, where each object must have two
-elements: <code>$name</code> (a character string naming the derivation) and <code>$snippet</code>
-(a character string containing the Nix code defining the derivation).
-Typically, these objects are created by a function like <code>rxp_r</code>.</p></dd>
+<dd><p>A list of derivation objects, where each object is a list of
+five elements:
+- <code>$name</code>, character, name of the derivation
+- <code>$snippet</code>, character, the nix code snippet to build this derivation
+- <code>$type</code>, character, can be R, Python or Quarto
+- <code>$additional_files</code>, character vector of paths to files to make
+available to build sandbox
+- <code>$nix_env</code>, character, path to Nix environment to build this derivation
+A single deriv is the output of <code><a href="rxp_r.html">rxp_r()</a></code>, <code><a href="rxp_quarto.html">rxp_quarto()</a></code> or <code><a href="rxp_py.html">rxp_py()</a></code>
+function.</p></dd>
 
 
 <dt id="arg-project-path">project_path<a class="anchor" aria-label="anchor" href="#arg-project-path"></a></dt>
