@@ -115,9 +115,8 @@ rxp_quarto <- function(
   # Generate substitution commands for each reference
   sub_cmds <- sapply(refs, function(ref) {
     sprintf(
-      "substituteInPlace %s --replace-fail 'rxp_read(\"%s\")' 'rxp_read(\"${%s}/%s.rds\")'",
+      "substituteInPlace %s --replace-fail 'rxp_read(\"%s\")' 'rxp_read(\"${%s}\")'",
       qmd_file,
-      ref,
       ref,
       ref
     )
@@ -425,10 +424,12 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
     )
   } else if (direction == "r2py") {
     r_command <- sprintf(
-      "         reticulate::py_save_object(%s, '${%s}/%s.pickle', pickle = 'pickle')",
-      out_name,
+      "         %s <- readRDS('${%s}/%s.rds')\n         reticulate::py_save_object(%s, '%s.pickle', pickle = 'pickle')",
       expr_str,
-      expr_str
+      expr_str,
+      expr_str,
+      expr_str,
+      out_name
     )
   } else {
     stop("Invalid direction. Use 'py2r' or 'r2py'.")

@@ -30,13 +30,15 @@ quarto_envConfigurePhase = ''
   
   # Function to create R derivations
   makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
-    let rdsFile = "${name}.rds";
-    in defaultPkgs.stdenv.mkDerivation {
+    defaultPkgs.stdenv.mkDerivation {
       inherit name src;
       dontUnpack = true;
       inherit buildInputs configurePhase buildPhase;
       installPhase = ''
-        cp ${rdsFile} $out/
+        # This install phase will copy either an rds, or a
+        # pickle to $out/. This is needed because reticulate::py_save_object
+        # runs as an R derivation, but outputs a python output.
+        cp ${name}.rds $out/ 2>/dev/null || cp ${name}.pickle $out/
       '';
     };
   # Function to create Python derivations
@@ -112,16 +114,42 @@ with open('mtcars_pl_am.pickle', 'wb') as f: pickle.dump(globals()['mtcars_pl_am
     '';
   };
 
+  mtcars_head_py = makeRDerivation {
+    name = "mtcars_head_py";
+    buildInputs = defaultBuildInputs;
+    configurePhase = defaultConfigurePhase;
+    buildPhase = ''
+      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'
+       Rscript -e "
+         source('libraries.R')
+         mtcars_head <- readRDS('${mtcars_head}/mtcars_head.rds')
+         reticulate::py_save_object(mtcars_head, 'mtcars_head_py.pickle', pickle = 'pickle')"
+    '';
+  };
+
+  mtcars_tail_py = makePyDerivation {
+    name = "mtcars_tail_py";
+    buildInputs = py_envBuildInputs;
+    configurePhase = py_envConfigurePhase;
+    buildPhase = ''
+      python -c "
+exec(open('libraries.py').read())
+with open('${mtcars_head_py}/mtcars_head_py.pickle', 'rb') as f: mtcars_head_py = pickle.load(f)
+exec('mtcars_tail_py = mtcars_head_py.tail()')
+with open('mtcars_tail_py.pickle', 'wb') as f: pickle.dump(globals()['mtcars_tail_py'], f)"
+    '';
+  };
+
   mtcars_tail = makeRDerivation {
     name = "mtcars_tail";
     buildInputs = defaultBuildInputs;
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
-      Rscript -e "
-        source('libraries.R')
-        mtcars_head <- readRDS('${mtcars_head}/mtcars_head.rds')
-        mtcars_tail <- tail(mtcars_head)
-        saveRDS(mtcars_tail, 'mtcars_tail.rds')"
+      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'
+       Rscript -e "
+         source('libraries.R')
+         mtcars_tail <- reticulate::py_load_object('${mtcars_tail_py}/mtcars_tail_py.pickle', pickle = 'pickle', convert = TRUE)
+         saveRDS(mtcars_tail, 'mtcars_tail.rds')"
     '';
   };
 
@@ -149,9 +177,10 @@ with open('mtcars_pl_am.pickle', 'wb') as f: pickle.dump(globals()['mtcars_pl_am
     buildPhase = ''
   mkdir home
   export HOME=$PWD/home
-  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_head")' 'rxp_read("${mtcars_head}/mtcars_head.rds")'
-  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail")' 'rxp_read("${mtcars_tail}/mtcars_tail.rds")'
-  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_mpg")' 'rxp_read("${mtcars_mpg}/mtcars_mpg.rds")'
+  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_head")' 'rxp_read("${mtcars_head}")'
+  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail")' 'rxp_read("${mtcars_tail}")'
+  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_mpg")' 'rxp_read("${mtcars_mpg}")'
+  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail_py")' 'rxp_read("${mtcars_tail_py}")'
   quarto render page.qmd --output-dir $out
     '';
   };
@@ -159,11 +188,11 @@ with open('mtcars_pl_am.pickle', 'wb') as f: pickle.dump(globals()['mtcars_pl_am
   # Generic default target that builds all derivations
   allDerivations = defaultPkgs.symlinkJoin {
     name = "all-derivations";
-    paths = with builtins; attrValues { inherit mtcars_pl mtcars_pl_am mtcars_am mtcars_head mtcars_tail mtcars_mpg page; };
+    paths = with builtins; attrValues { inherit mtcars_pl mtcars_pl_am mtcars_am mtcars_head mtcars_head_py mtcars_tail_py mtcars_tail mtcars_mpg page; };
   };
 
 in
 {
-  inherit mtcars_pl mtcars_pl_am mtcars_am mtcars_head mtcars_tail mtcars_mpg page;
+  inherit mtcars_pl mtcars_pl_am mtcars_am mtcars_head mtcars_head_py mtcars_tail_py mtcars_tail mtcars_mpg page;
   default = allDerivations;
 }

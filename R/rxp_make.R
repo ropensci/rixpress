@@ -46,11 +46,6 @@ rxp_make <- function(verbose = FALSE) {
     spinner = TRUE
   )
 
-  if (build_process$status != 0) {
-    cat(build_process$stderr)
-    stop("Build failed! Check the log above for hints\nor run `rxp_inspect()`.")
-  }
-
   build_log <- lapply(drv_paths, function(drv_path) {
     # Get the output paths for this derivation
     output_result <- processx::run(
@@ -83,6 +78,11 @@ rxp_make <- function(verbose = FALSE) {
       "Build failures:\n",
       paste(capture.output(print(failures)), collapse = "\n")
     )
+  }
+
+  if (build_process$status != 0) {
+    cat(build_process$stderr)
+    stop("Build failed! Check the log above for hints\nor run `rxp_inspect()`.")
   }
 
   if (build_process$status == 0) {

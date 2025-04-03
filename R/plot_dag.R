@@ -41,6 +41,7 @@ plot_dag <- function(json_path = "_rixpress/dag.json", return_igraph = FALSE) {
     "rxp_py" = "triangle",
     "rxp_py2r" = "triangle",
     "rxp_r" = "circle",
+    "rxp_r2py" = "circle",
     "rxp_quarto" = "square"
   )
   df_data$shape <- shape_mapping[df_data$type]
