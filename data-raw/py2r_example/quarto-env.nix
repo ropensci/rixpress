@@ -28,8 +28,8 @@ let
     name = "rixpress";
     src = pkgs.fetchgit {
       url = "https://github.com/b-rodrigues/rixpress/";
-      rev = "9ec945e6dd47acfa45e8ee7909d0a1ee518862a6";
-      sha256 = "sha256-ZCV+gygh0hnabjqv6N0p4uPi3J716+N9Vn4rOREXArQ=";
+      rev = "defcd2cf29f5d688f2701e62e7d5e2ac82fcf6a6";
+      sha256 = "sha256-E/PffvghCbPcZJ8233KETcFQxukrptLSEBuJHpiTo98=";
     };
     propagatedBuildInputs = builtins.attrValues {
       inherit (pkgs.rPackages) 
@@ -53,6 +53,7 @@ let
       pandoc
       which
       R
+      python312
       quarto;
   };
 
@@ -65,7 +66,7 @@ shell = pkgs.mkShell {
    LC_PAPER = "en_US.UTF-8";
    LC_MEASUREMENT = "en_US.UTF-8";
 
-  buildInputs = [ rpkgs system_packages rixpress ];
+  buildInputs = [ rpkgs pypkgs system_packages rixpress ];
   
 };
 in

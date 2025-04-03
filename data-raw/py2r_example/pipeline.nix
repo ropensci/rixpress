@@ -178,6 +178,8 @@ with open('mtcars_tail_py.pickle', 'wb') as f: pickle.dump(globals()['mtcars_tai
     buildPhase = ''
   mkdir home
   export HOME=$PWD/home
+  export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'
+
   substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_head")' 'rxp_read("${mtcars_head}")'
   substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail")' 'rxp_read("${mtcars_tail}")'
   substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_mpg")' 'rxp_read("${mtcars_mpg}")'
