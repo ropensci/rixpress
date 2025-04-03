@@ -393,55 +393,61 @@ with open('%s.pickle', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
     library_ext = "py"
   )
 }
-
-#' Set up and generate the Nix derivation for Python-R object transfer.
+#' Generate the Nix derivation snippet for Python-R object transfer.
 #'
-#' This function performs common setup tasks, including checking for
-#' `reticulate`, extracting and formatting object names, and generating
-#' the `build_phase` based on the specified operation (`load` or `save`).
+#' This function constructs the `build_phase` and Nix derivation snippet
+#' based on the given parameters.
 #'
-#' @param name Symbol, name of the derivation.
-#' @param expr Symbol, object to be transferred.
+#' @param out_name Character, name of the derivation.
+#' @param expr_str Character, name of the object being transferred.
 #' @param nix_env Character, path to the Nix environment file.
 #' @param direction Character, either "py2r" (Python to R) or "r2py" (R to Python).
 #' @return A list with elements: `name`, `snippet`, `type`, `additional_files`, `nix_env`.
-rxp_common_setup <- function(name, expr, nix_env, direction) {
+rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
   if (!requireNamespace("reticulate", quietly = TRUE)) {
     stop(
       "The 'reticulate' package is required to convert between Python and R objects.\nPlease install it to use these functions."
     )
   }
-  
-  out_name <- deparse(substitute(name))
-  expr_str <- deparse(substitute(expr))
+
   expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
-  
+
   if (direction == "py2r") {
     r_command <- sprintf(
       "         %s <- reticulate::py_load_object('${%s}/%s.pickle', pickle = 'pickle', convert = TRUE)\n         saveRDS(%s, '%s.rds')",
-      out_name, expr_str, expr_str, out_name, out_name
+      out_name,
+      expr_str,
+      expr_str,
+      out_name,
+      out_name
     )
   } else if (direction == "r2py") {
     r_command <- sprintf(
       "         reticulate::py_save_object(%s, '${%s}/%s.pickle', pickle = 'pickle')",
-      out_name, expr_str, expr_str
+      out_name,
+      expr_str,
+      expr_str
     )
   } else {
     stop("Invalid direction. Use 'py2r' or 'r2py'.")
   }
-  
+
   build_phase <- sprintf(
     "export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n       Rscript -e \"\n         source('libraries.R')\n%s\"",
     r_command
   )
-  
+
   snippet <- sprintf(
     "  %s = makeRDerivation {\n    name = \"%s\";\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
-    out_name, out_name, base, base, build_phase
+    out_name,
+    out_name,
+    base,
+    base,
+    build_phase
   )
-  
+
   list(
     name = out_name,
     snippet = snippet,
@@ -450,6 +456,7 @@ rxp_common_setup <- function(name, expr, nix_env, direction) {
     nix_env = nix_env
   )
 }
+
 
 #' Transfer Python object into an R session.
 #'
@@ -467,7 +474,9 @@ rxp_common_setup <- function(name, expr, nix_env, direction) {
 #' }
 #' @export
 rxp_py2r <- function(name, expr, nix_env = "default.nix") {
-  rxp_common_setup(name, expr, nix_env, "py2r")
+  out_name <- deparse(substitute(name))
+  expr_str <- deparse(substitute(expr))
+  rxp_common_setup(out_name, expr_str, nix_env, "py2r")
 }
 
 #' Transfer R object into a Python session.
@@ -486,6 +495,7 @@ rxp_py2r <- function(name, expr, nix_env = "default.nix") {
 #' }
 #' @export
 rxp_r2py <- function(name, expr, nix_env = "default.nix") {
-  rxp_common_setup(name, expr, nix_env, "r2py")
+  out_name <- deparse(substitute(name))
+  expr_str <- deparse(substitute(expr))
+  rxp_common_setup(out_name, expr_str, nix_env, "r2py")
 }
-

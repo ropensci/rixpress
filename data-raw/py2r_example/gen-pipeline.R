@@ -47,4 +47,6 @@ rxp_list <- list(d0, d1, d2, d3, d4, d5, doc)
 
 rixpress(rxp_list, project_path = ".")
 
+rxp_make()
+
 plot_dag()
