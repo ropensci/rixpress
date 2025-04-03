@@ -394,28 +394,61 @@ with open('%s.pickle', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
   )
 }
 
-#' Set up common variables for Python-R conversions.
+#' Set up and generate the Nix derivation for Python-R object transfer.
 #'
-#' This function checks that reticulate is installed and returns a list
-#' containing the derived object name, the modified expression string (with
-#' double quotes replaced), and a sanitized base name from the nix environment.
+#' This function performs common setup tasks, including checking for
+#' `reticulate`, extracting and formatting object names, and generating
+#' the `build_phase` based on the specified operation (`load` or `save`).
 #'
 #' @param name Symbol, name of the derivation.
 #' @param expr Symbol, object to be transferred.
 #' @param nix_env Character, path to the Nix environment file.
-#' @return A list with elements: `out_name`, `expr_str`, and `base`.
-rxp_common_setup <- function(name, expr, nix_env) {
+#' @param direction Character, either "py2r" (Python to R) or "r2py" (R to Python).
+#' @return A list with elements: `name`, `snippet`, `type`, `additional_files`, `nix_env`.
+rxp_common_setup <- function(name, expr, nix_env, direction) {
   if (!requireNamespace("reticulate", quietly = TRUE)) {
     stop(
       "The 'reticulate' package is required to convert between Python and R objects.\nPlease install it to use these functions."
     )
   }
+  
   out_name <- deparse(substitute(name))
   expr_str <- deparse(substitute(expr))
   expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
-  list(out_name = out_name, expr_str = expr_str, base = base)
+  
+  if (direction == "py2r") {
+    r_command <- sprintf(
+      "         %s <- reticulate::py_load_object('${%s}/%s.pickle', pickle = 'pickle', convert = TRUE)\n         saveRDS(%s, '%s.rds')",
+      out_name, expr_str, expr_str, out_name, out_name
+    )
+  } else if (direction == "r2py") {
+    r_command <- sprintf(
+      "         reticulate::py_save_object(%s, '${%s}/%s.pickle', pickle = 'pickle')",
+      out_name, expr_str, expr_str
+    )
+  } else {
+    stop("Invalid direction. Use 'py2r' or 'r2py'.")
+  }
+  
+  build_phase <- sprintf(
+    "export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n       Rscript -e \"\n         source('libraries.R')\n%s\"",
+    r_command
+  )
+  
+  snippet <- sprintf(
+    "  %s = makeRDerivation {\n    name = \"%s\";\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
+    out_name, out_name, base, base, build_phase
+  )
+  
+  list(
+    name = out_name,
+    snippet = snippet,
+    type = paste0("rxp_", direction),
+    additional_files = "",
+    nix_env = nix_env
+  )
 }
 
 #' Transfer Python object into an R session.
@@ -433,38 +466,8 @@ rxp_common_setup <- function(name, expr, nix_env) {
 #'   rxp_py2r(my_obj, my_python_object)
 #' }
 #' @export
-rxp_py2r <- function(
-  name,
-  expr,
-  nix_env = "default.nix"
-) {
-  setup <- rxp_common_setup(name, expr, nix_env)
-  
-  build_phase <- sprintf(
-    "export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n       Rscript -e \"\n         source('libraries.R')\n         %s <- reticulate::py_load_object('${%s}/%s.pickle', pickle = 'pickle', convert = TRUE)\n         saveRDS(%s, '%s.rds')\"",
-    setup$out_name,
-    setup$expr_str,
-    setup$expr_str,
-    setup$out_name,
-    setup$out_name
-  )
-  
-  snippet <- sprintf(
-    "  %s = makeRDerivation {\n    name = \"%s\";\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
-    setup$out_name,
-    setup$out_name,
-    setup$base,
-    setup$base,
-    build_phase
-  )
-  
-  list(
-    name = setup$out_name,
-    snippet = snippet,
-    type = "rxp_py2r",
-    additional_files = "",
-    nix_env = nix_env
-  )
+rxp_py2r <- function(name, expr, nix_env = "default.nix") {
+  rxp_common_setup(name, expr, nix_env, "py2r")
 }
 
 #' Transfer R object into a Python session.
@@ -482,34 +485,7 @@ rxp_py2r <- function(
 #'   rxp_r2py(my_obj, my_r_object)
 #' }
 #' @export
-rxp_r2py <- function(
-  name,
-  expr,
-  nix_env = "default.nix"
-) {
-  setup <- rxp_common_setup(name, expr, nix_env)
-  
-  build_phase <- sprintf(
-    "export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n       Rscript -e \"\n         source('libraries.R')\n         reticulate::py_save_object(%s, '${%s}/%s.pickle', pickle = 'pickle')\"",
-    setup$out_name,
-    setup$expr_str,
-    setup$expr_str
-  )
-  
-  snippet <- sprintf(
-    "  %s = makeRDerivation {\n    name = \"%s\";\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
-    setup$out_name,
-    setup$out_name,
-    setup$base,
-    setup$base,
-    build_phase
-  )
-  
-  list(
-    name = setup$out_name,
-    snippet = snippet,
-    type = "rxp_r2py",
-    additional_files = "",
-    nix_env = nix_env
-  )
+rxp_r2py <- function(name, expr, nix_env = "default.nix") {
+  rxp_common_setup(name, expr, nix_env, "r2py")
 }
+
