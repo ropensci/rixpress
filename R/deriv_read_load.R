@@ -9,7 +9,13 @@ rxp_common <- function(derivation_name) {
   # if derivation_name is a full path to the /nix/store simply return it
   # this is useful for Quarto documents
   if (grepl("^/nix/store/", derivation_name)) {
-    return(derivation_name)
+    files <- list.files(derivation_name, full.names = TRUE)
+
+    if (length(files) == 1) {
+      return(files)
+    } else {
+      return(derivation_name)
+    }
   }
 
   build_log <- rxp_inspect()

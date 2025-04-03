@@ -22,7 +22,7 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
     name <- d$name
     type <- d$type
 
-    if (type == "rxp_r" || type == "rxp_py2r") {
+    if (type == "rxp_r" || type == "rxp_py2r" || type == "rxp_r2py") {
       snippet <- d$snippet
       # Extract the content inside the Rscript -e quotes
       # (allowing for multiple lines)
@@ -87,7 +87,7 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
       }
       # Filter dependencies to only those previously defined
       deps <- intersect(deps, defined[1:(i - 1)])
-    } else if (type == "rxp_py") {
+    } else if (type == "rxp_py" || type == "rxp_r2py") {
       snippet <- d$snippet
       # Extract the content inside the python -c quotes (allowing for multiple lines)
       m <- regexec('python -c \\"([\\s\\S]*?)\\"', snippet, perl = TRUE)

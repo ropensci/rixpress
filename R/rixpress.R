@@ -264,13 +264,15 @@ gen_flat_pipeline <- function(derivs) {
       "
   # Function to create R derivations
   makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
-    let rdsFile = \"${name}.rds\";
-    in defaultPkgs.stdenv.mkDerivation {
+    defaultPkgs.stdenv.mkDerivation {
       inherit name src;
       dontUnpack = true;
       inherit buildInputs configurePhase buildPhase;
       installPhase = ''
-        cp ${rdsFile} $out/
+        # This install phase will copy either an rds, or a
+        # pickle to $out/. This is needed because reticulate::py_save_object
+        # runs as an R derivation, but outputs a python output.
+        cp ${name}.rds $out/ 2>/dev/null || cp ${name}.pickle $out/
       '';
     };"
     )
@@ -337,7 +339,10 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
 
   for (d in dag$derivations) {
     if (
-      length(d$depends) == 0 || d$type == "rxp_quarto" || d$type == "rxp_py2r"
+      length(d$depends) == 0 ||
+        d$type == "rxp_quarto" ||
+        d$type == "rxp_py2r" ||
+        d$type == "rxp_r2py"
     )
       next
 
@@ -451,7 +456,7 @@ generate_libraries_from_nix <- function(
 
 #' @noRd
 get_need_r <- function(types) {
-  any(types %in% c("rxp_r", "rxp_r_file", "rxp_quarto", "rxp_py2r"))
+  any(types %in% c("rxp_r", "rxp_r_file", "rxp_quarto", "rxp_py2r", "rxp_r2py"))
 }
 
 #' @noRd

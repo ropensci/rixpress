@@ -17,18 +17,26 @@ let
     };
   });
 
+  pypkgs = builtins.attrValues {
+    inherit (pkgs.python312Packages) 
+      pandas
+      polars
+      pyarrow;
+  };
+
   rixpress = (pkgs.rPackages.buildRPackage {
     name = "rixpress";
     src = pkgs.fetchgit {
       url = "https://github.com/b-rodrigues/rixpress/";
-      rev = "8ab5a4419acae2a69cef400f3c1630d7139d73c9";
-      sha256 = "sha256-ViLxn0b2lOG0mVYe3IYi6JYGerlyw3wiL4ffGCyMwT0=";
+      rev = "defcd2cf29f5d688f2701e62e7d5e2ac82fcf6a6";
+      sha256 = "sha256-E/PffvghCbPcZJ8233KETcFQxukrptLSEBuJHpiTo98=";
     };
     propagatedBuildInputs = builtins.attrValues {
       inherit (pkgs.rPackages) 
         jsonlite
-        igraph
-        rlang;
+        processx
+        reticulate
+        igraph;
     } ++ [ rix ];
   });
  
@@ -45,6 +53,7 @@ let
       pandoc
       which
       R
+      python312
       quarto;
   };
 
@@ -57,7 +66,7 @@ shell = pkgs.mkShell {
    LC_PAPER = "en_US.UTF-8";
    LC_MEASUREMENT = "en_US.UTF-8";
 
-  buildInputs = [ rpkgs system_packages rixpress ];
+  buildInputs = [ rpkgs pypkgs system_packages rixpress ];
   
 };
 in

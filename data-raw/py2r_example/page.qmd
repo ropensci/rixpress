@@ -10,16 +10,20 @@ format:
 Let's hope this works:
 
 ```{r}
-summary(rixpress::rxp_read("mtcars_head"))
+rixpress::rxp_read("mtcars_head")
 ```
 
 
 ```{r}
-summary(rixpress::rxp_read("mtcars_tail"))
+rixpress::rxp_read("mtcars_tail")
 ```
 
 ```{r}
-summary(rixpress::rxp_read("mtcars_mpg"))
+rixpress::rxp_read("mtcars_mpg")
 ```
 
 {{< include content.qmd >}}
+
+```{r}
+rixpress::rxp_read("mtcars_tail_py")
+```

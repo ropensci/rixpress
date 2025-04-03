@@ -115,9 +115,8 @@ rxp_quarto <- function(
   # Generate substitution commands for each reference
   sub_cmds <- sapply(refs, function(ref) {
     sprintf(
-      "substituteInPlace %s --replace-fail 'rxp_read(\"%s\")' 'rxp_read(\"${%s}/%s.rds\")'",
+      "substituteInPlace %s --replace-fail 'rxp_read(\"%s\")' 'rxp_read(\"${%s}\")'",
       qmd_file,
-      ref,
       ref,
       ref
     )
@@ -126,6 +125,7 @@ rxp_quarto <- function(
   build_phase <- paste(
     "  mkdir home",
     "  export HOME=$PWD/home",
+    "  export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n",
     if (length(sub_cmds) > 0)
       paste("  ", sub_cmds, sep = "", collapse = "\n") else "",
     sprintf("  quarto render %s --output-dir $out", qmd_file),
@@ -393,49 +393,53 @@ with open('%s.pickle', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
     library_ext = "py"
   )
 }
-
-#' Transfer Python object into an R session.
-#' @param name Symbol, name of the derivation.
-#' @param expr Symbol, python object to be loaded into R.
-#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
-#' @details `rxp_py2r(my_obj, my_python_object)` loads a serialized
-#'   Python object and saves it as an RDS file using `reticulate::py_load_object()`.
-#' @return A list with elements: `name`, the `name` of the derivation,
-#'   `snippet`, the Nix boilerplate code, `type`, `additional_files`
-#'    (for compatibility reasons only) and `nix_env`.
-#' @examples
-#' \dontrun{
-#'   rxp_py2r(my_obj, my_python_object)
-#'  }
-#' @export
-rxp_py2r <- function(
-  name,
-  expr,
-  nix_env = "default.nix"
-) {
-  # check if reticulate is installed
+#' Generate the Nix derivation snippet for Python-R object transfer.
+#'
+#' This function constructs the `build_phase` and Nix derivation snippet
+#' based on the given parameters.
+#'
+#' @param out_name Character, name of the derivation.
+#' @param expr_str Character, name of the object being transferred.
+#' @param nix_env Character, path to the Nix environment file.
+#' @param direction Character, either "py2r" (Python to R) or "r2py" (R to Python).
+#' @return A list with elements: `name`, `snippet`, `type`, `additional_files`, `nix_env`.
+rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
   if (!requireNamespace("reticulate", quietly = TRUE)) {
     stop(
-      "The 'reticulate' package is required to convert between Python and R objects.\nPlease install it to use `rxp_py2r()`."
+      "The 'reticulate' package is required to convert between Python and R objects.\nPlease install it to use these functions."
     )
   }
 
-  out_name <- deparse(substitute(name))
-  expr_str <- deparse(substitute(expr))
   expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
-
-  build_phase <- sprintf(
-    "export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n       Rscript -e \"\n         source('libraries.R')\n         %s <- reticulate::py_load_object('${%s}/%s.pickle', pickle = 'pickle', convert = TRUE)\n         saveRDS(%s, '%s.rds')\"",
-    out_name,
-    expr_str,
-    expr_str,
-    out_name,
-    out_name
-  )
-
-  # Derive base from nix_env
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
+
+  if (direction == "py2r") {
+    r_command <- sprintf(
+      "         %s <- reticulate::py_load_object('${%s}/%s.pickle', pickle = 'pickle', convert = TRUE)\n         saveRDS(%s, '%s.rds')",
+      out_name,
+      expr_str,
+      expr_str,
+      out_name,
+      out_name
+    )
+  } else if (direction == "r2py") {
+    r_command <- sprintf(
+      "         %s <- readRDS('${%s}/%s.rds')\n         reticulate::py_save_object(%s, '%s.pickle', pickle = 'pickle')",
+      expr_str,
+      expr_str,
+      expr_str,
+      expr_str,
+      out_name
+    )
+  } else {
+    stop("Invalid direction. Use 'py2r' or 'r2py'.")
+  }
+
+  build_phase <- sprintf(
+    "export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n       Rscript -e \"\n         source('libraries.R')\n%s\"",
+    r_command
+  )
 
   snippet <- sprintf(
     "  %s = makeRDerivation {\n    name = \"%s\";\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
@@ -449,8 +453,51 @@ rxp_py2r <- function(
   list(
     name = out_name,
     snippet = snippet,
-    type = "rxp_py2r",
+    type = paste0("rxp_", direction),
     additional_files = "",
     nix_env = nix_env
   )
+}
+
+
+#' Transfer Python object into an R session.
+#'
+#' @param name Symbol, name of the derivation.
+#' @param expr Symbol, Python object to be loaded into R.
+#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
+#' @details `rxp_py2r(my_obj, my_python_object)` loads a serialized
+#'   Python object and saves it as an RDS file using `reticulate::py_load_object()`.
+#' @return A list with elements: `name`, the name of the derivation,
+#'   `snippet`, the Nix boilerplate code, `type`, `additional_files`
+#'   (for compatibility reasons only) and `nix_env`.
+#' @examples
+#' \dontrun{
+#'   rxp_py2r(my_obj, my_python_object)
+#' }
+#' @export
+rxp_py2r <- function(name, expr, nix_env = "default.nix") {
+  out_name <- deparse(substitute(name))
+  expr_str <- deparse(substitute(expr))
+  rxp_common_setup(out_name, expr_str, nix_env, "py2r")
+}
+
+#' Transfer R object into a Python session.
+#'
+#' @param name Symbol, name of the derivation.
+#' @param expr Symbol, R object to be saved into a Python pickle.
+#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
+#' @details `rxp_r2py(my_obj, my_r_object)` saves an R object to a Python pickle
+#'   using `reticulate::py_save_object()`.
+#' @return A list with elements: `name`, the name of the derivation,
+#'   `snippet`, the Nix boilerplate code, `type`, `additional_files`
+#'   (for compatibility reasons only) and `nix_env`.
+#' @examples
+#' \dontrun{
+#'   rxp_r2py(my_obj, my_r_object)
+#' }
+#' @export
+rxp_r2py <- function(name, expr, nix_env = "default.nix") {
+  out_name <- deparse(substitute(name))
+  expr_str <- deparse(substitute(expr))
+  rxp_common_setup(out_name, expr_str, nix_env, "r2py")
 }

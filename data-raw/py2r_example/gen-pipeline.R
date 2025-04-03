@@ -26,9 +26,20 @@ d3 <- rxp_r(
   additional_files = "functions.R"
 )
 
-d4 <- rxp_r(
+d3_1 <- rxp_r2py(
+  name = mtcars_head_py,
+  expr = mtcars_head
+)
+
+d4 <- rxp_py(
+  name = mtcars_tail_py,
+  py_expr = 'mtcars_head_py.tail()',
+  nix_env = "py-env.nix"
+)
+
+d4_1 <- rxp_py2r(
   name = mtcars_tail,
-  expr = tail(mtcars_head)
+  expr = mtcars_tail_py
 )
 
 d5 <- rxp_r(
@@ -43,8 +54,10 @@ doc <- rxp_quarto(
   nix_env = "quarto-env.nix"
 )
 
-rxp_list <- list(d0, d1, d2, d3, d4, d5, doc)
+rxp_list <- list(d0, d1, d2, d3, d3_1, d4, d4_1, d5, doc)
 
 rixpress(rxp_list, project_path = ".")
+
+rxp_make()
 
 plot_dag()

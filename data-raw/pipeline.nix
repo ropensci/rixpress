@@ -30,13 +30,15 @@ quarto_envConfigurePhase = ''
   
   # Function to create R derivations
   makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
-    let rdsFile = "${name}.rds";
-    in defaultPkgs.stdenv.mkDerivation {
+    defaultPkgs.stdenv.mkDerivation {
       inherit name src;
       dontUnpack = true;
       inherit buildInputs configurePhase buildPhase;
       installPhase = ''
-        cp ${rdsFile} $out/
+        # This install phase will copy either an rds, or a
+        # pickle to $out/. This is needed because reticulate::py_save_object
+        # runs as an R derivation, but outputs a python output.
+        cp ${name}.rds $out/ 2>/dev/null || cp ${name}.pickle $out/
       '';
     };
 
@@ -118,9 +120,11 @@ saveRDS(data, 'mtcars.rds')"
     buildPhase = ''
   mkdir home
   export HOME=$PWD/home
-  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_head")' 'rxp_read("${mtcars_head}/mtcars_head.rds")'
-  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail")' 'rxp_read("${mtcars_tail}/mtcars_tail.rds")'
-  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_mpg")' 'rxp_read("${mtcars_mpg}/mtcars_mpg.rds")'
+  export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'
+
+  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_head")' 'rxp_read("${mtcars_head}")'
+  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail")' 'rxp_read("${mtcars_tail}")'
+  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_mpg")' 'rxp_read("${mtcars_mpg}")'
   quarto render page.qmd --output-dir $out
     '';
   };
