@@ -17,12 +17,19 @@ let
     };
   });
 
+  pypkgs = builtins.attrValues {
+    inherit (pkgs.python312Packages) 
+      pandas
+      polars
+      pyarrow;
+  };
+
   rixpress = (pkgs.rPackages.buildRPackage {
     name = "rixpress";
     src = pkgs.fetchgit {
       url = "https://github.com/b-rodrigues/rixpress/";
-      rev = "6146a48399e595714cb64460da3b95de137330aa";
-      sha256 = "sha256-/LtJZFv0aWtHOWb5IyIAYxk0SJTgEQvoiCpJ+HMuuls=";
+      rev = "9ec945e6dd47acfa45e8ee7909d0a1ee518862a6";
+      sha256 = "sha256-ZCV+gygh0hnabjqv6N0p4uPi3J716+N9Vn4rOREXArQ=";
     };
     propagatedBuildInputs = builtins.attrValues {
       inherit (pkgs.rPackages) 

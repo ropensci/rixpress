@@ -125,6 +125,7 @@ rxp_quarto <- function(
   build_phase <- paste(
     "  mkdir home",
     "  export HOME=$PWD/home",
+    "  export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n",
     if (length(sub_cmds) > 0)
       paste("  ", sub_cmds, sep = "", collapse = "\n") else "",
     sprintf("  quarto render %s --output-dir $out", qmd_file),

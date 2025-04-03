@@ -23,7 +23,8 @@ quarto_envPkgs = quarto_env.pkgs;
 quarto_envShell = quarto_env.shell;
 quarto_envBuildInputs = quarto_envShell.buildInputs;
 quarto_envConfigurePhase = ''
-    cp ${./_rixpress/quarto_env_libraries.R} libraries.R
+    cp ${./_rixpress/quarto_env_libraries.py} libraries.py
+cp ${./_rixpress/quarto_env_libraries.R} libraries.R
     mkdir -p $out
   '';
   
