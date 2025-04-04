@@ -165,6 +165,7 @@ rxp_quarto <- function(
     name = out_name,
     snippet = snippet,
     type = "rxp_quarto",
+    qmd_file = qmd_file,
     additional_files = additional_files,
     nix_env = nix_env
   )
