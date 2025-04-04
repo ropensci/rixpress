@@ -54,8 +54,9 @@
 
 
 <dt id="arg-additional-files">additional_files<a class="anchor" aria-label="anchor" href="#arg-additional-files"></a></dt>
-<dd><p>Character vector, additional files to include. These
-are the files that contain custom functions required for this derivation.</p></dd>
+<dd><p>Character vector, additional files to include. Custom
+functions must go into a script called "functions.R", and additional files
+that need to be accessible during the build process can be named anything.</p></dd>
 
 
 <dt id="arg-nix-env">nix_env<a class="anchor" aria-label="anchor" href="#arg-nix-env"></a></dt>
@@ -65,7 +66,7 @@ are the files that contain custom functions required for this derivation.</p></d
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list with elements: <code>name</code>, the <code>name</code> of the derivation,
-<code>snippet</code>, the Nix boilerplate code, <code>type</code>, and <code>nix_env</code>.</p>
+<code>snippet</code>, the Nix boilerplate code, <code>type</code>, <code>additional_files</code> and <code>nix_env</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
