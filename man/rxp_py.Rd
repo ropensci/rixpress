@@ -2,42 +2,34 @@
 % Please edit documentation in R/derivs.R
 \name{rxp_py}
 \alias{rxp_py}
-\title{Create a Nix derivation for Python code execution}
+\title{rxp_py Creates a Nix expression running a Python function}
 \usage{
 rxp_py(name, py_expr, additional_files = "", nix_env = "default.nix")
 }
 \arguments{
-\item{name}{A symbol representing the name of the variable to be serialized
-and the derivation name.
-It must be a valid Python variable name (e.g., no dots).}
+\item{name}{Symbol, name of the derivation.}
 
-\item{py_expr}{A string containing the Python expression to be assigned to
-the variable specified by \code{name}.
-The function will execute \verb{<name> = <py_expr>} in Python.}
+\item{additional_files}{Character vector, additional files to include. Custom
+functions must go into a script called "functions.R", and additional files
+that need to be accessible during the build process can be named anything.}
 
-\item{additional_files}{Character vector, additional files to include. These
-are the files that contain custom functions required for this derivation.}
+\item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
 
-\item{nix_env}{The path to the Nix environment file (default: "default.nix").}
+\item{expr}{R code to generate the expression.}
 }
 \value{
-A list containing the derivation name, the Nix derivation snippet,
-the type of derivation ("rxp_py"), potential additional files,
-and the Nix environment setup code.
+A list with elements: \code{name}, the \code{name} of the derivation,
+\code{snippet}, the Nix boilerplate code, \code{type}, \code{additional_files} and \code{nix_env}.
 }
 \description{
-This function generates a Nix derivation that executes a given Python
-expression and serializes the result using Python's \code{pickle} module. The
-derivation is designed to work with Python environments defined in a
-\code{default.nix} file.
+rxp_py Creates a Nix expression running a Python function
+}
+\details{
+At a basic level,
+\code{rxp_py(mtcars_am, "mtcars.filter(polars.col('am') == 1)")}
+is equivalent to \verb{mtcars_am = mtcars.filter(polars.col('am') == 1). }rxp_py()\verb{generates the required Nix boilerplate to output a so-called "derivation" in Nix jargon. A Nix derivation is a recipe that defines how to create an output (in this case}mtcars_am`)
+including its dependencies, build steps, and output paths.
 }
 \examples{
-# Generate a derivation that assigns 42 to 'my_result' and pickles it
-\dontrun{
-  rxp_py(my_result, "42")
-}
-# The generated Python code will be:
-# exec(open('libraries.py').read()); exec('my_result = 42');
-# import pickle; with open('my_result.pickle', 'wb') as f:
-#     pickle.dump(globals()['my_result'], f)
+rxp_py(mtcars_pl_am, py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()")
 }

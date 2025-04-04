@@ -16,16 +16,19 @@ rxp_quarto(name, qmd_file, additional_files = "", nix_env = "default.nix")
 \item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
 }
 \value{
-List with \code{name} (string), \code{snippet} (Nix code), \code{type}, and \code{nix_env}.
+A list with elements: \code{name}, the \code{name} of the derivation,
+\code{snippet}, the Nix boilerplate code, \code{type}, \code{additional_files} and \code{nix_env}.
 }
 \description{
 Render a Quarto document as a Nix derivation
 }
 \details{
-Detects \code{rxp_read("ref")} in the .qmd file and replaces with derivation output paths.
+Detects \code{rxp_read("ref")} in the .qmd file and replaces with
+derivation output paths.
 }
 \examples{
 \dontrun{
-  rxp_quarto(report, "doc.qmd")
+  # `images` is a folder containing images to include in the Quarto doc
+  rxp_quarto(report, "doc.qmd", "images")
 }
 }

@@ -11,14 +11,15 @@ rxp_r(name, expr, additional_files = "", nix_env = "default.nix")
 
 \item{expr}{R code to generate the expression.}
 
-\item{additional_files}{Character vector, additional files to include. These
-are the files that contain custom functions required for this derivation.}
+\item{additional_files}{Character vector, additional files to include. Custom
+functions must go into a script called "functions.R", and additional files
+that need to be accessible during the build process can be named anything.}
 
 \item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
 }
 \value{
 A list with elements: \code{name}, the \code{name} of the derivation,
-\code{snippet}, the Nix boilerplate code, \code{type}, and \code{nix_env}.
+\code{snippet}, the Nix boilerplate code, \code{type}, \code{additional_files} and \code{nix_env}.
 }
 \description{
 rxp_r Creates a Nix expression running an R function
