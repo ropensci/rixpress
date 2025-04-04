@@ -2,6 +2,7 @@
 title: "Loading derivations outputs in a quarto doc"
 format:
   html:
+    embed-resources: true
     toc: true
 ---
 
