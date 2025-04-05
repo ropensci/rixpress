@@ -45,8 +45,170 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9">
-Simplifies the creation of reproducible analytical pipelines using the 'Nix' package manager as a build automation tool. Heavily inspired by the 'targets' package.
+  <main id="main" class="col-md-9"><div class="section level1">
+<div class="page-header"><h1 id="rixpress-reproducible-analytical-pipelines-with-nix">rixpress: Reproducible Analytical Pipelines with Nix<a class="anchor" aria-label="anchor" href="#rixpress-reproducible-analytical-pipelines-with-nix"></a>
+</h1></div>
+<p>This package provides a framework for building reproducible analytical pipelines using Nix, heavily inspired by the R package <a href="https://docs.ropensci.org/targets/" class="external-link">targets</a>. It leverages the <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, which provides helper function to define reproducible development environments as code using Nix ensuring the pipeline runs in a fully reproducible Nix-managed environment. The pipeline itself is defined in a <code>pipeline.nix</code> file, which is automatically generated based on simple R declarations. Concretely, <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> made using Nix as a package manager easier for R users, <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> makes it now easy to use Nix as a build automation tool!</p>
+<p>For example this R script defines some <em>derivations</em> (<code>d0</code>, …, <code>d4</code> and <code>doc</code>) which are then passed to <code><a href="reference/rixpress.html">rixpress()</a></code> to generate the <code>pipeline.nix</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">d0</span> <span class="op">&lt;-</span> <span class="fu">rxp_file</span><span class="op">(</span><span class="va">mtcars</span>, <span class="st">'mtcars.csv'</span>, \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span>file <span class="op">=</span> <span class="va">x</span>, sep <span class="op">=</span> <span class="st">"|"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">d1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rxp_r.html">rxp_r</a></span><span class="op">(</span><span class="va">mtcars_am</span>, <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">am</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">d2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rxp_r.html">rxp_r</a></span><span class="op">(</span><span class="va">mtcars_head</span>, <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mtcars_am</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">d3</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rxp_r.html">rxp_r</a></span><span class="op">(</span><span class="va">mtcars_tail</span>, <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">mtcars_head</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">d4</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rxp_r.html">rxp_r</a></span><span class="op">(</span><span class="va">mtcars_mpg</span>, <span class="fu">select</span><span class="op">(</span><span class="va">mtcars_tail</span>, <span class="va">mpg</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">doc</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rxp_quarto.html">rxp_quarto</a></span><span class="op">(</span><span class="va">page</span>, <span class="st">"page.qmd"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">rxp_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">d0</span>, <span class="va">d1</span>, <span class="va">d2</span>, <span class="va">d3</span>, <span class="va">d4</span>, <span class="va">doc</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/rixpress.html">rixpress</a></span><span class="op">(</span><span class="va">rxp_list</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/rxp_make.html">rxp_make</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>This script assumes that a <code>default.nix</code> is already available to define the environment, and that the <code>mtcars.csv</code> data separated by pipes (<code>|</code>… why? just because). Each output (e.g., <code>mtcars</code>, <code>mtcars_am</code>, <code>mtcars_head</code>, <code>mtcars_tail</code>, <code>mtcars_mpg</code>, <code>page</code>) is built by Nix within this environment. The <code>default.nix</code> was generated by <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> and defines an environment with R, R packages, Quarto, and all required system-level dependencies pinned to a specific date to ensure reproducibility.</p>
+<p>When you run <code>rixpress(rxp_list)</code>, it creates <code>pipeline.nix</code> and a <code>_rixpress/</code> folder containing a JSON representation of the pipeline’s DAG (Directed Acyclic Graph). You can visualize the pipeline using <code><a href="reference/plot_dag.html">plot_dag()</a></code>:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_dag.html">plot_dag</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<figure><img src="dag.png" alt="DAG"><figcaption aria-hidden="true">
+DAG
+</figcaption></figure><p>You can read outputs with <code>rxp_read("mtcars_mpg")</code> or load them into the global environment with <code>rxp_load("mtcars_mpg")</code>. For complex outputs such as documents, (for example the Quarto document defined above, called <code>page</code>), <code>rxp_read("page")</code> returns its file path, which you can open with <code>browseURL("path/to/page")</code>.</p>
+<p>You can export the cache into a file and easily import it on another machine (or on CI) to avoid having to rebuild everything from scratch using <code><a href="reference/export_nix_archive.html">export_nix_archive()</a></code> and <code><a href="reference/import_nix_archive.html">import_nix_archive()</a></code> respectively.</p>
+<div class="section level2">
+<h2 id="purpose">Purpose<a class="anchor" aria-label="anchor" href="#purpose"></a>
+</h2>
+<p>The goal is to create data analysis pipelines that are:</p>
+<ul>
+<li>
+<strong>Fully Reproducible:</strong> Work the same way across machines and over time.</li>
+<li>
+<strong>Multi-Language:</strong> Allow steps in R, Python (planned), or other languages supported by Nix.</li>
+<li>
+<strong>Inspired by targets:</strong> Mimic its dependency tracking and task orchestration, enhanced by Nix’s deterministic builds.</li>
+</ul>
+<p>By combining Nix’s reproducibility with a targets-like structure, you can rebuild every step of your analysis—data processing, modeling, reporting—exactly as intended, even years later or on different systems (as long as the sources stay available or the systems are supported by Nix of course).</p>
+</div>
+<div class="section level2">
+<h2 id="how-it-works">How It Works<a class="anchor" aria-label="anchor" href="#how-it-works"></a>
+</h2>
+<div class="section level3">
+<h3 id="environment-setup-with-defaultnix">Environment Setup with <code>default.nix</code>
+<a class="anchor" aria-label="anchor" href="#environment-setup-with-defaultnix"></a>
+</h3>
+<ul>
+<li>The <code>rix</code> package creates a <code>default.nix</code> file specifying your software environment (e.g., R version, packages). This environment can be used traditional interactive data analysis.</li>
+<li>
+<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> generates a <code>pipeline.nix</code> which builds a (potentially) polyglott data science project using Nix as the build automation tool.</li>
+<li>The <code>default.nix</code> generated by <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> is used to provide the right environment to the pipeline.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="pipeline-definition">Pipeline Definition<a class="anchor" aria-label="anchor" href="#pipeline-definition"></a>
+</h3>
+<ul>
+<li>Define steps (derivations) in a <code>pipeline.nix</code> file, which can use R or other languages.</li>
+<li>Each derivation produces outputs like datasets or reports.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="dependency-graph">Dependency Graph<a class="anchor" aria-label="anchor" href="#dependency-graph"></a>
+</h3>
+<ul>
+<li>A <code>dag.json</code> file maps out the relationships between derivations.</li>
+<li>R scripts process this JSON to add correct dependency loading to <code>pipeline.nix</code>.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="building-the-pipeline">Building the Pipeline<a class="anchor" aria-label="anchor" href="#building-the-pipeline"></a>
+</h3>
+<ul>
+<li>Run <code><a href="reference/rxp_make.html">rxp_make()</a></code> to execute the pipeline, storing outputs in the Nix store (e.g., <code>/nix/store/...</code>).</li>
+<li>Easily recover the outputs in your current R session using <code><a href="reference/rxp_read.html">rxp_read()</a></code> and <code>rxp_lead()</code>.</li>
+</ul>
+</div>
+</div>
+<div class="section level2">
+<h2 id="key-advantages-of-using-nix">Key Advantages of Using Nix<a class="anchor" aria-label="anchor" href="#key-advantages-of-using-nix"></a>
+</h2>
+<ul>
+<li>
+<strong>Complete Reproducibility:</strong> Pins all dependencies to exact versions.</li>
+<li>
+<strong>Multi-Language Support:</strong> Unlike <code>targets</code>, it’s not limited to R.</li>
+<li>
+<strong>Isolation:</strong> Each step runs in a sandbox, avoiding system interference.</li>
+<li>
+<strong>Portability:</strong> Share your Nix files, and anyone with Nix can rebuild your work.</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="inspiration-from-targets">Inspiration from <code>targets</code>
+<a class="anchor" aria-label="anchor" href="#inspiration-from-targets"></a>
+</h2>
+<p>This package borrows from <code>targets</code>:</p>
+<ul>
+<li>
+<strong>Dependency Tracking:</strong> Ensures steps only rerun when inputs change.</li>
+<li>
+<strong>Modularity:</strong> Breaks workflows into reusable steps.</li>
+<li>
+<strong>Automation:</strong> Executes tasks in the right order.</li>
+</ul>
+<p>Nix extends these ideas beyond R into a cross-language, reproducible framework.</p>
+</div>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<div class="section level3">
+<h3 id="prerequisites">Prerequisites<a class="anchor" aria-label="anchor" href="#prerequisites"></a>
+</h3>
+<div class="section level4">
+<h4 id="install-nix">Install Nix<a class="anchor" aria-label="anchor" href="#install-nix"></a>
+</h4>
+<p>tbd</p>
+</div>
+</div>
+<div class="section level3">
+<h3 id="install-from-github">Install from GitHub<a class="anchor" aria-label="anchor" href="#install-from-github"></a>
+</h3>
+<p>To install this package directly from GitHub, use the <code>remotes</code> R package:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Install remotes if you don’t have it</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://remotes.r-lib.org" class="external-link">"remotes"</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Install the package from GitHub</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"b-rodrigues/rixpress"</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="usage-example">Usage Example<a class="anchor" aria-label="anchor" href="#usage-example"></a>
+</h2>
+<div class="section level3">
+<h3 id="define-your-pipeline-in-r">Define Your Pipeline in R<a class="anchor" aria-label="anchor" href="#define-your-pipeline-in-r"></a>
+</h3>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Create derivations</span></span>
+<span><span class="va">d1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rxp_r.html">rxp_r</a></span><span class="op">(</span><span class="va">mtcars_am</span>, <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">am</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">d2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rxp_r.html">rxp_r</a></span><span class="op">(</span><span class="va">mtcars_head</span>, <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mtcars_am</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Collect into a list</span></span>
+<span><span class="va">rxp_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">d1</span>, <span class="va">d2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Save or process further (e.g., generate pipeline.nix and dag.json)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="build-the-pipeline">Build the Pipeline<a class="anchor" aria-label="anchor" href="#build-the-pipeline"></a>
+</h3>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/rxp_make.html">rxp_make</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>This builds all derivations, producing outputs in the Nix store.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
+</h2>
+<p>TBD</p>
+</div>
+</div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
