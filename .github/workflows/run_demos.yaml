@@ -2,8 +2,7 @@ name: Trigger Demo Actions
 
 on:
   push:
-    branches:
-      - [main, master]
+    branches: [main, master]
 
 jobs:
   trigger-demo:
