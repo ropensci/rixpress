@@ -1,3 +1,17 @@
+---
+output: github_document
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+
 # rixpress: Reproducible Analytical Pipelines with Nix
 
 This package provides a framework for building reproducible analytical pipelines
