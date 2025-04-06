@@ -1,30 +1,34 @@
 let
   default = import ./default.nix;
-  defaultPkgs = default.pkgs;
-  defaultShell = default.shell;
-  defaultBuildInputs = defaultShell.buildInputs;
-  defaultConfigurePhase = ''
-    cp ${./_rixpress/default_libraries.R} libraries.R
-    mkdir -p $out
-  '';
-tempdir_default2 = import ./tempdir/default2.nix;
-  tempdir_default2Pkgs = tempdir_default2.pkgs;
-  tempdir_default2Shell = tempdir_default2.shell;
-  tempdir_default2BuildInputs = tempdir_default2Shell.buildInputs;
-  tempdir_default2ConfigurePhase = ''
-    cp ${./_rixpress/tempdir_default2_libraries.R} libraries.R
+defaultPkgs = default.pkgs;
+defaultShell = default.shell;
+defaultBuildInputs = defaultShell.buildInputs;
+defaultConfigurePhase = ''
+    cp ${./_rixpress/} 
     mkdir -p $out
   '';
   
+default2 = import ./tempdir/default2.nix;
+default2Pkgs = default2.pkgs;
+default2Shell = default2.shell;
+default2BuildInputs = default2Shell.buildInputs;
+default2ConfigurePhase = ''
+    cp ${./_rixpress/} 
+    mkdir -p $out
+  '';
+  
+  
   # Function to create R derivations
   makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
-    let rdsFile = "${name}.rds";
-    in defaultPkgs.stdenv.mkDerivation {
+    defaultPkgs.stdenv.mkDerivation {
       inherit name src;
       dontUnpack = true;
       inherit buildInputs configurePhase buildPhase;
       installPhase = ''
-        cp ${rdsFile} $out/
+        # This install phase will copy either an rds, or a
+        # pickle to $out/. This is needed because reticulate::py_save_object
+        # runs as an R derivation, but outputs a python output.
+        cp ${name}.rds $out/ 2>/dev/null || cp ${name}.pickle $out/
       '';
     };
 
