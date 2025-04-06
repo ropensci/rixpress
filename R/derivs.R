@@ -131,7 +131,7 @@ rxp_quarto <- function(
     "  export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n",
     if (length(sub_cmds) > 0)
       paste("  ", sub_cmds, sep = "", collapse = "\n") else "",
-    sprintf("  quarto render %s %s --output-dir $out", args, qmd_file),
+    sprintf("  quarto render %s %s --output-dir $out", qmd_file, args),
     sep = "\n"
   )
 
