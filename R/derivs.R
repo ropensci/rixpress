@@ -85,6 +85,8 @@ rxp_r <- function(
 #' @param qmd_file Character, path to .qmd file.
 #' @param additional_files Character vector, additional files to include.
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
+#' @param args A character of additional arguments to be passed directly to
+#'   the `quarto` command.
 #' @details Detects `rxp_read("ref")` in the .qmd file and replaces with
 #'   derivation output paths.
 #' @return A list with elements: `name`, the `name` of the derivation,
@@ -92,14 +94,15 @@ rxp_r <- function(
 #' @examples
 #' \dontrun{
 #'   # `images` is a folder containing images to include in the Quarto doc
-#'   rxp_quarto(report, "doc.qmd", "images")
+#'   rxp_quarto(name = report, qmd_file = "doc.qmd", additional_files = "images", args = "-- to typst")
 #' }
 #' @export
 rxp_quarto <- function(
   name,
   qmd_file,
   additional_files = "",
-  nix_env = "default.nix"
+  nix_env = "default.nix",
+  args = ""
 ) {
   out_name <- deparse(substitute(name))
 
@@ -128,7 +131,7 @@ rxp_quarto <- function(
     "  export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n",
     if (length(sub_cmds) > 0)
       paste("  ", sub_cmds, sep = "", collapse = "\n") else "",
-    sprintf("  quarto render %s --output-dir $out", qmd_file),
+    sprintf("  quarto render %s %s --output-dir $out", args, qmd_file),
     sep = "\n"
   )
 
