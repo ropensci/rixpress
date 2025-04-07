@@ -4,7 +4,13 @@
 \alias{rxp_quarto}
 \title{Render a Quarto document as a Nix derivation}
 \usage{
-rxp_quarto(name, qmd_file, additional_files = "", nix_env = "default.nix")
+rxp_quarto(
+  name,
+  qmd_file,
+  additional_files = "",
+  nix_env = "default.nix",
+  args = ""
+)
 }
 \arguments{
 \item{name}{Symbol, derivation name.}
@@ -14,6 +20,9 @@ rxp_quarto(name, qmd_file, additional_files = "", nix_env = "default.nix")
 \item{additional_files}{Character vector, additional files to include.}
 
 \item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
+
+\item{args}{A character of additional arguments to be passed directly to
+the \code{quarto} command.}
 }
 \value{
 A list with elements: \code{name}, the \code{name} of the derivation,
@@ -29,6 +38,6 @@ derivation output paths.
 \examples{
 \dontrun{
   # `images` is a folder containing images to include in the Quarto doc
-  rxp_quarto(report, "doc.qmd", "images")
+  rxp_quarto(name = report, qmd_file = "doc.qmd", additional_files = "images", args = "-- to typst")
 }
 }

@@ -129,3 +129,44 @@ parse_pypkgs <- function(nix_file, project_path) {
   # Return the packages as-is
   packages
 }
+
+#' Adjust Python import statements
+#'
+#' When calling `rixpress()`, a file containing Python import statements is
+#' automatically generated inside the `_rixpress` folder. For example, if the
+#' `numpy` package is needed, the file will include a line like `"import numpy"`.
+#' However, Python programmers often write `"import numpy as np"` instead.
+#'
+#' In some cases, the correct import statement is entirely different. For example,
+#' for the `pillow` package, the generated file will contain `"import pillow"`,
+#' which is incorrect—Python code should import from the `PIL` namespace instead,
+#' e.g., `"from PIL import Image"`.
+#'
+#' Because these adjustments cannot be automated reliably, the `adjust_imports()`
+#' function allows you to search and replace import statements programmatically.
+#' It reads each file in the `_rixpress` folder, performs the replacement,
+#' and writes the modified content back to the file.
+#' @param old_import A character string representing the import statement to
+#'   be replaced. For example, `"import pillow"`.
+#' @param new_import A character string representing the new import statement
+#'   to replace with. For example, `"from PIL import Image"`.
+#'
+#' @return No return value; the function performs in-place
+#'   modifications of the files.
+#'
+#' @examples
+#' \dontrun{
+#' adjust_imports("import pillow", "from PIL import Image")
+#' }
+#' @export
+adjust_imports <- function(old_import, new_import) {
+  files <- list.files(path = "_rixpress", full.names = TRUE, recursive = TRUE)
+
+  for (file in files) {
+    content <- readLines(file, warn = FALSE)
+
+    new_content <- gsub(old_import, new_import, content, fixed = TRUE)
+
+    writeLines(new_content, con = file)
+  }
+}
