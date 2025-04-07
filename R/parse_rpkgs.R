@@ -46,18 +46,19 @@ generate_r_libraries_script <- function(
   additional_files = "",
   outfile
 ) {
-  functions_R <- any(grepl("functions.R", additional_files))
+  functions_R <- any(grepl("functions.(R|r)", additional_files))
 
   library_lines <- paste0("library(", packages, ")")
 
   if (!functions_R) {
     output <- library_lines
   } else if (functions_R) {
-    functions_R_script <- Filter(
-      \(x) (grepl("functions.R", x)),
+    functions_R_scripts <- Filter(
+      \(x) (grepl("functions.(R|r)", x)),
       x = additional_files
     )
-    functions_R_content <- readLines(functions_R_script)
+    list_functions_R_content <- lapply(functions_R_scripts, readLines)
+    functions_R_content <- Reduce(f = append, x = list_functions_R_content)
     output <- append(library_lines, functions_R_content)
   }
 

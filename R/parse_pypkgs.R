@@ -61,11 +61,13 @@ generate_py_libraries_script <- function(
   if (!functions_py) {
     output <- import_lines
   } else if (functions_py) {
-    functions_py_script <- Filter(
+    functions_py_scripts <- Filter(
       \(x) (grepl("functions.py", x)),
       x = additional_files
     )
-    functions_py_content <- readLines(functions_py_script)
+
+    list_functions_py_content <- lapply(functions_py_scripts, readLines)
+    functions_py_content <- Reduce(f = append, x = list_functions_py_content)
     output <- append(import_lines, functions_py_content)
   }
 

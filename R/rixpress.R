@@ -95,7 +95,7 @@ rixpress <- function(derivs, project_path) {
 
   unique_env <- unique(nix_env_all)
 
-  additional_files_combined <- sapply(
+  additional_files_combined <- lapply(
     unique_env,
     function(env) {
       idx <- which(nix_env_all == env)
@@ -103,8 +103,7 @@ rixpress <- function(derivs, project_path) {
       files <- files[!is.na(files) & files != ""]
       if (length(files) == 0) return("")
       unique(files)
-    },
-    USE.NAMES = FALSE
+    }
   )
 
   result <- list(
