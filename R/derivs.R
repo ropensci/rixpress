@@ -260,7 +260,7 @@ with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
 #' rxp_file_common Creates a Nix expression with shared logic for R and Python file reading.
 #'
 #' @param out_name Character, the name of the derivation as a string.
-#' @param path Character, the file path (URL or local).
+#' @param path Character, the file path (URL or local) or folder path if copying a whole folder.
 #' @param nix_env Character, path to the Nix environment file.
 #' @param build_phase Character, the language-specific build phase script.
 #' @param type Character, the type of derivation ("rxp_r" or "rxp_py").
@@ -276,7 +276,7 @@ rxp_file_common <- function(
   derivation_func,
   library_ext
 ) {
-  # Handle source: URL or local file
+  # Handle source: URL or local file/folder
   if (grepl("^https?://", path)) {
     hash <- tryCatch(
       {
@@ -330,8 +330,9 @@ rxp_file_common <- function(
 #' @param read_function Function, an R function to read the data, taking one argument (the path).
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
 #' @param copy_data_folder Logical, if TRUE then the entire folder is copied recursively.
-#' @details If copy_data_folder is TRUE, the build phase copies the folder recursively using `cp -r` and uses the file's basename
-#'          (e.g. "oceans.shp") from the folder rather than a direct file copy.
+#' @details If copy_data_folder is TRUE, the build phase copies the folder recursively using `cp -r`
+#'          and uses the file's basename (e.g. "oceans.shp") from the folder rather than a direct file copy.
+#'          The source passed to the derivation becomes the folder containing the data.
 #' @return A list with `name`, `snippet`, `type`, and `nix_env`.
 #' @export
 rxp_r_file <- function(name, path, read_function, nix_env = "default.nix", copy_data_folder = FALSE) {
@@ -340,14 +341,15 @@ rxp_r_file <- function(name, path, read_function, nix_env = "default.nix", copy_
   read_func_str <- gsub("\"", "'", read_func_str)
 
   if (!copy_data_folder) {
-    # Original behavior: copy file
+    # Original behavior: copy a single file.
     build_phase <- sprintf(
       "cp $src input_file\nRscript -e \"\nsource('libraries.R')\ndata <- do.call(%s, list('input_file'))\nsaveRDS(data, '%s.rds')\"",
       read_func_str,
       out_name
     )
+    actual_path <- path
   } else {
-    # New behavior: copy the whole folder; use the basename of the file path for input.
+    # New behavior: copy the whole folder.
     file_name <- basename(path)
     build_phase <- sprintf(
       "cp -r $src input_folder\nRscript -e \"\nsource('libraries.R')\ndata <- do.call(%s, list('input_folder/%s'))\nsaveRDS(data, '%s.rds')\"",
@@ -355,11 +357,12 @@ rxp_r_file <- function(name, path, read_function, nix_env = "default.nix", copy_
       file_name,
       out_name
     )
+    actual_path <- dirname(path)
   }
 
   rxp_file_common(
     out_name = out_name,
-    path = path,
+    path = actual_path,
     nix_env = nix_env,
     build_phase = build_phase,
     type = "rxp_r",
@@ -375,28 +378,30 @@ rxp_r_file <- function(name, path, read_function, nix_env = "default.nix", copy_
 #' @param read_function Character, a Python expression string evaluating to a function taking one argument.
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
 #' @param copy_data_folder Logical, if TRUE then the entire folder is copied recursively.
-#' @details If copy_data_folder is TRUE, the build phase copies the folder recursively using `cp -r` and uses the file's basename
-#'          (e.g. "oceans.shp") within the input folder.
+#' @details If copy_data_folder is TRUE, the build phase copies the folder recursively using `cp -r`
+#'          and uses the file's basename (e.g. "oceans.shp") within the input folder.
+#'          The source passed to the derivation becomes the folder containing the data.
 #' @return A list with `name`, `snippet`, `type`, and `nix_env`.
 #' @export
 rxp_py_file <- function(name, path, read_function, nix_env = "default.nix", copy_data_folder = FALSE) {
   out_name <- deparse(substitute(name))
 
-  # Sanitize read_function string
+  # Sanitize read_function string.
   read_function <- gsub("'", "\\'", read_function, fixed = TRUE)
   if (!is.character(read_function) || length(read_function) != 1) {
     stop("read_function must be a single character string")
   }
 
   if (!copy_data_folder) {
-    # Original behavior: copy file
+    # Original behavior: copy a single file.
     build_phase <- sprintf(
       "cp $src input_file\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_file'\ndata = eval('%s')(file_path)\nwith open('%s.pickle', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
       read_function,
       out_name
     )
+    actual_path <- path
   } else {
-    # New behavior: copy the whole folder; use the basename of the file path for input.
+    # New behavior: copy the whole folder.
     file_name <- basename(path)
     build_phase <- sprintf(
       "cp -r $src input_folder\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_folder/%s'\ndata = eval('%s')(file_path)\nwith open('%s.pickle', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
@@ -404,11 +409,12 @@ rxp_py_file <- function(name, path, read_function, nix_env = "default.nix", copy
       read_function,
       out_name
     )
+    actual_path <- dirname(path)
   }
 
   rxp_file_common(
     out_name = out_name,
-    path = path,
+    path = actual_path,
     nix_env = nix_env,
     build_phase = build_phase,
     type = "rxp_py",
@@ -416,6 +422,7 @@ rxp_py_file <- function(name, path, read_function, nix_env = "default.nix", copy
     library_ext = "py"
   )
 }
+
 
 #' Generate the Nix derivation snippet for Python-R object transfer.
 #'
