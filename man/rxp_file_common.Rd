@@ -2,7 +2,7 @@
 % Please edit documentation in R/derivs.R
 \name{rxp_file_common}
 \alias{rxp_file_common}
-\title{rxp_file_common Creates a Nix expression with shared logic for R and Python file reading.}
+\title{rxp_file_common}
 \usage{
 rxp_file_common(
   out_name,
@@ -17,7 +17,7 @@ rxp_file_common(
 \arguments{
 \item{out_name}{Character, the name of the derivation as a string.}
 
-\item{path}{Character, the file path (URL or local).}
+\item{path}{Character, the file path (URL or local) or folder path.}
 
 \item{nix_env}{Character, path to the Nix environment file.}
 
@@ -33,5 +33,5 @@ rxp_file_common(
 A list with \code{name}, \code{snippet}, \code{type}, and \code{nix_env}.
 }
 \description{
-rxp_file_common Creates a Nix expression with shared logic for R and Python file reading.
+Creates a Nix expression with shared logic for R and Python file reading.
 }

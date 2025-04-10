@@ -325,15 +325,20 @@ rxp_file_common <- function(
 #' Creates a Nix expression that reads in a file (or folder of data) using R.
 #'
 #' @param name Symbol, the name of the derivation.
-#' @param path Character, the file path to include (e.g., "data/mtcars.shp") or a folder path (e.g., "data").
+#' @param path Character, the file path to include (e.g., "data/mtcars.shp") or a folder path (e.g., "data"). See details.
 #' @param read_function Function, an R function to read the data, taking one argument (the path).
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
 #' @param copy_data_folder Logical, if TRUE then the entire folder is copied recursively.
 #' @details
-#' When copy_data_folder is FALSE the file is copied and referenced via its basename.
-#' When TRUE, if `path` refers to a folder, the source remains that folder (e.g. "./data")
-#' and the build phase passes "input_folder/" to the reading function. If `path` is a file, the folder
-#' is computed as the file’s directory and the file is referenced as "input_folder/<basename>".
+#'   There are three ways to read in data in a rixpress pipeline: the first is to point directly
+#'   a file, for example, `rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)`.
+#'   The second way is to point to a file but to also include of the files in the "data/" folder
+#'   (the folder can called something else). This is needed when data is split between several
+#'   files, such as a shapfile which typically also needs other files such as `.shx` and `.dbf` files.
+#'   For this, `copy_data_folder` must be set to `TRUE`. The last way to read in data, is to only
+#'   point to a folder, and use a function that recursively reads in all data. For example
+#'   `rxp_r_file(many_csvs, path = "data", read_function = \(x)(readr::read_csv(list.files(x, full.names = TRUE, pattern = ".csv$"))))`
+#'   the provided anonymous function will read all the `.csv` file in the `data/` folder.
 #' @return A list with `name`, `snippet`, `type`, and `nix_env`.
 #' @export
 rxp_r_file <- function(name, path, read_function, nix_env = "default.nix", copy_data_folder = FALSE) {
@@ -387,15 +392,20 @@ rxp_r_file <- function(name, path, read_function, nix_env = "default.nix", copy_
 #' Creates a Nix expression that reads in a file (or folder of data) using Python.
 #'
 #' @param name Symbol, the name of the derivation.
-#' @param path Character, the file path to include (e.g., "data/oceans.shp") or a folder path (e.g., "data").
-#' @param read_function Character, a Python expression string evaluating to a function taking one argument.
+#' @param path Character, the file path to include (e.g., "data/mtcars.shp") or a folder path (e.g., "data"). See details.
+#' @param read_function Character, a Python function to read the data, taking one argument (the path).
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
 #' @param copy_data_folder Logical, if TRUE then the entire folder is copied recursively.
 #' @details
-#' When copy_data_folder is FALSE the file is copied and referenced via its basename.
-#' When TRUE, if `path` is a folder, the source will point to that folder (e.g. "./data")
-#' and the build phase passes "input_folder/" to the reading function. If `path` is a file,
-#' then the folder is computed as the file’s directory and the file is referenced as "input_folder/<basename>".
+#'   There are three ways to read in data in a rixpress pipeline: the first is to point directly
+#'   a file, for example, `rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)`.
+#'   The second way is to point to a file but to also include of the files in the "data/" folder
+#'   (the folder can called something else). This is needed when data is split between several
+#'   files, such as a shapfile which typically also needs other files such as `.shx` and `.dbf` files.
+#'   For this, `copy_data_folder` must be set to `TRUE`. The last way to read in data, is to only
+#'   point to a folder, and use a function that recursively reads in all data. For example
+#'   `rxp_py_file(many_csvs, path = "data", read_function = 'lambda x: pandas.read_csv(os.path.join(x, os.listdir(x)[0]), delimiter="|")')`
+#'   the provided anonymous function will read all the `.csv` file in the `data/` folder.
 #' @return A list with `name`, `snippet`, `type`, and `nix_env`.
 #' @export
 rxp_py_file <- function(name, path, read_function, nix_env = "default.nix", copy_data_folder = FALSE) {
