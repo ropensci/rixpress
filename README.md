@@ -88,7 +88,7 @@ plot_dag()
 ```
 
 <figure>
-<img src="dag.png" alt="DAG" />
+<img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/master/dag.png" alt="DAG" />
 <figcaption aria-hidden="true">DAG</figcaption>
 </figure>
 
