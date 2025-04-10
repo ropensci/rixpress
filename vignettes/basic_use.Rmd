@@ -1,0 +1,48 @@
+---
+title: "Setting up a simple pipeline"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Setting up a simple pipeline}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(rixpress)
+```
+
+This vignette will introduce some jargon and walk you through setting up a
+simple pipeline using `{rixpress}`.
+
+## Definition
+
+In Nix jargon, a *derivation* is *a specification for running an executable on
+precisely defined input files to repeatably produce output files at uniquely
+determined file system paths.*
+([source](https://nix.dev/manual/nix/2.25/language/derivations))
+
+In simpler terms, a derivation is a recipe with precisely defined inputs, steps,
+and a fixed output, meaning, that for exactly the same inputs and exactly the 
+same build steps, *exactly* the same output is produced. This is important to
+understand, because to be able to always build exactly the same output, a number
+of measures have to be take:
+
+- a derivation must have all of its inputs declared explicitely;
+- inputs are everything that plays a role in building an output:
+  software dependencies, but also configuration flags or environment variables;
+- to ensure the exact same output is always built,
+  the build process happens in an *hermetic* sandbox.
+
+This last point is quite important: because the build process must happen inside
+a sandbox, if your building your output requires say, Quarto, Quarto must then
+be explicitely listed as an input, *even* if you already have Quarto installed
+on your system. The same goes for an environmental variable; for example, R
+users may have to set the variable `JAVA_HOME` to make R aware of where the java
+is installed. However, if you require java for a derivation
