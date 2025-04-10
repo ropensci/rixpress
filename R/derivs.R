@@ -338,7 +338,7 @@ rxp_file_common <- function(
 #' @export
 rxp_r_file <- function(name, path, read_function, nix_env = "default.nix", copy_data_folder = FALSE) {
   out_name <- deparse(substitute(name))
-  read_func_str <- deparse(substitute(read_function))
+  read_func_str <- deparse1(substitute(read_function))
   read_func_str <- gsub("\"", "'", read_func_str)
 
   if (!copy_data_folder) {
