@@ -14,10 +14,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-library(rixpress)
-```
-
 This vignette will introduce some jargon and walk you through setting up a
 simple pipeline using {rixpress}. This vignette will not go beyond a simple
 pipeline that only builds R outputs; for polyglot pipelines, see THIS OTHER
