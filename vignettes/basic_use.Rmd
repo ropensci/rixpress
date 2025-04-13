@@ -19,30 +19,167 @@ library(rixpress)
 ```
 
 This vignette will introduce some jargon and walk you through setting up a
-simple pipeline using `{rixpress}`.
+simple pipeline using {rixpress}. This vignette will not go beyond a simple
+pipeline that only builds R outputs; for polyglot pipelines, see THIS OTHER
+VIGNETTE TO BE WRITTEN.
 
-## Definition
+## Definitions
 
-In Nix jargon, a *derivation* is *a specification for running an executable on
+In Nix jargon, a derivation *is a specification for running an executable on
 precisely defined input files to repeatably produce output files at uniquely
 determined file system paths.*
 ([source](https://nix.dev/manual/nix/2.25/language/derivations))
 
 In simpler terms, a derivation is a recipe with precisely defined inputs, steps,
-and a fixed output, meaning, that for exactly the same inputs and exactly the 
-same build steps, *exactly* the same output is produced. This is important to
-understand, because to be able to always build exactly the same output, a number
-of measures have to be take:
+and a fixed output, meaning that for exactly the same inputs and exactly the
+same build steps, exactly the same output is produced. This is important to
+understand because to always build exactly the same output, several measures
+must be taken:
 
-- a derivation must have all of its inputs declared explicitely;
-- inputs are everything that plays a role in building an output:
-  software dependencies, but also configuration flags or environment variables;
-- to ensure the exact same output is always built,
-  the build process happens in an *hermetic* sandbox.
+- A derivation must have all of its inputs declared explicitly.
+- Inputs include software dependencies as well as configuration flags or
+  environment variables; in other words, anything necessary for a build process.
+- To ensure the exact same output is always built, the build process occurs in
+  an *hermetic* sandbox.
 
-This last point is quite important: because the build process must happen inside
-a sandbox, if your building your output requires say, Quarto, Quarto must then
-be explicitely listed as an input, *even* if you already have Quarto installed
-on your system. The same goes for an environmental variable; for example, R
-users may have to set the variable `JAVA_HOME` to make R aware of where the java
-is installed. However, if you require java for a derivation
+This last point is quite important because the build process must happen inside
+a sandbox. If you're building your output and it requires, say, Quarto, then
+Quarto must be explicitly listed as an input, even if you already have Quarto
+installed on your system.
+
+The same goes for an environment variable; for example, R users may have to set
+the variable `JAVA_HOME` to make R aware of where the Java runtime is installed.
+However, if Java is required for a derivation, setting the variable `JAVA_HOME`
+outside of the sandbox does not help; it must be set explicitly within the
+sandbox. This also means that if you need to access an API, for example, it will
+not work because no connection to the internet is allowed from within the build
+sandbox. This may seem very restrictive, but if you think about it, it makes
+sense if your goal is to achieve complete reproducibility. Indeed, say that you
+need to use a function `f()` to access an API to get data for your analysis:
+what guarantee do you have that running `f()` today will yield the same result
+as running `f()` in six months? One year? Will this API even still be online?
+For reproducibility purposes, you should obtain the data from this API, then
+version and/or archive it, and continue using this data for your analysis (and
+share it with potential reproducers of your study).
+
+## Derivations
+
+Derivation can be very simple, but also very complex. Here is an example of
+a *simple* derivation:
+
+```
+let
+ pkgs = import (fetchTarball "https://github.com/rstats-on-nix/nixpkgs/archive/2025-04-11.tar.gz") {};
+
+in
+
+pkgs.stdenv.mkDerivation {
+  name = "filtered_mtcars";
+  buildInputs = [ pkgs.gawk ];
+  dontUnpack = true;
+  src = ./mtcars.csv;
+  installPhase = ''
+    mkdir -p $out
+    awk -F',' 'NR==1 || $9=="1" { print }' $src > $out/filtered.csv
+  '';
+}
+```
+
+I will not go into details: the only thing that matters is that this uses `awk`,
+a common unix data processing tool, to keep the rows of the `mtcars.csv` where
+its 9th column (the `am` column) equals 1. As you can see, a lot of boilerplate
+code must be written to perform this simple action. However, this is entirely,
+and completely, reproducible: the dependencies are declared and pinned to a
+dated branch of our `rstats-on-nix/nixpkgs` fork, and the only think that make
+this pipeline (well, it's a bit of a stretch to call this a *pipeline*) is if
+the `mtcars.csv` file is not shared with it.
+
+I could then add another step that uses `filtered.csv` as an input and continue
+to process it. If we label the above code as `f` and a subsequent chunk of Nix
+code to `g`, then adding another step would essentially result in the following
+computation: `mtcars |> f |> g`.
+
+The goal of `{rixpress}` is to help you write pipelines like `mtcars |> f |> g`
+without needing to learn Nix, but still benefit from its features.
+
+## Defining derivations
+
+`{rixpress}` comes with many functions to help you write derivations; these
+typically start with the string `rxp_` and all have roughly the same
+structure. Let's start with `rxp_r()`. To generate the code from before,
+one would write:
+
+```
+d1 <- rxp_r(
+  name = filtered_mtcars,
+  expr = dplyr::filter(mtcars, am == 1)
+)
+```
+
+This should be very familiar to users of the `{targets}` package: just like
+with the `tar_target()` function, one needs to give a name to the derivation
+and then command to generate it. That's it: all the required Nix code gets
+generated by `{rixpress}`.
+
+`d1` however needs `mtcars` as an input, so we first need to make it available
+to the pipeline. To read in any type of files, you should use `rxp_r_file()`:
+
+```
+d0 <- rxp_r_file(
+  name = mtcars,
+  path = 'data/mtcars.csv',
+  read_function = \(x) (read.csv(file = x, sep = "|"))
+)
+```
+
+`rxp_r_file()` uses an R function of only one argument which should be the path
+to the file to be read. In this case, for illustration purposes, we assume the
+columns in the `mtcars.csv` file are separated by the `|` symbol. So we use an
+anonymous function to set the correct separator and create a temporary function
+of only one argument to read the path, `'data/mtcars.csv'`.
+
+To continue transforming the data, you only need to define a new derivation:
+
+```
+d2 <- rxp_r(
+  name = mtcars_mpg,
+  expr = dplyr::select(filtered_mtcars, mpg)
+)
+```
+
+To build the pipeline, define a list of derivations:
+
+```
+derivs <- list(d0, d1, d2)
+```
+
+and pass it to the `rixpress()` function:
+
+```
+rixpress(derivs)
+```
+
+To avoid having to so much code, you can instead directly define
+the list and pass it to `rixpress()` using  `|>`:
+
+```
+library(rixpress)
+
+list(
+  rxp_r_file(
+    name = mtcars,
+    path = 'data/mtcars.csv',
+    read_function = \(x) (read.csv(file = x, sep = "|"))
+  ),
+
+  rxp_r(
+    name = filtered_mtcars,
+    expr = dplyr::filter(mtcars, am == 1)
+  ),
+
+  rxp_r(
+    name = mtcars_mpg,
+    expr = dplyr::select(filtered_mtcars, mpg)
+  ) |>
+  rixpress()
+```
