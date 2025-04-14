@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   basic_pipeline: basic_pipeline.html
   intro_concepts: intro_concepts.html
-last_built: 2025-04-14T13:28Z
+last_built: 2025-04-14T13:48Z
 urls:
   reference: https://b-rodrigues.github.io/rixpress/reference
   article: https://b-rodrigues.github.io/rixpress/articles
