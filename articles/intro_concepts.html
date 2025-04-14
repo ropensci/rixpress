@@ -33,7 +33,8 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/intro_concepts.html">Introductory concepts</a></li>
+<li><a class="dropdown-item" href="../articles/basic_pipeline.html">Basic usage</a></li>
+    <li><a class="dropdown-item" href="../articles/intro_concepts.html">Introductory concepts</a></li>
   </ul>
 </li>
       </ul>
@@ -66,9 +67,11 @@
     
 <p>For a video version of this pipeline, <a href="youtube%20link%20to%20follow">click here</a>.</p>
 <p>This vignette will introduce some jargon and walk you through setting
-up a simple pipeline using <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>. This vignette will
-not go beyond a simple pipeline that only builds R outputs; for polyglot
-pipelines, see THIS OTHER VIGNETTE TO BE WRITTEN.</p>
+up a simple pipeline using <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>. It is useful, but
+not mandatory, to understand the concepts laid out in this vignette; we
+recommend you go through it, but if you don’t get everything at first,
+don’t worry. Try building a simple pipeline by going through the next
+vignette <code>vignette("basic-usage")</code>.</p>
 <div class="section level2">
 <h2 id="definitions">Definitions<a class="anchor" aria-label="anchor" href="#definitions"></a>
 </h2>
@@ -88,33 +91,13 @@ process.</li>
 <li>To ensure the exact same output is always built, the build process
 occurs in an <em>hermetic</em> sandbox.</li>
 </ul>
-<p>This last point is quite important because the build process must
-happen inside a sandbox. If you’re building your output and it requires,
-say, Quarto, then Quarto must be explicitly listed as an input, even if
-you already have Quarto installed on your system.</p>
-<p>The same goes for an environment variable; for example, R users may
-have to set the variable <code>JAVA_HOME</code> to make R aware of where
-the Java runtime is installed. However, if Java is required for a
-derivation, setting the variable <code>JAVA_HOME</code> outside of the
-sandbox does not help; it must be set explicitly within the sandbox.
-This also means that if you need to access an API, for example, it will
-not work because no connection to the internet is allowed from within
-the build sandbox. This may seem very restrictive, but if you think
-about it, it makes sense if your goal is to achieve complete
-reproducibility. Indeed, say that you need to use a function
-<code>f()</code> to access an API to get data for your analysis: what
-guarantee do you have that running <code>f()</code> today will yield the
-same result as running <code>f()</code> in six months? One year? Will
-this API even still be online? For reproducibility purposes, you should
-obtain the data from this API, then version and/or archive it, and
-continue using this data for your analysis (and share it with potential
-reproducers of your study).</p>
+<p>The next sections of this document explain these three points in more
+detail.</p>
 </div>
 <div class="section level2">
 <h2 id="derivations">Derivations<a class="anchor" aria-label="anchor" href="#derivations"></a>
 </h2>
-<p>Derivation can be very simple, but also very complex. Here is an
-example of a <em>simple</em> derivation:</p>
+<p>Here is an example of a <em>simple</em> Nix expression:</p>
 <pre><code>let
  pkgs = import (fetchTarball "https://github.com/rstats-on-nix/nixpkgs/archive/2025-04-11.tar.gz") {};
 
@@ -132,13 +115,13 @@ pkgs.stdenv.mkDerivation {
 }</code></pre>
 <p>I will not go into details: the only thing that matters is that this
 uses <code>awk</code>, a common unix data processing tool, to keep the
-rows of the <code>mtcars.csv</code> where its 9th column (the
+rows of the <code>mtcars.csv</code> file where its 9th column (the
 <code>am</code> column) equals 1. As you can see, a lot of boilerplate
 code must be written to perform this simple action. However, this is
 entirely, and completely, reproducible: the dependencies are declared
 and pinned to a dated branch of our <code>rstats-on-nix/nixpkgs</code>
-fork, and the only think that make this pipeline (well, it’s a bit of a
-stretch to call this a <em>pipeline</em>) is if the
+fork, and the only think that could make this pipeline fail (well, it’s
+a bit of a stretch to call this a <em>pipeline</em>) is if the
 <code>mtcars.csv</code> file is not shared with it.</p>
 <p>I could then add another step that uses <code>filtered.csv</code> as
 an input and continue to process it. If we label the above code as
@@ -148,191 +131,109 @@ computation: <code>mtcars |&gt; f |&gt; g</code>.</p>
 <p>The goal of <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> is to help you write pipelines
 like <code>mtcars |&gt; f |&gt; g</code> without needing to learn Nix,
 but still benefit from its features.</p>
+<p>Nix builds <code>filtered.csv</code> in two steps: it first generates
+a <em>derivation</em> from this expression, and only then builds it. For
+our purposes, I will be referring to the code as the one above as
+<em>derivation</em>, instead of expression, this to avoid confusion with
+the concept of <em>expression</em> in R.</p>
 </div>
 <div class="section level2">
-<h2 id="defining-derivations">Defining derivations<a class="anchor" aria-label="anchor" href="#defining-derivations"></a>
+<h2 id="dependencies-of-derivations">Dependencies of derivations<a class="anchor" aria-label="anchor" href="#dependencies-of-derivations"></a>
 </h2>
-<p><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> comes with many functions to help you write
-derivations; these typically start with the string <code>rxp_</code> and
-all have roughly the same structure. Let’s start with
-<code><a href="../reference/rxp_r.html">rxp_r()</a></code>. To generate the code from before, one would
-write:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">d1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
-<span>  name <span class="op">=</span> <span class="va">filtered_mtcars</span>,</span>
-<span>  expr <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">am</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>This should be very familiar to users of the <a href="https://docs.ropensci.org/targets/" class="external-link">targets</a>
-package: just like with the <code>tar_target()</code> function, one
-needs to give a name to the derivation and then command to generate it.
-That’s it: all the required Nix code gets generated by
-<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>.</p>
-<p><code>d1</code> however needs <code>mtcars</code> as an input, so we
-first need to make it available to the pipeline. To read in any type of
-files, you should use <code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code>:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">d0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_r_file.html">rxp_r_file</a></span><span class="op">(</span></span>
-<span>  name <span class="op">=</span> <span class="va">mtcars</span>,</span>
-<span>  path <span class="op">=</span> <span class="st">'data/mtcars.csv'</span>,</span>
-<span>  read_function <span class="op">=</span> \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span>file <span class="op">=</span> <span class="va">x</span>, sep <span class="op">=</span> <span class="st">"|"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code> uses an R function of only one argument
-which should be the path to the file to be read. In this case, for
-illustration purposes, we assume the columns in the
-<code>mtcars.csv</code> file are separated by the <code>|</code> symbol.
-So we use an anonymous function to set the correct separator and create
-a temporary function of only one argument to read the path,
-<code>'data/mtcars.csv'</code>.</p>
-<p>To continue transforming the data, you only need to define a new
-derivation:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">d2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
-<span>  name <span class="op">=</span> <span class="va">mtcars_mpg</span>,</span>
-<span>  expr <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">filtered_mtcars</span>, <span class="va">mpg</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>To build the pipeline, define a list of derivations:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">derivs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">d0</span>, <span class="va">d1</span>, <span class="va">d2</span><span class="op">)</span></span></code></pre></div>
-<p>and pass it to the <code><a href="../reference/rixpress.html">rixpress()</a></code> function:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span><span class="va">derivs</span><span class="op">)</span></span></code></pre></div>
-<p>To avoid having to write so much code, you can instead directly
-define the list and pass it to <code><a href="../reference/rixpress.html">rixpress()</a></code> using
-<code>|&gt;</code>:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">library</span>(rixpress)</span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">list</span>(</span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="fu">rxp_r_file</span>(</span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>    <span class="at">name =</span> mtcars,</span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>    <span class="at">path =</span> <span class="st">'data/mtcars.csv'</span>,</span>
-<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>    <span class="at">read_function =</span> \(x) (<span class="fu">read.csv</span>(<span class="at">file =</span> x, <span class="at">sep =</span> <span class="st">"|"</span>))</span>
-<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  ),</span>
-<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a></span>
-<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>  <span class="fu">rxp_r</span>(</span>
-<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>    <span class="at">name =</span> filtered_mtcars,</span>
-<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>    <span class="at">expr =</span> dplyr<span class="sc">::</span><span class="fu">filter</span>(mtcars, am <span class="sc">==</span> <span class="dv">1</span>)</span>
-<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>  ),</span>
-<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a></span>
-<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>  <span class="fu">rxp_r</span>(</span>
-<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a>    <span class="at">name =</span> mtcars_mpg,</span>
-<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>    <span class="at">expr =</span> dplyr<span class="sc">::</span><span class="fu">select</span>(filtered_mtcars, mpg)</span>
-<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>  <span class="fu">rixpress</span>()</span></code></pre></div>
-<p>Running <code><a href="../reference/rixpress.html">rixpress()</a></code> does several things:</p>
-<ul>
-<li>a folder called <code>_rixpress</code> gets created in the project’s
-root path. This folder contains several files that are generated
-automatically for the pipeline to build successfully;</li>
-<li>a file called <code>pipeline.nix</code> gets generated and as you’ve
-surely guessed it, it’s the definition of the whole pipeline in the Nix
-language;</li>
-<li>finally, the function <code><a href="../reference/rxp_make.html">rxp_make()</a></code> gets also called to
-actually build the pipeline.</li>
-</ul>
-<p>However, if you try to run the code above it’ll likely fail; this is
-because another piece of the puzzle is missing, namely, the environment
-the pipeline must run in is missing!</p>
+<p>Nix requires dependencies of any derivation to be explicitely listed
+and also managed by Nix itself. If you’re building your output and it
+requires, say, Quarto, then Quarto must be explicitly listed as an
+input, even if you already have Quarto installed on your system.</p>
+<p>The same goes for environment variables; for example, R users may
+have to set the variable <code>JAVA_HOME</code> to make R aware of where
+the Java runtime is installed. However, if Java is required for a
+derivation, setting the variable <code>JAVA_HOME</code> outside of the
+sandbox does not help; it must be set explicitly within the sandbox.
+This also means that if you need to access an API to download some data,
+it will not work because no connection to the internet is allowed from
+within the build sandbox.</p>
+<p>This may seem very restrictive, but if you think about it, it makes
+sense if your goal is to achieve complete reproducibility. Indeed, say
+that you need to use a function <code>f()</code> to access an API to get
+data for your analysis: what guarantee do you have that running
+<code>f()</code> today will yield the same result as running
+<code>f()</code> in six months? One year? Will this API even still be
+online? For reproducibility purposes, you should obtain the data from
+this API, then version and/or archive it, and continue using this data
+for your analysis (and share it with potential reproducers of your
+study).</p>
 </div>
 <div class="section level2">
-<h2 id="defining-a-reproducible-shell-for-execution">Defining a reproducible shell for execution<a class="anchor" aria-label="anchor" href="#defining-a-reproducible-shell-for-execution"></a>
+<h2 id="the-nix-store-and-hermetic-builds">The Nix store and hermetic builds<a class="anchor" aria-label="anchor" href="#the-nix-store-and-hermetic-builds"></a>
 </h2>
-<p>Remember that the whole point of using Nix is that it forces you to
-be very thorough when defining derivations by making you declare their
-dependencies explicitly. But in the case of the pipeline above, where
-are these dependencies defined? Which version of R should be used? And
-which R packages? The pipeline uses the function <code><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter()</a></code>
-and <code>select()</code> from the <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> package, so we
-must declare them. But how? This is where <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> gets used:
-<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> is a package that makes it possible to define
-reproducible development environments using very simple R code. For
-example, we could define an environment with R 4.5.0 and
-<a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> like so:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rix/" class="external-link">rix</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://docs.ropensci.org/rix/reference/rix.html" class="external-link">rix</a></span><span class="op">(</span></span>
-<span>  date <span class="op">=</span> <span class="st">"2025-04-11"</span>,</span>
-<span>  r_pkgs <span class="op">=</span> <span class="st">"dplyr"</span>,</span>
-<span>  ide <span class="op">=</span> <span class="st">"rstudio"</span>,</span>
-<span>  project_path <span class="op">=</span> <span class="st">"."</span>,</span>
-<span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>Running this code generates a <code>default.nix</code> file that can
-be built using Nix by calling <code>nix-build</code>, which builds a
-development environment that contains RStudio, R and
-<a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> as of the 11th of April 2025. This environment can
-be used for interactive data analysis like you would if you installed
-RStudio, R and <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> using the usual installation methods
-for your operating system. To learn more about <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>,
-please visit <a href="https://docs.ropensci.org/rix/" class="external-link">https://docs.ropensci.org/rix/</a>.</p>
-<p>Reproducible development environments generated by <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>
-are where the dependencies of the pipelines get defined. In order to use
-this environment to build a <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> pipeline, you also
-have to add <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> to the list of packages to install
-in the environment. Because <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> is still being
-developed, it must be installed from GitHub. The script to set up the
-environment will look like this:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rix/" class="external-link">rix</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Define execution environment</span></span>
-<span><span class="fu"><a href="https://docs.ropensci.org/rix/reference/rix.html" class="external-link">rix</a></span><span class="op">(</span></span>
-<span>  date <span class="op">=</span> <span class="st">"2025-04-11"</span>,</span>
-<span>  r_pkgs <span class="op">=</span> <span class="st">"dplyr"</span>,</span>
-<span>  git_pkgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    package_name <span class="op">=</span> <span class="st">"rixpress"</span>,</span>
-<span>    repo_url <span class="op">=</span> <span class="st">"https://github.com/b-rodrigues/rixpress"</span>,</span>
-<span>    commit <span class="op">=</span> <span class="st">"HEAD"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  ide <span class="op">=</span> <span class="st">"rstudio"</span>,</span>
-<span>  project_path <span class="op">=</span> <span class="st">"."</span>,</span>
-<span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>As explained before, after building this environment using
-<code>nix-build</code> you can use it to work interactively on your
-project, but also to set up your reproducible pipeline using
-<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>.</p>
-<p>This is what the script containing the pipeline will look like:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
-<span><span class="co"># Define pipeline</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="../reference/rxp_r_file.html">rxp_r_file</a></span><span class="op">(</span></span>
-<span>    name <span class="op">=</span> <span class="va">mtcars</span>,</span>
-<span>    path <span class="op">=</span> <span class="st">'data/mtcars.csv'</span>,</span>
-<span>    read_function <span class="op">=</span> \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span>file <span class="op">=</span> <span class="va">x</span>, sep <span class="op">=</span> <span class="st">"|"</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="op">)</span>,</span>
-<span></span>
-<span>  <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
-<span>    name <span class="op">=</span> <span class="va">filtered_mtcars</span>,</span>
-<span>    expr <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">am</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span>
-<span>  <span class="op">)</span>,</span>
-<span></span>
-<span>  <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
-<span>    name <span class="op">=</span> <span class="va">mtcars_mpg</span>,</span>
-<span>    expr <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">filtered_mtcars</span>, <span class="va">mpg</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span>project_path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span></code></pre></div>
-<p>This is the setup that we recommend, always have two scripts:</p>
-<ul>
-<li>
-<code>gen-env.R</code> (or similarly named): the script that uses
-<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> to define the execution environment;</li>
-<li>
-<code>gen-pipeline.R</code> (or similarly named): the script that
-uses <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> to define the reproducible analytical
-pipeline.</li>
-</ul>
-<p>So what should you do after having building the development/execution
-environment? The pipeline is executed inside of it, and you’ll see the
-following messages in your R console:</p>
-<pre><code>Build process started...
-
-
-Build successful! Run `rxp_inspect()` for a summary.
-Read individual derivations using `rxp_read()` or
-load them into the global environment using `rxp_load()`.</code></pre>
+<p>When building derivations, their outputs are saved into the so-called
+<em>Nix store</em>. Typically located at <code>/nix/store</code>, this
+folder contains all the software and build artifacts produced by Nix.
+Suppose you write a derivation that computes the tail of a file named
+<code>mtcars.csv</code>. Once the derivation is built, its output would
+be stored at a path similar to
+<code>/nix/store/81k4s9q652jlka0c36khpscnmr8wk7jb-mtcars_tail</code>,
+where the long cryptographic hash uniquely identifies the build output.
+This hash is computed based on the content of the derivation along with
+all its inputs and dependencies, thereby ensuring that the build is
+fully reproducible. As a result, building the same derivation on two
+different machines will yield the same cryptographic hash. This is
+exactly like in mathematics, if you consider the function
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>:=</mo><msup><mi>x</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">f(x):= x^2</annotation></semantics></math>
+then writing
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">f(2)</annotation></semantics></math>
+or
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>4</mn><annotation encoding="application/x-tex">4</annotation></semantics></math>
+is the same.</p>
+<p>This mechanism is what makes it possible to import and export build
+artifacts between pipelines to avoid having to rebuild everything from
+scratch on different machines or on continuous integration platforms.
+<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> has two functions that allow this, called
+<code><a href="../reference/export_nix_archive.html">export_nix_archive()</a></code> and
+<code><a href="../reference/import_nix_archive.html">import_nix_archive()</a></code>.</p>
+<p>To ensure that building derivations always produce exactly the same
+outputs, builds must occur in an isolated environment, often referred to
+as a sandbox. This approach, known as a hermetic build process, ensures
+that the build is unaffected by external factors.</p>
+</div>
+<div class="section level2">
+<h2 id="summary-and-conclusion">Summary and conclusion<a class="anchor" aria-label="anchor" href="#summary-and-conclusion"></a>
+</h2>
+<p>As explained at the start of this vignette, Nix will generate a
+derivation from a Nix expression with a process called instantiation.
+Writing a reproducible pipeline with Nix would mean having to write a
+very long and complex Nix expression. <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> takes care
+of this for you.</p>
+<p>When instantiating an expression, Nix processes your declarations,
+resolves all the inputs (including source files, build scripts, and
+external dependencies), and computes a unique cryptographic hash. This
+hash, derived from both the contents of your derivation and its entire
+dependency graph, forms part of the derivation’s identity. Essentially,
+it ensures that even the smallest change in your inputs will lead to a
+distinct derivation, safeguarding reproducibility. To avoid confusion
+with the concept of expression in R, we will be referring to Nix
+expressions as <em>derivations</em>.</p>
+<p>Once instantiated, derivations can be built. During the build
+process, Nix constructs an isolated, hermetic environment where only the
+explicitly declared dependencies are available. By doing so, the build
+is entirely deterministic, meaning that the exact same inputs always
+produce the same outputs, regardless of the machine or environment. This
+isolation not only improves reliability but also facilitates debugging
+and maintenance, as any external variability is removed from the
+equation.</p>
+<p>After a successful build, Nix stores the build output in the Nix
+store (typically located at <code>/nix/store</code>). For instance, if
+you build a derivation that processes the <code>mtcars.csv</code> file,
+the resultant output might be saved under a unique path such as
+<code>/nix/store/81k4s9q652jlka0c36khpscnmr8wk7jb-mtcars_tail</code>.
+Here, the long cryptographic hash is a direct reflection of the
+derivation’s inputs and build process.</p>
+<p><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> abstracts all of this and makes it easy for R
+users to use the power of Nix to build reproducible analytical
+pipelines.</p>
+<p>Now that you are familiar with basic Nix concepts, let’s move on to
+the next vignette to set up our first, basic, pipeline by going to the
+<code>vignette("basic-usage")</code> vignette.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
