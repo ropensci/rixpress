@@ -2,7 +2,7 @@
 title: "Introductory concepts"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{introductory-concepts}
+  %\VignetteIndexEntry{a-introductory-concepts}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -20,7 +20,7 @@ This vignette will introduce some jargon and walk you through setting up a
 simple pipeline using `{rixpress}`. It is useful, but not mandatory, to
 understand the concepts laid out in this vignette; we recommend you go through
 it, but if you don't get everything at first, don't worry. Try building a simple
-pipeline by going through the next vignette `vignette("basic-usage")`.
+pipeline by going through the next vignette `vignette("b-basic-usage")`.
 
 ## Definitions
 
@@ -173,4 +173,4 @@ power of Nix to build reproducible analytical pipelines.
 
 Now that you are familiar with basic Nix concepts, let's move on to the next
 vignette to set up our first, basic, pipeline by going to the
-`vignette("basic-usage")` vignette.
+`vignette("b-basic-usage")` vignette.
