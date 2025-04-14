@@ -2,7 +2,7 @@
 title: "Introductory concepts"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introductory concepts}
+  %\VignetteIndexEntry{introductory-concepts}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -17,9 +17,10 @@ knitr::opts_chunk$set(
 For a video version of this pipeline, [click here](youtube link to follow).
 
 This vignette will introduce some jargon and walk you through setting up a
-simple pipeline using `{rixpress}`. This vignette will not go beyond a simple
-pipeline that only builds R outputs; for polyglot pipelines, see THIS OTHER
-VIGNETTE TO BE WRITTEN.
+simple pipeline using `{rixpress}`. It is useful, but not mandatory, to
+understand the concepts laid out in this vignette; we recommend you go through
+it, but if you don't get everything at first, don't worry. Try building a simple
+pipeline by going through the next vignette `vignette("basic-usage")`.
 
 ## Definitions
 
@@ -40,30 +41,11 @@ must be taken:
 - To ensure the exact same output is always built, the build process occurs in
   an *hermetic* sandbox.
 
-This last point is quite important because the build process must happen inside
-a sandbox. If you're building your output and it requires, say, Quarto, then
-Quarto must be explicitly listed as an input, even if you already have Quarto
-installed on your system.
-
-The same goes for an environment variable; for example, R users may have to set
-the variable `JAVA_HOME` to make R aware of where the Java runtime is installed.
-However, if Java is required for a derivation, setting the variable `JAVA_HOME`
-outside of the sandbox does not help; it must be set explicitly within the
-sandbox. This also means that if you need to access an API, for example, it will
-not work because no connection to the internet is allowed from within the build
-sandbox. This may seem very restrictive, but if you think about it, it makes
-sense if your goal is to achieve complete reproducibility. Indeed, say that you
-need to use a function `f()` to access an API to get data for your analysis:
-what guarantee do you have that running `f()` today will yield the same result
-as running `f()` in six months? One year? Will this API even still be online?
-For reproducibility purposes, you should obtain the data from this API, then
-version and/or archive it, and continue using this data for your analysis (and
-share it with potential reproducers of your study).
+The next sections of this document explain these three points in more detail.
 
 ## Derivations
 
-Derivation can be very simple, but also very complex. Here is an example of
-a *simple* derivation:
+Here is an example of a *simple* Nix expression:
 
 ```
 let
@@ -84,13 +66,13 @@ pkgs.stdenv.mkDerivation {
 ```
 
 I will not go into details: the only thing that matters is that this uses `awk`,
-a common unix data processing tool, to keep the rows of the `mtcars.csv` where
-its 9th column (the `am` column) equals 1. As you can see, a lot of boilerplate
-code must be written to perform this simple action. However, this is entirely,
-and completely, reproducible: the dependencies are declared and pinned to a
-dated branch of our `rstats-on-nix/nixpkgs` fork, and the only think that make
-this pipeline (well, it's a bit of a stretch to call this a *pipeline*) is if
-the `mtcars.csv` file is not shared with it.
+a common unix data processing tool, to keep the rows of the `mtcars.csv` file
+where its 9th column (the `am` column) equals 1. As you can see, a lot of
+boilerplate code must be written to perform this simple action. However, this is
+entirely, and completely, reproducible: the dependencies are declared and pinned
+to a dated branch of our `rstats-on-nix/nixpkgs` fork, and the only think that
+could make this pipeline fail (well, it's a bit of a stretch to call this a
+*pipeline*) is if the `mtcars.csv` file is not shared with it.
 
 I could then add another step that uses `filtered.csv` as an input and continue
 to process it. If we label the above code as `f` and a subsequent chunk of Nix
@@ -100,204 +82,95 @@ computation: `mtcars |> f |> g`.
 The goal of `{rixpress}` is to help you write pipelines like `mtcars |> f |> g`
 without needing to learn Nix, but still benefit from its features.
 
-## Defining derivations
+Nix builds `filtered.csv` in two steps: it first generates a *derivation* from
+this expression, and only then builds it. For our purposes, I will be referring
+to the code as the one above as *derivation*, instead of expression, this to
+avoid confusion with the concept of *expression* in R.
 
-`{rixpress}` comes with many functions to help you write derivations; these
-typically start with the string `rxp_` and all have roughly the same
-structure. Let's start with `rxp_r()`. To generate the code from before,
-one would write:
+## Dependencies of derivations
 
-```{r, eval = FALSE}
-d1 <- rxp_r(
-  name = filtered_mtcars,
-  expr = dplyr::filter(mtcars, am == 1)
-)
-```
+Nix requires dependencies of any derivation to be explicitely listed and also
+managed by Nix itself. If you're building your output and it requires, say,
+Quarto, then Quarto must be explicitly listed as an input, even if you already
+have Quarto installed on your system.
 
-This should be very familiar to users of the `{targets}` package: just like
-with the `tar_target()` function, one needs to give a name to the derivation
-and then command to generate it. That's it: all the required Nix code gets
-generated by `{rixpress}`.
+The same goes for environment variables; for example, R users may have to set
+the variable `JAVA_HOME` to make R aware of where the Java runtime is installed.
+However, if Java is required for a derivation, setting the variable `JAVA_HOME`
+outside of the sandbox does not help; it must be set explicitly within the
+sandbox. This also means that if you need to access an API to download some
+data, it will not work because no connection to the internet is allowed from
+within the build sandbox.
 
-`d1` however needs `mtcars` as an input, so we first need to make it available
-to the pipeline. To read in any type of files, you should use `rxp_r_file()`:
+This may seem very restrictive, but if you think about it, it makes sense if
+your goal is to achieve complete reproducibility. Indeed, say that you need to
+use a function `f()` to access an API to get data for your analysis: what
+guarantee do you have that running `f()` today will yield the same result as
+running `f()` in six months? One year? Will this API even still be online? For
+reproducibility purposes, you should obtain the data from this API, then version
+and/or archive it, and continue using this data for your analysis (and share it
+with potential reproducers of your study).
 
-```{r, eval = FALSE}
-d0 <- rxp_r_file(
-  name = mtcars,
-  path = 'data/mtcars.csv',
-  read_function = \(x) (read.csv(file = x, sep = "|"))
-)
-```
+## The Nix store and hermetic builds
 
-`rxp_r_file()` uses an R function of only one argument which should be the path
-to the file to be read. In this case, for illustration purposes, we assume the
-columns in the `mtcars.csv` file are separated by the `|` symbol. So we use an
-anonymous function to set the correct separator and create a temporary function
-of only one argument to read the path, `'data/mtcars.csv'`.
+When building derivations, their outputs are saved into the so-called *Nix
+store*. Typically located at `/nix/store`, this folder contains all the software
+and build artifacts produced by Nix. Suppose you write a derivation that
+computes the tail of a file named `mtcars.csv`. Once the derivation is built,
+its output would be stored at a path similar to
+`/nix/store/81k4s9q652jlka0c36khpscnmr8wk7jb-mtcars_tail`, where the long
+cryptographic hash uniquely identifies the build output. This hash is computed
+based on the content of the derivation along with all its inputs and
+dependencies, thereby ensuring that the build is fully reproducible. As a
+result, building the same derivation on two different machines will yield the
+same cryptographic hash. This is exactly like in mathematics, if you consider
+the function $f(x):= x^2$ then writing $f(2)$ or $4$ is the same.
 
-To continue transforming the data, you only need to define a new derivation:
+This mechanism is what makes it possible to import and export build artifacts
+between pipelines to avoid having to rebuild everything from scratch on
+different machines or on continuous integration platforms. `{rixpress}` has two
+functions that allow this, called `export_nix_archive()` and
+`import_nix_archive()`.
 
-```{r, eval = FALSE}
-d2 <- rxp_r(
-  name = mtcars_mpg,
-  expr = dplyr::select(filtered_mtcars, mpg)
-)
-```
+To ensure that building derivations always produce exactly the same outputs,
+builds must occur in an isolated environment, often referred to as a sandbox.
+This approach, known as a hermetic build process, ensures that the build is
+unaffected by external factors.
 
-To build the pipeline, define a list of derivations:
+## Summary and conclusion
 
-```{r, eval = FALSE}
-derivs <- list(d0, d1, d2)
-```
+As explained at the start of this vignette, Nix will generate a derivation from
+a Nix expression with a process called instantiation. Writing a reproducible
+pipeline with Nix would mean having to write a very long and complex Nix
+expression. `{rixpress}` takes care of this for you.
 
-and pass it to the `rixpress()` function:
+When instantiating an expression, Nix processes your declarations, resolves all
+the inputs (including source files, build scripts, and external dependencies),
+and computes a unique cryptographic hash. This hash, derived from both the
+contents of your derivation and its entire dependency graph, forms part of the
+derivation's identity. Essentially, it ensures that even the smallest change in
+your inputs will lead to a distinct derivation, safeguarding reproducibility. To
+avoid confusion with the concept of expression in R, we will be referring to Nix
+expressions as *derivations*.
 
-```{r, eval = FALSE}
-rixpress(derivs)
-```
+Once instantiated, derivations can be built. During the build process, Nix
+constructs an isolated, hermetic environment where only the explicitly declared
+dependencies are available. By doing so, the build is entirely deterministic,
+meaning that the exact same inputs always produce the same outputs, regardless
+of the machine or environment. This isolation not only improves reliability but
+also facilitates debugging and maintenance, as any external variability is
+removed from the equation.
 
-To avoid having to write so much code, you can instead directly define
-the list and pass it to `rixpress()` using  `|>`:
+After a successful build, Nix stores the build output in the Nix store
+(typically located at `/nix/store`). For instance, if you build a derivation
+that processes the `mtcars.csv` file, the resultant output might be saved under
+a unique path such as `/nix/store/81k4s9q652jlka0c36khpscnmr8wk7jb-mtcars_tail`.
+Here, the long cryptographic hash is a direct reflection of the derivation's
+inputs and build process.
 
-```{r, eval = FALSE}
-library(rixpress)
+`{rixpress}` abstracts all of this and makes it easy for R users to use the
+power of Nix to build reproducible analytical pipelines.
 
-list(
-  rxp_r_file(
-    name = mtcars,
-    path = 'data/mtcars.csv',
-    read_function = \(x) (read.csv(file = x, sep = "|"))
-  ),
-
-  rxp_r(
-    name = filtered_mtcars,
-    expr = dplyr::filter(mtcars, am == 1)
-  ),
-
-  rxp_r(
-    name = mtcars_mpg,
-    expr = dplyr::select(filtered_mtcars, mpg)
-  ) |>
-  rixpress()
-```
-
-Running `rixpress()` does several things:
-
-- a folder called `_rixpress` gets created in the project's root path. This
-  folder contains several files that are generated automatically for the
-  pipeline to build successfully;
-- a file called `pipeline.nix` gets generated and as you've surely guessed it,
-  it's the definition of the whole pipeline in the Nix language;
-- finally, the function `rxp_make()` gets also called to actually build the
-  pipeline.
-
-However, if you try to run the code above it'll likely fail; this is because
-another piece of the puzzle is missing, namely, the environment the pipeline
-must run in is missing!
-
-## Defining a reproducible shell for execution
-
-Remember that the whole point of using Nix is that it forces you to be very
-thorough when defining derivations by making you declare their dependencies
-explicitly. But in the case of the pipeline above, where are these dependencies
-defined? Which version of R should be used? And which R packages? The pipeline
-uses the function `filter()` and `select()` from the `{dplyr}` package, so we
-must declare them. But how? This is where `{rix}` gets used: `{rix}` is a
-package that makes it possible to define reproducible development environments
-using very simple R code. For example, we could define an environment
-with R 4.5.0 and `{dplyr}` like so:
-
-```{r, eval = FALSE}
-library(rix)
-
-rix(
-  date = "2025-04-11",
-  r_pkgs = "dplyr",
-  ide = "rstudio",
-  project_path = ".",
-  overwrite = TRUE
-)
-```
-
-Running this code generates a `default.nix` file that can be built using Nix by
-calling `nix-build`, which builds a development environment that contains
-RStudio, R and `{dplyr}` as of the 11th of April 2025. This environment can be
-used for interactive data analysis like you would if you installed RStudio, R
-and `{dplyr}` using the usual installation methods for your operating system. To
-learn more about `{rix}`, please visit
-[https://docs.ropensci.org/rix/](https://docs.ropensci.org/rix/).
-
-Reproducible development environments generated by `{rix}` are where the
-dependencies of the pipelines get defined. In order to use this environment to
-build a `{rixpress}` pipeline, you also have to add `{rixpress}` to the list of
-packages to install in the environment. Because `{rixpress}` is still being
-developed, it must be installed from GitHub. The script to set up the
-environment will look like this:
-
-```{r, eval = FALSE}
-library(rix)
-
-# Define execution environment
-rix(
-  date = "2025-04-11",
-  r_pkgs = "dplyr",
-  git_pkgs = list(
-    package_name = "rixpress",
-    repo_url = "https://github.com/b-rodrigues/rixpress",
-    commit = "HEAD"
-  ),
-  ide = "rstudio",
-  project_path = ".",
-  overwrite = TRUE
-)
-```
-
-As explained before, after building this environment using `nix-build` you can
-use it to work interactively on your project, but also to set up your
-reproducible pipeline using `{rixpress}`.
-
-This is what the script containing the pipeline will look like:
-
-```{r, eval = FALSE}
-library(rixpress)
-# Define pipeline
-list(
-  rxp_r_file(
-    name = mtcars,
-    path = 'data/mtcars.csv',
-    read_function = \(x) (read.csv(file = x, sep = "|"))
-  ),
-
-  rxp_r(
-    name = filtered_mtcars,
-    expr = dplyr::filter(mtcars, am == 1)
-  ),
-
-  rxp_r(
-    name = mtcars_mpg,
-    expr = dplyr::select(filtered_mtcars, mpg)
-  )
-) |>
-  rixpress(project_path = ".")
-```
-
-This is the setup that we recommend, always have two scripts:
-
-- `gen-env.R` (or similarly named): the script that uses `{rix}` to define the
-  execution environment;
-- `gen-pipeline.R` (or similarly named): the script that uses `{rixpress}` to
-  define the reproducible analytical pipeline.
-
-So what should you do after having building the development/execution
-environment? The pipeline is executed inside of it, and you'll see the following
-messages in your R console:
-
-```
-Build process started...
-
-
-Build successful! Run `rxp_inspect()` for a summary.
-Read individual derivations using `rxp_read()` or
-load them into the global environment using `rxp_load()`.
-```
+Now that you are familiar with basic Nix concepts, let's move on to the next
+vignette to set up our first, basic, pipeline by going to the
+`vignette("basic-usage")` vignette.
