@@ -116,16 +116,27 @@ which contains many different examples you can take inspiration from.
 
 ## Installation
 
-### Prerequisites
+### rix
 
-#### Install Nix
+`{rixpress}` builds on `{rix}`, so we highly recommend you start by
+learning and using `{rix}` before trying your hand at `{rixpress}`. By
+learning how to use `{rix}`, you’ll learn more about Nix, how to install
+and use it, and will then be ready to use `{rixpress}`!
 
-tbd
+### Installing rixpress
 
-### Install from GitHub
+Since there’s little point in installing `{rixpress}` if you don’t use
+Nix, the ideal way to install `{rixpress}` is instead to use `{rix}` to
+set up a reproducible environment that includes `{rixpress}` and the
+other required dependencies for your project. Take a look at the
+[introductory concepts
+vignette](https://b-rodrigues.github.io/rixpress/articles/a-intro_concepts.html)
+and [basic usage
+vignette](https://b-rodrigues.github.io/rixpress/articles/b-basic_pipeline.html)
+to get started!
 
-To install this package directly from GitHub, use the `remotes` R
-package:
+That being said, `{rixpress}` is a regular R package, so you can install
+it from GitHub directly (while it’s not on CRAN):
 
 ``` r
 # Install remotes if you don’t have it
