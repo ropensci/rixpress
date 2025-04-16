@@ -170,7 +170,8 @@ The last derivation builds a Quarto document using `rxp_quarto()`. Here again,
 the `additional_files` argument is used to make the derivation aware of required
 files to build the document. Here is what the source of the document looks like:
 
-<pre>
+```text
+
 ---
 title: "Loading derivations outputs in a quarto doc"
 format:
@@ -200,7 +201,8 @@ rixpress::rxp_read("mtcars_mpg")
 ```{r}
 rixpress::rxp_read("mtcars_tail_py")
 ```
-</pre>
+
+```
 
 Just like in an interactive session, `rxp_read()` is used to retrieve the
 objects from the store. See how I refer to the other document `content.qmd` and
