@@ -8,6 +8,7 @@
 <url><loc>https://b-rodrigues.github.io/rixpress/index.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/news/index.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/adjust_imports.html</loc></url>
+<url><loc>https://b-rodrigues.github.io/rixpress/reference/dag_for_ci.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/export_nix_archive.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/generate_dag.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/import_nix_archive.html</loc></url>
@@ -17,6 +18,7 @@
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_common_setup.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_copy.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_file_common.html</loc></url>
+<url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_init.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_inspect.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_load.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_make.html</loc></url>
