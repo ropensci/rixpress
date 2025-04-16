@@ -103,27 +103,19 @@ rxp_make <- function(verbose = FALSE) {
 #' This archive can be transferred to another machine and imported into
 #'   its Nix store.
 #'
-#' @param store_paths Character, defaults to "_rixpress", the folder holding the
-#'   result symlinks.
 #' @param archive_file Character, path to the archive, defaults to
 #'   "_rixpress/pipeline-outputs.nar"
 #'
 #' @export
 export_nix_archive <- function(
-  store_paths = "_rixpress",
   archive_file = "_rixpress/pipeline-outputs.nar"
 ) {
-  if (!is.character(store_paths) || length(store_paths) == 0) {
-    stop("store_paths must be a non-empty character vector")
+  if (!file.exists("_rixpress/build_log.rds")) {
+    stop("Build the pipeline before exporting archive.")
   }
-  if (!is.character(archive_file) || length(archive_file) != 1) {
-    stop("archive_file must be a single character string")
-  }
-  store_paths <- Sys.readlink(list.files(
-    "_rixpress/",
-    "result*",
-    full.names = TRUE
-  ))
+
+  store_paths <- readRDS("_rixpress/build_log.rds")$path
+
   message("Exporting store paths to ", archive_file)
   system2("nix-store", args = c("--export", store_paths), stdout = archive_file)
   message("Export completed")
