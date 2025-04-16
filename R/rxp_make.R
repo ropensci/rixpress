@@ -108,7 +108,7 @@ rxp_make <- function(verbose = FALSE) {
 #'
 #' @export
 export_nix_archive <- function(
-  archive_file = "_rixpress/pipeline-outputs.nar"
+  archive_file = "_rixpress/pipeline_outputs.nar"
 ) {
   if (!file.exists("_rixpress/build_log.rds")) {
     stop("Build the pipeline before exporting archive.")
@@ -131,7 +131,7 @@ export_nix_archive <- function(
 #'
 #' @export
 import_nix_archive <- function(
-  archive_file = "_rixpress/pipeline-outputs.nar"
+  archive_file = "_rixpress/pipeline_outputs.nar"
 ) {
   if (!is.character(archive_file) || length(archive_file) != 1) {
     stop("archive_file must be a single character string")
