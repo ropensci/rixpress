@@ -185,20 +185,28 @@ format:
 Use `rxp_read()` to show object in the document:
 
 ```
+#| eval: true
+
 rixpress::rxp_read("mtcars_head")
 ```
 
 ```
+#| eval: true
+
 rixpress::rxp_read("mtcars_tail")
 ```
 
 ```
+#| eval: true
+
 rixpress::rxp_read("mtcars_mpg")
 ```
 
 {{< include content.qmd >}}
 
 ```
+#| eval: true
+
 rixpress::rxp_read("mtcars_tail_py")
 ```
 
