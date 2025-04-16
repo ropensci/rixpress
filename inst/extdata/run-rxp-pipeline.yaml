@@ -1,0 +1,129 @@
+name: run-rxp-pipeline
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+permissions: write-all
+
+jobs:
+  rxp-pipeline:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create this folder to silence warning
+        run: mkdir -p ~/.nix-defexpr/channels
+
+      - name: Fetch pipeline_outputs.nar from rixpress-runs branch if exists
+        working-directory: ${{ github.workspace }}
+        run: |
+          if git ls-remote --exit-code origin rixpress-runs; then
+            git fetch origin rixpress-runs:rixpress-runs
+            if git ls-tree --name-only rixpress-runs | grep -q '^pipeline_outputs.nar$'; then
+              git checkout rixpress-runs -- pipeline_outputs.nar
+            else
+              echo "pipeline_outputs.nar not found in rixpress-runs branch"
+            fi
+          else
+            echo "rixpress-runs branch does not exist"
+          fi
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=https://github.com/rstats-on-nix/nixpkgs/archive/r-daily.tar.gz
+
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v15
+        with:
+          name: rstats-on-nix
+
+      - name: Build dev env
+        run: |
+          nix-shell --expr "$(curl -sl https://raw.githubusercontent.com/ropensci/rix/main/inst/extdata/default.nix)" --run "Rscript -e 'source(\"gen-env.R\")'"
+
+      - name: Checkout default.nix
+        run: cat default.nix
+
+      - name: Run import_nix_archive if file exists
+        run: |
+          if [ -f ../pipeline_outputs.nar ]; then
+            nix-shell --quiet --run "Rscript -e 'rixpress::import_nix_archive(archive_file = \"../pipeline_outputs.nar\")'"
+          else
+            echo "pipeline_outputs.nar not found"
+          fi
+
+      - name: Generate and check out pipeline
+        run: |
+          nix-shell --quiet --run "Rscript -e 'source(\"gen-pipeline.R\")'"
+          cat pipeline.nix
+
+      - name: Check DAG if dag.dot exists
+        run: |
+          if [ -f dag.dot ]; then
+            nix-shell --quiet -p haskellPackages.stacked-dag --run "stacked-dag dot _rixpress/dag.dot"
+          else
+            echo "dag.dot not found"
+          fi
+
+      - name: Build pipeline
+        run: |
+          nix-shell --quiet --run "Rscript -e 'rixpress::rxp_make()'"
+
+      - name: Inspect built derivations
+        run: |
+          nix-shell --quiet --run "Rscript -e 'rixpress::rxp_inspect()'"
+
+      - name: Export outputs to avoid rebuild
+        run: |
+          nix-shell --quiet --run "Rscript -e 'rixpress::export_nix_archive(archive_file = \"pipeline_outputs.nar\")'"
+
+      - name: Set git config
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Create rixpress-runs branch if not exists
+        run: |
+          if ! git ls-remote --exit-code origin rixpress-runs; then
+            git checkout --orphan rixpress-runs
+            git rm -rf .
+            echo "Rixpress runs branch" > README.md
+            git add README.md
+            git commit -m "Initial commit for rixpress-runs"
+            git push origin rixpress-runs
+            git checkout -
+          fi
+
+      - name: Add worktree for rixpress-runs
+        run: git worktree add ${{ github.workspace }}/rixpress-runs rixpress-runs
+
+      - name: Copy pipeline_outputs.nar to worktree
+        run: cp pipeline_outputs.nar ${{ github.workspace }}/rixpress-runs/
+
+      - name: Commit and push to rixpress-runs branch
+        working-directory: ${{ github.workspace }}/rixpress-runs
+        run: |
+          git add pipeline_outputs.nar
+          if [ -n "$(git status --porcelain)" ]; then
+            git commit -m "Update pipeline_outputs.nar"
+            git push origin rixpress-runs
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Remove worktree if exists
+        run: |
+          if git worktree list | grep -q "${{ github.workspace }}/rixpress-runs"; then
+            git worktree remove ${{ github.workspace }}/rixpress-runs
+          else
+            echo "Worktree not found"
+          fi

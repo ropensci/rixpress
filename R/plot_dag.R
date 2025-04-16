@@ -165,3 +165,26 @@ myinverted_triangle <- function(coords, v = NULL, params) {
     }
   )
 }
+
+#' @title Export DAG of pipeline and prepare it for rendering on CI
+#' @description This function is called automatically by rxp_ga(), but
+#'   you can also run it yourself if you want to visualize the DAG on CI
+#'   with your own workflow definition.
+#' @return Nothing, writes `dag.dot` in `_rixpress/`.
+#' @importFrom igraph  V set_vertex_attr delete_vertex_attr
+#' @examples \dontrun{dag_for_ga()}
+#' @export
+dag_for_ci <- function() {
+  dag_obj <- plot_dag(return_igraph = TRUE)
+
+  dag_obj <- igraph::set_vertex_attr(
+    dag_obj,
+    "label",
+    value = igraph::V(dag_obj)$name
+  )
+
+  # Step 2: Delete the "name" attribute
+  dag_obj <- igraph::delete_vertex_attr(dag_obj, "name")
+
+  igraph::write_graph(dag_obj, file = "_rixpress/dag.dot", format = "dot")
+}
