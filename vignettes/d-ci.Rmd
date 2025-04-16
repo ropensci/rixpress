@@ -1,0 +1,82 @@
+---
+title: "Running pipelines in CI"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{c-polyglot}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette demonstrates how to build a polyglot pipeline and assumes you've
+read `vignette("c-polyglot")`.
+
+For a video version of this vignette, CHECK OUT THIS UPCOMING VIDEO ON YOUTUBE
+
+You can find all the code of this example
+[here](https://github.com/b-rodrigues/rixpress_demos/tree/master/python_r). The
+built Quarto document can be viewed
+[here](https://b-rodrigues.github.io/rixpress_demos/python_r/index.html) (the
+pipeline in this vignette is a slightly simplified version).
+
+## Running pipelines on GitHub Actions
+
+Running pipelines on GitHub Actions is quite easy. First, run the `rxp_ga()`
+function in your project's root. This will generate a GitHub Actions `.yaml`
+file to run the pipeline on each push or pull request. Here are the different
+steps that happen:
+
+- if previous runs artifacts exist, those get restored to avoid recomputing them
+  using `rixpress::import_nix_archive()`;
+- required software gets installed;
+- the execution environment gets generated and built;
+- the `rstats-on-nix` cache gets configured to decrease build times, see this
+  [documentation](https://docs.ropensci.org/rix/articles/b1-setting-up-and-using-rix-on-linux-and-windows.html#using-the-determinate-systems-installer)
+  (ignore the part about installing Nix);
+- the pipeline gets generated (and build, depending on whether or not you set
+  `build` to `FALSE` or not in the `rixpress()` call);
+- the dag gets printed;
+- the pipeline gets built: if you set `build` to `TRUE` previously, the build
+  process gets skipped anyway;
+- the build artifacts and their paths get printed;
+- the build artifacts get archived for reuse using
+  `rixpress::export_nix_archive()` for subsequent runs and are pushed to the
+  `rixpress-runs` branch.
+
+Let me explain how it is possible to view the DAG in CI. In an interactive
+session, you only need to call `plot_dag()` to see a graphical representation of
+the pipeline. But in CI, since there's no graphical interface, so you need to
+use a tool that allows to represent the pipeline in text mode. One such tool is
+the `stacked-dag` package for the Haskell programming language. It takes an
+`igraph` object as a `.dot` file, and returns a textual representation of the
+DAG. So there's a step in the `.yaml` file used to run the pipeline in CI
+that does exactly this:
+
+```
+- name: Check DAG if dag.dot exists and show it if yes
+  run: |
+    if [ -f dag.dot ]; then
+      nix-shell --quiet -p haskellPackages.stacked-dag --run "stacked-dag dot _rixpress/dag.dot"
+    else
+      echo "dag.dot not found"
+    fi
+```
+
+As you can see, `stacked-dag` shows the file under the `_rixpress/dag.dot`
+folder. When calling `rxp_ga()`, the `dag_for_ci()` function is called
+automatically to generate the `.dot` file and put it in the right spot.
+
+Here is what this looks like:
+
+<figure>
+<img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/master/vignettes/stacked-dag.png" alt="Text representation of the DAG." />
+<figcaption aria-hidden="true">
+Text representation of the DAG.
+</figcaption>
+</figure>

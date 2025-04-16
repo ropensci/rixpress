@@ -14,6 +14,14 @@
 #' @examples \dontrun{plot_dag()}
 #' @export
 plot_dag <- function(json_path = "_rixpress/dag.json", return_igraph = FALSE) {
+  if (!file.exists(json_path)) {
+    stop(
+      "The file '",
+      json_path,
+      "' does not exist. Please generate the pipeline first."
+    )
+  }
+
   json_data <- jsonlite::read_json(json_path)
 
   make_df <- function(one_derivation) {

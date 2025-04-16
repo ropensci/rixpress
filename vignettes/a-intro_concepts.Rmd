@@ -20,7 +20,8 @@ This vignette will introduce some jargon and walk you through setting up a
 simple pipeline using `{rixpress}`. It is useful, but not mandatory, to
 understand the concepts laid out in this vignette; we recommend you go through
 it, but if you don't get everything at first, don't worry. Try building a simple
-pipeline by going through the next vignette `vignette("b-basic-usage")`.
+pipeline by going through the next vignette `vignette("b-basic-usage")` and come
+back to this vignette afterwards, and things should be clearer!
 
 ## Definitions
 
@@ -92,7 +93,79 @@ avoid confusion with the concept of *expression* in R.
 Nix requires dependencies of any derivation to be explicitely listed and also
 managed by Nix itself. If you're building your output and it requires, say,
 Quarto, then Quarto must be explicitly listed as an input, even if you already
-have Quarto installed on your system.
+have Quarto installed on your system. The same goes for Quarto's dependencies,
+and all the dependencies of dependencies of Quarto, all the way down to the
+common ancestor of all packages. With Nix, to run a linear regression with R,
+you first need to build the universe.
+
+In Nix terms, this complete set of packages and their dependencies are what its
+author, Eelco Dolstra, refers to as *component closures*:
+
+> The idea is to always deploy component closures: if we deploy a component,
+> then we must also deploy its dependencies, their dependencies, and so on. That
+> is, we must always deploy a set of components that is closed under the
+> ''depends on'' relation. Since closures are selfcontained, they are the units
+> of complete software deployment. After all, if a set of components is not
+> closed, it is not safe to deploy, since using them might cause other
+> components to be referenced that are missing on the target system.
+
+(*Nix: A Safe and Policy-Free System for Software Deployment*, Dolstra et al., 2004).
+
+The figure below, from the same paper illustrates this idea:
+
+<figure>
+<img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/master/vignettes/figure_4.png" alt="Figure 4 of Dolstra et al. (2004)" />
+<figcaption aria-hidden="true">
+Figure 4 of Dolstra et al. (2004)
+</figcaption>
+</figure>
+
+In the figure, `subversion` depends on `openssl` which itself depends on
+`glibc`. So if you write a derivation that is supposed to build a data frame
+that is the result of a filter applied to `mtcars`, then this derivation
+requires:
+
+- An input file, say, `mtcars.csv`;
+- R and potentially R packages say `{dplyr}`;
+- R's and R packages dependencies;
+- the dependencies of the dependencies (all the way down).
+
+All need to be managed by Nix, because if one of these dependencies is "outside"
+this component closure and only available on your machine, then the pipeline
+only *works on your machine*!
+
+Nix distinguishes between different types of dependencies (`buildInputs`,
+`nativeBuildInputs`, `propagatedBuildInputs`, `propagatedNativeBuildInputs`) but
+we can skip this concept which is only relevant for packaging upstream software,
+not to define our pipelines. But if you're curious, read
+[this](https://gist.github.com/b-rodrigues/c677b59126d05d43347ed9623ddd5b0c).
+
+## The Nix store and hermetic builds
+
+When building derivations, their outputs are saved into the so-called *Nix
+store*. Typically located at `/nix/store/`, this folder contains all the
+software and build artifacts produced by Nix. Suppose you write a derivation
+that computes the tail of a file named `mtcars.csv`. Once the derivation is
+built, its output would be stored at a path similar to
+`/nix/store/81k4s9q652jlka0c36khpscnmr8wk7jb-mtcars_tail`, where the long
+cryptographic hash uniquely identifies the build output. This hash is computed
+based on the content of the derivation along with all its inputs and
+dependencies, thereby ensuring that the build is fully reproducible. As a
+result, building the same derivation on two different machines will yield the
+same cryptographic hash, and you can replace the built artifact with the
+derivation that generates it one-to-one. This is exactly like in mathematics; if
+you consider the function $f(x):= x^2$ then writing $f(2)$ or $4$ is the same.
+
+This mechanism is what makes it possible to import and export build artifacts
+between pipelines to avoid having to rebuild everything from scratch on
+different machines or on continuous integration platforms. `{rixpress}` has two
+functions that allow this, called `export_nix_archive()` and
+`import_nix_archive()`.
+
+To ensure that building derivations always produces exactly the same outputs,
+builds must occur in an isolated environment, often referred to as a sandbox.
+This approach, known as a hermetic build process, ensures that the build is
+unaffected by external factors.
 
 The same goes for environment variables; for example, R users may have to set
 the variable `JAVA_HOME` to make R aware of where the Java runtime is installed.
@@ -110,32 +183,6 @@ running `f()` in six months? One year? Will this API even still be online? For
 reproducibility purposes, you should obtain the data from this API, then version
 and/or archive it, and continue using this data for your analysis (and share it
 with potential reproducers of your study).
-
-## The Nix store and hermetic builds
-
-When building derivations, their outputs are saved into the so-called *Nix
-store*. Typically located at `/nix/store`, this folder contains all the software
-and build artifacts produced by Nix. Suppose you write a derivation that
-computes the tail of a file named `mtcars.csv`. Once the derivation is built,
-its output would be stored at a path similar to
-`/nix/store/81k4s9q652jlka0c36khpscnmr8wk7jb-mtcars_tail`, where the long
-cryptographic hash uniquely identifies the build output. This hash is computed
-based on the content of the derivation along with all its inputs and
-dependencies, thereby ensuring that the build is fully reproducible. As a
-result, building the same derivation on two different machines will yield the
-same cryptographic hash. This is exactly like in mathematics, if you consider
-the function $f(x):= x^2$ then writing $f(2)$ or $4$ is the same.
-
-This mechanism is what makes it possible to import and export build artifacts
-between pipelines to avoid having to rebuild everything from scratch on
-different machines or on continuous integration platforms. `{rixpress}` has two
-functions that allow this, called `export_nix_archive()` and
-`import_nix_archive()`.
-
-To ensure that building derivations always produce exactly the same outputs,
-builds must occur in an isolated environment, often referred to as a sandbox.
-This approach, known as a hermetic build process, ensures that the build is
-unaffected by external factors.
 
 ## Summary and conclusion
 
@@ -162,14 +209,19 @@ also facilitates debugging and maintenance, as any external variability is
 removed from the equation.
 
 After a successful build, Nix stores the build output in the Nix store
-(typically located at `/nix/store`). For instance, if you build a derivation
+(typically located at `/nix/store/`). For instance, if you build a derivation
 that processes the `mtcars.csv` file, the resultant output might be saved under
 a unique path such as `/nix/store/81k4s9q652jlka0c36khpscnmr8wk7jb-mtcars_tail`.
-Here, the long cryptographic hash is a direct reflection of the derivation's
-inputs and build process.
+The cryptographic hash is computed by taking into consideration the derivation's
+input and build process. If *anything* changes, the hash will be different; this
+goes as far as if you change the separator in the `mtcars.csv` data set from `,`
+to `|`, then the resulting `mtcars_tail` object, while looking exactly the same
+to us, will be different from the perspective of Nix, because on of its inputs
+was different.
 
-`{rixpress}` abstracts all of this and makes it easy for R users to use the
-power of Nix to build reproducible analytical pipelines.
+The lesson here, is that Nix is quite a complex tool, because it solves quite a
+complex problem. `{rixpress}` (and `{rix}`) are packages that aim to make Nix
+more accessible to users of the R programming language.
 
 Now that you are familiar with basic Nix concepts, let's move on to the next
 vignette to set up our first, basic, pipeline by going to the

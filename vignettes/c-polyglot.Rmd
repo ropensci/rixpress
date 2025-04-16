@@ -1,0 +1,232 @@
+---
+title: "Polyglot pipelines and literate programming with Quarto"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{c-polyglot}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette demonstrates how to build a polyglot pipeline and assumes you've
+read `vignette("b-basic-usage")`.
+
+For a video version of this vignette, CHECK OUT THIS UPCOMING VIDEO ON YOUTUBE
+
+You can find all the code of this example
+[here](https://github.com/b-rodrigues/rixpress_demos/tree/master/python_r). The
+built Quarto document can be viewed
+[here](https://b-rodrigues.github.io/rixpress_demos/python_r/index.html) (the
+pipeline in this vignette is a slightly simplified version).
+
+## Analysing the mtcars dataset using R and Python
+
+`{rixpress}` makes it easy to write polyglot or multilingual, data science
+pipelines with derivation that run R or Python code. This vignette explains
+how you can easily set up such a pipeline.
+
+First, call `rxp_init()` which will generate two files, `gen-env.R` and
+`gen-pipeline.R`. In `gen-env.R`, we define the execution environment:
+
+```{r, eval = FALSE}
+library(rix)
+
+rix(
+  date = "2025-03-31",
+  r_pkgs = c("dplyr", "igraph", "reticulate", "quarto"),
+  git_pkgs = list(
+    package_name = "rixpress",
+    repo_url = "https://github.com/b-rodrigues/rixpress",
+    commit = "HEAD"
+  ),
+  py_pkgs = list(
+    py_version = "3.12",
+    py_pkgs = c("pandas", "polars", "pyarrow")
+  ),
+  ide = "none",
+  project_path = ".",
+  overwrite = TRUE
+)
+```
+
+Notice the `py_pkgs` argument to `rix()`: this will install Python and the
+listed Python packages in that environment. You'll notice that we add
+`{reticulate}` to the list of R packages to install as well; this is only needed
+to convert data between R and Python: Python build steps are executed in a
+standard Python shell without the need to use `{reticulate}`.
+
+If you want to work on a machine without R nor `{rix}` but with Nix already
+installed, we provide a way to bootstrap a complete environment using this call:
+
+```
+nix-shell --expr "$(curl -sl https://raw.githubusercontent.com/ropensci/rix/main/inst/extdata/default.nix)"
+```
+
+This will drop you into a shell with R and `{rix}` available. Simply start R by
+typing `R` and then `source("gen-env.R")` to generate the required
+`default.nix`. Then, quit R and the shell (CTRL-D or `quit()` in R, `exit` in
+the terminal) and then build the environment defined by the freshly generated
+`default.nix` by typing `nix-build`.
+
+Now is time to build the pipeline. Here is a simple example:
+
+```{r, eval = FALSE}
+library(rixpress)
+library(igraph)
+
+list(
+  rxp_py_file(
+    name = mtcars_pl,
+    path = 'data/mtcars.csv',
+    read_function = "lambda x: polars.read_csv(x, separator='|')"
+  ),
+
+  rxp_py(
+    # reticulate doesn't support polars DFs yet, so need to convert
+    # first to pandas DF
+    name = mtcars_pl_am,
+    py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()"
+  ),
+
+  rxp_py2r(
+    name = mtcars_am,
+    expr = mtcars_pl_am
+  ),
+
+  rxp_r(
+    name = mtcars_head,
+    expr = my_head(mtcars_am),
+    additional_files = "functions.R"
+  ),
+
+  rxp_r2py(
+    name = mtcars_head_py,
+    expr = mtcars_head
+  ),
+
+  rxp_py(
+    name = mtcars_tail_py,
+    py_expr = 'mtcars_head_py.tail()'
+  ),
+
+  rxp_py2r(
+    name = mtcars_tail,
+    expr = mtcars_tail_py
+  ),
+
+  rxp_r(
+    name = mtcars_mpg,
+    expr = dplyr::select(mtcars_tail, mpg)
+  ),
+
+  rxp_quarto(
+    name = page,
+    qmd_file = "my_doc/page.qmd",
+    additional_files = c("my_doc/content.qmd", "my_doc/images")
+  )
+) |>
+  rixpress(project_path = ".")
+```
+
+As you can see, it starts off by reading in some data using the Python polars
+package, and then converts it to an R data frame for further manipulation,
+converts it back to a Python data frame and back to R. You'll notice that at
+some point the *head* of the data is computed using a user-defined function
+called `my_head()`. User-defined functions should all go into a script called
+`functions.R` or `functions.py` and derivation that use them need to be aware of
+them by setting the `additional_files` argument (if derivation need further
+files to be available, these can be put there as well. A main difference between
+`rxp_py()` and `rxp_r()` is that Python code should be passed as a string, and
+not as an expression. Also, you'll notice that I had to use `polars.read_csv()`
+instead of the more common `pl.read_csv()`. This is because by default Python
+package get imported using a simple statement `import polars`. If you want to
+change this to `import polars as pl` (`import pandas as pd` and so on), then you
+can use the `adjust_imports()` function. For example:
+
+```{r, eval = FALSE}
+adjust_imports("import polars", "import polars as pl")
+```
+
+`adjust_imports()` is sometimes mandatory, for example if you want to import a
+package's submodule:
+
+```{r, eval = FALSE}
+adjust_imports("import pillow", "from PIL import Image")
+```
+
+The package is called `pillow`, so `{rixpress}` will import write the statement
+as `import pillow`, but this will simply not work. So in this case
+`adjust_imports()` must be used.
+
+## Building a Quarto document
+
+The last derivation builds a Quarto document using `rxp_quarto()`. Here again,
+the `additional_files` argument is used to make the derivation aware of required
+files to build the document. Here is what the source of the document looks like:
+
+````
+---
+title: "Loading derivations outputs in a quarto doc"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+![Meme](images/meme.png)
+
+Use `rxp_read()` to show object in the document:
+
+```{r}
+rixpress::rxp_read("mtcars_head")
+```
+
+```{r}
+rixpress::rxp_read("mtcars_tail")
+```
+
+```{r}
+rixpress::rxp_read("mtcars_mpg")
+```
+
+{{< include content.qmd >}}
+
+```{r}
+rixpress::rxp_read("mtcars_tail_py")
+```
+````
+
+Just like in an interactive session, `rxp_read()` is used to retrieve the
+objects from the store. See how I refer to the other document `content.qmd` and
+the image `meme.png`.
+
+If you want to add further arguments to the Quarto command line tool, you can
+use the `args` argument:
+
+```{r, eval = FALSE}
+rxp_quarto(
+  name = page,
+  qmd_file = "my_doc/page.qmd",
+  additional_files = c("my_doc/content.qmd", "my_doc/images"),
+  args = "--to typst"
+)
+```
+
+and don't forget to add `typst` to the list of system packages in the call to
+`rix()`:
+
+```{r, eval = FALSE}
+rix(
+  date = "2025-03-31",
+  r_pkgs = c("dplyr", "igraph", "reticulate", "quarto"),
+  system_pkgs = "typst",
+  git_pkgs = list(...
+```
+
+In the future, other languages could be added to `{rixpress}`, notably Julia.
