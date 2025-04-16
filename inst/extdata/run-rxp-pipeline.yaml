@@ -55,8 +55,8 @@ jobs:
 
       - name: Run import_nix_archive if file exists
         run: |
-          if [ -f ../pipeline_outputs.nar ]; then
-            nix-shell --quiet --run "Rscript -e 'rixpress::import_nix_archive(archive_file = \"../pipeline_outputs.nar\")'"
+          if [ -f pipeline_outputs.nar ]; then
+            nix-shell --quiet --run "Rscript -e 'rixpress::import_nix_archive(archive_file = \"pipeline_outputs.nar\")'"
           else
             echo "pipeline_outputs.nar not found"
           fi
