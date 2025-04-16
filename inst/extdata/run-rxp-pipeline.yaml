@@ -68,7 +68,7 @@ jobs:
 
       - name: Check DAG if dag.dot exists and show it if yes
         run: |
-          if [ -f dag.dot ]; then
+          if [ -f _rixpress/dag.dot ]; then
             nix-shell --quiet -p haskellPackages.stacked-dag --run "stacked-dag dot _rixpress/dag.dot"
           else
             echo "dag.dot not found"
