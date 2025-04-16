@@ -184,21 +184,21 @@ format:
 
 Use `rxp_read()` to show object in the document:
 
-```{r}
+```
 rixpress::rxp_read("mtcars_head")
 ```
 
-```{r}
+```
 rixpress::rxp_read("mtcars_tail")
 ```
 
-```{r}
+```
 rixpress::rxp_read("mtcars_mpg")
 ```
 
 {{< include content.qmd >}}
 
-```{r}
+```
 rixpress::rxp_read("mtcars_tail_py")
 ```
 
