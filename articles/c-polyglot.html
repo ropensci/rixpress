@@ -227,24 +227,32 @@ format:
 ![Meme](images/meme.png)
 
 Use `rxp_read()` to show object in the document:
-</code></pre>
-<p>rixpress::rxp_read(“mtcars_head”)</p>
-<pre><code></code></pre>
-<p>rixpress::rxp_read(“mtcars_tail”)</p>
-<pre><code></code></pre>
-<p>rixpress::rxp_read(“mtcars_mpg”)</p>
-<pre><code>
+
+```
+rixpress::rxp_read("mtcars_head")
+```
+
+```
+rixpress::rxp_read("mtcars_tail")
+```
+
+```
+rixpress::rxp_read("mtcars_mpg")
+```
+
 {{&lt; include content.qmd &gt;}}
+
+```
+rixpress::rxp_read("mtcars_tail_py")
+```
 </code></pre>
-<p>rixpress::rxp_read(“mtcars_tail_py”)</p>
-<pre><code></code></pre>
 <p>Just like in an interactive session, <code><a href="../reference/rxp_read.html">rxp_read()</a></code> is used
 to retrieve the objects from the store. See how I refer to the other
 document <code>content.qmd</code> and the image
 <code>meme.png</code>.</p>
 <p>If you want to add further arguments to the Quarto command line tool,
 you can use the <code>args</code> argument:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_quarto.html">rxp_quarto</a></span><span class="op">(</span></span>
 <span>  name <span class="op">=</span> <span class="va">page</span>,</span>
 <span>  qmd_file <span class="op">=</span> <span class="st">"my_doc/page.qmd"</span>,</span>
@@ -253,11 +261,11 @@ you can use the <code>args</code> argument:</p>
 <span><span class="op">)</span></span></code></pre></div>
 <p>and don’t forget to add <code>typst</code> to the list of system
 packages in the call to <code><a href="https://docs.ropensci.org/rix/reference/rix.html" class="external-link">rix()</a></code>:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">rix</span>(</span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>  <span class="at">date =</span> <span class="st">"2025-03-31"</span>,</span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>  <span class="at">r_pkgs =</span> <span class="fu">c</span>(<span class="st">"dplyr"</span>, <span class="st">"igraph"</span>, <span class="st">"reticulate"</span>, <span class="st">"quarto"</span>),</span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>  <span class="at">system_pkgs =</span> <span class="st">"typst"</span>,</span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>  <span class="at">git_pkgs =</span> <span class="fu">list</span>(...</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">rix</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="at">date =</span> <span class="st">"2025-03-31"</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="at">r_pkgs =</span> <span class="fu">c</span>(<span class="st">"dplyr"</span>, <span class="st">"igraph"</span>, <span class="st">"reticulate"</span>, <span class="st">"quarto"</span>),</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="at">system_pkgs =</span> <span class="st">"typst"</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>  <span class="at">git_pkgs =</span> <span class="fu">list</span>(...</span></code></pre></div>
 <p>In the future, other languages could be added to
 <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>, notably Julia.</p>
 </div>
