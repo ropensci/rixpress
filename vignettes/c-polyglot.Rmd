@@ -170,7 +170,7 @@ The last derivation builds a Quarto document using `rxp_quarto()`. Here again,
 the `additional_files` argument is used to make the derivation aware of required
 files to build the document. Here is what the source of the document looks like:
 
-````
+````{=markdown}
 ---
 title: "Loading derivations outputs in a quarto doc"
 format:
