@@ -36,6 +36,16 @@ jobs:
             echo "rixpress-runs branch does not exist"
           fi
 
+      - name: Move pipeline_outputs.nar to _rixpress if not exists
+        working-directory: ${{ github.workspace }}
+        run: |
+          mkdir -p _rixpress
+          if [ ! -f _rixpress/pipeline_outputs.nar ]; then
+            mv pipeline_outputs.nar _rixpress/
+          else
+            echo "_rixpress/pipeline_outputs.nar already exists, not moving pipeline_outputs.nar."
+          fi
+
       - name: Install Nix
         uses: cachix/install-nix-action@v31
         with:
@@ -55,8 +65,8 @@ jobs:
 
       - name: Run import_nix_archive if file exists
         run: |
-          if [ -f pipeline_outputs.nar ]; then
-            nix-shell --quiet --run "Rscript -e 'rixpress::import_nix_archive(archive_file = \"pipeline_outputs.nar\")'"
+          if [ -f _rixpress/pipeline_outputs.nar ]; then
+            nix-shell --quiet --run "Rscript -e 'rixpress::import_nix_archive()'"
           else
             echo "pipeline_outputs.nar not found"
           fi
