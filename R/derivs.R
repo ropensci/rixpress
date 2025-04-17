@@ -19,16 +19,25 @@ rxp_r <- function(
   name,
   expr,
   additional_files = "",
-  nix_env = "default.nix"
+  nix_env = "default.nix",
+  serialize_function = NULL,
+  unserialize_function = NULL
 ) {
   out_name <- deparse(substitute(name))
   expr_str <- deparse(substitute(expr))
   expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
 
+  if (is.null(serialize_function)) {
+    serialize_str <- "saveRDS"
+  } else {
+    serialize_str <- deparse(substitute(serialize_function))
+  }
+
   build_phase <- sprintf(
-    "Rscript -e \"\n        source('libraries.R')\n        %s <- %s\n        saveRDS(%s, '%s.rds')\"",
+    "Rscript -e \"\n        source('libraries.R')\n        %s <- %s\n        %s(%s, '%s.rds')\"",
     out_name,
     expr_str,
+    serialize_str,
     out_name,
     out_name
   )
@@ -75,7 +84,8 @@ rxp_r <- function(
     snippet = snippet,
     type = "rxp_r",
     additional_files = additional_files,
-    nix_env = nix_env
+    nix_env = nix_env,
+    unserialize_function = unserialize_function
   )
 }
 
@@ -341,7 +351,13 @@ rxp_file_common <- function(
 #'   the provided anonymous function will read all the `.csv` file in the `data/` folder.
 #' @return A list with `name`, `snippet`, `type`, and `nix_env`.
 #' @export
-rxp_r_file <- function(name, path, read_function, nix_env = "default.nix", copy_data_folder = FALSE) {
+rxp_r_file <- function(
+  name,
+  path,
+  read_function,
+  nix_env = "default.nix",
+  copy_data_folder = FALSE
+) {
   out_name <- deparse(substitute(name))
   read_func_str <- deparse1(substitute(read_function))
   read_func_str <- gsub("\"", "'", read_func_str)
@@ -408,7 +424,13 @@ rxp_r_file <- function(name, path, read_function, nix_env = "default.nix", copy_
 #'   the provided anonymous function will read all the `.csv` file in the `data/` folder.
 #' @return A list with `name`, `snippet`, `type`, and `nix_env`.
 #' @export
-rxp_py_file <- function(name, path, read_function, nix_env = "default.nix", copy_data_folder = FALSE) {
+rxp_py_file <- function(
+  name,
+  path,
+  read_function,
+  nix_env = "default.nix",
+  copy_data_folder = FALSE
+) {
   out_name <- deparse(substitute(name))
   # Sanitize the read_function string.
   read_function <- gsub("'", "\\'", read_function, fixed = TRUE)
@@ -455,7 +477,6 @@ rxp_py_file <- function(name, path, read_function, nix_env = "default.nix", copy
     library_ext = "py"
   )
 }
-
 
 
 #' Generate the Nix derivation snippet for Python-R object transfer.

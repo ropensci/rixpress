@@ -125,7 +125,7 @@ saveRDS(data, 'mtcars.rds')"
   substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_head")' 'rxp_read("${mtcars_head}")'
   substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail")' 'rxp_read("${mtcars_tail}")'
   substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_mpg")' 'rxp_read("${mtcars_mpg}")'
-  quarto render page.qmd --output-dir $out
+  quarto render page.qmd  --output-dir $out
     '';
   };
 
