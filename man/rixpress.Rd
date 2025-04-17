@@ -4,7 +4,7 @@
 \alias{rixpress}
 \title{Generate Nix Pipeline Code with a Generic Default Target}
 \usage{
-rixpress(derivs, project_path, build = TRUE)
+rixpress(derivs, project_path, build = TRUE, ...)
 }
 \arguments{
 \item{derivs}{A list of derivation objects, where each object is a list of
@@ -23,6 +23,10 @@ function.}
 \item{build}{Logical, defaults to TRUE. Should the pipeline get built right
 after being generated? If FALSE, you can build the pipeline later using
 \code{rixpress()}}
+
+\item{...}{Further arguments passed down to methods. Use \code{max-jobs} and
+\code{cores} to set parallelism during build. See the documentation of
+\code{rxp_make()} for more details.}
 }
 \value{
 A character string containing the complete Nix code for a

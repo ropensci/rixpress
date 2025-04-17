@@ -25,6 +25,10 @@
 #'   after being generated? If FALSE, you can build the pipeline later using
 #'   `rixpress()`
 #'
+#' @param ... Further arguments passed down to methods. Use `max-jobs` and
+#'   `cores` to set parallelism during build. See the documentation of
+#'   `rxp_make()` for more details.
+#'
 #' @return A character string containing the complete Nix code for a
 #'   `pipeline.nix` file. This string can be written to a file or passed to
 #'   another function for further processing.
@@ -57,7 +61,7 @@
 #'
 #' }
 #' @export
-rixpress <- function(derivs, project_path, build = TRUE) {
+rixpress <- function(derivs, project_path, build = TRUE, ...) {
   generate_dag(derivs, output_file = "_rixpress/dag.json")
 
   # Need to combine nix envs and additional files into a
@@ -140,8 +144,8 @@ rixpress <- function(derivs, project_path, build = TRUE) {
 
   writeLines(pipeline, "pipeline.nix")
 
-  if(build){
-    rxp_make()
+  if (build) {
+    rxp_make(...)
   }
 }
 
