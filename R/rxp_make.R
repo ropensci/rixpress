@@ -1,13 +1,15 @@
 #' Build pipeline using Nix
 #'
 #' Runs `nix-build` with a quiet flag, outputting to `_rixpress/result`.
+#' @param max_jobs Integer, number of derivations to be built in parallel.
+#' @param cores Integer, number of cores a derivation can use during build.
 #' @param verbose Logical, defaults to FALSE. Set to TRUE to see nix's
 #'   standard output, can be useful to check what is happening if the
 #'   build process takes long.
 #' @importFrom processx run
 #' @return A character vector of paths to the built outputs.
 #' @export
-rxp_make <- function(verbose = FALSE) {
+rxp_make <- function(verbose = FALSE, max_jobs = 1, cores = 1) {
   message("Build process started...\n", "\n")
 
   instantiate <- processx::run(
@@ -35,9 +37,13 @@ rxp_make <- function(verbose = FALSE) {
   build_process <- processx::run(
     command = "nix-store",
     args = c(
-      "--realize",
+      "--realise",
       "--verbose",
       "--keep-going",
+      "--max-jobs",
+      max_jobs,
+      "--cores",
+      cores,
       drv_paths
     ),
     stdout_line_callback = cb,

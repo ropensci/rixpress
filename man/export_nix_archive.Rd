@@ -4,7 +4,7 @@
 \alias{export_nix_archive}
 \title{Export Nix store paths to an archive}
 \usage{
-export_nix_archive(archive_file = "_rixpress/pipeline-outputs.nar")
+export_nix_archive(archive_file = "_rixpress/pipeline_outputs.nar")
 }
 \arguments{
 \item{archive_file}{Character, path to the archive, defaults to

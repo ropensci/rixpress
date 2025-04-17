@@ -4,12 +4,16 @@
 \alias{rxp_make}
 \title{Build pipeline using Nix}
 \usage{
-rxp_make(verbose = FALSE)
+rxp_make(verbose = FALSE, max_jobs = 1, cores = 1)
 }
 \arguments{
 \item{verbose}{Logical, defaults to FALSE. Set to TRUE to see nix's
 standard output, can be useful to check what is happening if the
 build process takes long.}
+
+\item{max_jobs}{Integer, number of derivations to be built in parallel.}
+
+\item{cores}{Integer, number of cores a derivation can use during build.}
 }
 \value{
 A character vector of paths to the built outputs.
