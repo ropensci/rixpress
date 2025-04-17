@@ -46,7 +46,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rxp_make</span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rxp_make</span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">FALSE</span>, max_jobs <span class="op">=</span> <span class="fl">1</span>, cores <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -57,6 +57,14 @@
 <dd><p>Logical, defaults to FALSE. Set to TRUE to see nix's
 standard output, can be useful to check what is happening if the
 build process takes long.</p></dd>
+
+
+<dt id="arg-max-jobs">max_jobs<a class="anchor" aria-label="anchor" href="#arg-max-jobs"></a></dt>
+<dd><p>Integer, number of derivations to be built in parallel.</p></dd>
+
+
+<dt id="arg-cores">cores<a class="anchor" aria-label="anchor" href="#arg-cores"></a></dt>
+<dd><p>Integer, number of cores a derivation can use during build.</p></dd>
 
 </dl></div>
     <div class="section level2">
