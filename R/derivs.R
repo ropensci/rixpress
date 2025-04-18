@@ -4,15 +4,32 @@
 #' @param additional_files Character vector, additional files to include. Custom
 #'   functions must go into a script called "functions.R", and additional files
 #'   that need to be accessible during the build process can be named anything.
-#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
-#' @details At a basic level, `rxp_r(mtcars_am, filter(mtcars, am == 1))`
-#'   is equivalent to `mtcars <- filter(mtcars, am == 1)`. `rxp_r()` generates
-#'   the required Nix boilerplate to output a so-called "derivation" in Nix
-#'   jargon. A Nix derivation is a recipe that defines how to create an output
-#'   (in this case `mtcars_am`) including its dependencies, build steps,
-#'   and output paths.
+#' @param nix_env Character, path to the Nix environment file, default is
+#'   "default.nix".
+#' @param serialize_function Function, defaults to NULL. A function used to
+#'   serialize objects for transfer between derivations. It must accept two
+#'   arguments: the object to serialize (first), and the target file path
+#'   (second). If your function has a different signature, wrap it to match this
+#'   interface. By default, `saveRDS()` is used, but this may yield unexpected
+#'   results, especially for complex objects like machine learning models. For
+#'   instance, for `{keras}` models, use `keras::save_model_hdf5()` to capture
+#'   the full model (architecture, weights, training config, optimizer state,
+#'   etc.).
+#' @param unserialize_function Function, defaults to NULL. A function used to
+#'   unserialize objects transferred between derivations. By default,
+#'   `readRDS()` is used, but this may produce unexpected results with complex
+#'   objects like machine learning models. For example, if the parent derivation
+#'   used `keras::save_model_hdf5()` to serialize a model, this derivation
+#'   should use `keras::load_model_hdf5()` to load it correctly.
+#' @details At a basic level, `rxp_r(mtcars_am, filter(mtcars, am == 1))` is
+#'   equivalent to `mtcars <- filter(mtcars, am == 1)`. `rxp_r()` generates the
+#'   required Nix boilerplate to output a so-called "derivation" in Nix jargon.
+#'   A Nix derivation is a recipe that defines how to create an output (in this
+#'   case `mtcars_am`) including its dependencies, build steps, and output
+#'   paths.
 #' @return A list with elements: `name`, the `name` of the derivation,
-#'   `snippet`, the Nix boilerplate code, `type`, `additional_files` and `nix_env`.
+#'   `snippet`, the Nix boilerplate code, `type`, `additional_files` and
+#'   `nix_env`.
 #' @examples rxp_r(mtcars_am, filter(mtcars, am == 1))
 #' @export
 rxp_r <- function(
@@ -33,8 +50,14 @@ rxp_r <- function(
     serialize_str <- deparse(substitute(serialize_function))
   }
 
+  if (is.null(unserialize_function)) {
+    unserialize_str <- "readRDS"
+  } else {
+    unserialize_str <- deparse(substitute(unserialize_function))
+  }
+
   build_phase <- sprintf(
-    "Rscript -e \"\n        source('libraries.R')\n        %s <- %s\n        %s(%s, '%s.rds')\"",
+    "Rscript -e \"\n        source('libraries.R')\n        %s <- %s\n        %s(%s, '%s')\"",
     out_name,
     expr_str,
     serialize_str,
@@ -85,7 +108,7 @@ rxp_r <- function(
     type = "rxp_r",
     additional_files = additional_files,
     nix_env = nix_env,
-    unserialize_function = unserialize_function
+    unserialize_function = unserialize_str
   )
 }
 
@@ -191,6 +214,21 @@ rxp_quarto <- function(
 #'   functions must go into a script called "functions.R", and additional files
 #'   that need to be accessible during the build process can be named anything.
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
+#' @param serialize_function Function, defaults to NULL. A function used to
+#'   serialize objects for transfer between derivations. It must accept two
+#'   arguments: the object to serialize (first), and the target file path
+#'   (second). If your function has a different signature, wrap it to match this
+#'   interface. By default, `saveRDS()` is used, but this may yield unexpected
+#'   results, especially for complex objects like machine learning models. For
+#'   instance, for `{keras}` models, use `keras::save_model_hdf5()` to capture
+#'   the full model (architecture, weights, training config, optimizer state,
+#'   etc.).
+#' @param unserialize_function Function, defaults to NULL. A function used to
+#'   unserialize objects transferred between derivations. By default,
+#'   `readRDS()` is used, but this may produce unexpected results with complex
+#'   objects like machine learning models. For example, if the parent derivation
+#'   used `keras::save_model_hdf5()` to serialize a model, this derivation
+#'   should use `keras::load_model_hdf5()` to load it correctly.
 #' @details At a basic level,
 #'   `rxp_py(mtcars_am, "mtcars.filter(polars.col('am') == 1)")`
 #'   is equivalent to `mtcars_am = mtcars.filter(polars.col('am') == 1).
@@ -207,6 +245,8 @@ rxp_py <- function(
   py_expr,
   additional_files = "",
   nix_env = "default.nix"
+  serialize_function = NULL,
+  unserialize_function = NULL
 ) {
   out_name <- deparse(substitute(name))
 
@@ -216,7 +256,7 @@ rxp_py <- function(
     "python -c \"
 exec(open('libraries.py').read())
 exec('%s = %s')
-with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
+with open('%s', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
     out_name,
     py_expr,
     out_name,
@@ -263,7 +303,8 @@ with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
     snippet = snippet,
     type = "rxp_py",
     additional_files = additional_files,
-    nix_env = nix_env
+    nix_env = nix_env,
+    unserialize_function = unserialize_function
   )
 }
 
@@ -365,7 +406,7 @@ rxp_r_file <- function(
   if (!copy_data_folder) {
     # Use single file copy.
     build_phase <- sprintf(
-      "cp $src input_file\nRscript -e \"\nsource('libraries.R')\ndata <- do.call(%s, list('input_file'))\nsaveRDS(data, '%s.rds')\"",
+      "cp $src input_file\nRscript -e \"\nsource('libraries.R')\ndata <- do.call(%s, list('input_file'))\nsaveRDS(data, '%s')\"",
       read_func_str,
       out_name
     )
@@ -375,7 +416,7 @@ rxp_r_file <- function(
       # If the provided path is a folder, use that folder as the source.
       actual_path <- path
       build_phase <- sprintf(
-        "cp -r $src input_folder\nRscript -e \"\nsource('libraries.R')\ndata <- do.call(%s, list('input_folder/'))\nsaveRDS(data, '%s.rds')\"",
+        "cp -r $src input_folder\nRscript -e \"\nsource('libraries.R')\ndata <- do.call(%s, list('input_folder/'))\nsaveRDS(data, '%s')\"",
         read_func_str,
         out_name
       )
@@ -384,7 +425,7 @@ rxp_r_file <- function(
       actual_path <- dirname(path)
       file_name <- basename(path)
       build_phase <- sprintf(
-        "cp -r $src input_folder\nRscript -e \"\nsource('libraries.R')\ndata <- do.call(%s, list('input_folder/%s'))\nsaveRDS(data, '%s.rds')\"",
+        "cp -r $src input_folder\nRscript -e \"\nsource('libraries.R')\ndata <- do.call(%s, list('input_folder/%s'))\nsaveRDS(data, '%s')\"",
         read_func_str,
         file_name,
         out_name
@@ -440,7 +481,7 @@ rxp_py_file <- function(
 
   if (!copy_data_folder) {
     build_phase <- sprintf(
-      "cp $src input_file\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_file'\ndata = eval('%s')(file_path)\nwith open('%s.pickle', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
+      "cp $src input_file\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_file'\ndata = eval('%s')(file_path)\nwith open('%s.', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
       read_function,
       out_name
     )
@@ -450,7 +491,7 @@ rxp_py_file <- function(
       # If path is a folder.
       actual_path <- path
       build_phase <- sprintf(
-        "cp -r $src input_folder\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_folder/'\ndata = eval('%s')(file_path)\nwith open('%s.pickle', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
+        "cp -r $src input_folder\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_folder/'\ndata = eval('%s')(file_path)\nwith open('%s', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
         read_function,
         out_name
       )
@@ -459,7 +500,7 @@ rxp_py_file <- function(
       actual_path <- dirname(path)
       file_name <- basename(path)
       build_phase <- sprintf(
-        "cp -r $src input_folder\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_folder/%s'\ndata = eval('%s')(file_path)\nwith open('%s.pickle', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
+        "cp -r $src input_folder\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_folder/%s'\ndata = eval('%s')(file_path)\nwith open('%s', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
         file_name,
         read_function,
         out_name
@@ -502,7 +543,7 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
 
   if (direction == "py2r") {
     r_command <- sprintf(
-      "         %s <- reticulate::py_load_object('${%s}/%s.pickle', pickle = 'pickle', convert = TRUE)\n         saveRDS(%s, '%s.rds')",
+      "         %s <- reticulate::py_load_object('${%s}/%s', pickle = 'pickle', convert = TRUE)\n         saveRDS(%s, '%s')",
       out_name,
       expr_str,
       expr_str,
@@ -511,7 +552,7 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
     )
   } else if (direction == "r2py") {
     r_command <- sprintf(
-      "         %s <- readRDS('${%s}/%s.rds')\n         reticulate::py_save_object(%s, '%s.pickle', pickle = 'pickle')",
+      "         %s <- readRDS('${%s}/%s')\n         reticulate::py_save_object(%s, '%s', pickle = 'pickle')",
       expr_str,
       expr_str,
       expr_str,
