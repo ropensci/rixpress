@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 This vignette demonstrates how to set up a simple pipeline, and assumes you've
-read `vignette("a-introductory-concepts")`.
+read `vignette("a-intro-concepts")`.
 
 For a video version of this vignette, CHECK OUT THIS UPCOMING VIDEO ON YOUTUBE
 
@@ -49,7 +49,7 @@ Also notice that `rxp_r_file()` is quite flexible: it'll work with any function
 to read in a type of file.
 
 Once that data is read, we need to start manipulating it. To generate a similar
-derivation to the one described in `vignette("a-introductory-concepts")`, but
+derivation to the one described in `vignette("a-intro-concepts")`, but
 using R and `{dplyr}` to process the data instead of `awk`, one would write:
 
 ```{r, eval = FALSE}
