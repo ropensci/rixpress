@@ -362,7 +362,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     deriv_name <- as.character(d$deriv_name[1])
     deps <- d$depends
     type <- d$type[1]
-    unserialize_function <- d$unserialize_str
+    unserialize_function <- d$unserialize_function
 
     # Set parameters based on derivation type
     if (type == "rxp_r") {
@@ -384,7 +384,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     } else if (type == "rxp_py") {
       maker <- "makePyDerivation"
       script_cmd <- "python -c \""
-      load_line <- function(dep, indent) {
+      load_line <- function(dep, indent, unserialize_function) {
         paste0(
           "with open('${",
           dep,
@@ -444,7 +444,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
       ""
     }
 
-    load_lines <- sapply(deps, load_line, indent)
+    load_lines <- sapply(deps, load_line, indent, unserialize_function)
     pipeline <- append(pipeline, load_lines, after = build_phase_idx + 2)
   }
 

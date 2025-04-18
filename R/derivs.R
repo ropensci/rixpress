@@ -244,7 +244,7 @@ rxp_py <- function(
   name,
   py_expr,
   additional_files = "",
-  nix_env = "default.nix"
+  nix_env = "default.nix",
   serialize_function = NULL,
   unserialize_function = NULL
 ) {

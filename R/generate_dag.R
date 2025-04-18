@@ -21,7 +21,7 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
     d <- rxp_list[[i]]
     name <- d$name
     type <- d$type
-    unserialize_function <- d$unserialize_str
+    unserialize_function <- d$unserialize_function
 
     if (type == "rxp_r" || type == "rxp_py2r" || type == "rxp_r2py") {
       snippet <- d$snippet
@@ -114,7 +114,7 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
     dag[[i]] <- list(
       deriv_name = name,
       depends = deps,
-      unserialize_function = unserialize_str,
+      unserialize_function = unserialize_function,
       type = type
     )
     defined[i] <- name

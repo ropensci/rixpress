@@ -53,21 +53,31 @@ rxp_common <- function(derivation_name) {
 #' @return The derivation's output.
 #' @export
 rxp_read <- function(derivation_name) {
-  matching_files <- rxp_common(derivation_name)
+  files <- rxp_common(derivation_name)
 
-  # if there’s only one path, read it
-  if (length(matching_files) == 1) {
-    if (grepl(".*\\.rds$", matching_files)) {
-      readRDS(matching_files)
-    } else if (grepl(".*\\.pickle$", matching_files)) {
-      reticulate::py_load_object(matching_files)
-    } else {
-      matching_files
-    }
-    # if there’s more than one path, return all paths and let user choose
-  } else {
-    matching_files
+  if (length(files) != 1) {
+    return(files)
   }
+
+  path <- files
+
+  # Try RDS, then pickle (checking for reticulate), else return the path
+  tryCatch(
+    readRDS(path),
+    error = function(e1) {
+      if (!requireNamespace("reticulate", quietly = TRUE)) {
+        message(
+          "If you're trying to load a pickle'd object,
+you need to install the '{reticulate}' package."
+        )
+        return(path)
+      }
+      tryCatch(
+        reticulate::py_load_object(path),
+        error = function(e2) path
+      )
+    }
+  )
 }
 
 #' @title Load a derivation's output into the global environment
@@ -76,20 +86,39 @@ rxp_read <- function(derivation_name) {
 #'   global environment with the name `derivation_name`.
 #' @export
 rxp_load <- function(derivation_name) {
-  matching_files <- rxp_common(derivation_name)
-  if (length(matching_files) == 1) {
-    if (grepl(".*\\.rds$", matching_files)) {
-      assign(derivation_name, readRDS(matching_files), envir = .GlobalEnv)
-    } else if (grepl(".*\\.pickle$", matching_files)) {
-      assign(
-        derivation_name,
-        reticulate::py_load_object(matching_files),
-        envir = .GlobalEnv
-      )
-    } else {
-      matching_files
-    }
-  } else {
-    matching_files
+  files <- rxp_common(derivation_name)
+  if (length(files) != 1) {
+    return(files)
   }
+  path <- files
+
+  # Attempt to read as RDS, else fall back to pickle (with reticulate check)
+  value <- tryCatch(
+    readRDS(path),
+    error = function(e1) {
+      # If it wasn't an RDS, try pickle
+      if (!requireNamespace("reticulate", quietly = TRUE)) {
+        message(
+          "If you're trying to load a pickle'd object, you need to install the 'reticulate' package."
+        )
+        return(path)
+      }
+      tryCatch(
+        reticulate::py_load_object(path),
+        error = function(e2) {
+          message("Failed to load file '", path, "': ", e2$message)
+          return(path)
+        }
+      )
+    }
+  )
+
+  # If we got back a path (i.e. both readers failed), just return it
+  if (is.character(value) && length(value) == 1 && value == path) {
+    return(path)
+  }
+
+  # Otherwise assign into global env and invisibly return it
+  assign(derivation_name, value, envir = .GlobalEnv)
+  invisible(value)
 }

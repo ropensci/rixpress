@@ -35,10 +35,7 @@ quarto_envConfigurePhase = ''
       dontUnpack = true;
       inherit buildInputs configurePhase buildPhase;
       installPhase = ''
-        # This install phase will copy either an rds, or a
-        # pickle to $out/. This is needed because reticulate::py_save_object
-        # runs as an R derivation, but outputs a python output.
-        cp ${name}.rds $out/ 2>/dev/null || cp ${name}.pickle $out/
+        cp ${name} $out/
       '';
     };
 
@@ -53,7 +50,7 @@ quarto_envConfigurePhase = ''
 Rscript -e "
 source('libraries.R')
 data <- do.call(function(x) (read.csv(file = x, sep = '|')), list('input_file'))
-saveRDS(data, 'mtcars.rds')"
+saveRDS(data, 'mtcars')"
     '';
   };
 
@@ -64,9 +61,9 @@ saveRDS(data, 'mtcars.rds')"
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
-        mtcars <- readRDS('${mtcars}/mtcars.rds')
+        mtcars <- readRDS('${mtcars}/mtcars')
         mtcars_am <- filter(mtcars, am == 1)
-        saveRDS(mtcars_am, 'mtcars_am.rds')"
+        saveRDS(mtcars_am, 'mtcars_am')"
     '';
   };
 
@@ -77,9 +74,9 @@ saveRDS(data, 'mtcars.rds')"
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
-        mtcars_am <- readRDS('${mtcars_am}/mtcars_am.rds')
+        mtcars_am <- readRDS('${mtcars_am}/mtcars_am')
         mtcars_head <- my_head(mtcars_am)
-        saveRDS(mtcars_head, 'mtcars_head.rds')"
+        saveRDS(mtcars_head, 'mtcars_head')"
     '';
   };
 
@@ -90,9 +87,9 @@ saveRDS(data, 'mtcars.rds')"
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
-        mtcars_head <- readRDS('${mtcars_head}/mtcars_head.rds')
+        mtcars_head <- readRDS('${mtcars_head}/mtcars_head')
         mtcars_tail <- my_tail(mtcars_head)
-        saveRDS(mtcars_tail, 'mtcars_tail.rds')"
+        saveRDS(mtcars_tail, 'mtcars_tail')"
     '';
   };
 
@@ -103,9 +100,9 @@ saveRDS(data, 'mtcars.rds')"
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
-        mtcars_tail <- readRDS('${mtcars_tail}/mtcars_tail.rds')
+        mtcars_tail <- readRDS('${mtcars_tail}/mtcars_tail')
         mtcars_mpg <- select(mtcars_tail, mpg)
-        saveRDS(mtcars_mpg, 'mtcars_mpg.rds')"
+        saveRDS(mtcars_mpg, 'mtcars_mpg')"
     '';
   };
 
