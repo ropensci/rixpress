@@ -91,7 +91,7 @@ including its dependencies, build steps, and output paths.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mtcars_pl_am"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $snippet</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "  mtcars_pl_am = makePyDerivation {\n    name = \"mtcars_pl_am\";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = ''\n      python -c \"\nexec(open('libraries.py').read())\nimport pickle\nexec('mtcars_pl_am = mtcars_pl.filter(polars.col(\\'am\\') == 1).to_pandas()')\nwith open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)\n\"\n    '';\n  };"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "  mtcars_pl_am = makePyDerivation {\n    name = \"mtcars_pl_am\";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = ''\n      python -c \"\nexec(open('libraries.py').read())\nexec('mtcars_pl_am = mtcars_pl.filter(polars.col(\\'am\\') == 1).to_pandas()')\nwith open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)\n\"\n    '';\n  };"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $type</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "rxp_py"</span>
