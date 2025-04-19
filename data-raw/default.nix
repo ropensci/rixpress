@@ -4,8 +4,6 @@ let
   rpkgs = builtins.attrValues {
     inherit (pkgs.rPackages) 
       #just a placehold need to fix parse_rpkgs()
-      devtools
-      igraph
       qs;
   };
   
