@@ -4,7 +4,7 @@ let
   rpkgs = builtins.attrValues {
     inherit (pkgs.rPackages) 
       #just a placehold need to fix parse_rpkgs()
-      qs;
+      AER;
   };
   
   system_packages = builtins.attrValues {
