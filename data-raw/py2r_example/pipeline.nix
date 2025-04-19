@@ -81,8 +81,10 @@ with open('mtcars_pl', 'wb') as f:
       python -c "
 exec(open('libraries.py').read())
 with open('${mtcars_pl}/mtcars_pl', 'rb') as f: mtcars_pl = pickle.load(f)
+import pickle
 exec('mtcars_pl_am = mtcars_pl.filter(polars.col(\'am\') == 1).to_pandas()')
-with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)"
+with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)
+"
     '';
   };
 
@@ -133,8 +135,10 @@ with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)"
       python -c "
 exec(open('libraries.py').read())
 with open('${mtcars_head_py}/mtcars_head_py', 'rb') as f: mtcars_head_py = pickle.load(f)
+import pickle
 exec('mtcars_tail_py = mtcars_head_py.tail()')
-with open('mtcars_tail_py', 'wb') as f: pickle.dump(globals()['mtcars_tail_py'], f)"
+with open('mtcars_tail_py', 'wb') as f: pickle.dump(globals()['mtcars_tail_py'], f)
+"
     '';
   };
 

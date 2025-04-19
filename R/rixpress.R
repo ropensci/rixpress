@@ -385,15 +385,25 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
       maker <- "makePyDerivation"
       script_cmd <- "python -c \""
       load_line <- function(dep, indent, unserialize_function) {
-        paste0(
-          "with open('${",
-          dep,
-          "}/",
-          dep,
-          "', 'rb') as f: ",
-          dep,
-          " = pickle.load(f)"
-        )
+        path <- paste0("${", dep, "}/", dep)
+        if (unserialize_function == "pickle.load") {
+          paste0(
+            "with open('",
+            path,
+            "', 'rb') as f: ",
+            dep,
+            " = pickle.load(f)"
+          )
+        } else {
+          paste0(
+            dep,
+            " = ",
+            unserialize_function,
+            "('",
+            path,
+            "')"
+          )
+        }
       }
     } else {
       warning("Unsupported type for derivation ", deriv_name)
@@ -450,7 +460,6 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
 
   pipeline
 }
-
 
 #' Generate an R or Py script with library calls from a default.nix file
 #'
