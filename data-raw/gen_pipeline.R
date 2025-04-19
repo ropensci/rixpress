@@ -17,14 +17,16 @@ d2 <- rxp_r(
   mtcars_head,
   my_head(mtcars_am),
   additional_files = "functions.R",
-  nix_env = "default.nix"
+  nix_env = "default.nix",
+  serialize_function = qs::qsave,
 )
 
 d3 <- rxp_r(
   mtcars_tail,
   my_tail(mtcars_head),
   additional_files = "functions.R",
-  nix_env = "default.nix"
+  nix_env = "default.nix",
+  unserialize_function = qs::qread
 )
 
 d4 <- rxp_r(mtcars_mpg, select(mtcars_tail, mpg), nix_env = "default2.nix")
