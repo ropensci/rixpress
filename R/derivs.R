@@ -292,7 +292,6 @@ rxp_py <- function(
   build_phase <- paste0(
     "python -c \"\n",
     "exec(open('libraries.py').read())\n",
-    "import pickle\n",
     "exec('",
     out_name,
     " = ",
