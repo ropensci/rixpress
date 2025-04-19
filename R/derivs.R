@@ -481,7 +481,7 @@ rxp_py_file <- function(
 
   if (!copy_data_folder) {
     build_phase <- sprintf(
-      "cp $src input_file\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_file'\ndata = eval('%s')(file_path)\nwith open('%s.', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
+      "cp $src input_file\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_file'\ndata = eval('%s')(file_path)\nwith open('%s', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
       read_function,
       out_name
     )
