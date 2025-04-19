@@ -7,7 +7,11 @@ d0 <- rxp_r_file(
   \(x) (read.csv(file = x, sep = "|")),
   nix_env = "default.nix"
 )
-d1 <- rxp_r(mtcars_am, filter(mtcars, am == 1), nix_env = "default2.nix")
+d1 <- rxp_r(
+  mtcars_am,
+  filter(mtcars, am == 1),
+  nix_env = "default2.nix"
+)
 
 d2 <- rxp_r(
   mtcars_head,
@@ -34,7 +38,7 @@ doc <- rxp_quarto(
 
 derivs <- list(d0, d1, d2, d3, d4, doc)
 
-rixpress(derivs, project_path = ".")
+rixpress(derivs, project_path = ".", build = FALSE)
 
 rxp_make()
 

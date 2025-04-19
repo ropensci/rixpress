@@ -285,10 +285,7 @@ gen_flat_pipeline <- function(derivs) {
       dontUnpack = true;
       inherit buildInputs configurePhase buildPhase;
       installPhase = ''
-        # This install phase will copy either an rds, or a
-        # pickle to $out/. This is needed because reticulate::py_save_object
-        # runs as an R derivation, but outputs a python output.
-        cp ${name}.rds $out/ 2>/dev/null || cp ${name}.pickle $out/
+        cp ${name} $out/
       '';
     };"
     )
@@ -300,7 +297,7 @@ gen_flat_pipeline <- function(derivs) {
   # Function to create Python derivations
   makePyDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
     let
-      pickleFile = \"${name}.pickle\";
+      pickleFile = \"${name}\";
     in
       defaultPkgs.stdenv.mkDerivation {
         inherit name src;
@@ -365,27 +362,48 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     deriv_name <- as.character(d$deriv_name[1])
     deps <- d$depends
     type <- d$type[1]
+    unserialize_function <- d$unserialize_function
 
     # Set parameters based on derivation type
     if (type == "rxp_r") {
       maker <- "makeRDerivation"
       script_cmd <- "Rscript -e \""
-      load_line <- function(dep, indent) {
-        paste0(indent, dep, " <- readRDS('${", dep, "}/", dep, ".rds')")
+      load_line <- function(dep, indent, unserialize_function) {
+        paste0(
+          indent,
+          dep,
+          " <- ",
+          unserialize_function,
+          "('${",
+          dep,
+          "}/",
+          dep,
+          "')"
+        )
       }
     } else if (type == "rxp_py") {
       maker <- "makePyDerivation"
       script_cmd <- "python -c \""
-      load_line <- function(dep, indent) {
-        paste0(
-          "with open('${",
-          dep,
-          "}/",
-          dep,
-          ".pickle', 'rb') as f: ",
-          dep,
-          " = pickle.load(f)"
-        )
+      load_line <- function(dep, indent, unserialize_function) {
+        path <- paste0("${", dep, "}/", dep)
+        if (unserialize_function == "pickle.load") {
+          paste0(
+            "with open('",
+            path,
+            "', 'rb') as f: ",
+            dep,
+            " = pickle.load(f)"
+          )
+        } else {
+          paste0(
+            dep,
+            " = ",
+            unserialize_function,
+            "('",
+            path,
+            "')"
+          )
+        }
       }
     } else {
       warning("Unsupported type for derivation ", deriv_name)
@@ -436,13 +454,12 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
       ""
     }
 
-    load_lines <- sapply(deps, load_line, indent)
+    load_lines <- sapply(deps, load_line, indent, unserialize_function)
     pipeline <- append(pipeline, load_lines, after = build_phase_idx + 2)
   }
 
   pipeline
 }
-
 
 #' Generate an R or Py script with library calls from a default.nix file
 #'

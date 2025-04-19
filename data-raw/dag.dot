@@ -1,0 +1,56 @@
+/* Created by igraph 0.10.13-126-g31c4e6ffc */
+digraph {
+  0 [
+    shape=star
+    label=root
+  ];
+  1 [
+    shape=circle
+    label=mtcars
+  ];
+  2 [
+    shape=circle
+    label=mtcars_am
+  ];
+  3 [
+    shape=circle
+    label=mtcars_head
+  ];
+  4 [
+    shape=circle
+    label=mtcars_tail
+  ];
+  5 [
+    shape=circle
+    label=mtcars_mpg
+  ];
+  6 [
+    shape=square
+    label=page
+  ];
+
+  0 -> 1 [
+    type=rxp_r
+  ];
+  1 -> 2 [
+    type=rxp_r
+  ];
+  2 -> 3 [
+    type=rxp_r
+  ];
+  3 -> 4 [
+    type=rxp_r
+  ];
+  4 -> 5 [
+    type=rxp_r
+  ];
+  3 -> 6 [
+    type=rxp_quarto
+  ];
+  4 -> 6 [
+    type=rxp_quarto
+  ];
+  5 -> 6 [
+    type=rxp_quarto
+  ];
+}

@@ -36,16 +36,13 @@ cp ${./_rixpress/quarto_env_libraries.R} libraries.R
       dontUnpack = true;
       inherit buildInputs configurePhase buildPhase;
       installPhase = ''
-        # This install phase will copy either an rds, or a
-        # pickle to $out/. This is needed because reticulate::py_save_object
-        # runs as an R derivation, but outputs a python output.
-        cp ${name}.rds $out/ 2>/dev/null || cp ${name}.pickle $out/
+        cp ${name} $out/
       '';
     };
   # Function to create Python derivations
   makePyDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
     let
-      pickleFile = "${name}.pickle";
+      pickleFile = "${name}";
     in
       defaultPkgs.stdenv.mkDerivation {
         inherit name src;
@@ -69,7 +66,7 @@ python -c "
 exec(open('libraries.py').read())
 file_path = 'input_file'
 data = eval('lambda x: polars.read_csv(x, separator=\'|\')')(file_path)
-with open('mtcars_pl.pickle', 'wb') as f:
+with open('mtcars_pl', 'wb') as f:
     pickle.dump(data, f)
 "
 
@@ -83,9 +80,11 @@ with open('mtcars_pl.pickle', 'wb') as f:
     buildPhase = ''
       python -c "
 exec(open('libraries.py').read())
-with open('${mtcars_pl}/mtcars_pl.pickle', 'rb') as f: mtcars_pl = pickle.load(f)
+with open('${mtcars_pl}/mtcars_pl', 'rb') as f: mtcars_pl = pickle.load(f)
+import pickle
 exec('mtcars_pl_am = mtcars_pl.filter(polars.col(\'am\') == 1).to_pandas()')
-with open('mtcars_pl_am.pickle', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)"
+with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)
+"
     '';
   };
 
@@ -97,8 +96,8 @@ with open('mtcars_pl_am.pickle', 'wb') as f: pickle.dump(globals()['mtcars_pl_am
       export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'
        Rscript -e "
          source('libraries.R')
-         mtcars_am <- reticulate::py_load_object('${mtcars_pl_am}/mtcars_pl_am.pickle', pickle = 'pickle', convert = TRUE)
-         saveRDS(mtcars_am, 'mtcars_am.rds')"
+         mtcars_am <- reticulate::py_load_object('${mtcars_pl_am}/mtcars_pl_am', pickle = 'pickle', convert = TRUE)
+         saveRDS(mtcars_am, 'mtcars_am')"
     '';
   };
 
@@ -109,9 +108,9 @@ with open('mtcars_pl_am.pickle', 'wb') as f: pickle.dump(globals()['mtcars_pl_am
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
-        mtcars_am <- readRDS('${mtcars_am}/mtcars_am.rds')
+        mtcars_am <- readRDS('${mtcars_am}/mtcars_am')
         mtcars_head <- my_head(mtcars_am)
-        saveRDS(mtcars_head, 'mtcars_head.rds')"
+        saveRDS(mtcars_head, 'mtcars_head')"
     '';
   };
 
@@ -123,8 +122,8 @@ with open('mtcars_pl_am.pickle', 'wb') as f: pickle.dump(globals()['mtcars_pl_am
       export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'
        Rscript -e "
          source('libraries.R')
-         mtcars_head <- readRDS('${mtcars_head}/mtcars_head.rds')
-         reticulate::py_save_object(mtcars_head, 'mtcars_head_py.pickle', pickle = 'pickle')"
+         mtcars_head <- readRDS('${mtcars_head}/mtcars_head')
+         reticulate::py_save_object(mtcars_head, 'mtcars_head_py', pickle = 'pickle')"
     '';
   };
 
@@ -135,9 +134,11 @@ with open('mtcars_pl_am.pickle', 'wb') as f: pickle.dump(globals()['mtcars_pl_am
     buildPhase = ''
       python -c "
 exec(open('libraries.py').read())
-with open('${mtcars_head_py}/mtcars_head_py.pickle', 'rb') as f: mtcars_head_py = pickle.load(f)
+with open('${mtcars_head_py}/mtcars_head_py', 'rb') as f: mtcars_head_py = pickle.load(f)
+import pickle
 exec('mtcars_tail_py = mtcars_head_py.tail()')
-with open('mtcars_tail_py.pickle', 'wb') as f: pickle.dump(globals()['mtcars_tail_py'], f)"
+with open('mtcars_tail_py', 'wb') as f: pickle.dump(globals()['mtcars_tail_py'], f)
+"
     '';
   };
 
@@ -149,8 +150,8 @@ with open('mtcars_tail_py.pickle', 'wb') as f: pickle.dump(globals()['mtcars_tai
       export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'
        Rscript -e "
          source('libraries.R')
-         mtcars_tail <- reticulate::py_load_object('${mtcars_tail_py}/mtcars_tail_py.pickle', pickle = 'pickle', convert = TRUE)
-         saveRDS(mtcars_tail, 'mtcars_tail.rds')"
+         mtcars_tail <- reticulate::py_load_object('${mtcars_tail_py}/mtcars_tail_py', pickle = 'pickle', convert = TRUE)
+         saveRDS(mtcars_tail, 'mtcars_tail')"
     '';
   };
 
@@ -161,9 +162,9 @@ with open('mtcars_tail_py.pickle', 'wb') as f: pickle.dump(globals()['mtcars_tai
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
-        mtcars_tail <- readRDS('${mtcars_tail}/mtcars_tail.rds')
+        mtcars_tail <- readRDS('${mtcars_tail}/mtcars_tail')
         mtcars_mpg <- dplyr::select(mtcars_tail, mpg)
-        saveRDS(mtcars_mpg, 'mtcars_mpg.rds')"
+        saveRDS(mtcars_mpg, 'mtcars_mpg')"
     '';
   };
 
@@ -184,7 +185,7 @@ with open('mtcars_tail_py.pickle', 'wb') as f: pickle.dump(globals()['mtcars_tai
   substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail")' 'rxp_read("${mtcars_tail}")'
   substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_mpg")' 'rxp_read("${mtcars_mpg}")'
   substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail_py")' 'rxp_read("${mtcars_tail_py}")'
-  quarto render page.qmd --output-dir $out
+  quarto render page.qmd  --output-dir $out
     '';
   };
 

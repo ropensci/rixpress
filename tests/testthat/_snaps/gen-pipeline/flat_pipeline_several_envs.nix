@@ -25,10 +25,7 @@ default2ConfigurePhase = ''
       dontUnpack = true;
       inherit buildInputs configurePhase buildPhase;
       installPhase = ''
-        # This install phase will copy either an rds, or a
-        # pickle to $out/. This is needed because reticulate::py_save_object
-        # runs as an R derivation, but outputs a python output.
-        cp ${name}.rds $out/ 2>/dev/null || cp ${name}.pickle $out/
+        cp ${name} $out/
       '';
     };
 
@@ -41,7 +38,7 @@ default2ConfigurePhase = ''
       Rscript -e "
         source('libraries.R')
         mtcars_am <- dplyr::filter(mtcars, am == 1)
-        saveRDS(mtcars_am, 'mtcars_am.rds')"
+        saveRDS(mtcars_am, 'mtcars_am')"
     '';
   };
 
@@ -53,7 +50,7 @@ default2ConfigurePhase = ''
       Rscript -e "
         source('libraries.R')
         mtcars_head <- head(mtcars_am)
-        saveRDS(mtcars_head, 'mtcars_head.rds')"
+        saveRDS(mtcars_head, 'mtcars_head')"
     '';
   };
 

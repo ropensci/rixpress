@@ -4,31 +4,63 @@
 #' @param additional_files Character vector, additional files to include. Custom
 #'   functions must go into a script called "functions.R", and additional files
 #'   that need to be accessible during the build process can be named anything.
-#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
-#' @details At a basic level, `rxp_r(mtcars_am, filter(mtcars, am == 1))`
-#'   is equivalent to `mtcars <- filter(mtcars, am == 1)`. `rxp_r()` generates
-#'   the required Nix boilerplate to output a so-called "derivation" in Nix
-#'   jargon. A Nix derivation is a recipe that defines how to create an output
-#'   (in this case `mtcars_am`) including its dependencies, build steps,
-#'   and output paths.
+#' @param nix_env Character, path to the Nix environment file, default is
+#'   "default.nix".
+#' @param serialize_function Function, defaults to NULL. A function used to
+#'   serialize objects for transfer between derivations. It must accept two
+#'   arguments: the object to serialize (first), and the target file path
+#'   (second). If your function has a different signature, wrap it to match this
+#'   interface. By default, `saveRDS()` is used, but this may yield unexpected
+#'   results, especially for complex objects like machine learning models. For
+#'   instance, for `{keras}` models, use `keras::save_model_hdf5()` to capture
+#'   the full model (architecture, weights, training config, optimizer state,
+#'   etc.).
+#' @param unserialize_function Function, defaults to NULL. A function used to
+#'   unserialize objects transferred between derivations. By default,
+#'   `readRDS()` is used, but this may produce unexpected results with complex
+#'   objects like machine learning models. For example, if the parent derivation
+#'   used `keras::save_model_hdf5()` to serialize a model, this derivation
+#'   should use `keras::load_model_hdf5()` to load it correctly.
+#' @details At a basic level, `rxp_r(mtcars_am, filter(mtcars, am == 1))` is
+#'   equivalent to `mtcars <- filter(mtcars, am == 1)`. `rxp_r()` generates the
+#'   required Nix boilerplate to output a so-called "derivation" in Nix jargon.
+#'   A Nix derivation is a recipe that defines how to create an output (in this
+#'   case `mtcars_am`) including its dependencies, build steps, and output
+#'   paths.
 #' @return A list with elements: `name`, the `name` of the derivation,
-#'   `snippet`, the Nix boilerplate code, `type`, `additional_files` and `nix_env`.
+#'   `snippet`, the Nix boilerplate code, `type`, `additional_files` and
+#'   `nix_env`.
 #' @examples rxp_r(mtcars_am, filter(mtcars, am == 1))
 #' @export
 rxp_r <- function(
   name,
   expr,
   additional_files = "",
-  nix_env = "default.nix"
+  nix_env = "default.nix",
+  serialize_function = NULL,
+  unserialize_function = NULL
 ) {
   out_name <- deparse(substitute(name))
   expr_str <- deparse(substitute(expr))
   expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
 
+  if (is.null(serialize_function)) {
+    serialize_str <- "saveRDS"
+  } else {
+    serialize_str <- deparse(substitute(serialize_function))
+  }
+
+  if (is.null(unserialize_function)) {
+    unserialize_str <- "readRDS"
+  } else {
+    unserialize_str <- deparse(substitute(unserialize_function))
+  }
+
   build_phase <- sprintf(
-    "Rscript -e \"\n        source('libraries.R')\n        %s <- %s\n        saveRDS(%s, '%s.rds')\"",
+    "Rscript -e \"\n        source('libraries.R')\n        %s <- %s\n        %s(%s, '%s')\"",
     out_name,
     expr_str,
+    serialize_str,
     out_name,
     out_name
   )
@@ -75,7 +107,8 @@ rxp_r <- function(
     snippet = snippet,
     type = "rxp_r",
     additional_files = additional_files,
-    nix_env = nix_env
+    nix_env = nix_env,
+    unserialize_function = unserialize_str
   )
 }
 
@@ -175,49 +208,106 @@ rxp_quarto <- function(
 }
 
 #' rxp_py Creates a Nix expression running a Python function
+#'
 #' @param name Symbol, name of the derivation.
-#' @param expr R code to generate the expression.
+#' @param py_expr Character, Python code to generate the expression.
 #' @param additional_files Character vector, additional files to include. Custom
-#'   functions must go into a script called "functions.R", and additional files
+#'   functions must go into a script called "functions.py", and additional files
 #'   that need to be accessible during the build process can be named anything.
-#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
-#' @details At a basic level,
-#'   `rxp_py(mtcars_am, "mtcars.filter(polars.col('am') == 1)")`
-#'   is equivalent to `mtcars_am = mtcars.filter(polars.col('am') == 1).
-#'   `rxp_py()` generates the required Nix boilerplate to output a
-#'   so-called "derivation" in Nix jargon. A Nix derivation is a recipe
-#'   that defines how to create an output (in this case `mtcars_am`)
-#'   including its dependencies, build steps, and output paths.
+#' @param nix_env Character, path to the Nix environment file, default is
+#'   "default.nix".
+#' @param serialize_function Character, defaults to NULL. The name of the Python
+#'   function used to serialize the object. It must accept two arguments: the
+#'   object to serialize (first), and the target file path (second). If NULL,
+#'   the default behavior uses `pickle.dump`. Define this function in
+#'   `functions.py`.
+#' @param unserialize_function Character, defaults to NULL. The name of the
+#'   Python function used to unserialize the object. It must accept one
+#'   argument: the file path.
+#' @details At a basic level, `rxp_py(mtcars_am,
+#'   "mtcars.filter(polars.col('am') == 1).to_pandas()")` is equivalent to
+#'   `mtcars_am = mtcars.filter(polars.col('am') == 1).to_pandas()`. `rxp_py()`
+#'   generates the required Nix boilerplate to output a so-called "derivation"
+#'   in Nix jargon. A Nix derivation is a recipe that defines how to create an
+#'   output (in this case `mtcars_am`) including its dependencies, build steps,
+#'   and output paths.
 #' @return A list with elements: `name`, the `name` of the derivation,
-#'   `snippet`, the Nix boilerplate code, `type`, `additional_files` and `nix_env`.
-#' @examples rxp_py(mtcars_pl_am, py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()")
+#'   `snippet`, the Nix boilerplate code, `type`, `additional_files`, `nix_env`,
+#'   and `unserialize_code`.
+#' @examples
+#' rxp_py(
+#'   mtcars_pl_am,
+#'   py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()"
+#' )
+#'
+#' # Custom serialization (assuming functions.py defines these)
+#' rxp_py(
+#'   mtcars_pl_am,
+#'   py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()",
+#'   serialize_function = "serialize_model",
+#'   unserialize_function = "unserialize_model",
+#'   additional_files = "functions.py")
 #' @export
 rxp_py <- function(
   name,
   py_expr,
   additional_files = "",
-  nix_env = "default.nix"
+  nix_env = "default.nix",
+  serialize_function = NULL,
+  unserialize_function = NULL
 ) {
   out_name <- deparse(substitute(name))
-
   py_expr <- gsub("'", "\\'", py_expr, fixed = TRUE)
 
-  build_phase <- sprintf(
-    "python -c \"
-exec(open('libraries.py').read())
-exec('%s = %s')
-with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
+  # Handle serialize_function for the build_phase
+  if (is.null(serialize_function)) {
+    serialize_str <- sprintf(
+      "with open('%s', 'wb') as f: pickle.dump(globals()['%s'], f)",
+      out_name,
+      out_name
+    )
+  } else {
+    if (!is.character(serialize_function)) {
+      stop("serialize_function must be a character string or NULL")
+    }
+    serialize_str <- sprintf(
+      "%s(globals()['%s'], '%s')",
+      serialize_function,
+      out_name,
+      out_name
+    )
+  }
+
+  # Handle unserialize_function to pass down
+  if (is.null(unserialize_function)) {
+    unserialize_str <- "pickle.load"
+  } else {
+    if (!is.character(unserialize_function)) {
+      stop("unserialize_function must be a character string or NULL")
+    }
+    unserialize_str <- unserialize_function
+  }
+
+  # Construct build_phase
+  build_phase <- paste0(
+    "python -c \"\n",
+    "exec(open('libraries.py').read())\n",
+    "import pickle\n",
+    "exec('",
     out_name,
+    " = ",
     py_expr,
-    out_name,
-    out_name
+    "')\n",
+    serialize_str,
+    "\n",
+    "\""
   )
 
+  # Derive base from nix_env
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
 
   # Prepare the fileset for src
-  # Remove functions.py as this is handled separately
   fileset_parts <- setdiff(additional_files, "functions.py")
   if (identical(fileset_parts, character(0)) || fileset_parts == "") {
     src_snippet <- ""
@@ -238,6 +328,7 @@ with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
     )
   }
 
+  # Generate the Nix snippet
   snippet <- sprintf(
     "  %s = makePyDerivation {\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
     out_name,
@@ -248,12 +339,14 @@ with open('%s.pickle', 'wb') as f: pickle.dump(globals()['%s'], f)\"",
     build_phase
   )
 
+  # Return the derivation details
   list(
     name = out_name,
     snippet = snippet,
     type = "rxp_py",
     additional_files = additional_files,
-    nix_env = nix_env
+    nix_env = nix_env,
+    unserialize_function = unserialize_str
   )
 }
 
@@ -341,7 +434,13 @@ rxp_file_common <- function(
 #'   the provided anonymous function will read all the `.csv` file in the `data/` folder.
 #' @return A list with `name`, `snippet`, `type`, and `nix_env`.
 #' @export
-rxp_r_file <- function(name, path, read_function, nix_env = "default.nix", copy_data_folder = FALSE) {
+rxp_r_file <- function(
+  name,
+  path,
+  read_function,
+  nix_env = "default.nix",
+  copy_data_folder = FALSE
+) {
   out_name <- deparse(substitute(name))
   read_func_str <- deparse1(substitute(read_function))
   read_func_str <- gsub("\"", "'", read_func_str)
@@ -349,7 +448,7 @@ rxp_r_file <- function(name, path, read_function, nix_env = "default.nix", copy_
   if (!copy_data_folder) {
     # Use single file copy.
     build_phase <- sprintf(
-      "cp $src input_file\nRscript -e \"\nsource('libraries.R')\ndata <- do.call(%s, list('input_file'))\nsaveRDS(data, '%s.rds')\"",
+      "cp $src input_file\nRscript -e \"\nsource('libraries.R')\ndata <- do.call(%s, list('input_file'))\nsaveRDS(data, '%s')\"",
       read_func_str,
       out_name
     )
@@ -359,7 +458,7 @@ rxp_r_file <- function(name, path, read_function, nix_env = "default.nix", copy_
       # If the provided path is a folder, use that folder as the source.
       actual_path <- path
       build_phase <- sprintf(
-        "cp -r $src input_folder\nRscript -e \"\nsource('libraries.R')\ndata <- do.call(%s, list('input_folder/'))\nsaveRDS(data, '%s.rds')\"",
+        "cp -r $src input_folder\nRscript -e \"\nsource('libraries.R')\ndata <- do.call(%s, list('input_folder/'))\nsaveRDS(data, '%s')\"",
         read_func_str,
         out_name
       )
@@ -368,7 +467,7 @@ rxp_r_file <- function(name, path, read_function, nix_env = "default.nix", copy_
       actual_path <- dirname(path)
       file_name <- basename(path)
       build_phase <- sprintf(
-        "cp -r $src input_folder\nRscript -e \"\nsource('libraries.R')\ndata <- do.call(%s, list('input_folder/%s'))\nsaveRDS(data, '%s.rds')\"",
+        "cp -r $src input_folder\nRscript -e \"\nsource('libraries.R')\ndata <- do.call(%s, list('input_folder/%s'))\nsaveRDS(data, '%s')\"",
         read_func_str,
         file_name,
         out_name
@@ -408,7 +507,13 @@ rxp_r_file <- function(name, path, read_function, nix_env = "default.nix", copy_
 #'   the provided anonymous function will read all the `.csv` file in the `data/` folder.
 #' @return A list with `name`, `snippet`, `type`, and `nix_env`.
 #' @export
-rxp_py_file <- function(name, path, read_function, nix_env = "default.nix", copy_data_folder = FALSE) {
+rxp_py_file <- function(
+  name,
+  path,
+  read_function,
+  nix_env = "default.nix",
+  copy_data_folder = FALSE
+) {
   out_name <- deparse(substitute(name))
   # Sanitize the read_function string.
   read_function <- gsub("'", "\\'", read_function, fixed = TRUE)
@@ -418,7 +523,7 @@ rxp_py_file <- function(name, path, read_function, nix_env = "default.nix", copy
 
   if (!copy_data_folder) {
     build_phase <- sprintf(
-      "cp $src input_file\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_file'\ndata = eval('%s')(file_path)\nwith open('%s.pickle', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
+      "cp $src input_file\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_file'\ndata = eval('%s')(file_path)\nwith open('%s', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
       read_function,
       out_name
     )
@@ -428,7 +533,7 @@ rxp_py_file <- function(name, path, read_function, nix_env = "default.nix", copy
       # If path is a folder.
       actual_path <- path
       build_phase <- sprintf(
-        "cp -r $src input_folder\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_folder/'\ndata = eval('%s')(file_path)\nwith open('%s.pickle', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
+        "cp -r $src input_folder\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_folder/'\ndata = eval('%s')(file_path)\nwith open('%s', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
         read_function,
         out_name
       )
@@ -437,7 +542,7 @@ rxp_py_file <- function(name, path, read_function, nix_env = "default.nix", copy
       actual_path <- dirname(path)
       file_name <- basename(path)
       build_phase <- sprintf(
-        "cp -r $src input_folder\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_folder/%s'\ndata = eval('%s')(file_path)\nwith open('%s.pickle', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
+        "cp -r $src input_folder\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_folder/%s'\ndata = eval('%s')(file_path)\nwith open('%s', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
         file_name,
         read_function,
         out_name
@@ -455,7 +560,6 @@ rxp_py_file <- function(name, path, read_function, nix_env = "default.nix", copy
     library_ext = "py"
   )
 }
-
 
 
 #' Generate the Nix derivation snippet for Python-R object transfer.
@@ -481,7 +585,7 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
 
   if (direction == "py2r") {
     r_command <- sprintf(
-      "         %s <- reticulate::py_load_object('${%s}/%s.pickle', pickle = 'pickle', convert = TRUE)\n         saveRDS(%s, '%s.rds')",
+      "         %s <- reticulate::py_load_object('${%s}/%s', pickle = 'pickle', convert = TRUE)\n         saveRDS(%s, '%s')",
       out_name,
       expr_str,
       expr_str,
@@ -490,7 +594,7 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
     )
   } else if (direction == "r2py") {
     r_command <- sprintf(
-      "         %s <- readRDS('${%s}/%s.rds')\n         reticulate::py_save_object(%s, '%s.pickle', pickle = 'pickle')",
+      "         %s <- readRDS('${%s}/%s')\n         reticulate::py_save_object(%s, '%s', pickle = 'pickle')",
       expr_str,
       expr_str,
       expr_str,
