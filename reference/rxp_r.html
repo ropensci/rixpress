@@ -93,7 +93,7 @@ and output paths.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mtcars_am"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $snippet</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "  mtcars_am = makeRDerivation {\n    name = \"mtcars_am\";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = ''\n      Rscript -e \"\n        source('libraries.R')\n        mtcars_am &lt;- filter(mtcars, am == 1)\n        saveRDS(mtcars_am, 'mtcars_am.rds')\"\n    '';\n  };"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "  mtcars_am = makeRDerivation {\n    name = \"mtcars_am\";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = ''\n      Rscript -e \"\n        source('libraries.R')\n        mtcars_am &lt;- filter(mtcars, am == 1)\n        saveRDS(mtcars_am, 'mtcars_am')\"\n    '';\n  };"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $type</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "rxp_r"</span>
@@ -103,6 +103,9 @@ and output paths.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $nix_env</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "default.nix"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $unserialize_function</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "readRDS"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>
     </div>
