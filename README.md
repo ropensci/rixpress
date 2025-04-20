@@ -2,7 +2,7 @@
 # rixpress: Reproducible Analytical Pipelines with Nix
 
 This R packages provides a framework for building multilanguage
-reproducible analytical pipelines by leverarging Nix’s build automation
+reproducible analytical pipelines by leveraging Nix’s build automation
 capabilities. It is heavily inspired by the R package `{targets}`. It
 builds upon the `{rix}` package, which provides helper function to
 define reproducible development environments as code using Nix ensuring
