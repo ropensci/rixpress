@@ -8,7 +8,7 @@ let
       reticulate;
   };
 
-  pypkgs = builtins.attrValues {
+  pyconf = builtins.attrValues {
     inherit (pkgs.python312Packages) 
       pandas;
   };
@@ -56,7 +56,7 @@ shell = pkgs.mkShell {
    LC_PAPER = "en_US.UTF-8";
    LC_MEASUREMENT = "en_US.UTF-8";
 
-  buildInputs = [ rix rpkgs pypkgs tex system_packages ];
+  buildInputs = [ rix rpkgs pyconf tex system_packages ];
   
 };
 in

@@ -78,7 +78,7 @@ generate_py_libraries_script <- function(
 #'
 #' @param nix_file Path to the default.nix file (default: "default.nix")
 #' @param project_path Path to root of project, typically "."
-#' @return List of Python packages defined in the pypkgs block of a default.nix file
+#' @return List of Python packages defined in the pyconf block of a default.nix file
 #' @noRd
 parse_pypkgs <- function(nix_file, project_path) {
   # Read the file as lines
@@ -95,7 +95,7 @@ parse_pypkgs <- function(nix_file, project_path) {
   end_idx <- grep("^\\s*\\};", lines)
   end_idx <- end_idx[end_idx > start_idx][1]
   if (is.na(end_idx)) {
-    stop("Could not find the end of the pypkgs block")
+    stop("Could not find the end of the pyconf block")
   }
 
   # Extract lines within the block
