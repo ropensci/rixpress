@@ -85,7 +85,7 @@ parse_pypkgs <- function(nix_file, project_path) {
   lines <- readLines(file.path(project_path, nix_file))
 
   # Find the starting index of the pypkgs block
-  start_idx <- grep("^\\s*pypkgs\\s*=\\s*builtins\\.attrValues\\s*\\{", lines)
+  start_idx <- grep("^\\s*pyconf\\s*=\\s*builtins\\.attrValues\\s*\\{", lines)
   if (length(start_idx) == 0) {
     return(NULL)
   }

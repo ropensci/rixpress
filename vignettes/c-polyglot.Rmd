@@ -45,7 +45,7 @@ rix(
     repo_url = "https://github.com/b-rodrigues/rixpress",
     commit = "HEAD"
   ),
-  py_pkgs = list(
+  py_conf = list(
     py_version = "3.12",
     py_pkgs = c("pandas", "polars", "pyarrow")
   ),
@@ -55,7 +55,7 @@ rix(
 )
 ```
 
-Notice the `py_pkgs` argument to `rix()`: this will install Python and the
+Notice the `py_conf` argument to `rix()`: this will install Python and the
 listed Python packages in that environment. You'll notice that we add
 `{reticulate}` to the list of R packages to install as well; this is only needed
 to convert data between R and Python: Python build steps are executed in a
