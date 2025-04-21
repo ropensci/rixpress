@@ -96,7 +96,7 @@ pipeline.</p>
 <span>    repo_url <span class="op">=</span> <span class="st">"https://github.com/b-rodrigues/rixpress"</span>,</span>
 <span>    commit <span class="op">=</span> <span class="st">"HEAD"</span></span>
 <span>  <span class="op">)</span>,</span>
-<span>  py_pkgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  py_conf <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    py_version <span class="op">=</span> <span class="st">"3.12"</span>,</span>
 <span>    py_pkgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pandas"</span>, <span class="st">"polars"</span>, <span class="st">"pyarrow"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span>,</span>
@@ -104,7 +104,7 @@ pipeline.</p>
 <span>  project_path <span class="op">=</span> <span class="st">"."</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Notice the <code>py_pkgs</code> argument to <code><a href="https://docs.ropensci.org/rix/reference/rix.html" class="external-link">rix()</a></code>: this
+<p>Notice the <code>py_conf</code> argument to <code><a href="https://docs.ropensci.org/rix/reference/rix.html" class="external-link">rix()</a></code>: this
 will install Python and the listed Python packages in that environment.
 You’ll notice that we add <a href="https://rstudio.github.io/reticulate/" class="external-link">reticulate</a> to the list of R
 packages to install as well; this is only needed to convert data between
