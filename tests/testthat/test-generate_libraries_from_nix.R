@@ -39,7 +39,10 @@ test_that("generate_py_libraries_from_nix: generate Py script by parsing default
 
   rix::rix(
     date = "2025-03-10",
-    py_conf = list(py_version = "3.12", py_pkgs = c("polars", "great-tables")),
+    py_conf = list(
+      py_version = "3.12",
+      py_pkgs = c("polars", "great-tables")
+    ),
     project_path = path_tmpdir,
     overwrite = TRUE
   )
