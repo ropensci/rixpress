@@ -21,7 +21,8 @@ rxp_r_file(
 
 \item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
 
-\item{copy_data_folder}{Logical, if TRUE then the entire folder is copied recursively.}
+\item{copy_data_folder}{Logical, if TRUE then the entire folder is copied
+recursively into the build sandbox.}
 }
 \value{
 A list with \code{name}, \code{snippet}, \code{type}, and \code{nix_env}.
@@ -30,13 +31,18 @@ A list with \code{name}, \code{snippet}, \code{type}, and \code{nix_env}.
 Creates a Nix expression that reads in a file (or folder of data) using R.
 }
 \details{
-There are three ways to read in data in a rixpress pipeline: the first is to point directly
-a file, for example, \code{rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)}.
-The second way is to point to a file but to also include of the files in the "data/" folder
-(the folder can called something else). This is needed when data is split between several
-files, such as a shapfile which typically also needs other files such as \code{.shx} and \code{.dbf} files.
-For this, \code{copy_data_folder} must be set to \code{TRUE}. The last way to read in data, is to only
-point to a folder, and use a function that recursively reads in all data. For example
-\verb{rxp_r_file(many_csvs, path = "data", read_function = \\(x)(readr::read_csv(list.files(x, full.names = TRUE, pattern = ".csv$"))))}
-the provided anonymous function will read all the \code{.csv} file in the \verb{data/} folder.
+There are three ways to read in data in a rixpress pipeline:
+the first is to point directly
+a file, for example,
+\code{rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)}.
+The second way is to point to a file but to also include of the files in
+the "data/" folder (the folder can named something else).
+This is needed when data is split between several files, such as a shapefile
+which typically also needs other files such as \code{.shx} and \code{.dbf} files.
+For this, \code{copy_data_folder} must be set to \code{TRUE}.
+The last way to read in data, is to only point to a folder,
+and use a function that recursively reads in all data. For example
+\verb{rxp_r_file(many_csvs, path = "data", read_function = \\(x)(readr::read_csv( list.files(x, full.names = TRUE, pattern = ".csv$"))))}
+the provided anonymous function will read all the \code{.csv} files
+in the \verb{data/} folder.
 }

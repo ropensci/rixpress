@@ -4,7 +4,14 @@
 \alias{rxp_r}
 \title{rxp_r Creates a Nix expression running an R function}
 \usage{
-rxp_r(name, expr, additional_files = "", nix_env = "default.nix")
+rxp_r(
+  name,
+  expr,
+  additional_files = "",
+  nix_env = "default.nix",
+  serialize_function = NULL,
+  unserialize_function = NULL
+)
 }
 \arguments{
 \item{name}{Symbol, name of the derivation.}
@@ -15,23 +22,58 @@ rxp_r(name, expr, additional_files = "", nix_env = "default.nix")
 functions must go into a script called "functions.R", and additional files
 that need to be accessible during the build process can be named anything.}
 
-\item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
+\item{nix_env}{Character, path to the Nix environment file, default is
+"default.nix".}
+
+\item{serialize_function}{Function, defaults to NULL. A function used to
+serialize objects for transfer between derivations. It must accept two
+arguments: the object to serialize (first), and the target file path
+(second). If your function has a different signature, wrap it to match this
+interface. By default, \code{saveRDS()} is used, but this may yield unexpected
+results, especially for complex objects like machine learning models. For
+instance, for \code{{keras}} models, use \code{keras::save_model_hdf5()} to capture
+the full model (architecture, weights, training config, optimizer state,
+etc.).}
+
+\item{unserialize_function}{Function, defaults to NULL. A function used to
+unserialize objects transferred between derivations. By default,
+\code{readRDS()} is used, but this may produce unexpected results with complex
+objects like machine learning models. For example, if the parent derivation
+used \code{keras::save_model_hdf5()} to serialize a model, this derivation
+should use \code{keras::load_model_hdf5()} to load it correctly.}
 }
 \value{
 A list with elements: \code{name}, the \code{name} of the derivation,
-\code{snippet}, the Nix boilerplate code, \code{type}, \code{additional_files} and \code{nix_env}.
+\code{snippet}, the Nix boilerplate code, \code{type}, \code{additional_files} and
+\code{nix_env}.
 }
 \description{
 rxp_r Creates a Nix expression running an R function
 }
 \details{
-At a basic level, \code{rxp_r(mtcars_am, filter(mtcars, am == 1))}
-is equivalent to \code{mtcars <- filter(mtcars, am == 1)}. \code{rxp_r()} generates
-the required Nix boilerplate to output a so-called "derivation" in Nix
-jargon. A Nix derivation is a recipe that defines how to create an output
-(in this case \code{mtcars_am}) including its dependencies, build steps,
-and output paths.
+At a basic level, \code{rxp_r(mtcars_am, filter(mtcars, am == 1))} is
+equivalent to \code{mtcars <- filter(mtcars, am == 1)}. \code{rxp_r()} generates the
+required Nix boilerplate to output a so-called "derivation" in Nix jargon.
+A Nix derivation is a recipe that defines how to create an output (in this
+case \code{mtcars_am}) including its dependencies, build steps, and output
+paths.
 }
 \examples{
-rxp_r(mtcars_am, filter(mtcars, am == 1))
+\dontrun{
+  # Basic usage
+  rxp_r(name = filtered_mtcars, expr = filter(mtcars, am == 1))
+
+  # Serialize object using qs
+  rxp_r(
+   name = filtered_mtcars,
+   expr = filter(mtcars, am == 1),
+   serialize_function = qs::qsave
+  )
+  # Unerialize using qs::read in the next derivation
+  rxp_r(
+   name = mtcars_mpg,
+   expr = select(filtered_mtcars, mpg),
+   unserialize_function = qs::read
+  )
+}
 }

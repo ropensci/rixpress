@@ -4,7 +4,7 @@ Version: 0.1.0
 Authors@R:
     person("Bruno", "Rodrigues", , "bruno@brodrigues.co", role = c("aut", "cre"))
 Description: Streamlines the creation of reproducible analytical pipelines
-    using `default.nix` expressions generated via `{rix}` for reproducibility.
+  using `default.nix` expressions generated via `{rix}` for reproducibility.
 	Define derivations in R or Python, chain them into a dependency-driven DAG,
 	assemble complete workflows and build the pipeline using
 	Nix as the underlying end-to-end build tool. Heavily inspired by the `{targets}` package.

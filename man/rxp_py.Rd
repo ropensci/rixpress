@@ -4,32 +4,67 @@
 \alias{rxp_py}
 \title{rxp_py Creates a Nix expression running a Python function}
 \usage{
-rxp_py(name, py_expr, additional_files = "", nix_env = "default.nix")
+rxp_py(
+  name,
+  py_expr,
+  additional_files = "",
+  nix_env = "default.nix",
+  serialize_function = NULL,
+  unserialize_function = NULL
+)
 }
 \arguments{
 \item{name}{Symbol, name of the derivation.}
 
+\item{py_expr}{Character, Python code to generate the expression.}
+
 \item{additional_files}{Character vector, additional files to include. Custom
-functions must go into a script called "functions.R", and additional files
+functions must go into a script called "functions.py", and additional files
 that need to be accessible during the build process can be named anything.}
 
-\item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
+\item{nix_env}{Character, path to the Nix environment file, default is
+"default.nix".}
 
-\item{expr}{R code to generate the expression.}
+\item{serialize_function}{Character, defaults to NULL. The name of the Python
+function used to serialize the object. It must accept two arguments: the
+object to serialize (first), and the target file path (second). If NULL,
+the default behavior uses \code{pickle.dump}. Define this function in
+\code{functions.py}.}
+
+\item{unserialize_function}{Character, defaults to NULL. The name of the
+Python function used to unserialize the object. It must accept one
+argument: the file path.}
 }
 \value{
 A list with elements: \code{name}, the \code{name} of the derivation,
-\code{snippet}, the Nix boilerplate code, \code{type}, \code{additional_files} and \code{nix_env}.
+\code{snippet}, the Nix boilerplate code, \code{type}, \code{additional_files}, \code{nix_env},
+and \code{unserialize_code}.
 }
 \description{
 rxp_py Creates a Nix expression running a Python function
 }
 \details{
 At a basic level,
-\code{rxp_py(mtcars_am, "mtcars.filter(polars.col('am') == 1)")}
-is equivalent to \verb{mtcars_am = mtcars.filter(polars.col('am') == 1). }rxp_py()\verb{generates the required Nix boilerplate to output a so-called "derivation" in Nix jargon. A Nix derivation is a recipe that defines how to create an output (in this case}mtcars_am`)
-including its dependencies, build steps, and output paths.
+\code{rxp_py(mtcars_am, "mtcars.filter(polars.col('am') == 1).to_pandas()")}
+is equivalent to
+\verb{mtcars_am = mtcars.filter(polars.col('am') == 1).to_pandas()}. \code{rxp_py()}
+generates the required Nix boilerplate to output a so-called "derivation"
+in Nix jargon. A Nix derivation is a recipe that defines how to create an
+output (in this case \code{mtcars_am}) including its dependencies, build steps,
+and output paths.
 }
 \examples{
-rxp_py(mtcars_pl_am, py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()")
+\dontrun{
+  rxp_py(
+    mtcars_pl_am,
+    py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()"
+  )
+
+  # Custom serialization
+  rxp_py(
+    mtcars_pl_am,
+    py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()",
+    serialize_function = "serialize_model",
+    additional_files = "functions.py")
+}
 }

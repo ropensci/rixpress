@@ -1,11 +1,10 @@
-#' @title Find matching files for a derivation
-#' @description Searches for files in the "result" directory that
-#'   match the given derivation name. If any matching file has a .pickle extension,
-#'   the function checks whether the reticulate package is installed.
+#' Core setup function for rxp_read() and rxp_load()
 #' @param derivation_name The name of the derivation.
+#' @details If a path to the store is passed, return it, otherwise
+#'   returns the path to the object(s).
 #' @return A character vector of paths to the matching files.
 #' @noRd
-rxp_common <- function(derivation_name) {
+rxp_read_load_setup <- function(derivation_name) {
   # if derivation_name is a full path to the /nix/store simply return it
   # this is useful for Quarto documents
   if (grepl("^/nix/store/", derivation_name)) {
@@ -20,8 +19,8 @@ rxp_common <- function(derivation_name) {
 
   build_log <- rxp_inspect()
 
-  derivation <- subset(build_log, subset = derivation == derivation_name)
-
+  derivation <- build_log[build_log$derivation == derivation_name, ]
+  
   files <- unlist(derivation$output)
 
   if (length(files) == 0) {
@@ -48,12 +47,26 @@ rxp_common <- function(derivation_name) {
   file_paths
 }
 
-#' @title Read output of a derivation
+#' Read output of a derivation
+#' @description Reads the output of derivations in the current session,
+#'   returns a path if reading directly is not possible.
+#' @details When `derivation_name` points to a single R object,
+#'   it gets read in the current session using `readRDS()`.
+#'   If it’s a Python object and {reticulate} is available,
+#'   `reticulate::py_load_object()` is used. In case
+#'   the derivation is pointing to several outputs (which can
+#'   happen when building a Quarto document for example) or
+#'   neither `readRDS()` nor `reticulate::py_load_object()`
+#'   successfully read the object, the path to the object is
+#'   returned instead.
 #' @param derivation_name Character, the name of the derivation.
 #' @return The derivation's output.
+#' @examples \dontrun{
+#'   mtcars <- rxp_read("mtcars")
+#' }
 #' @export
 rxp_read <- function(derivation_name) {
-  files <- rxp_common(derivation_name)
+  files <- rxp_read_load_setup(derivation_name)
 
   if (length(files) != 1) {
     return(files)
@@ -67,8 +80,7 @@ rxp_read <- function(derivation_name) {
     error = function(e1) {
       if (!requireNamespace("reticulate", quietly = TRUE)) {
         message(
-          "If you're trying to load a pickle'd object,
-you need to install the '{reticulate}' package."
+          "If you're trying to load a pickle'd object,\nyou need to install the '{reticulate}' package."
         )
         return(path)
       }
@@ -80,13 +92,27 @@ you need to install the '{reticulate}' package."
   )
 }
 
-#' @title Load a derivation's output into the global environment
+#' Load output of a derivation
+#' @description Loads the output of derivations in the global environment
+#'   of the current session, returns a path if reading directly is not possible.
+#' @details When `derivation_name` points to a single R object,
+#'   it gets loaded in the current session using
+#'   `assign(..., envir = .GlobalEnv)`.
+#'   If it’s a Python object and {reticulate} is available,
+#'   `reticulate::py_load_object()` is used and then the object
+#'   gets loaded into the golbal environment. In case
+#'   the derivation is pointing to several outputs (which can
+#'   happen when building a Quarto document for example) or
+#'   loading fails, the path to the object is returned instead.
 #' @param derivation_name Character, the name of the derivation.
-#' @return None. The derivation object is assigned to the
-#'   global environment with the name `derivation_name`.
+#' @return Nothing, this function has the side effect of loading
+#'   objects into the global environment.
+#' @examples \dontrun{
+#'   rxp_load("mtcars")
+#' }
 #' @export
 rxp_load <- function(derivation_name) {
-  files <- rxp_common(derivation_name)
+  files <- rxp_read_load_setup(derivation_name)
   if (length(files) != 1) {
     return(files)
   }

@@ -17,7 +17,8 @@ rxp_quarto(
 
 \item{qmd_file}{Character, path to .qmd file.}
 
-\item{additional_files}{Character vector, additional files to include.}
+\item{additional_files}{Character vector, additional files to include, for example a folder
+containing the picture to include in the Quarto document.}
 
 \item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
 
@@ -26,18 +27,20 @@ the \code{quarto} command.}
 }
 \value{
 A list with elements: \code{name}, the \code{name} of the derivation,
-\code{snippet}, the Nix boilerplate code, \code{type}, \code{additional_files} and \code{nix_env}.
+\code{snippet}, the Nix boilerplate code, \code{type}, \code{additional_files} and
+\code{nix_env}.
 }
 \description{
 Render a Quarto document as a Nix derivation
 }
 \details{
-Detects \code{rxp_read("ref")} in the .qmd file and replaces with
-derivation output paths.
+To include object built in the pipeline, \code{rxp_read("derivation_name")} should be put
+in the .qmd file.
 }
 \examples{
 \dontrun{
+  # Compile a .qmd file to a pdf using typst
   # `images` is a folder containing images to include in the Quarto doc
-  rxp_quarto(name = report, qmd_file = "doc.qmd", additional_files = "images", args = "-- to typst")
+  rxp_quarto(name = report, qmd_file = "report.qmd", additional_files = "images", args = "-- to typst")
 }
 }

@@ -30,7 +30,23 @@
 #' @return A list with elements: `name`, the `name` of the derivation,
 #'   `snippet`, the Nix boilerplate code, `type`, `additional_files` and
 #'   `nix_env`.
-#' @examples rxp_r(mtcars_am, filter(mtcars, am == 1))
+#' @examples \dontrun{
+#'   # Basic usage
+#'   rxp_r(name = filtered_mtcars, expr = filter(mtcars, am == 1))
+#'
+#'   # Serialize object using qs
+#'   rxp_r(
+#'    name = filtered_mtcars,
+#'    expr = filter(mtcars, am == 1),
+#'    serialize_function = qs::qsave
+#'   )
+#'   # Unerialize using qs::read in the next derivation
+#'   rxp_r(
+#'    name = mtcars_mpg,
+#'    expr = select(filtered_mtcars, mpg),
+#'    unserialize_function = qs::read
+#'   )
+#' }
 #' @export
 rxp_r <- function(
   name,
@@ -75,16 +91,7 @@ rxp_r <- function(
   if (identical(fileset_parts, character(0)) || fileset_parts == "") {
     src_snippet <- ""
   } else {
-    fileset_nix <- paste(
-      sapply(fileset_parts, function(part) {
-        if (dir.exists(part)) {
-          sprintf("./%s", part)
-        } else {
-          sprintf("./%s", part)
-        }
-      }),
-      collapse = " "
-    )
+    fileset_nix <- paste0("./", fileset_parts, collapse = " ")
     src_snippet <- sprintf(
       "   src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ",
       fileset_nix
@@ -112,101 +119,6 @@ rxp_r <- function(
   )
 }
 
-#' Render a Quarto document as a Nix derivation
-#'
-#' @param name Symbol, derivation name.
-#' @param qmd_file Character, path to .qmd file.
-#' @param additional_files Character vector, additional files to include.
-#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
-#' @param args A character of additional arguments to be passed directly to
-#'   the `quarto` command.
-#' @details Detects `rxp_read("ref")` in the .qmd file and replaces with
-#'   derivation output paths.
-#' @return A list with elements: `name`, the `name` of the derivation,
-#'   `snippet`, the Nix boilerplate code, `type`, `additional_files` and `nix_env`.
-#' @examples
-#' \dontrun{
-#'   # `images` is a folder containing images to include in the Quarto doc
-#'   rxp_quarto(name = report, qmd_file = "doc.qmd", additional_files = "images", args = "-- to typst")
-#' }
-#' @export
-rxp_quarto <- function(
-  name,
-  qmd_file,
-  additional_files = "",
-  nix_env = "default.nix",
-  args = ""
-) {
-  out_name <- deparse(substitute(name))
-
-  content <- readLines(qmd_file, warn = FALSE)
-  content_str <- paste(content, collapse = "\n")
-
-  # Extract unique rxp_read references
-  matches <- gregexpr('rxp_read\\("([^"]+)"\\)', content_str)
-  refs <- regmatches(content_str, matches)[[1]]
-  refs <- sub('rxp_read\\("([^"]+)"\\)', '\\1', refs)
-  refs <- unique(refs)
-
-  # Generate substitution commands for each reference
-  sub_cmds <- sapply(refs, function(ref) {
-    sprintf(
-      "substituteInPlace %s --replace-fail 'rxp_read(\"%s\")' 'rxp_read(\"${%s}\")'",
-      qmd_file,
-      ref,
-      ref
-    )
-  })
-
-  build_phase <- paste(
-    "  mkdir home",
-    "  export HOME=$PWD/home",
-    "  export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n",
-    if (length(sub_cmds) > 0)
-      paste("  ", sub_cmds, sep = "", collapse = "\n") else "",
-    sprintf("  quarto render %s %s --output-dir $out", qmd_file, args),
-    sep = "\n"
-  )
-
-  # Prepare the fileset for src
-  fileset_parts <- c(qmd_file, additional_files)
-  fileset_nix <- paste(
-    sapply(fileset_parts, function(part) {
-      if (dir.exists(part)) {
-        sprintf("./%s", part)
-      } else {
-        sprintf("./%s", part)
-      }
-    }),
-    collapse = " "
-  )
-
-  # Derive base from nix_env
-  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
-  base <- sub("_nix$", "", base)
-
-  # Generate the Nix derivation snippet with updated buildInputs and configurePhase
-  snippet <- sprintf(
-    "  %s = defaultPkgs.stdenv.mkDerivation {\n    name = \"%s\";\n    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n%s\n    '';\n  };",
-    out_name,
-    out_name,
-    fileset_nix,
-    base,
-    base,
-    build_phase
-  )
-
-  # Return the result as a list
-  list(
-    name = out_name,
-    snippet = snippet,
-    type = "rxp_quarto",
-    qmd_file = qmd_file,
-    additional_files = additional_files,
-    nix_env = nix_env
-  )
-}
-
 #' rxp_py Creates a Nix expression running a Python function
 #'
 #' @param name Symbol, name of the derivation.
@@ -224,8 +136,9 @@ rxp_quarto <- function(
 #' @param unserialize_function Character, defaults to NULL. The name of the
 #'   Python function used to unserialize the object. It must accept one
 #'   argument: the file path.
-#' @details At a basic level, `rxp_py(mtcars_am,
-#'   "mtcars.filter(polars.col('am') == 1).to_pandas()")` is equivalent to
+#' @details At a basic level,
+#'   `rxp_py(mtcars_am, "mtcars.filter(polars.col('am') == 1).to_pandas()")`
+#'    is equivalent to
 #'   `mtcars_am = mtcars.filter(polars.col('am') == 1).to_pandas()`. `rxp_py()`
 #'   generates the required Nix boilerplate to output a so-called "derivation"
 #'   in Nix jargon. A Nix derivation is a recipe that defines how to create an
@@ -235,18 +148,19 @@ rxp_quarto <- function(
 #'   `snippet`, the Nix boilerplate code, `type`, `additional_files`, `nix_env`,
 #'   and `unserialize_code`.
 #' @examples
-#' rxp_py(
-#'   mtcars_pl_am,
-#'   py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()"
-#' )
+#' \dontrun{
+#'   rxp_py(
+#'     mtcars_pl_am,
+#'     py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()"
+#'   )
 #'
-#' # Custom serialization (assuming functions.py defines these)
-#' rxp_py(
-#'   mtcars_pl_am,
-#'   py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()",
-#'   serialize_function = "serialize_model",
-#'   unserialize_function = "unserialize_model",
-#'   additional_files = "functions.py")
+#'   # Custom serialization
+#'   rxp_py(
+#'     mtcars_pl_am,
+#'     py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()",
+#'     serialize_function = "serialize_model",
+#'     additional_files = "functions.py")
+#' }
 #' @export
 rxp_py <- function(
   name,
@@ -311,16 +225,7 @@ rxp_py <- function(
   if (identical(fileset_parts, character(0)) || fileset_parts == "") {
     src_snippet <- ""
   } else {
-    fileset_nix <- paste(
-      sapply(fileset_parts, function(part) {
-        if (dir.exists(part)) {
-          sprintf("./%s", part)
-        } else {
-          sprintf("./%s", part)
-        }
-      }),
-      collapse = " "
-    )
+    fileset_nix <- paste0("./", fileset_parts, collapse = " ")
     src_snippet <- sprintf(
       "   src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ",
       fileset_nix
@@ -348,6 +253,96 @@ rxp_py <- function(
     unserialize_function = unserialize_str
   )
 }
+
+#' Render a Quarto document as a Nix derivation
+#'
+#' @param name Symbol, derivation name.
+#' @param qmd_file Character, path to .qmd file.
+#' @param additional_files Character vector, additional files to include, for example a folder
+#'   containing the picture to include in the Quarto document.
+#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
+#' @param args A character of additional arguments to be passed directly to
+#'   the `quarto` command.
+#' @details To include object built in the pipeline, `rxp_read("derivation_name")` should be put
+#'   in the .qmd file.
+#' @return A list with elements: `name`, the `name` of the derivation,
+#'   `snippet`, the Nix boilerplate code, `type`, `additional_files` and
+#'   `nix_env`.
+#' @examples
+#' \dontrun{
+#'   # Compile a .qmd file to a pdf using typst
+#'   # `images` is a folder containing images to include in the Quarto doc
+#'   rxp_quarto(name = report, qmd_file = "report.qmd", additional_files = "images", args = "-- to typst")
+#' }
+#' @export
+rxp_quarto <- function(
+  name,
+  qmd_file,
+  additional_files = "",
+  nix_env = "default.nix",
+  args = ""
+) {
+  out_name <- deparse(substitute(name))
+
+  content <- readLines(qmd_file, warn = FALSE)
+  content_str <- paste(content, collapse = "\n")
+
+  # Extract unique rxp_read references
+  matches <- gregexpr('rxp_read\\("([^"]+)"\\)', content_str)
+  refs <- regmatches(content_str, matches)[[1]]
+  refs <- sub('rxp_read\\("([^"]+)"\\)', '\\1', refs)
+  refs <- unique(refs)
+
+  # Generate substitution commands for each reference
+  sub_cmds <- sapply(refs, function(ref) {
+    sprintf(
+      "substituteInPlace %s --replace-fail 'rxp_read(\"%s\")' 'rxp_read(\"${%s}\")'",
+      qmd_file,
+      ref,
+      ref
+    )
+  })
+
+  build_phase <- paste(
+    "  mkdir home",
+    "  export HOME=$PWD/home",
+    "  export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n",
+    if (length(sub_cmds) > 0)
+      paste("  ", sub_cmds, sep = "", collapse = "\n") else "",
+    sprintf("  quarto render %s %s --output-dir $out", qmd_file, args),
+    sep = "\n"
+  )
+
+  # Prepare the fileset for src
+  fileset_parts <- c(qmd_file, additional_files)
+  fileset_nix <- paste0("./", fileset_parts, collapse = " ")
+
+  # Derive base from nix_env
+  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
+  base <- sub("_nix$", "", base)
+
+  # Generate the Nix derivation snippet with updated buildInputs and configurePhase
+  snippet <- sprintf(
+    "  %s = defaultPkgs.stdenv.mkDerivation {\n    name = \"%s\";\n    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n%s\n    '';\n  };",
+    out_name,
+    out_name,
+    fileset_nix,
+    base,
+    base,
+    build_phase
+  )
+
+  # Return the result as a list
+  list(
+    name = out_name,
+    snippet = snippet,
+    type = "rxp_quarto",
+    qmd_file = qmd_file,
+    additional_files = additional_files,
+    nix_env = nix_env
+  )
+}
+
 
 #' rxp_file_common
 #'
@@ -420,17 +415,25 @@ rxp_file_common <- function(
 #' @param path Character, the file path to include (e.g., "data/mtcars.shp") or a folder path (e.g., "data"). See details.
 #' @param read_function Function, an R function to read the data, taking one argument (the path).
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
-#' @param copy_data_folder Logical, if TRUE then the entire folder is copied recursively.
+#' @param copy_data_folder Logical, if TRUE then the entire folder is copied
+#'   recursively into the build sandbox.
 #' @details
-#'   There are three ways to read in data in a rixpress pipeline: the first is to point directly
-#'   a file, for example, `rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)`.
-#'   The second way is to point to a file but to also include of the files in the "data/" folder
-#'   (the folder can called something else). This is needed when data is split between several
-#'   files, such as a shapfile which typically also needs other files such as `.shx` and `.dbf` files.
-#'   For this, `copy_data_folder` must be set to `TRUE`. The last way to read in data, is to only
-#'   point to a folder, and use a function that recursively reads in all data. For example
-#'   `rxp_r_file(many_csvs, path = "data", read_function = \(x)(readr::read_csv(list.files(x, full.names = TRUE, pattern = ".csv$"))))`
-#'   the provided anonymous function will read all the `.csv` file in the `data/` folder.
+#'   There are three ways to read in data in a rixpress pipeline:
+#'   the first is to point directly
+#'   a file, for example,
+#'   `rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)`.
+#'   The second way is to point to a file but to also include of the files in
+#'   the "data/" folder (the folder can named something else).
+#'   This is needed when data is split between several files, such as a shapefile
+#'   which typically also needs other files such as `.shx` and `.dbf` files.
+#'   For this, `copy_data_folder` must be set to `TRUE`.
+#'   The last way to read in data, is to only point to a folder,
+#'   and use a function that recursively reads in all data. For example
+#'   `rxp_r_file(many_csvs, path = "data",
+#'      read_function = \(x)(readr::read_csv(
+#'        list.files(x, full.names = TRUE, pattern = ".csv$"))))`
+#'   the provided anonymous function will read all the `.csv` files
+#'   in the `data/` folder.
 #' @return A list with `name`, `snippet`, `type`, and `nix_env`.
 #' @export
 rxp_r_file <- function(
@@ -490,19 +493,27 @@ rxp_r_file <- function(
 #' Creates a Nix expression that reads in a file (or folder of data) using Python.
 #'
 #' @param name Symbol, the name of the derivation.
-#' @param path Character, the file path to include (e.g., "data/mtcars.shp") or a folder path (e.g., "data"). See details.
-#' @param read_function Character, a Python function to read the data, taking one argument (the path).
+#' @param path Character, the file path to include (e.g., "data/mtcars.shp")
+#'   or a folder path (e.g., "data"). See details.
+#' @param read_function Character, a Python function to read the data,
+#'   taking one argument (the path).
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
-#' @param copy_data_folder Logical, if TRUE then the entire folder is copied recursively.
+#' @param copy_data_folder Logical, if TRUE then the entire folder is
+#'   copied recursively into the build sandbox.
 #' @details
-#'   There are three ways to read in data in a rixpress pipeline: the first is to point directly
-#'   a file, for example, `rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)`.
-#'   The second way is to point to a file but to also include of the files in the "data/" folder
-#'   (the folder can called something else). This is needed when data is split between several
-#'   files, such as a shapfile which typically also needs other files such as `.shx` and `.dbf` files.
-#'   For this, `copy_data_folder` must be set to `TRUE`. The last way to read in data, is to only
-#'   point to a folder, and use a function that recursively reads in all data. For example
-#'   `rxp_py_file(many_csvs, path = "data", read_function = 'lambda x: pandas.read_csv(os.path.join(x, os.listdir(x)[0]), delimiter="|")')`
+#'   There are three ways to read in data in a rixpress pipeline:
+#'   the first is to point directly a file, for example,
+#'   `rxp_py_file(mtcars, path = "data/mtcars.csv", read_function = pandas.read_csv)`.
+#'   The second way is to point to a file but to also include of the files in
+#'   the "data/" folder (the folder can named something else).
+#'   This is needed when data is split between several files, such as a shapefile
+#'   which typically also needs other files such as `.shx` and `.dbf` files.
+#'   For this, `copy_data_folder` must be set to `TRUE`.
+#'   The last way to read in data, is to only point to a folder,
+#'   and use a function that recursively reads in all data. For example
+#'   `rxp_py_file(many_csvs, path = "data",
+#'      read_function = 'lambda x: pandas.read_csv(os.path.join(x, os.listdir(x)[0]),
+#'        delimiter="|")')`
 #'   the provided anonymous function will read all the `.csv` file in the `data/` folder.
 #' @return A list with `name`, `snippet`, `type`, and `nix_env`.
 #' @export
