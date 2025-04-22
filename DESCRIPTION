@@ -3,9 +3,11 @@ Title: Build Reproducible Analytical Pipelines With Nix
 Version: 0.1.0
 Authors@R:
     person("Bruno", "Rodrigues", , "bruno@brodrigues.co", role = c("aut", "cre"))
-Description: Simplifies the creation of reproducible analytical pipelines
-    using the 'Nix' package manager as a build automation tool. Heavily inspired by
-    the 'targets' package.
+Description: Streamlines the creation of reproducible analytical pipelines
+    using `default.nix` expressions generated via `{rix}` for reproducibility.
+	Define derivations in R or Python, chain them into a dependency-driven DAG,
+	assemble complete workflows and build the pipeline using
+	Nix as the underlying end-to-end build tool. Heavily inspired by the `{targets}` package.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
