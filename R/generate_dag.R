@@ -1,10 +1,12 @@
 #' Generate a DAG from a list of derivations
 #'
-#' Creates a JSON representation of a directed acyclic graph (DAG) based on dependencies
-#' between derivations.
+#' Creates a JSON representation of a directed acyclic graph (DAG)
+#' based on dependencies between derivations.
 #'
-#' @param rxp_list A list of derivations, each with a `name` and `snippet`, output of rxp_r().
-#' @param output_file Path to the output JSON file. Defaults to "_rixpress/dag.json".
+#' @param rxp_list A list of derivations, each with a `name` and `snippet`,
+#'   output of rxp_r().
+#' @param output_file Path to the output JSON file.
+#'   Defaults to "_rixpress/dag.json".
 #' @importFrom jsonlite write_json
 #' @return Writes a JSON file representing the DAG.
 #' @export
