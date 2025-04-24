@@ -20,7 +20,7 @@ rxp_read_load_setup <- function(derivation_name) {
   build_log <- rxp_inspect()
 
   derivation <- build_log[build_log$derivation == derivation_name, ]
-  
+
   files <- unlist(derivation$output)
 
   if (length(files) == 0) {
