@@ -40,7 +40,7 @@ derivs <- list(d0, d1, d2, d3, d4, doc)
 
 rixpress(derivs, project_path = ".", build = FALSE)
 
-rxp_make()
+#rxp_make()
 
 dag_obj <- plot_dag(return_igraph = TRUE)
 

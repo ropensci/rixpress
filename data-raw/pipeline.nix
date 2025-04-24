@@ -76,7 +76,7 @@ saveRDS(data, 'mtcars')"
         source('libraries.R')
         mtcars_am <- readRDS('${mtcars_am}/mtcars_am')
         mtcars_head <- my_head(mtcars_am)
-        qs::qsave(mtcars_head, 'mtcars_head')"
+        saveRDS(mtcars_head, 'mtcars_head')"
     '';
   };
 
@@ -87,7 +87,7 @@ saveRDS(data, 'mtcars')"
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
-        mtcars_head <- qs::qread('${mtcars_head}/mtcars_head')
+        mtcars_head <- readRDS('${mtcars_head}/mtcars_head')
         mtcars_tail <- my_tail(mtcars_head)
         saveRDS(mtcars_tail, 'mtcars_tail')"
     '';

@@ -7,14 +7,21 @@
 generate_dag(rxp_list, output_file = "_rixpress/dag.json")
 }
 \arguments{
-\item{rxp_list}{A list of derivations, each with a \code{name} and \code{snippet}, output of rxp_r().}
+\item{rxp_list}{A list of derivations.}
 
-\item{output_file}{Path to the output JSON file. Defaults to "_rixpress/dag.json".}
+\item{output_file}{Path to the output JSON file.
+Defaults to "_rixpress/dag.json".}
 }
 \value{
-Writes a JSON file representing the DAG.
+Nothing, writes a JSON file representing the DAG.
 }
 \description{
-Creates a JSON representation of a directed acyclic graph (DAG) based on dependencies
-between derivations.
+Creates a JSON representation of a directed acyclic graph (DAG)
+based on dependencies between derivations. Is automatically called
+by \code{rixpress()}.
+}
+\examples{
+\dontrun{
+  generate_dag(rxp_list)
+}
 }

@@ -18,6 +18,7 @@ let
       rmarkdown
       testthat
       tidyr
+      visNetwork
       urlchecker;
   };
 

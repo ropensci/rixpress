@@ -196,3 +196,73 @@ dag_for_ci <- function() {
 
   igraph::write_graph(dag_obj, file = "_rixpress/dag.dot", format = "dot")
 }
+
+
+#library(jsonlite)
+#library(visNetwork)
+#
+## Load and parse the JSON file
+#json_data <- fromJSON("_rixpress/dag.json")
+#derivations <- json_data$derivations
+#
+#
+#hu <- derivations[, c("deriv_name", "type")] 
+#ha <- unnest_all_columns(hu)
+#nodes <- data.frame("id" = ha$deriv_name,
+#                    "label" = ha$deriv_name,
+#                    "group" = ha$type) |> unique() 
+#hc <- derivations[, c("deriv_name", "depends")] 
+#hd <- unnest_all_columns(hc)
+#edges <- data.frame("from" = hd$depends, "to" = hd$deriv_name, "arrows" = "to")
+##unnest_all_columns <- function(df) {
+##  # Identify list-columns
+##  list_cols <- sapply(df, is.list)
+##  
+##  # If no list-columns, return original data frame
+##  if (!any(list_cols)) return(df)
+##  
+##  # Initialize result with non-list columns
+##  result <- df[!list_cols]
+##  
+##  # Process each list-column
+##  for (col_name in names(df)[list_cols]) {
+##    col_data <- df[[col_name]]
+##    
+##    # Determine the type of the first non-NULL element
+##    first_non_null <- Filter(Negate(is.null), col_data)[[1]]
+##    
+##    if (is.data.frame(first_non_null)) {
+##      # Unnest list of data frames
+##      unnested <- do.call(rbind, lapply(col_data, function(x) {
+##        if (is.null(x)) {
+##          # Replace NULL with NA row
+##          as.data.frame(matrix(NA, nrow = 1, ncol = ncol(first_non_null),
+##                               dimnames = list(NULL, names(first_non_null))))
+##        } else {
+##          x
+##        }
+##      }))
+##      # Combine with result
+##      result <- cbind(result, unnested)
+##      
+##    } else if (is.atomic(first_non_null)) {
+##      # Unnest list of atomic vectors
+##      lengths <- sapply(col_data, length)
+##      repeated_rows <- rep(1:nrow(df), lengths)
+##      values <- unlist(col_data)
+##      result <- result[repeated_rows, , drop = FALSE]
+##      result[[col_name]] <- values
+##      
+##    } else {
+##      warning(paste("Column", col_name, "contains unsupported data types."))
+##    }
+##  }
+##  
+##  return(result)
+##}
+#
+#visNetwork(nodes, edges) %>% 
+#  visGroups(groupname = "rxp_r", shape = "circle", color = "#246ABF") %>% 
+#  visGroups(groupname = "rxp_py", shape = "triangle", color = "#FFD343") %>% 
+#  visGroups(groupname = "rxp_quarto", shape = "square", color = "#4F789E") %>% 
+#  visLegend(position = "right", main = "Derivation Types")

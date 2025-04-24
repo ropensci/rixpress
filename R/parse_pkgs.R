@@ -1,6 +1,6 @@
 #' Extract packages from a specified block in a default.nix file
 #'
-#' @param nix_file Path to the default.nix file (default: "default.nix")
+#' @param nix_file Defaults to "default.nix", path to the default.nix file
 #' @param project_path Path to root of project, typically "."
 #' @param block_name Name of the block to parse (e.g., "rpkgs" or "pyconf")
 #' @param transform Function to transform package names (default: identity)
@@ -14,7 +14,8 @@ parse_packages <- function(
 ) {
   lines <- readLines(file.path(project_path, nix_file))
 
-  # Find the start of the block (e.g., "rpkgs = builtins.attrValues {" or "pyconf = ...")
+  # Find the start of the block
+  # (e.g., "rpkgs = builtins.attrValues {" or "pyconf = ...")
   start_pattern <- paste0(
     "^\\s*",
     block_name,
@@ -35,15 +36,16 @@ parse_packages <- function(
 
   # Extract and clean lines within the block
   block_lines <- lines[(start_idx + 1):(end_idx - 1)]
-  block_lines <- gsub("#.*", "", block_lines) # Remove comments
-  block_lines <- trimws(block_lines) # Trim whitespace
-  block_lines <- block_lines[block_lines != ""] # Remove empty lines
+  block_lines <- gsub("#.*", "", block_lines)
+  block_lines <- trimws(block_lines)
+  block_lines <- block_lines[block_lines != ""]
 
-  # Remove inherit statements (e.g., "inherit (pkgs.rPackages)" or "inherit (pkgs.python312Packages)")
+  # Remove inherit statements
+  # (e.g., "inherit (pkgs.rPackages)" or "inherit (pkgs.python312Packages)")
   inherit_pattern <- "inherit \\(pkgs\\.[a-zA-Z0-9]+\\)"
   block_lines <- gsub(inherit_pattern, "", block_lines)
 
-  block_lines <- gsub(";", "", block_lines) # Remove semicolons
+  block_lines <- gsub(";", "", block_lines)
 
   # Split into package names and apply transformation
   packages <- unlist(strsplit(paste(block_lines, collapse = " "), "\\s+"))
@@ -90,31 +92,40 @@ generate_libraries_script <- function(
 }
 
 # R-specific helpers
+#' @noRd
 transform_r <- function(packages) {
-  gsub("_", ".", packages) # Replace _ with . for R packages
+  gsub("_", ".", packages) # in nixpkgs: data_table, but in CRAN data.table
 }
 
+#' @noRd
 adjust_r_packages <- identity # No additional adjustments for R
 
+#' @noRd
 import_formatter_r <- function(package) {
   paste0("library(", package, ")") # R import format
 }
 
 # Python-specific helpers
+#' @noRd
 adjust_py_packages <- function(packages) {
-  packages <- packages[!(packages %in% c("pip", "ipykernel"))] # Exclude pip and ipykernel
-  packages <- sort(c("pickle", packages)) # Add pickle
-  packages <- gsub("scikit-learn", "sklearn", packages) # Replace scikit-learn with sklearn
+  # Only needed for interactive work
+  packages <- packages[!(packages %in% c("pip", "ipykernel"))]
+  # Pickle is needed to import pickle’d objects
+  packages <- sort(c("pickle", packages))
+  # Scikit is a common package where its name is different
+  # when importing
+  packages <- gsub("scikit-learn", "sklearn", packages)
   packages
 }
 
+#' @noRd
 import_formatter_py <- function(package) {
   paste0("import ", package) # Python import format
 }
 
 #' Generate a script with import statements from a default.nix file
 #'
-#' @param nix_file Path to the default.nix file (default: "default.nix")
+#' @param nix_file Defaults to "default.nix", path to the default.nix file
 #' @param additional_files Character vector of additional files to include
 #' @param project_path Path to root of project, typically "."
 #' @param language Language to generate the script for ("R" or "Python")
@@ -173,6 +184,7 @@ generate_r_or_py_libraries_from_nix <- function(
   )
 }
 
+#' @noRd
 generate_r_libraries_from_nix <- function(
   nix_file,
   additional_files = "",
@@ -186,6 +198,7 @@ generate_r_libraries_from_nix <- function(
   )
 }
 
+#' @noRd
 generate_py_libraries_from_nix <- function(
   nix_file,
   additional_files = "",
@@ -201,9 +214,32 @@ generate_py_libraries_from_nix <- function(
 
 #' Adjust Python import statements
 #'
-#' @param old_import Import statement to replace (e.g., "import pillow")
-#' @param new_import New import statement (e.g., "from PIL import Image")
-#' @return No return value; modifies files in-place
+#' When calling `rixpress()`, a file containing Python import statements is
+#' automatically generated inside the `_rixpress` folder. For example, if the
+#' `numpy` package is needed, the file will include a line like `"import numpy"`.
+#' However, Python programmers often write `"import numpy as np"` instead.
+#'
+#' In some cases, the correct import statement is entirely different. For example,
+#' for the `pillow` package, the generated file will contain `"import pillow"`,
+#' which is incorrect—Python code should import from the `PIL` namespace instead,
+#' e.g., `"from PIL import Image"`.
+#'
+#' Because these adjustments cannot be automated reliably, the `adjust_imports()`
+#' function allows you to search and replace import statements programmatically.
+#' It reads each file in the `_rixpress` folder, performs the replacement,
+#' and writes the modified content back to the file.
+#' @param old_import A character string representing the import statement to
+#'   be replaced. For example, `"import pillow"`.
+#' @param new_import A character string representing the new import statement
+#'   to replace with. For example, `"from PIL import Image"`.
+#'
+#' @return No return value; the function performs in-place
+#'   modifications of the files.
+#'
+#' @examples
+#' \dontrun{
+#' adjust_imports("import pillow", "from PIL import Image")
+#' }
 #' @export
 adjust_imports <- function(old_import, new_import) {
   files <- list.files(path = "_rixpress", full.names = TRUE, recursive = TRUE)
