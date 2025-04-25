@@ -4,7 +4,7 @@
 \alias{dag_for_ci}
 \title{Export DAG of pipeline and prepare it for rendering on CI}
 \usage{
-dag_for_ci()
+dag_for_ci(nodes_and_edges = get_nodes_edges())
 }
 \value{
 Nothing, writes \code{dag.dot} in \verb{_rixpress/}.
@@ -15,5 +15,7 @@ you can also run it yourself if you want to visualize the DAG on CI
 with your own workflow definition.
 }
 \examples{
-\dontrun{dag_for_ga()}
+\dontrun{
+  dag_for_ga()
+}
 }
