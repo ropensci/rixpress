@@ -1,4 +1,4 @@
-#' Initialize pipeline
+#' Initialize project
 #'
 #' @description
 #' Generates `gen-env.R` and `gen-pipeline.R` scripts in the specified project
@@ -15,10 +15,9 @@
 #'
 #' @examples
 #' # Default usage
-#' rxp_init()
-#'
-#' # Custom path with overwrite
-#' rxp_init(project_path = "my_project", overwrite = TRUE)
+#' \dontrun{
+#'   rxp_init()
+#' }
 #'
 #' @export
 rxp_init <- function(project_path, overwrite = FALSE) {
@@ -27,7 +26,6 @@ rxp_init <- function(project_path, overwrite = FALSE) {
     dir.create(project_path, recursive = TRUE)
   }
 
-  # Content for gen-env.R
   gen_env_lines <- c(
     "library(rix)",
     "",
@@ -46,7 +44,6 @@ rxp_init <- function(project_path, overwrite = FALSE) {
     ")"
   )
 
-  # Content for gen-pipeline.R
   gen_pipeline_lines <- c(
     "library(rixpress)",
     "library(igraph)",
@@ -65,11 +62,9 @@ rxp_init <- function(project_path, overwrite = FALSE) {
     ") |>",
     "  rixpress(project_path = \".\")"
   )
-  # Define file paths
   env_file <- file.path(project_path, "gen-env.R")
   pipeline_file <- file.path(project_path, "gen-pipeline.R")
 
-  # Write gen-env.R with overwrite logic
   if (!file.exists(env_file) || overwrite) {
     writeLines(gen_env_lines, env_file)
     message("File ", env_file, " has been written.")
@@ -81,7 +76,6 @@ rxp_init <- function(project_path, overwrite = FALSE) {
     )
   }
 
-  # Write gen-pipeline.R with overwrite logic
   if (!file.exists(pipeline_file) || overwrite) {
     writeLines(gen_pipeline_lines, pipeline_file)
     message("File ", pipeline_file, " has been written.")
