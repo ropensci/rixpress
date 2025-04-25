@@ -3,10 +3,11 @@ let
  
   rpkgs = builtins.attrValues {
     inherit (pkgs.rPackages) 
-      codetools
       codemetar
+      codetools
       devtools
       diffviewer
+      ggdag
       igraph
       jsonlite
       knitr
@@ -18,8 +19,9 @@ let
       rmarkdown
       testthat
       tidyr
+      urlchecker
       visNetwork
-      urlchecker;
+      ;
   };
 
   pypkgs = builtins.attrValues {

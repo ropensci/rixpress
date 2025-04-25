@@ -250,13 +250,8 @@ unnest_all_columns <- function(df) {
   return(result)
 }
 
-#' @export
-#' @importFrom visNetwork visNetwork visGroups visLegend
-#' @importFrom jsonlite fromJSON
-rxp_visnetwork <- function(path_dag = "_rixpress/dag.json") {
-  if (!requireNamespace("reticulate", quietly = TRUE))
-    stop("You need to install {visNetwork} to use this feature.")
-
+#' @noRd
+get_nodes_edges <- function(path_dag = "_rixpress/dag.json") {
   json_data <- fromJSON(path_dag)
 
   derivations <- json_data$derivations
@@ -279,11 +274,114 @@ rxp_visnetwork <- function(path_dag = "_rixpress/dag.json") {
     "arrows" = "to"
   )
 
-  visNetwork(nodes, edges) %>%
-    visGroups(groupname = "rxp_r", shape = "circle", color = "#246ABF") %>%
-    visGroups(groupname = "rxp_r2py", shape = "circle", color = "#246ABF") %>%
-    visGroups(groupname = "rxp_py", shape = "triangle", color = "#FFD343") %>%
-    visGroups(groupname = "rxp_py2r", shape = "triangle", color = "#FFD343") %>%
-    visGroups(groupname = "rxp_quarto", shape = "square", color = "#4F789E") %>%
-    visLegend(position = "right", main = "Derivation Types")
+  list(
+    "nodes" = nodes,
+    "edges" = edges
+  )
+}
+
+#' @export
+#' @importFrom ggdag as_tidy_dagitty geom_dag_edges geom_dag_node geom_dag_text theme_dag
+rxp_ggdag <- function(nodes_and_edges = get_nodes_edges()) {
+  if (!requireNamespace("ggdag", quietly = TRUE))
+    stop("You need to install {ggdag} to use this feature.")
+
+  nodes <- nodes_and_edges$nodes
+  nodes$name <- nodes$id
+  nodes <- nodes[, c("name", "group")]
+
+  edges <- nodes_and_edges$edges
+  edges$name <- edges$from
+  edges <- edges[, c("name", "to")]
+
+  dag_df <- as_tidy_dagitty(edges) |>
+    merge(nodes, by = "name")
+
+  rxp_scale <- scale_fill_manual(
+    values = c(
+      "rxp_r" = "#246ABF",
+      "rxp_r2py" = "#FFD343",
+      "rxp_py" = "#FFD343",
+      "rxp_py2r" = "#246ABF",
+      "rxp_quarto" = "#4F789E"
+    )
+  )
+
+  rxp_shapes <- scale_shape_manual(
+    values = c(
+      "rxp_r" = 23,
+      "rxp_r2py" = 23,
+      "rxp_py" = 23,
+      "rxp_py2r" = 23,
+      "rxp_quarto" = 22
+    )
+  )
+
+  ggplot(
+    dag_df,
+    aes(x = x, y = y, xend = xend, yend = yend)
+  ) +
+    geom_dag_edges() +
+    rxp_scale +
+    rxp_shapes +
+    geom_dag_node(aes(fill = group, shape = group)) +
+    geom_dag_text(aes(label = name), col = "black", nudge_y = -.3) +
+    theme_dag()
+}
+
+#' @export
+#' @importFrom visNetwork visExport visNetwork visGroups visLegend
+#' @importFrom jsonlite fromJSON
+rxp_visnetwork <- function(nodes_and_edges = get_nodes_edges()) {
+  if (!requireNamespace("visNetwork", quietly = TRUE))
+    stop("You need to install {visNetwork} to use this feature.")
+
+  nodes <- nodes_and_edges$nodes
+  edges <- nodes_and_edges$edges
+
+  visNetwork(nodes, edges) |>
+    visGroups(
+      groupname = "rxp_r",
+      shape = "diamond",
+      color = "#246ABF",
+      font = list(align = "top", size = 14),
+      size = 20
+    ) |>
+    visGroups(
+      groupname = "rxp_r2py",
+      shape = "triangleDown",
+      color = "#FFD343",
+      font = list(align = "top", size = 14),
+      size = 10
+    ) |>
+    visGroups(
+      groupname = "rxp_py",
+      shape = "diamond",
+      color = "#FFD343",
+      font = list(align = "top", size = 14),
+      size = 20
+    ) |>
+    visGroups(
+      groupname = "rxp_py2r",
+      shape = "triangleDown",
+      color = "#246ABF",
+      font = list(align = "top", size = 14),
+      size = 10
+    ) |>
+    visGroups(
+      groupname = "rxp_quarto",
+      shape = "box",
+      color = "#4F789E",
+      font = list(align = "top", size = 14),
+      font = list("size" = 40)
+    ) |>
+    visLegend(position = "right", main = "Derivation Types") |>
+    visExport(
+      type = "png",
+      name = "export-network",
+      float = "left",
+      label = "Save DAG",
+      background = "white",
+      style = ""
+    )
 }
