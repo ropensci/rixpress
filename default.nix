@@ -5,6 +5,7 @@ let
     inherit (pkgs.rPackages) 
       codemetar
       codetools
+      covr
       devtools
       diffviewer
       ggdag
