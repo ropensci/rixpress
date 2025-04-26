@@ -27,9 +27,7 @@
 #'   A Nix derivation is a recipe that defines how to create an output (in this
 #'   case `mtcars_am`) including its dependencies, build steps, and output
 #'   paths.
-#' @return A list with elements: `name`, the `name` of the derivation,
-#'   `snippet`, the Nix boilerplate code, `type`, `additional_files` and
-#'   `nix_env`.
+#' @return An object of class derivation which inherits from lists.
 #' @examples \dontrun{
 #'   # Basic usage
 #'   rxp_r(name = filtered_mtcars, expr = filter(mtcars, am == 1))
@@ -115,8 +113,10 @@ rxp_r <- function(
     type = "rxp_r",
     additional_files = additional_files,
     nix_env = nix_env,
+    serialize_function = serialize_str,
     unserialize_function = unserialize_str
-  )
+  ) |>
+    structure(class = "derivation")
 }
 
 #' rxp_py Creates a Nix expression running a Python function
@@ -144,9 +144,7 @@ rxp_r <- function(
 #'   in Nix jargon. A Nix derivation is a recipe that defines how to create an
 #'   output (in this case `mtcars_am`) including its dependencies, build steps,
 #'   and output paths.
-#' @return A list with elements: `name`, the `name` of the derivation,
-#'   `snippet`, the Nix boilerplate code, `type`, `additional_files`, `nix_env`,
-#'   and `unserialize_code`.
+#' @return An object of class derivation which inherits from lists.
 #' @examples
 #' \dontrun{
 #'   rxp_py(
@@ -243,15 +241,16 @@ rxp_py <- function(
     build_phase
   )
 
-  # Return the derivation details
   list(
     name = out_name,
     snippet = snippet,
     type = "rxp_py",
     additional_files = additional_files,
     nix_env = nix_env,
+    serialize_function = serialize_str,
     unserialize_function = unserialize_str
-  )
+  ) |>
+    structure(class = "derivation")
 }
 
 #' Render a Quarto document as a Nix derivation
@@ -265,9 +264,7 @@ rxp_py <- function(
 #'   the `quarto` command.
 #' @details To include object built in the pipeline, `rxp_read("derivation_name")` should be put
 #'   in the .qmd file.
-#' @return A list with elements: `name`, the `name` of the derivation,
-#'   `snippet`, the Nix boilerplate code, `type`, `additional_files` and
-#'   `nix_env`.
+#' @return An object of class derivation which inherits from lists.
 #' @examples
 #' \dontrun{
 #'   # Compile a .qmd file to a pdf using typst
@@ -332,7 +329,6 @@ rxp_quarto <- function(
     build_phase
   )
 
-  # Return the result as a list
   list(
     name = out_name,
     snippet = snippet,
@@ -340,7 +336,8 @@ rxp_quarto <- function(
     qmd_file = qmd_file,
     additional_files = additional_files,
     nix_env = nix_env
-  )
+  ) |>
+    structure(class = "derivation")
 }
 
 
@@ -404,7 +401,8 @@ rxp_file_common <- function(
     type = type,
     additional_files = "",
     nix_env = nix_env
-  )
+  ) |>
+    structure(class = "derivation")
 }
 
 #' rxp_r_file
@@ -434,7 +432,7 @@ rxp_file_common <- function(
 #'        list.files(x, full.names = TRUE, pattern = ".csv$"))))`
 #'   the provided anonymous function will read all the `.csv` files
 #'   in the `data/` folder.
-#' @return A list with `name`, `snippet`, `type`, and `nix_env`.
+#' @return An object of class derivation which inherits from lists.
 #' @export
 rxp_r_file <- function(
   name,
@@ -515,7 +513,7 @@ rxp_r_file <- function(
 #'      read_function = 'lambda x: pandas.read_csv(os.path.join(x, os.listdir(x)[0]),
 #'        delimiter="|")')`
 #'   the provided anonymous function will read all the `.csv` file in the `data/` folder.
-#' @return A list with `name`, `snippet`, `type`, and `nix_env`.
+#' @return An object of class derivation which inherits from lists.
 #' @export
 rxp_py_file <- function(
   name,
@@ -635,7 +633,8 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
     type = paste0("rxp_", direction),
     additional_files = "",
     nix_env = nix_env
-  )
+  ) |>
+    structure(class = "derivation")
 }
 
 
@@ -646,12 +645,10 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
 #' @details `rxp_py2r(my_obj, my_python_object)` loads a serialized
 #'   Python object and saves it as an RDS file using `reticulate::py_load_object()`.
-#' @return A list with elements: `name`, the name of the derivation,
-#'   `snippet`, the Nix boilerplate code, `type`, `additional_files`
-#'   (for compatibility reasons only) and `nix_env`.
+#' @return An object of class derivation which inherits from lists.
 #' @examples
 #' \dontrun{
-#'   rxp_py2r(my_obj, my_python_object)
+#' rxp_py2r(my_obj, my_python_object)
 #' }
 #' @export
 rxp_py2r <- function(name, expr, nix_env = "default.nix") {
@@ -667,9 +664,7 @@ rxp_py2r <- function(name, expr, nix_env = "default.nix") {
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
 #' @details `rxp_r2py(my_obj, my_r_object)` saves an R object to a Python pickle
 #'   using `reticulate::py_save_object()`.
-#' @return A list with elements: `name`, the name of the derivation,
-#'   `snippet`, the Nix boilerplate code, `type`, `additional_files`
-#'   (for compatibility reasons only) and `nix_env`.
+#' @return An object of class derivation which inherits from lists.
 #' @examples
 #' \dontrun{
 #'   rxp_r2py(my_obj, my_r_object)
@@ -679,4 +674,29 @@ rxp_r2py <- function(name, expr, nix_env = "default.nix") {
   out_name <- deparse(substitute(name))
   expr_str <- deparse(substitute(expr))
   rxp_common_setup(out_name, expr_str, nix_env, "r2py")
+}
+
+#' Print method for derivation objects
+#' @param x An object of class "derivation"
+#' @param ... Additional arguments passed to print methods
+#' @export
+print.derivation <- function(x, ...) {
+  cat("Name:", x$name, "\n")
+  cat("Type:", x$type, "\n")
+  if ("serialize_function" %in% names(x)) {
+    cat("Serialize function:", x$serialize_function, "\n")
+  }
+  if ("unserialize_function" %in% names(x)) {
+    cat("Unserialize function:", x$unserialize_function, "\n")
+  }
+  if (x$type == "rxp_quarto") {
+    cat("QMD file:", x$qmd_file, "\n")
+  }
+  cat(
+    "Additional files:",
+    if (length(x$additional_files) == 0 || x$additional_files == "") "None" else
+      paste(x$additional_files, collapse = ", "),
+    "\n"
+  )
+  cat("Nix env:", x$nix_env, "\n")
 }

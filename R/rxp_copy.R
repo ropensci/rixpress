@@ -1,13 +1,14 @@
-#' @title Copy derivations from Nix store to current working directory
-#' @description When Nix builds a derivation, its output is save the "Nix store"
-#'   located under `/nix/store/`. Even though you can import the derivations
-#'   into the current R session using `rxp_read()` or `rxp_load()`, it can be
-#'   useful to copy the outputs to the current working directory. This is especially
-#'   useful for Quarto documents, where there can be more than one input, as is
-#'   the case for `html` output.
+#' @title Copy derivations from the Nix store to current working directory
+#' @description When Nix builds a derivation, its output is saved in the
+#'   Nix store located under `/nix/store/`. Even though you can import the
+#'   derivations into the current R session using `rxp_read()` or `rxp_load()`,
+#'   it can be useful to copy the outputs to the current working directory. This
+#'   is especially useful for Quarto documents, where there can be more than one
+#'   input, as is the case for `html` output.
 #' @param derivation_name The name of the derivation to copy. If empty, then all
 #'   the derivations are copied.
-#' @return Nothing, the contents of the Nix store are copied to the current working directory.
+#' @return Nothing, the contents of the Nix store are copied to the current
+#'   working directory.
 #' @export
 rxp_copy <- function(derivation_name = NULL) {
   build_log <- rxp_inspect()
