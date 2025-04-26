@@ -19,11 +19,11 @@
 #'   A single deriv is the output of `rxp_r()`, `rxp_quarto()` or `rxp_py()`
 #'   function.
 #'
-#' @param project_path Path to root of project, typically "."
+#' @param project_path Path to root of project, defaults to ".".
 #'
 #' @param build Logical, defaults to TRUE. Should the pipeline get built right
 #'   after being generated? If FALSE, you can build the pipeline later using
-#'   `rixpress()`
+#'   `rixpress()`.
 #'
 #' @param ... Further arguments passed down to methods. Use `max-jobs` and
 #'   `cores` to set parallelism during build. See the documentation of
@@ -61,8 +61,11 @@
 #'
 #' }
 #' @export
-rixpress <- function(derivs, project_path, build = TRUE, ...) {
-  generate_dag(derivs, output_file = "_rixpress/dag.json")
+rixpress <- function(derivs, project_path = ".", build = TRUE, ...) {
+  generate_dag(
+    derivs,
+    output_file = normalizePath(paste0(project_path, "/_rixpress/dag.json"))
+  )
 
   # Need to combine nix envs and additional files into a
   # list of two elements, "nix_env" and "additional_files"
@@ -138,11 +141,11 @@ rixpress <- function(derivs, project_path, build = TRUE, ...) {
   flat_pipeline <- gen_flat_pipeline(derivs)
 
   pipeline <- gen_pipeline(
-    dag_file = "_rixpress/dag.json",
+    dag_file = normalizePath(paste0(project_path, "/_rixpress/dag.json")),
     flat_pipeline = flat_pipeline
   )
 
-  writeLines(pipeline, "pipeline.nix")
+  writeLines(pipeline, normalizePath(paste0(project_path, "/pipeline.nix")))
 
   if (build) {
     rxp_make(...)
@@ -197,17 +200,6 @@ parse_nix_envs <- function(derivs) {
   need_r <- get_need_r(types)
   need_py <- get_need_py(types)
 
-  #libraries_r <- character(0)
-  #libraries_py <- character(0)
-  #if (need_r) {
-  #  libraries_r <- "libraries.R"
-  #}
-  #if (need_py) {
-  #  libraries_py <- "libraries.py"
-  #}
-  #libraries <- c(libraries_r, libraries_py)
-  #libraries <- paste0(libraries, collapse = " ")
-
   generate_configurePhase <- function(d) {
     # Compute the configure_phases_str
     configure_phases_str <- paste0(
@@ -218,7 +210,7 @@ parse_nix_envs <- function(derivs) {
         unlist(d$library),
         "} ",
         unlist(d$library_in_sandbox),
-        collapse = "\n"
+        collapse = "\n    "
       ),
       "\n    mkdir -p $out\n  ",
       "'';\n  "
