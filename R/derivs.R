@@ -301,12 +301,12 @@ rxp_quarto <- function(
   })
 
   build_phase <- paste(
-    "  mkdir home",
-    "  export HOME=$PWD/home",
-    "  export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n",
+    "      mkdir home", # Added 4 spaces
+    "      export HOME=$PWD/home", # Added 4 spaces
+    "      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n", # Added 4 spaces
     if (length(sub_cmds) > 0)
-      paste("  ", sub_cmds, sep = "", collapse = "\n") else "",
-    sprintf("  quarto render %s %s --output-dir $out", qmd_file, args),
+      paste("      ", sub_cmds, sep = "", collapse = "\n") else "", # Added 4 spaces
+    sprintf("      quarto render %s %s --output-dir $out", qmd_file, args), # Added 4 spaces
     sep = "\n"
   )
 

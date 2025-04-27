@@ -116,14 +116,14 @@ let
     buildInputs = quarto_envBuildInputs;
     configurePhase = quarto_envConfigurePhase;
     buildPhase = ''
-  mkdir home
-  export HOME=$PWD/home
-  export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'
+      mkdir home
+      export HOME=$PWD/home
+      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'
 
-  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_head")' 'rxp_read("${mtcars_head}")'
-  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail")' 'rxp_read("${mtcars_tail}")'
-  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_mpg")' 'rxp_read("${mtcars_mpg}")'
-  quarto render page.qmd  --output-dir $out
+      substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_head")' 'rxp_read("${mtcars_head}")'
+      substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail")' 'rxp_read("${mtcars_tail}")'
+      substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_mpg")' 'rxp_read("${mtcars_mpg}")'
+      quarto render page.qmd  --output-dir $out
     '';
   };
 
