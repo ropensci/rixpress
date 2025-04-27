@@ -69,3 +69,15 @@ test_that("dag_for_ci generates correct .dot file", {
     name = "dag_for_ci.dot"
   )
 })
+
+test_that("get_nodes_edges errors if dag.json is missing", {
+  # Use a path that is highly unlikely to exist
+  non_existent_path <- "a/very/unlikely/path/to/dag.json"
+
+  # Expect the specific error message
+  expect_error(
+    get_nodes_edges(path_dag = non_existent_path),
+    regexp = "dag\\.json missing! Did you run 'rixpress\\(\\)'\\?",
+    fixed = FALSE # Use regexp matching because of special characters
+  )
+})
