@@ -23,7 +23,6 @@
 #' @export
 rxp_copy <- function(derivation_name = NULL) {
   build_log <- rxp_inspect()
-
   output_dir <- file.path(getwd(), "pipeline-output")
 
   if (isFALSE(dir.exists(output_dir))) {

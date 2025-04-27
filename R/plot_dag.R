@@ -181,8 +181,7 @@ rxp_visnetwork <- function(nodes_and_edges = get_nodes_edges()) {
       groupname = "rxp_quarto",
       shape = "box",
       color = "#4F789E",
-      font = list(align = "top", size = 14),
-      font = list("size" = 40)
+      font = list(align = "top", size = 40)
     ) |>
     visLegend(
       position = "right",
