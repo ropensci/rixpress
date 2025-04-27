@@ -1,25 +1,27 @@
 #' @title Export DAG of pipeline and prepare it for rendering on CI
-#' @description This function generates a DOT file representation of the pipeline DAG,
-#'   suitable for visualization, potentially on CI platforms. It is called by `rxp_ga()`.
-#' @param nodes_and_edges List, output of `get_nodes_edges()`. Defaults to calling `get_nodes_edges()`.
+
+#' @description This function generates a DOT file representation of the
+#'   pipeline DAG, suitable for visualization, potentially on CI platforms. It
+#'   is called by `rxp_ga()`.
+#' @param nodes_and_edges List, output of `get_nodes_edges()`. Defaults to
+#'   calling `get_nodes_edges()`.
 #' @param output_file Character, the path where the DOT file should be saved.
-#'   Defaults to `"_rixpress/dag.dot"`. The directory will be created if it doesn't exist.
+#'   Defaults to `"_rixpress/dag.dot"`. The directory will be created if it
+#'   doesn't exist.
 #' @return Nothing, writes the DOT file to the specified `output_file`.
-#' @importFrom igraph graph_from_data_frame V set_vertex_attr delete_vertex_attr write_graph
+#' @importFrom igraph graph_from_data_frame V set_vertex_attr delete_vertex_attr
+#'   write_graph
 #' @examples
 #' \dontrun{
 #'   # Generate the default _rixpress/dag.dot
 #'   dag_for_ci()
 #'
-#'   # Generate a dot file in a specific location
-#'   nodes_edges <- get_nodes_edges()
-#'   dag_for_ci(nodes_edges, output_file = "my_custom_dag.dot")
 #' }
 #' @export
-dag_for_ci <- function(nodes_and_edges = get_nodes_edges(), output_file = "_rixpress/dag.dot") {
-  # Ensure output directory exists
-  dir.create(dirname(output_file), recursive = TRUE, showWarnings = FALSE)
-
+dag_for_ci <- function(
+  nodes_and_edges = get_nodes_edges(),
+  output_file = "_rixpress/dag.dot"
+) {
   edges <- nodes_and_edges$edges
   edges <- edges[, c("from", "to")]
 
