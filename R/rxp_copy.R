@@ -9,6 +9,17 @@
 #'   the derivations are copied.
 #' @return Nothing, the contents of the Nix store are copied to the current
 #'   working directory.
+#' @examples
+#' \dontrun{
+#'   # Copy all derivations to the current working directory
+#'   rxp_copy()
+#'   
+#'   # Copy a specific derivation
+#'   rxp_copy("mtcars")
+#'   
+#'   # Copy a Quarto document output with multiple files
+#'   rxp_copy("my_quarto_doc")
+#' }
 #' @export
 rxp_copy <- function(derivation_name = NULL) {
   build_log <- rxp_inspect()

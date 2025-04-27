@@ -136,10 +136,11 @@ rxp_ggdag <- function(nodes_and_edges = get_nodes_edges()) {
 #' @return Nothing, this function opens a new tab in your browser with
 #'   the DAG generated using `{visNetwork}`.
 #' @examples \dontrun{
-#'   rxp_ggdag()
+#'   rxp_visnetwork()
 #' }
 #' @export
-#' @importFrom ggdag as_tidy_dagitty geom_dag_edges geom_dag_node geom_dag_text theme_dag
+#' @importFrom visNetwork visExport visNetwork visGroups visLegend
+#' @importFrom jsonlite fromJSON
 rxp_visnetwork <- function(nodes_and_edges = get_nodes_edges()) {
   if (!requireNamespace("visNetwork", quietly = TRUE))
     stop("You need to install {visNetwork} to use this feature.")

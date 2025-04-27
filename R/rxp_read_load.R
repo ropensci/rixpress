@@ -52,7 +52,7 @@ rxp_read_load_setup <- function(derivation_name) {
 #'   returns a path if reading directly is not possible.
 #' @details When `derivation_name` points to a single R object,
 #'   it gets read in the current session using `readRDS()`.
-#'   If it’s a Python object and {reticulate} is available,
+#'   If it's a Python object and {reticulate} is available,
 #'   `reticulate::py_load_object()` is used. In case
 #'   the derivation is pointing to several outputs (which can
 #'   happen when building a Quarto document for example) or
@@ -98,7 +98,7 @@ rxp_read <- function(derivation_name) {
 #' @details When `derivation_name` points to a single R object,
 #'   it gets loaded in the current session using
 #'   `assign(..., envir = .GlobalEnv)`.
-#'   If it’s a Python object and {reticulate} is available,
+#'   If it's a Python object and {reticulate} is available,
 #'   `reticulate::py_load_object()` is used and then the object
 #'   gets loaded into the golbal environment. In case
 #'   the derivation is pointing to several outputs (which can
@@ -107,8 +107,14 @@ rxp_read <- function(derivation_name) {
 #' @param derivation_name Character, the name of the derivation.
 #' @return Nothing, this function has the side effect of loading
 #'   objects into the global environment.
-#' @examples \dontrun{
+#' @examples
+#' \dontrun{
+#'   # Load an R object into the global environment
 #'   rxp_load("mtcars")
+#'   
+#'   # Load a Python object into the global environment
+#'   rxp_load("my_python_model")
+#' 
 #' }
 #' @export
 rxp_load <- function(derivation_name) {

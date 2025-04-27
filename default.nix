@@ -8,6 +8,7 @@ let
       covr
       devtools
       diffviewer
+      ellmer
       ggdag
       igraph
       jsonlite
@@ -21,6 +22,7 @@ let
       testthat
       tidyr
       urlchecker
+      usethis
       visNetwork
       ;
   };
