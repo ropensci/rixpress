@@ -1,33 +1,34 @@
 let
   py_env = import ./py-env.nix;
-py_envPkgs = py_env.pkgs;
-py_envShell = py_env.shell;
-py_envBuildInputs = py_envShell.buildInputs;
-py_envConfigurePhase = ''
+  py_envPkgs = py_env.pkgs;
+  py_envShell = py_env.shell;
+  py_envBuildInputs = py_envShell.buildInputs;
+  py_envConfigurePhase = ''
     cp ${./_rixpress/py_env_libraries.py} libraries.py
     mkdir -p $out
   '';
   
-default = import ./default.nix;
-defaultPkgs = default.pkgs;
-defaultShell = default.shell;
-defaultBuildInputs = defaultShell.buildInputs;
-defaultConfigurePhase = ''
+
+  default = import ./default.nix;
+  defaultPkgs = default.pkgs;
+  defaultShell = default.shell;
+  defaultBuildInputs = defaultShell.buildInputs;
+  defaultConfigurePhase = ''
     cp ${./_rixpress/default_libraries.py} libraries.py
-cp ${./_rixpress/default_libraries.R} libraries.R
+    cp ${./_rixpress/default_libraries.R} libraries.R
     mkdir -p $out
   '';
   
-quarto_env = import ./quarto-env.nix;
-quarto_envPkgs = quarto_env.pkgs;
-quarto_envShell = quarto_env.shell;
-quarto_envBuildInputs = quarto_envShell.buildInputs;
-quarto_envConfigurePhase = ''
+
+  quarto_env = import ./quarto-env.nix;
+  quarto_envPkgs = quarto_env.pkgs;
+  quarto_envShell = quarto_env.shell;
+  quarto_envBuildInputs = quarto_envShell.buildInputs;
+  quarto_envConfigurePhase = ''
     cp ${./_rixpress/quarto_env_libraries.py} libraries.py
-cp ${./_rixpress/quarto_env_libraries.R} libraries.R
+    cp ${./_rixpress/quarto_env_libraries.R} libraries.R
     mkdir -p $out
   '';
-  
   
   # Function to create R derivations
   makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
@@ -175,15 +176,15 @@ with open('mtcars_tail_py', 'wb') as f: pickle.dump(globals()['mtcars_tail_py'],
     buildInputs = quarto_envBuildInputs;
     configurePhase = quarto_envConfigurePhase;
     buildPhase = ''
-  mkdir home
-  export HOME=$PWD/home
-  export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'
+      mkdir home
+      export HOME=$PWD/home
+      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'
 
-  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_head")' 'rxp_read("${mtcars_head}")'
-  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail")' 'rxp_read("${mtcars_tail}")'
-  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_mpg")' 'rxp_read("${mtcars_mpg}")'
-  substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail_py")' 'rxp_read("${mtcars_tail_py}")'
-  quarto render page.qmd  --output-dir $out
+      substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_head")' 'rxp_read("${mtcars_head}")'
+      substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail")' 'rxp_read("${mtcars_tail}")'
+      substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_mpg")' 'rxp_read("${mtcars_mpg}")'
+      substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail_py")' 'rxp_read("${mtcars_tail_py}")'
+      quarto render page.qmd  --output-dir $out
     '';
   };
 

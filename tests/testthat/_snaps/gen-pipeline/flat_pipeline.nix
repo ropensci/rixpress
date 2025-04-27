@@ -1,13 +1,12 @@
 let
   default = import ./default.nix;
-defaultPkgs = default.pkgs;
-defaultShell = default.shell;
-defaultBuildInputs = defaultShell.buildInputs;
-defaultConfigurePhase = ''
+  defaultPkgs = default.pkgs;
+  defaultShell = default.shell;
+  defaultBuildInputs = defaultShell.buildInputs;
+  defaultConfigurePhase = ''
     cp ${./_rixpress/} 
     mkdir -p $out
   '';
-  
   
   # Function to create R derivations
   makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
