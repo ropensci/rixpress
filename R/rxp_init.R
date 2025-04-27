@@ -41,7 +41,6 @@ rxp_init <- function(project_path = ".") {
   env_file <- file.path(project_path, "gen-env.R")
   pipeline_file <- file.path(project_path, "gen-pipeline.R")
 
-                                        # Content for files
   gen_env_lines <- c(
     "# This script defines the default environment the pipeline runs in.",
     "# Add the required packages to execute the code necessary for each derivation.",
@@ -67,7 +66,7 @@ rxp_init <- function(project_path = ".") {
     "list(\", rxp_r_file(\",",
     "    name = NULL,",
     "    path = NULL,",
-    "    read_function = \(x) read.csv(file = x, sep = \",\")",
+    "    read_function = \\(x) read.csv(file = x, sep = \",\")",
     "  ),",
     "  rxp_r(",
     "    name = NULL,",
