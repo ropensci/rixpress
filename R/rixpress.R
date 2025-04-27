@@ -225,7 +225,7 @@ parse_nix_envs <- function(derivs) {
     )
 
     # Combine all lines into a single string with newline separators
-    paste(lines, collapse = "\n")
+    paste(lines, collapse = "\n  ")
   }
 
   nix_lines <- character(0)
@@ -234,7 +234,7 @@ parse_nix_envs <- function(derivs) {
     nix_lines <- c(nix_lines, current_lines)
   }
 
-  paste(nix_lines, collapse = "\n")
+  paste(nix_lines, collapse = "\n\n  ")
 }
 
 #' gen_flat_pipeline Internal function used to generate most of the boilerplate in pipeline.nix
@@ -268,8 +268,7 @@ gen_flat_pipeline <- function(derivs) {
   if (need_r) {
     function_defs <- paste0(
       function_defs,
-      "
-  # Function to create R derivations
+      "\n  # Function to create R derivations
   makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
     defaultPkgs.stdenv.mkDerivation {
       inherit name src;
@@ -284,8 +283,7 @@ gen_flat_pipeline <- function(derivs) {
   if (need_py) {
     function_defs <- paste0(
       function_defs,
-      "
-  # Function to create Python derivations
+      "\n  # Function to create Python derivations
   makePyDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
     let
       pickleFile = \"${name}\";
@@ -305,11 +303,10 @@ gen_flat_pipeline <- function(derivs) {
   # Generate Nix code
   pipeline_nix <- sprintf(
     'let
-  %s
-  %s
+  %s%s
 
   # Define all derivations
-  %s
+%s
 
   # Generic default target that builds all derivations
   allDerivations = defaultPkgs.symlinkJoin {
@@ -325,7 +322,7 @@ in
 ',
     nix_envs,
     function_defs,
-    derivations_code,
+    paste0("  ", derivations_code),
     names_line,
     names_line
   )
@@ -439,7 +436,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
       if (script_idx + 1 <= length(pipeline)) {
         sub("^([[:space:]]*).*", "\\1", pipeline[script_idx + 1])
       } else {
-        "        "
+        "      "
       }
     } else {
       ""

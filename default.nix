@@ -58,6 +58,7 @@ let
   
   system_packages = builtins.attrValues {
     inherit (pkgs) 
+      aider-chat
       pyright
       glibcLocales
       glibcLocalesUtf8

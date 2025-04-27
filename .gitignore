@@ -16,3 +16,4 @@ _test_with_nix.R
 .direnv
 _rixpress
 result
+.aider*
