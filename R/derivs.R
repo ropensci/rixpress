@@ -448,7 +448,7 @@ rxp_r_file <- function(
   if (!copy_data_folder) {
     # Use single file copy.
     build_phase <- sprintf(
-      "cp $src input_file\nRscript -e \"\nsource('libraries.R')\ndata <- do.call(%s, list('input_file'))\nsaveRDS(data, '%s')\"",
+      "cp $src input_file\n      Rscript -e \"\n        source('libraries.R')\n        data <- do.call(%s, list('input_file'))\n        saveRDS(data, '%s')\"",
       read_func_str,
       out_name
     )
@@ -458,7 +458,7 @@ rxp_r_file <- function(
       # If the provided path is a folder, use that folder as the source.
       actual_path <- path
       build_phase <- sprintf(
-        "cp -r $src input_folder\nRscript -e \"\nsource('libraries.R')\ndata <- do.call(%s, list('input_folder/'))\nsaveRDS(data, '%s')\"",
+        "cp -r $src input_folder\n      Rscript -e \"\n        source('libraries.R')\n        data <- do.call(%s, list('input_folder/'))\n        saveRDS(data, '%s')\"",
         read_func_str,
         out_name
       )
@@ -467,7 +467,7 @@ rxp_r_file <- function(
       actual_path <- dirname(path)
       file_name <- basename(path)
       build_phase <- sprintf(
-        "cp -r $src input_folder\nRscript -e \"\nsource('libraries.R')\ndata <- do.call(%s, list('input_folder/%s'))\nsaveRDS(data, '%s')\"",
+        "cp -r $src input_folder\n      Rscript -e \"\n        source('libraries.R')\n        data <- do.call(%s, list('input_folder/%s'))\n        saveRDS(data, '%s')\"",
         read_func_str,
         file_name,
         out_name

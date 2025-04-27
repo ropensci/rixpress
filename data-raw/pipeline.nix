@@ -48,10 +48,10 @@ let
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
       cp $src input_file
-Rscript -e "
-source('libraries.R')
-data <- do.call(function(x) (read.csv(file = x, sep = '|')), list('input_file'))
-saveRDS(data, 'mtcars')"
+      Rscript -e "
+        source('libraries.R')
+        data <- do.call(function(x) (read.csv(file = x, sep = '|')), list('input_file'))
+        saveRDS(data, 'mtcars')"
     '';
   };
 
