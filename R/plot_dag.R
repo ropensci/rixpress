@@ -50,6 +50,11 @@ dag_for_ci <- function(
 #' @export
 #' @importFrom jsonlite fromJSON
 get_nodes_edges <- function(path_dag = "_rixpress/dag.json") {
+  # Check if the DAG file exists
+  if (!file.exists(path_dag)) {
+    stop("dag.json missing! Did you run 'rixpress()'?")
+  }
+
   json_data <- fromJSON(path_dag)
 
   derivations <- json_data$derivations
