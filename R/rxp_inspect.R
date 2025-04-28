@@ -12,5 +12,11 @@
 #'   their paths in the /nix/store, and their build outputs.
 #' @export
 rxp_inspect <- function() {
-  readRDS("_rixpress/build_log.rds")
+  log_path <- "_rixpress/build_log.rds"
+  
+  if (!file.exists(log_path)) {
+    stop("Build log not found, did you run build the pipeline?")
+  }
+  
+  readRDS(log_path)
 }
