@@ -159,7 +159,6 @@ rxp_ggdag <- function(nodes_and_edges = get_nodes_edges()) {
 #'   rxp_visnetwork()
 #' }
 #' @export
-#' @importFrom visNetwork visExport visNetwork visGroups visLegend
 #' @importFrom jsonlite fromJSON
 rxp_visnetwork <- function(nodes_and_edges = get_nodes_edges()) {
   if (!requireNamespace("visNetwork", quietly = TRUE))
@@ -168,46 +167,46 @@ rxp_visnetwork <- function(nodes_and_edges = get_nodes_edges()) {
   nodes <- nodes_and_edges$nodes
   edges <- nodes_and_edges$edges
 
-  visNetwork(nodes, edges) |>
-    visGroups(
+  visNetwork::visNetwork(nodes, edges) |>
+    visNetwork::visGroups(
       groupname = "rxp_r",
       shape = "diamond",
       color = "#246ABF",
       font = list(align = "top", size = 14),
       size = 20
     ) |>
-    visGroups(
+    visNetwork::visGroups(
       groupname = "rxp_r2py",
       shape = "triangleDown",
       color = "#FFD343",
       font = list(align = "top", size = 14),
       size = 10
     ) |>
-    visGroups(
+    visNetwork::visGroups(
       groupname = "rxp_py",
       shape = "diamond",
       color = "#FFD343",
       font = list(align = "top", size = 14),
       size = 20
     ) |>
-    visGroups(
+    visNetwork::visGroups(
       groupname = "rxp_py2r",
       shape = "triangleDown",
       color = "#246ABF",
       font = list(align = "top", size = 14),
       size = 10
     ) |>
-    visGroups(
+    visNetwork::visGroups(
       groupname = "rxp_quarto",
       shape = "box",
       color = "#4F789E",
       font = list(align = "top", size = 40)
     ) |>
-    visLegend(
+    visNetwork::visLegend(
       position = "right",
       main = "Derivation Types"
     ) |>
-    visExport(
+    visNetwork::visExport(
       type = "png",
       name = "export-network",
       float = "left",
