@@ -23,7 +23,6 @@
 #'
 #' @export
 rxp_init <- function(project_path = ".", skip_prompt = FALSE) {
-
   confirm <- function(question) {
     if (skip_prompt) return(TRUE)
     ans <- readline(paste0(question, " [y/n]: "))
@@ -32,7 +31,9 @@ rxp_init <- function(project_path = ".", skip_prompt = FALSE) {
 
   # Initial confirmation before any action
   if (!confirm(paste0("Initialize project at '", project_path, "'?"))) {
-    message("Operation cancelled by user. No files or directories were created.")
+    message(
+      "Operation cancelled by user. No files or directories were created."
+    )
     return(invisible(FALSE))
   }
 
@@ -79,7 +80,7 @@ rxp_init <- function(project_path = ".", skip_prompt = FALSE) {
     "  )",
     ") |> rixpress(project_path = \".\")"
   )
-  
+
   shell_script_lines <- c(
     "#!/usr/bin/env bash",
     "",
@@ -118,19 +119,21 @@ rxp_init <- function(project_path = ".", skip_prompt = FALSE) {
   # Write files (overwrites existing)
   writeLines(gen_env_lines, env_file)
   message("File ", env_file, " has been written.")
-  
+
   writeLines(gen_pipeline_lines, pipeline_file)
   message("File ", pipeline_file, " has been written.")
-  
+
   writeLines(shell_script_lines, shell_script_file)
   message("File ", shell_script_file, " has been written.")
-  
+
   # Make shell script executable if on Unix-like systems
   if (.Platform$OS.type == "unix") {
     Sys.chmod(shell_script_file, mode = "0755")
     message("Made shell script executable.")
   } else {
-    message("Note: On Windows, the shell script may need manual permission changes to execute.")
+    message(
+      "Note: On Windows, the shell script may need manual permission changes to execute."
+    )
   }
 
   if (confirm("Would you like to initialize a Git repository here?")) {
