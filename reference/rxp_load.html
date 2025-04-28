@@ -70,7 +70,7 @@ objects into the global environment.</p>
     <p>When <code>derivation_name</code> points to a single R object,
 it gets loaded in the current session using
 <code>assign(..., envir = .GlobalEnv)</code>.
-If it’s a Python object and reticulate is available,
+If it's a Python object and reticulate is available,
 <code><a href="https://rstudio.github.io/reticulate/reference/py_save_object.html" class="external-link">reticulate::py_load_object()</a></code> is used and then the object
 gets loaded into the golbal environment. In case
 the derivation is pointing to several outputs (which can
@@ -81,7 +81,12 @@ loading fails, the path to the object is returned instead.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span>  <span class="co"># Load an R object into the global environment</span></span></span>
 <span class="r-in"><span>  <span class="fu">rxp_load</span><span class="op">(</span><span class="st">"mtcars"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># Load a Python object into the global environment</span></span></span>
+<span class="r-in"><span>  <span class="fu">rxp_load</span><span class="op">(</span><span class="st">"my_python_model"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
