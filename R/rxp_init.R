@@ -6,6 +6,8 @@
 #'   changes are made.
 #'
 #' @param project_path Character string specifying the project's path.
+#' @param skip_prompt Logical. If TRUE, skips all confirmation prompts and proceeds
+#'   with initialization, useful on continuous integration. Defaults to FALSE.
 #'
 #' @details
 #' Creates (overwriting if they already exist):
@@ -19,11 +21,12 @@
 #' }
 #'
 #' @export
-rxp_init <- function(project_path = ".") {
-  # Helper to prompt user for yes/no
+rxp_init <- function(project_path = ".", skip_prompt = FALSE) {
+
   confirm <- function(question) {
+    if (skip_prompt) return(TRUE)
     ans <- readline(paste0(question, " [y/n]: "))
-    tolower(substr(ans, 1, 1)) == "y"
+    tolower(substr(ans, 1, 1)) == "y" # just pick the first letter and lower it
   }
 
   # Initial confirmation before any action
