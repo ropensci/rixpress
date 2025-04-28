@@ -42,5 +42,12 @@ jobs:
             cov
           "
 
+          # convert to GitHub-Flavored Markdown table:
+          # drop all lines beginning with '+'
+          grep -v '^+' coverage.md > coverage.tmp
+          # insert GFM header separator after first line
+          { head -n1 coverage.tmp; echo '|--------------|---------------|'; tail -n +2 coverage.tmp; } > coverage.md
+          rm coverage.tmp
+
           # append full coverage text into GitHub Actions summary
           cat coverage.md >> $GITHUB_STEP_SUMMARY
