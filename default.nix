@@ -14,6 +14,7 @@ let
       jsonlite
       knitr
       languageserver
+      mockery
       pkgdown
       processx
       reticulate
