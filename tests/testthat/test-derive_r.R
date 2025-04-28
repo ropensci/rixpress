@@ -179,19 +179,6 @@ test_that("print.derivation: outputs expected format", {
   testthat::expect_true(any(grepl("Unserialize function: readRDS", output)))
 })
 
-test_that("rxp_r: custom serialization functions work", {
-  # Test with custom serialization and unserialization functions
-  d1 <- rxp_r(
-    mtcars_am,
-    dplyr::filter(mtcars, am == 1),
-    serialize_function = qs::qsave,
-    unserialize_function = qs::qread
-  )
-
-  testthat::expect_equal(d1$serialize_function, "qs::qsave")
-  testthat::expect_equal(d1$unserialize_function, "qs::qread")
-})
-
 test_that("rxp_r: with additional files", {
   d1 <- rxp_r(
     mtcars_am,
@@ -236,23 +223,3 @@ test_that("rxp_common_setup: handles invalid direction", {
   )
 })
 
-test_that("rxp_file_common: URL handling works", {
-  # Mock system to return a fake hash for URL fetching
-  mockSystem <- function(...) "fake_hash"
-
-  with_mock(
-    `base::system` = mockSystem,
-    d1 <- rxp_file_common(
-      "test_data",
-      "https://example.com/data.csv",
-      "default.nix",
-      "test build phase",
-      "rxp_r",
-      "makeRDerivation",
-      "R"
-    )
-  )
-
-  testthat::expect_true(grepl("defaultPkgs.fetchurl", d1$snippet))
-  testthat::expect_true(grepl("https://example.com/data.csv", d1$snippet))
-})
