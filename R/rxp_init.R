@@ -1,7 +1,7 @@
 #' Initialize rixpress project
 #'
 #' @description
-#' Generates `gen-env.R` and `gen-pipeline.R` scripts in the specified project
+#' Generates `gen-env.R`, `gen-pipeline.R`, and `run_rix_shell.sh` scripts in the specified project
 #'   directory, after asking the user for confirmation. If the user declines, no
 #'   changes are made.
 #'
@@ -13,6 +13,7 @@
 #' Creates (overwriting if they already exist):
 #' - `gen-env.R`: Script to define an execution environment with `{rix}`.
 #' - `gen-pipeline.R`: Defines a data pipeline with `{rixpress}`.
+#' - `run_rix_shell.sh`: Bash script to fetch and launch the rix environment on Linux and macOS.
 #'
 #' @examples
 #' # Default usage (will prompt before any action)
@@ -43,6 +44,7 @@ rxp_init <- function(project_path = ".", skip_prompt = FALSE) {
   # Define file paths
   env_file <- file.path(project_path, "gen-env.R")
   pipeline_file <- file.path(project_path, "gen-pipeline.R")
+  shell_script_file <- file.path(project_path, "run_rix_shell.sh")
 
   gen_env_lines <- c(
     "# This script defines the default environment the pipeline runs in.",
@@ -77,13 +79,59 @@ rxp_init <- function(project_path = ".", skip_prompt = FALSE) {
     "  )",
     ") |> rixpress(project_path = \".\")"
   )
+  
+  shell_script_lines <- c(
+    "#!/usr/bin/env bash",
+    "",
+    "# Script to run nix-shell with the rix default.nix expression",
+    "# Compatible with both Linux and macOS",
+    "",
+    "# Exit on error",
+    "set -e",
+    "",
+    "# Function to check if a command exists",
+    "command_exists() {",
+    "    command -v \"$1\" &> /dev/null",
+    "}",
+    "",
+    "# Check if nix is installed",
+    "if ! command_exists nix-shell; then",
+    "    echo \"Error: nix-shell not found. Please install Nix first.\"",
+    "    echo \"Visit https://nixos.org/download.html for installation instructions.\"",
+    "    exit 1",
+    "fi",
+    "",
+    "# Check if curl is installed",
+    "if ! command_exists curl; then",
+    "    echo \"Error: curl not found. Please install curl first.\"",
+    "    exit 1",
+    "fi",
+    "",
+    "echo \"Fetching and launching nix-shell with rix default.nix...\"",
+    "",
+    "# Download and execute nix-shell with the rix default.nix expression",
+    "nix-shell --expr \"$(curl -s https://raw.githubusercontent.com/ropensci/rix/main/inst/extdata/default.nix)\"",
+    "",
+    "echo \"Shell session ended.\""
+  )
 
   # Write files (overwrites existing)
   writeLines(gen_env_lines, env_file)
   message("File ", env_file, " has been written.")
+  
   writeLines(gen_pipeline_lines, pipeline_file)
   message("File ", pipeline_file, " has been written.")
-
+  
+  writeLines(shell_script_lines, shell_script_file)
+  message("File ", shell_script_file, " has been written.")
+  
+  # Make shell script executable if on Unix-like systems
+  if (.Platform$OS.type == "unix") {
+    Sys.chmod(shell_script_file, mode = "0755")
+    message("Made shell script executable.")
+  } else {
+    message("Note: On Windows, the shell script may need manual permission changes to execute.")
+  }
 
   if (confirm("Would you like to initialize a Git repository here?")) {
     if (!requireNamespace("usethis", quietly = TRUE)) {
