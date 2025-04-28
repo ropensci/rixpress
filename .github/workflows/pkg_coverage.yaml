@@ -30,27 +30,27 @@ jobs:
       - name: Run covr, capture coverage and display
         shell: bash
         run: |
-          # run coverage and sink full output to file
+          # Run coverage and sink full output to file
           Rscript -e "
-            cov <- covr::package_coverage()
-            cov_list <- covr::coverage_to_list(cov)
-            cov_df <- as.data.frame(cov_list['filecoverage'])
-            total_cov <- cov_list['totalcoverage']
-            tinytable::save_tt(tinytable::tt(cov_df), output = 'coverage.md')
-            # append total coverage at end of markdown
-            cat(sprintf('\n\n\nTotal coverage: %s', total_cov), file = 'coverage.md', append = TRUE)
-            cov
+          cov <- covr::package_coverage()
+          cov_list <- covr::coverage_to_list(cov)
+          cov_df <- as.data.frame(cov_list['filecoverage'])
+          total_cov <- cov_list['totalcoverage']
+          tinytable::save_tt(tinytable::tt(cov_df), output = 'coverage.md')
+          # Append total coverage at end of markdown
+          cat(sprintf('\n\n\nTotal coverage: %s', total_cov), file = 'coverage.md', append = TRUE)
+          cov
           "
-
-          # convert to GitHub-Flavored Markdown table:
-          # drop all lines beginning with '+' and drop the old '=' separator
-          grep -v '^+' coverage.md | grep -v '|=' > coverage.tmp
-          # extract header and build matching dash-separator
-          HDR=$(head -n1 coverage.tmp)
-          SEPR=$(echo "$HDR" | sed 's/[^|]/-/g')
-          # assemble final GFM table
-          { echo "$HDR"; echo "$SEPR"; tail -n +2 coverage.tmp; } > coverage.md
-          rm coverage.tmp
+      - name: Convert coverage table to GFM
+        shell: bash
+        run: |
+          awk 'BEGIN { header_printed = 0 } /^|/{ if (!header_printed) { print $0; gsub(/[^|]/, "", $0); num_cols = length($0) - 1; sep = "|"; for (i=1; i<=num_cols; i++) { sep = sep " ---- |" }; print sep; header_printed = 1 } else { print $0 } } /^[^|]/{ print $0 }' coverage.md > coverage_gfm.md
+          mv coverage_gfm.md coverage.md
+          
+      - name: Append to GitHub Actions summary
+        shell: bash
+        run: |
+          cat coverage.md >> $GITHUB_STEP_SUMMARY
 
           # append full coverage text into GitHub Actions summary
           cat coverage.md >> $GITHUB_STEP_SUMMARY
