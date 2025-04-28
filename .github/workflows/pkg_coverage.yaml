@@ -41,16 +41,15 @@ jobs:
           cat(sprintf('\n\n\nTotal coverage: %s', total_cov), file = 'coverage.md', append = TRUE)
           cov
           "
+          
       - name: Convert coverage table to GFM
         shell: bash
         run: |
-          awk 'BEGIN { header_printed = 0 } /^|/{ if (!header_printed) { print $0; gsub(/[^|]/, "", $0); num_cols = length($0) - 1; sep = "|"; for (i=1; i<=num_cols; i++) { sep = sep " ---- |" }; print sep; header_printed = 1 } else { print $0 } } /^[^|]/{ print $0 }' coverage.md > coverage_gfm.md
+          sed '/^+.*+$/d; /^| filecoverage |$/a\
+          |--------------|' coverage.md > coverage_gfm.md
           mv coverage_gfm.md coverage.md
           
       - name: Append to GitHub Actions summary
         shell: bash
         run: |
-          cat coverage.md >> $GITHUB_STEP_SUMMARY
-
-          # append full coverage text into GitHub Actions summary
           cat coverage.md >> $GITHUB_STEP_SUMMARY
