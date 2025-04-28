@@ -33,7 +33,12 @@ jobs:
           # run coverage and sink full output to file
           Rscript -e "
             cov <- covr::package_coverage()
-            tinytable::save_tt(tinytable::tt(cov), output = 'coverage.md')
+            cov_list <- covr::coverage_to_list(cov)
+            cov_df <- as.data.frame(cov_list$filecoverage)
+            total_cov <- cov_list$totalcoverage
+            tinytable::save_tt(tinytable::tt(cov_df), output = 'coverage.md')
+            # append total coverage at end of markdown
+            cat(sprintf('\n\nTotal coverage: %.2f%%', total_cov), file = 'coverage.md', append = TRUE)
             cov
           "
 
