@@ -3,11 +3,10 @@ test_that("rxp_ga creates expected GitHub Actions workflow file", {
   test_dir <- tempfile("rxp_ga_test")
   dir.create(test_dir)
   on.exit(unlink(test_dir, recursive = TRUE), add = TRUE)
-  
+
   # Call rxp_ga
   workflow_file <- rxp_ga()
 
-  
   # Capture file content for snapshot testing
   capture_file_content <- function(filepath, filename) {
     content <- readLines(filepath)
@@ -18,7 +17,7 @@ test_that("rxp_ga creates expected GitHub Actions workflow file", {
     writeLines(content, output_file)
     output_file
   }
-  
+
   # Test the content of generated workflow file using snapshot
   testthat::expect_snapshot_file(
     path = capture_file_content(workflow_file, "workflow"),
