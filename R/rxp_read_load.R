@@ -38,7 +38,7 @@ rxp_read_load_setup <- function(derivation_name) {
   # If any matching file is a .pickle, check if reticulate is installed
   if (
     any(grepl(".*\\.pickle$", file_paths)) &&
-      !requireNamespace("", quietly = TRUE)
+      !requireNamespace("reticulate", quietly = TRUE)
   ) {
     stop(
       "The '' package is required to load .pickle files.\nPlease install it to use this feature."
