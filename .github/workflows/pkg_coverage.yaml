@@ -25,7 +25,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::covr, any::DT, any::htmltools, any::xml2, any::visNetwork, any::igraph, any::jsonlite, any::processx, any::dplyr, any::ggdag, any::knitr, any::reticulate, any::rix, any::rmarkdown, any::testthat, any::usethis
+          extra-packages: any::tinytable, any::covr, any::DT, any::htmltools, any::xml2, any::visNetwork, any::igraph, any::jsonlite, any::processx, any::dplyr, any::ggdag, any::knitr, any::reticulate, any::rix, any::rmarkdown, any::testthat, any::usethis
 
       - name: Run covr, capture coverage and display
         shell: bash
@@ -33,16 +33,9 @@ jobs:
           # run coverage and sink full output to file
           Rscript -e "
             cov <- covr::package_coverage()
+            tinytable::ttsave(tinytable::tt(cov), output = 'coverage.md')
             cov
-            sink('coverage.txt')
-            cov
-            sink()
           "
 
-          # show coverage.txt in CI logs
-          echo "## Coverage text report:";
-          sed 's/^/    /' coverage.txt;
-
           # append full coverage text into GitHub Actions summary
-          echo "## Full coverage report" >> $GITHUB_STEP_SUMMARY
-          sed 's/^/    /' coverage.txt >> $GITHUB_STEP_SUMMARY
+          cat coverage.md >> $GITHUB_STEP_SUMMARY
