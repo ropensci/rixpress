@@ -95,10 +95,14 @@ get_nodes_edges <- function(path_dag = "_rixpress/dag.json") {
 #'   rxp_ggdag()
 #' }
 #' @export
-#' @importFrom ggdag as_tidy_dagitty geom_dag_edges geom_dag_node geom_dag_text theme_dag
 rxp_ggdag <- function(nodes_and_edges = get_nodes_edges()) {
-  if (!requireNamespace("ggdag", quietly = TRUE))
+  if (!requireNamespace("ggdag", quietly = TRUE)) {
     stop("You need to install {ggdag} to use this feature.")
+  }
+  
+  if (!requireNamespace("ggplot2", quietly = TRUE)) {
+    stop("You need to install {ggplot2} to use this feature.")
+  }
 
   nodes <- nodes_and_edges$nodes
   nodes$name <- nodes$id
@@ -108,10 +112,10 @@ rxp_ggdag <- function(nodes_and_edges = get_nodes_edges()) {
   edges$name <- edges$from
   edges <- edges[, c("name", "to")]
 
-  dag_df <- as_tidy_dagitty(edges) |>
+  dag_df <- ggdag::as_tidy_dagitty(edges) |>
     merge(nodes, by = "name")
 
-  rxp_scale <- scale_fill_manual(
+  rxp_scale <- ggplot2::scale_fill_manual(
     values = c(
       "rxp_r" = "#246ABF",
       "rxp_r2py" = "#FFD343",
@@ -121,7 +125,7 @@ rxp_ggdag <- function(nodes_and_edges = get_nodes_edges()) {
     )
   )
 
-  rxp_shapes <- scale_shape_manual(
+  rxp_shapes <- ggplot2::scale_shape_manual(
     values = c(
       "rxp_r" = 23,
       "rxp_r2py" = 23,
@@ -131,16 +135,16 @@ rxp_ggdag <- function(nodes_and_edges = get_nodes_edges()) {
     )
   )
 
-  ggplot(
+  ggplot2::ggplot(
     dag_df,
-    aes(x = x, y = y, xend = xend, yend = yend)
+    ggplot2::aes(x = x, y = y, xend = xend, yend = yend)
   ) +
-    geom_dag_edges() +
+    ggdag::geom_dag_edges() +
     rxp_scale +
     rxp_shapes +
-    geom_dag_node(aes(fill = group, shape = group)) +
-    geom_dag_text(aes(label = name), col = "black", nudge_y = -.3) +
-    theme_dag()
+    ggdag::geom_dag_node(ggplot2::aes(fill = group, shape = group)) +
+    ggdag::geom_dag_text(ggplot2::aes(label = name), col = "black", nudge_y = -.3) +
+    ggdag::theme_dag()
 }
 
 #' @title Create a Directed Acyclic Graph (DAG) representing the pipeline
