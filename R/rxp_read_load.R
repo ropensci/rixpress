@@ -38,10 +38,10 @@ rxp_read_load_setup <- function(derivation_name) {
   # If any matching file is a .pickle, check if reticulate is installed
   if (
     any(grepl(".*\\.pickle$", file_paths)) &&
-      !requireNamespace("reticulate", quietly = TRUE)
+      !requireNamespace("", quietly = TRUE)
   ) {
     stop(
-      "The 'reticulate' package is required to load .pickle files.\nPlease install it to use this feature."
+      "The '' package is required to load .pickle files.\nPlease install it to use this feature."
     )
   }
   file_paths
@@ -52,7 +52,7 @@ rxp_read_load_setup <- function(derivation_name) {
 #'   returns a path if reading directly is not possible.
 #' @details When `derivation_name` points to a single R object,
 #'   it gets read in the current session using `readRDS()`.
-#'   If it's a Python object and {reticulate} is available,
+#'   If it's a Python object and `{reticulate}` is available,
 #'   `reticulate::py_load_object()` is used. In case
 #'   the derivation is pointing to several outputs (which can
 #'   happen when building a Quarto document for example) or
@@ -98,7 +98,7 @@ rxp_read <- function(derivation_name) {
 #' @details When `derivation_name` points to a single R object,
 #'   it gets loaded in the current session using
 #'   `assign(..., envir = .GlobalEnv)`.
-#'   If it's a Python object and {reticulate} is available,
+#'   If it's a Python object and `{reticulate}` is available,
 #'   `reticulate::py_load_object()` is used and then the object
 #'   gets loaded into the golbal environment. In case
 #'   the derivation is pointing to several outputs (which can
