@@ -7,6 +7,7 @@
 #'   standard output, can be useful to check what is happening if the
 #'   build process takes long.
 #' @importFrom processx run
+#' @importFrom utils capture.output
 #' @return A character vector of paths to the built outputs.
 #' @export
 rxp_make <- function(verbose = FALSE, max_jobs = 1, cores = 1) {
