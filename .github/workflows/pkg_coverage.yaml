@@ -24,7 +24,7 @@ jobs:
           use-public-rspm: true
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::pandoc, any::tinytable, any::covr, any::DT, any::htmltools, any::xml2, any::visNetwork, any::igraph, any::jsonlite, any::processx, any::dplyr, any::ggdag, any::knitr, any::reticulate, any::rix, any::rmarkdown, any::testthat, any::usethis
+          extra-packages: any::mockery, any::pandoc, any::tinytable, any::covr, any::DT, any::htmltools, any::xml2, any::visNetwork, any::igraph, any::jsonlite, any::processx, any::dplyr, any::ggdag, any::knitr, any::reticulate, any::rix, any::rmarkdown, any::testthat, any::usethis
 
       - name: Run covr, capture coverage and display
         shell: bash
