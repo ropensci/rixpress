@@ -36,6 +36,7 @@ jobs:
           cov_list <- covr::coverage_to_list(cov)
           cov_df <- as.data.frame(cov_list['filecoverage'][[1]])
           cov_df\$file <- rownames(cov_df)
+          cov_df <- cov_df[c(2, 1)]
           colnames(cov_df) <- c('file', 'coverage')
           total_cov <- cov_list['totalcoverage']
           tinytable::save_tt(tinytable::tt(cov_df), output = 'coverage.md')
@@ -47,7 +48,7 @@ jobs:
       - name: Convert coverage table to GFM
         shell: bash
         run: |
-          sed '/^+.*+$/d; /^| filecoverage |$/a\
+          sed '/^+.*+$/d; /^| coverage |$/a\
           |--------------|' coverage.md > coverage_gfm.md
           mv coverage_gfm.md coverage.md
           
