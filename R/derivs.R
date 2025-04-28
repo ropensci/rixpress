@@ -269,7 +269,12 @@ rxp_py <- function(
 #' \dontrun{
 #'   # Compile a .qmd file to a pdf using typst
 #'   # `images` is a folder containing images to include in the Quarto doc
-#'   rxp_quarto(name = report, qmd_file = "report.qmd", additional_files = "images", args = "-- to typst")
+#'   rxp_quarto(
+#'     name = report,
+#'     qmd_file = "report.qmd",
+#'     additional_files = "images",
+#'     args = "-- to typst"
+#'   )
 #' }
 #' @export
 rxp_quarto <- function(
