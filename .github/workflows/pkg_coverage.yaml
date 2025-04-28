@@ -33,7 +33,7 @@ jobs:
           # run coverage and sink full output to file
           Rscript -e "
             cov <- covr::package_coverage()
-            tinytable::ttsave(tinytable::tt(cov), output = 'coverage.md')
+            tinytable::save_tt(tinytable::tt(cov), output = 'coverage.md')
             cov
           "
 
