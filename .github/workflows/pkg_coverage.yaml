@@ -33,17 +33,8 @@ jobs:
           # run coverage
           Rscript -e "
             cov <- covr::package_coverage()
-            df <- as.data.frame(cov)
-            writeLines(capture.output(print(df)), 'coverage.txt')
             covr::report(cov, file = 'coverage.html', browse = FALSE)
+            cov
           "
-
-          # show coverage.txt in CI logs
-          echo "## Coverage text report:";
-          sed 's/^/    /' coverage.txt;
-
-          # append full HTML report to GitHub Actions summary
-          echo "## HTML coverage report" >> $GITHUB_STEP_SUMMARY
-          # indent HTML so summary renders correctly
-          sed 's/^/    /' coverage.html >> $GITHUB_STEP_SUMMARY
+          coverage.html >> $GITHUB_STEP_SUMMARY
 
