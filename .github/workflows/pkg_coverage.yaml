@@ -39,7 +39,7 @@ jobs:
             print(total_cov)
             tinytable::save_tt(tinytable::tt(cov_df), output = 'coverage.md')
             # append total coverage at end of markdown
-            cat(sprintf('\n\nTotal coverage: %.2f%%', total_cov), file = 'coverage.md', append = TRUE)
+            cat(sprintf('\n\n\nTotal coverage: %s', total_cov), file = 'coverage.md', append = TRUE)
             cov
           "
 
