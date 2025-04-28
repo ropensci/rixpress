@@ -36,5 +36,5 @@ jobs:
             covr::report(cov, file = 'coverage.html', browse = FALSE)
             cov
           "
-          coverage.html >> $GITHUB_STEP_SUMMARY
+          cat coverage.html >> $GITHUB_STEP_SUMMARY
 
