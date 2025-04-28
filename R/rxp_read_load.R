@@ -116,6 +116,8 @@ rxp_read <- function(derivation_name) {
 #'   rxp_load("my_python_model")
 #'
 #' }
+#' @note This function intentionally assigns objects to the global environment
+#'   as its primary purpose.
 #' @export
 rxp_load <- function(derivation_name) {
   files <- rxp_read_load_setup(derivation_name)
