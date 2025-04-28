@@ -34,7 +34,8 @@ jobs:
           Rscript -e "
           cov <- covr::package_coverage()
           cov_list <- covr::coverage_to_list(cov)
-          cov_df <- as.data.frame(cov_list['filecoverage'])
+          cov_df <- as.data.frame(cov_list['filecoverage'][[1]])
+          colnames(cov_df) <- c('file', 'coverage')
           total_cov <- cov_list['totalcoverage']
           tinytable::save_tt(tinytable::tt(cov_df), output = 'coverage.md')
           # Append total coverage at end of markdown
