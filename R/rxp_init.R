@@ -28,7 +28,9 @@ rxp_init <- function(project_path = ".") {
 
   # Initial confirmation before any action
   if (!confirm(paste0("Initialize project at '", project_path, "'?"))) {
-    message("Operation cancelled by user. No files or directories were created.")
+    message(
+      "Operation cancelled by user. No files or directories were created."
+    )
     return(invisible(FALSE))
   }
 
@@ -80,7 +82,6 @@ rxp_init <- function(project_path = ".") {
   message("File ", env_file, " has been written.")
   writeLines(gen_pipeline_lines, pipeline_file)
   message("File ", pipeline_file, " has been written.")
-
 
   if (confirm("Would you like to initialize a Git repository here?")) {
     if (!requireNamespace("usethis", quietly = TRUE)) {

@@ -13,10 +13,10 @@
 #' \dontrun{
 #'   # Copy all derivations to the current working directory
 #'   rxp_copy()
-#'   
+#'
 #'   # Copy a specific derivation
 #'   rxp_copy("mtcars")
-#'   
+#'
 #'   # Copy a Quarto document output with multiple files
 #'   rxp_copy("my_quarto_doc")
 #' }
