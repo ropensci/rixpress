@@ -222,4 +222,3 @@ test_that("rxp_common_setup: handles invalid direction", {
     "Invalid direction. Use 'py2r' or 'r2py'."
   )
 })
-
