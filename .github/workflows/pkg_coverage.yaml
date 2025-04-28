@@ -49,7 +49,7 @@ jobs:
         shell: bash
         run: |
           sed '/^+.*+$/d; /^.*coverage.*$/a\
-          |--------------|' coverage.md > coverage_gfm.md
+          |-------|-------|' coverage.md > coverage_gfm.md
           mv coverage_gfm.md coverage.md
           
       - name: Append to GitHub Actions summary
