@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_copy.R
 \name{rxp_copy}
 \alias{rxp_copy}
-\title{Copy derivations from Nix store to current working directory}
+\title{Copy derivations from the Nix store to current working directory}
 \usage{
 rxp_copy(derivation_name = NULL)
 }
@@ -11,13 +11,26 @@ rxp_copy(derivation_name = NULL)
 the derivations are copied.}
 }
 \value{
-Nothing, the contents of the Nix store are copied to the current working directory.
+Nothing, the contents of the Nix store are copied to the current
+working directory.
 }
 \description{
-When Nix builds a derivation, its output is save the "Nix store"
-located under \verb{/nix/store/}. Even though you can import the derivations
-into the current R session using \code{rxp_read()} or \code{rxp_load()}, it can be
-useful to copy the outputs to the current working directory. This is especially
-useful for Quarto documents, where there can be more than one input, as is
-the case for \code{html} output.
+When Nix builds a derivation, its output is saved in the
+Nix store located under \verb{/nix/store/}. Even though you can import the
+derivations into the current R session using \code{rxp_read()} or \code{rxp_load()},
+it can be useful to copy the outputs to the current working directory. This
+is especially useful for Quarto documents, where there can be more than one
+input, as is the case for \code{html} output.
+}
+\examples{
+\dontrun{
+  # Copy all derivations to the current working directory
+  rxp_copy()
+
+  # Copy a specific derivation
+  rxp_copy("mtcars")
+
+  # Copy a Quarto document output with multiple files
+  rxp_copy("my_quarto_doc")
+}
 }

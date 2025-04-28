@@ -4,18 +4,31 @@
 \alias{dag_for_ci}
 \title{Export DAG of pipeline and prepare it for rendering on CI}
 \usage{
-dag_for_ci(nodes_and_edges = get_nodes_edges())
+dag_for_ci(
+  nodes_and_edges = get_nodes_edges(),
+  output_file = "_rixpress/dag.dot"
+)
+}
+\arguments{
+\item{nodes_and_edges}{List, output of \code{get_nodes_edges()}. Defaults to
+calling \code{get_nodes_edges()}.}
+
+\item{output_file}{Character, the path where the DOT file should be saved.
+Defaults to \code{"_rixpress/dag.dot"}. The directory will be created if it
+doesn't exist.}
 }
 \value{
-Nothing, writes \code{dag.dot} in \verb{_rixpress/}.
+Nothing, writes the DOT file to the specified \code{output_file}.
 }
 \description{
-This function is called automatically by rxp_ga(), but
-you can also run it yourself if you want to visualize the DAG on CI
-with your own workflow definition.
+This function generates a DOT file representation of the
+pipeline DAG, suitable for visualization, potentially on CI platforms. It
+is called by \code{rxp_ga()}.
 }
 \examples{
 \dontrun{
-  dag_for_ga()
+  # Generate the default _rixpress/dag.dot
+  dag_for_ci()
+
 }
 }

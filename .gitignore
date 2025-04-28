@@ -17,3 +17,5 @@ _test_with_nix.R
 _rixpress
 result
 .aider*
+.Rdata
+.quarto

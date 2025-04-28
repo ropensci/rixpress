@@ -6,6 +6,8 @@
 #'   changes are made.
 #'
 #' @param project_path Character string specifying the project's path.
+#' @param skip_prompt Logical. If TRUE, skips all confirmation prompts and proceeds
+#'   with initialization, useful on continuous integration. Defaults to FALSE.
 #'
 #' @details
 #' Creates (overwriting if they already exist):
@@ -19,18 +21,17 @@
 #' }
 #'
 #' @export
-rxp_init <- function(project_path = ".") {
-  # Helper to prompt user for yes/no
+rxp_init <- function(project_path = ".", skip_prompt = FALSE) {
+
   confirm <- function(question) {
+    if (skip_prompt) return(TRUE)
     ans <- readline(paste0(question, " [y/n]: "))
-    tolower(substr(ans, 1, 1)) == "y"
+    tolower(substr(ans, 1, 1)) == "y" # just pick the first letter and lower it
   }
 
   # Initial confirmation before any action
   if (!confirm(paste0("Initialize project at '", project_path, "'?"))) {
-    message(
-      "Operation cancelled by user. No files or directories were created."
-    )
+    message("Operation cancelled by user. No files or directories were created.")
     return(invisible(FALSE))
   }
 
@@ -55,7 +56,11 @@ rxp_init <- function(project_path = ".") {
     "  date = NULL,",
     "  r_pkgs = NULL,",
     "  py_conf = NULL,",
-    "  git_pkgs = list(\"package_name\" = \"rixpress\", \"repo_url\" = \"https://github.com/b-rodrigues/rixpress\", \"commit\" = \"HEAD\"),",
+    "  git_pkgs = list(",
+    "    \"package_name\" = \"rixpress\",",
+    "    \"repo_url\" = \"https://github.com/b-rodrigues/rixpress\",",
+    "    \"commit\" = \"HEAD\",",
+    "  ),",
     "  ide = \"none\",",
     "  project_path = \".\"",
     ")"
@@ -65,7 +70,8 @@ rxp_init <- function(project_path = ".") {
     "library(rixpress)",
     "library(igraph)",
     "",
-    "list(\", rxp_r_file(\",",
+    "list(",
+    "  rxp_r_file(",
     "    name = NULL,",
     "    path = NULL,",
     "    read_function = \\(x) read.csv(file = x, sep = \",\")",
@@ -82,6 +88,7 @@ rxp_init <- function(project_path = ".") {
   message("File ", env_file, " has been written.")
   writeLines(gen_pipeline_lines, pipeline_file)
   message("File ", pipeline_file, " has been written.")
+
 
   if (confirm("Would you like to initialize a Git repository here?")) {
     if (!requireNamespace("usethis", quietly = TRUE)) {

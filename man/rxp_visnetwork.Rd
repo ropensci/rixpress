@@ -21,6 +21,6 @@ function.
 }
 \examples{
 \dontrun{
-  rxp_ggdag()
+  rxp_visnetwork()
 }
 }

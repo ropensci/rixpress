@@ -36,9 +36,7 @@ Python function used to unserialize the object. It must accept one
 argument: the file path.}
 }
 \value{
-A list with elements: \code{name}, the \code{name} of the derivation,
-\code{snippet}, the Nix boilerplate code, \code{type}, \code{additional_files}, \code{nix_env},
-and \code{unserialize_code}.
+An object of class derivation which inherits from lists.
 }
 \description{
 rxp_py Creates a Nix expression running a Python function
