@@ -111,10 +111,10 @@ rxp_read <- function(derivation_name) {
 #' \dontrun{
 #'   # Load an R object into the global environment
 #'   rxp_load("mtcars")
-#'   
+#'
 #'   # Load a Python object into the global environment
 #'   rxp_load("my_python_model")
-#' 
+#'
 #' }
 #' @export
 rxp_load <- function(derivation_name) {

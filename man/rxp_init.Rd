@@ -2,32 +2,29 @@
 % Please edit documentation in R/rxp_init.R
 \name{rxp_init}
 \alias{rxp_init}
-\title{Initialize pipeline}
+\title{Initialize rixpress project}
 \usage{
-rxp_init(project_path, overwrite = FALSE)
+rxp_init(project_path = ".")
 }
 \arguments{
 \item{project_path}{Character string specifying the project's path.}
-
-\item{overwrite}{Logical, defaults to FALSE, indicating whether to overwrite
-existing scripts.}
 }
 \description{
 Generates \code{gen-env.R} and \code{gen-pipeline.R} scripts in the specified project
-directory.
+directory, after asking the user for confirmation. If the user declines, no
+changes are made.
 }
 \details{
-Creates:
+Creates (overwriting if they already exist):
 \itemize{
 \item \code{gen-env.R}: Script to define an execution environment with \code{{rix}}.
 \item \code{gen-pipeline.R}: Defines a data pipeline with \code{{rixpress}}.
 }
 }
 \examples{
-# Default usage
-rxp_init()
-
-# Custom path with overwrite
-rxp_init(project_path = "my_project", overwrite = TRUE)
+# Default usage (will prompt before any action)
+\dontrun{
+  rxp_init()
+}
 
 }

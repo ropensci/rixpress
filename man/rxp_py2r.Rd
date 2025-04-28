@@ -14,9 +14,7 @@ rxp_py2r(name, expr, nix_env = "default.nix")
 \item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
 }
 \value{
-A list with elements: \code{name}, the name of the derivation,
-\code{snippet}, the Nix boilerplate code, \code{type}, \code{additional_files}
-(for compatibility reasons only) and \code{nix_env}.
+An object of class derivation which inherits from lists.
 }
 \description{
 Transfer Python object into an R session.
@@ -27,6 +25,6 @@ Python object and saves it as an RDS file using \code{reticulate::py_load_object
 }
 \examples{
 \dontrun{
-  rxp_py2r(my_obj, my_python_object)
+rxp_py2r(my_obj, my_python_object)
 }
 }

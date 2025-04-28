@@ -14,9 +14,7 @@ rxp_r2py(name, expr, nix_env = "default.nix")
 \item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
 }
 \value{
-A list with elements: \code{name}, the name of the derivation,
-\code{snippet}, the Nix boilerplate code, \code{type}, \code{additional_files}
-(for compatibility reasons only) and \code{nix_env}.
+An object of class derivation which inherits from lists.
 }
 \description{
 Transfer R object into a Python session.

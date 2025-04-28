@@ -25,7 +25,7 @@ rxp_r_file(
 recursively into the build sandbox.}
 }
 \value{
-A list with \code{name}, \code{snippet}, \code{type}, and \code{nix_env}.
+An object of class derivation which inherits from lists.
 }
 \description{
 Creates a Nix expression that reads in a file (or folder of data) using R.

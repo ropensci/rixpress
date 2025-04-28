@@ -26,9 +26,7 @@ containing the picture to include in the Quarto document.}
 the \code{quarto} command.}
 }
 \value{
-A list with elements: \code{name}, the \code{name} of the derivation,
-\code{snippet}, the Nix boilerplate code, \code{type}, \code{additional_files} and
-\code{nix_env}.
+An object of class derivation which inherits from lists.
 }
 \description{
 Render a Quarto document as a Nix derivation

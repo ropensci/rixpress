@@ -43,9 +43,7 @@ used \code{keras::save_model_hdf5()} to serialize a model, this derivation
 should use \code{keras::load_model_hdf5()} to load it correctly.}
 }
 \value{
-A list with elements: \code{name}, the \code{name} of the derivation,
-\code{snippet}, the Nix boilerplate code, \code{type}, \code{additional_files} and
-\code{nix_env}.
+An object of class derivation which inherits from lists.
 }
 \description{
 rxp_r Creates a Nix expression running an R function

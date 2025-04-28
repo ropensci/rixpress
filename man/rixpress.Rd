@@ -4,7 +4,7 @@
 \alias{rixpress}
 \title{Generate Nix Pipeline Code with a Generic Default Target}
 \usage{
-rixpress(derivs, project_path, build = TRUE, ...)
+rixpress(derivs, project_path = ".", build = TRUE, ...)
 }
 \arguments{
 \item{derivs}{A list of derivation objects, where each object is a list of
@@ -18,27 +18,26 @@ available to build sandbox
 A single deriv is the output of \code{rxp_r()}, \code{rxp_quarto()} or \code{rxp_py()}
 function.}
 
-\item{project_path}{Path to root of project, typically "."}
+\item{project_path}{Path to root of project, defaults to ".".}
 
 \item{build}{Logical, defaults to TRUE. Should the pipeline get built right
 after being generated? If FALSE, you can build the pipeline later using
-\code{rixpress()}}
+\code{rixpress()}.}
 
 \item{...}{Further arguments passed down to methods. Use \code{max-jobs} and
 \code{cores} to set parallelism during build. See the documentation of
 \code{rxp_make()} for more details.}
 }
 \value{
-A character string containing the complete Nix code for a
-\code{pipeline.nix} file. This string can be written to a file or passed to
-another function for further processing.
+Nothing, writes a file called \code{pipeline.nix} with the Nix code to
+build the pipeline.
 }
 \description{
 This function generates a \code{pipeline.nix} file based on a list of derivation
 objects. Each derivation defines a build step, and \code{rixpress()} chains these
 steps and handles the serialization and conversion of Python objects into R
 objects (or vice-versa). Derivations are created with \code{rxp_r()}, \code{rxp_py()}
-and so on. By default, the pipeline is also immedtiately after being generated,
+and so on. By default, the pipeline is also immediately after being generated,
 but the build process can be postponed by setting \code{build} to FALSE. In this case,
 the pipeline can then be built using \code{rxp_make()}.
 }
