@@ -96,7 +96,12 @@ in the .qmd file.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span>  <span class="co"># Compile a .qmd file to a pdf using typst</span></span></span>
 <span class="r-in"><span>  <span class="co"># `images` is a folder containing images to include in the Quarto doc</span></span></span>
-<span class="r-in"><span>  <span class="fu">rxp_quarto</span><span class="op">(</span>name <span class="op">=</span> <span class="va">report</span>, qmd_file <span class="op">=</span> <span class="st">"report.qmd"</span>, additional_files <span class="op">=</span> <span class="st">"images"</span>, args <span class="op">=</span> <span class="st">"-- to typst"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">rxp_quarto</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    name <span class="op">=</span> <span class="va">report</span>,</span></span>
+<span class="r-in"><span>    qmd_file <span class="op">=</span> <span class="st">"report.qmd"</span>,</span></span>
+<span class="r-in"><span>    additional_files <span class="op">=</span> <span class="st">"images"</span>,</span></span>
+<span class="r-in"><span>    args <span class="op">=</span> <span class="st">"-- to typst"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

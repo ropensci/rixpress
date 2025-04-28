@@ -68,7 +68,7 @@ returns a path if reading directly is not possible.</p>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>When <code>derivation_name</code> points to a single R object,
 it gets read in the current session using <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code>.
-If it's a Python object and reticulate is available,
+If it's a Python object and <code>{reticulate}</code> is available,
 <code><a href="https://rstudio.github.io/reticulate/reference/py_save_object.html" class="external-link">reticulate::py_load_object()</a></code> is used. In case
 the derivation is pointing to several outputs (which can
 happen when building a Quarto document for example) or
