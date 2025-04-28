@@ -19,7 +19,7 @@ returns a path if reading directly is not possible.
 \details{
 When \code{derivation_name} points to a single R object,
 it gets read in the current session using \code{readRDS()}.
-If it's a Python object and {reticulate} is available,
+If it's a Python object and \code{{reticulate}} is available,
 \code{reticulate::py_load_object()} is used. In case
 the derivation is pointing to several outputs (which can
 happen when building a Quarto document for example) or

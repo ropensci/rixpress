@@ -4,10 +4,13 @@
 \alias{rxp_init}
 \title{Initialize rixpress project}
 \usage{
-rxp_init(project_path = ".")
+rxp_init(project_path = ".", skip_prompt = FALSE)
 }
 \arguments{
 \item{project_path}{Character string specifying the project's path.}
+
+\item{skip_prompt}{Logical. If TRUE, skips all confirmation prompts and proceeds
+with initialization, useful on continuous integration. Defaults to FALSE.}
 }
 \description{
 Generates \code{gen-env.R} and \code{gen-pipeline.R} scripts in the specified project

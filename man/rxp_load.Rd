@@ -21,12 +21,16 @@ of the current session, returns a path if reading directly is not possible.
 When \code{derivation_name} points to a single R object,
 it gets loaded in the current session using
 \code{assign(..., envir = .GlobalEnv)}.
-If it's a Python object and {reticulate} is available,
+If it's a Python object and \code{{reticulate}} is available,
 \code{reticulate::py_load_object()} is used and then the object
 gets loaded into the golbal environment. In case
 the derivation is pointing to several outputs (which can
 happen when building a Quarto document for example) or
 loading fails, the path to the object is returned instead.
+}
+\note{
+This function intentionally assigns objects to the global environment
+as its primary purpose.
 }
 \examples{
 \dontrun{
