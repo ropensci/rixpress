@@ -43,10 +43,13 @@ jobs:
           "
 
           # convert to GitHub-Flavored Markdown table:
-          # drop all lines beginning with '+'
-          grep -v '^+' coverage.md > coverage.tmp
-          # insert GFM header separator after first line
-          { head -n1 coverage.tmp; echo '|--------------|---------------|'; tail -n +2 coverage.tmp; } > coverage.md
+          # drop all lines beginning with '+' and drop the old '=' separator
+          grep -v '^+' coverage.md | grep -v '|=' > coverage.tmp
+          # extract header and build matching dash-separator
+          HDR=$(head -n1 coverage.tmp)
+          SEPR=$(echo "$HDR" | sed 's/[^|]/-/g')
+          # assemble final GFM table
+          { echo "$HDR"; echo "$SEPR"; tail -n +2 coverage.tmp; } > coverage.md
           rm coverage.tmp
 
           # append full coverage text into GitHub Actions summary
