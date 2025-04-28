@@ -48,7 +48,7 @@ jobs:
       - name: Convert coverage table to GFM
         shell: bash
         run: |
-          sed '/^+.*+$/d; /^| file | coverage |$/a\
+          sed '/^+.*+$/d; /^.*coverage.*$/a\
           |--------------|' coverage.md > coverage_gfm.md
           mv coverage_gfm.md coverage.md
           
