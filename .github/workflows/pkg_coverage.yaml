@@ -27,14 +27,22 @@ jobs:
         with:
           extra-packages: any::covr, any::DT, any::htmltools, any::xml2, any::visNetwork, any::igraph, any::jsonlite, any::processx, any::dplyr, any::ggdag, any::knitr, any::reticulate, any::rix, any::rmarkdown, any::testthat, any::usethis
 
-      - name: Run covr, generate reports & display coverage.txt
+      - name: Run covr, capture coverage and display
         shell: bash
         run: |
-          # run coverage
+          # run coverage and sink full output to file
           Rscript -e "
             cov <- covr::package_coverage()
-            covr::report(cov, file = 'coverage.html', browse = FALSE)
             cov
+            sink('coverage.txt')
+            cov
+            sink()
           "
-          cat coverage.html >> $GITHUB_STEP_SUMMARY
 
+          # show coverage.txt in CI logs
+          echo "## Coverage text report:";
+          sed 's/^/    /' coverage.txt;
+
+          # append full coverage text into GitHub Actions summary
+          echo "## Full coverage report" >> $GITHUB_STEP_SUMMARY
+          sed 's/^/    /' coverage.txt >> $GITHUB_STEP_SUMMARY
