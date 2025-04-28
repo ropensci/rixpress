@@ -2,7 +2,7 @@
 title: "Running pipelines in CI"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{c-polyglot}
+  %\VignetteIndexEntry{d-running-pipelines-in-ci}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

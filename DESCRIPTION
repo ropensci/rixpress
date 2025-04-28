@@ -25,6 +25,7 @@ RoxygenNote: 7.3.2
 Suggests:
     dplyr,
     ggdag,
+    ggplot2,
     knitr,
     mockery,
     reticulate,
