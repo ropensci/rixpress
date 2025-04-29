@@ -10,34 +10,29 @@ rxp_load(derivation_name)
 \item{derivation_name}{Character, the name of the derivation.}
 }
 \value{
-Nothing, this function has the side effect of loading
-objects into the global environment.
+Nothing, this function has the side effect of loading objects into
+the parent frame.
 }
 \description{
-Loads the output of derivations in the global environment
-of the current session, returns a path if reading directly is not possible.
+Loads the output of derivations in the parent frame of the
+current session, returns a path if reading directly is not possible.
 }
 \details{
-When \code{derivation_name} points to a single R object,
-it gets loaded in the current session using
-\code{assign(..., envir = .GlobalEnv)}.
-If it's a Python object and \code{{reticulate}} is available,
-\code{reticulate::py_load_object()} is used and then the object
-gets loaded into the golbal environment. In case
-the derivation is pointing to several outputs (which can
-happen when building a Quarto document for example) or
+When \code{derivation_name} points to a single R object, it gets loaded
+in the current session using \code{assign(..., envir = parent.frame())}, which
+corresponds to the global environment in a regular interactive session. If
+you're trying to load a Python object and \code{{reticulate}} is available,
+\code{reticulate::py_load_object()} is used and then the object gets loaded into
+the golbal environment. In case the derivation is pointing to several
+outputs (which can happen when building a Quarto document for example) or
 loading fails, the path to the object is returned instead.
-}
-\note{
-This function intentionally assigns objects to the global environment
-as its primary purpose.
 }
 \examples{
 \dontrun{
-  # Load an R object into the global environment
+  # Load an R object
   rxp_load("mtcars")
 
-  # Load a Python object into the global environment
+  # Load a Python
   rxp_load("my_python_model")
 
 }

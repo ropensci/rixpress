@@ -93,31 +93,30 @@ rxp_read <- function(derivation_name) {
 }
 
 #' Load output of a derivation
-#' @description Loads the output of derivations in the global environment
-#'   of the current session, returns a path if reading directly is not possible.
-#' @details When `derivation_name` points to a single R object,
-#'   it gets loaded in the current session using
-#'   `assign(..., envir = .GlobalEnv)`.
-#'   If it's a Python object and `{reticulate}` is available,
-#'   `reticulate::py_load_object()` is used and then the object
-#'   gets loaded into the golbal environment. In case
-#'   the derivation is pointing to several outputs (which can
-#'   happen when building a Quarto document for example) or
+
+#' @description Loads the output of derivations in the parent frame of the
+#'   current session, returns a path if reading directly is not possible.
+#' @details When `derivation_name` points to a single R object, it gets loaded
+#'   in the current session using `assign(..., envir = parent.frame())`, which
+#'   corresponds to the global environment in a regular interactive session. If
+#'   you're trying to load a Python object and `{reticulate}` is available,
+#'   `reticulate::py_load_object()` is used and then the object gets loaded into
+#'   the golbal environment. In case the derivation is pointing to several
+#'   outputs (which can happen when building a Quarto document for example) or
 #'   loading fails, the path to the object is returned instead.
 #' @param derivation_name Character, the name of the derivation.
-#' @return Nothing, this function has the side effect of loading
-#'   objects into the global environment.
+#' @return Nothing, this function has the side effect of loading objects into
+#'   the parent frame.
+
 #' @examples
 #' \dontrun{
-#'   # Load an R object into the global environment
+#'   # Load an R object
 #'   rxp_load("mtcars")
 #'
-#'   # Load a Python object into the global environment
+#'   # Load a Python
 #'   rxp_load("my_python_model")
 #'
 #' }
-#' @note This function intentionally assigns objects to the global environment
-#'   as its primary purpose.
 #' @export
 rxp_load <- function(derivation_name) {
   files <- rxp_read_load_setup(derivation_name)
@@ -152,7 +151,6 @@ rxp_load <- function(derivation_name) {
     return(path)
   }
 
-  # Otherwise assign into global env and invisibly return it
-  assign(derivation_name, value, envir = .GlobalEnv)
+  assign(derivation_name, value, envir = parent.frame())
   invisible(value)
 }
