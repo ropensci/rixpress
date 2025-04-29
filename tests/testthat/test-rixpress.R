@@ -1,3 +1,26 @@
+test_that("rixpress: helper functions get_need_r/py work", {
+  types_r_only <- c("rxp_r", "rxp_r_file")
+  types_py_only <- c("rxp_py", "rxp_py_file")
+  types_quarto <- c("rxp_quarto")
+  types_transfer <- c("rxp_py2r", "rxp_r2py")
+  types_mixed <- c("rxp_r", "rxp_py", "rxp_quarto", "rxp_py2r")
+
+  expect_true(get_need_r(types_r_only))
+  expect_false(get_need_py(types_r_only))
+
+  expect_false(get_need_r(types_py_only))
+  expect_true(get_need_py(types_py_only))
+
+  expect_true(get_need_r(types_quarto))
+  expect_false(get_need_py(types_quarto))
+
+  expect_true(get_need_r(types_transfer))
+  expect_false(get_need_py(types_transfer)) # Transfer functions are R-based
+
+  expect_true(get_need_r(types_mixed))
+  expect_true(get_need_py(types_mixed))
+})
+
 test_that("rixpress: gen_flat_pipeline", {
   d1 <- rxp_r(mtcars_am, dplyr::filter(mtcars, am == 1))
   d2 <- rxp_r(mtcars_head, head(mtcars_am))
@@ -85,27 +108,4 @@ test_that("rixpress: several environments", {
     path = snapshot_gen_pipeline(dag_out, flat_pipeline),
     name = "pipeline_several_envs.nix"
   )
-})
-
-test_that("rixpress: helper functions get_need_r/py work", {
-  types_r_only <- c("rxp_r", "rxp_r_file")
-  types_py_only <- c("rxp_py", "rxp_py_file")
-  types_quarto <- c("rxp_quarto")
-  types_transfer <- c("rxp_py2r", "rxp_r2py")
-  types_mixed <- c("rxp_r", "rxp_py", "rxp_quarto", "rxp_py2r")
-
-  expect_true(get_need_r(types_r_only))
-  expect_false(get_need_py(types_r_only))
-
-  expect_false(get_need_r(types_py_only))
-  expect_true(get_need_py(types_py_only))
-
-  expect_true(get_need_r(types_quarto))
-  expect_false(get_need_py(types_quarto))
-
-  expect_true(get_need_r(types_transfer))
-  expect_false(get_need_py(types_transfer)) # Transfer functions are R-based
-
-  expect_true(get_need_r(types_mixed))
-  expect_true(get_need_py(types_mixed))
 })
