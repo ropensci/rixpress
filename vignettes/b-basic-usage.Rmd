@@ -14,20 +14,21 @@ knitr::opts_chunk$set(
 )
 ```
 
-This vignette demonstrates how to set up a simple pipeline, and assumes you've
+This vignette demonstrates how to set up a simple pipeline and assumes you've
 read `vignette("a-intro-concepts")`.
 
-For a video version of this vignette, CHECK OUT THIS UPCOMING VIDEO ON YOUTUBE
+For a video version of this tutorial, [check out this upcoming video on
+YouTube](youtube link to follow).
 
 ## Analysing the mtcars dataset using R only
 
-*This pipeline will only focus on R. For multilingual pipelines, read the
-relevant vignette*
+*This pipeline focuses only on R. For multilingual pipelines, see the
+`vignette("c-polyglot")` vignette.*
 
-`{rixpress}` comes with many functions to help you write derivations; these
-typically start with the string `rxp_` and all have roughly the same structure.
-The first step in any pipeline is to get some data in. To include data in a
-`{rixpress}` pipeline, you should use `rxp_r_file()`:
+`{rixpress}` provides several functions to help you write derivations. These
+functions typically start with the prefix `rxp_` and follow a similar structure.
+The first step in any pipeline is usually to import data. To include data in a
+`{rixpress}` pipeline, use `rxp_r_file()`:
 
 ```{r, eval = FALSE}
 d0 <- rxp_r_file(
@@ -37,20 +38,21 @@ d0 <- rxp_r_file(
 )
 ```
 
-`rxp_r_file()` uses an R function of only one argument which should be the path
-to the file to be read. In this case, for illustration purposes, we assume the
-columns in the `mtcars.csv` file are separated by the `|` symbol. So we use an
-anonymous function to set the correct separator and create a temporary function
-of only one argument to read the path, `'data/mtcars.csv'`. You should be aware
-that doing this means that the `mtcars.csv` file **will be copied** to the Nix
-store. This is essential to how Nix works and cannot be avoided.
+`rxp_r_file()` requires an R function with a single argument: the path to the
+file to be read. In this example, we assume the columns in the `mtcars.csv` file
+are separated by the `|` symbol. We use an anonymous function to set the correct
+separator and create a temporary function with a single argument to read the
+file at `'data/mtcars.csv'`.
 
-Also notice that `rxp_r_file()` is quite flexible: it'll work with any function
-to read in a type of file.
+Important: This approach means that the `mtcars.csv` file **will be copied** to
+the Nix store. This is essential to how Nix works and cannot be avoided.
 
-Once that data is read, we need to start manipulating it. To generate a similar
-derivation to the one described in `vignette("a-intro-concepts")`, but
-using R and `{dplyr}` to process the data instead of `awk`, one would write:
+Note that `rxp_r_file()` is quite flexible: it works with any function that
+reads a file, regardless of the file type.
+
+Once the data is imported, we can start manipulating it. To generate a
+derivation similar to the one described in `vignette("a-intro-concepts")`, but
+using R and `{dplyr}` instead of `awk`, we would write:
 
 ```{r, eval = FALSE}
 d1 <- rxp_r(
@@ -59,10 +61,10 @@ d1 <- rxp_r(
 )
 ```
 
-This should be very familiar to users of the `{targets}` package: just like with
-the `tar_target()` function, you just need to give a name to the derivation and
-then command to generate it. That's it: all the required Nix code gets generated
-by `{rixpress}`.
+This syntax should be familiar to users of the `{targets}` package: similar to
+the `tar_target()` function, you simply provide a name for the derivation and
+the expression to generate it. That's all you need to write for `{rixpress}` to
+generate all the required Nix code automatically.
 
 To continue transforming the data, you only need to define a new derivation:
 
@@ -73,11 +75,11 @@ d2 <- rxp_r(
 )
 ```
 
-Notice how the name of `d1` is used in `d2`: this is how the relationship
-between the derivations is defined.
+Notice how the name of `d1` (`filtered_mtcars`) is used in `d2`: this is how
+dependencies between derivations are defined.
 
-Let's stop here for now, and try to build the pipeline. For this, define a list
-of derivations:
+Let's stop here and build our pipeline. First, we need to define a list of
+derivations:
 
 ```{r, eval = FALSE}
 derivs <- list(d0, d1, d2)
@@ -89,8 +91,8 @@ and pass it to the `rixpress()` function:
 rixpress(derivs)
 ```
 
-To avoid having to write so much code, you can instead directly define
-the list and pass it to `rixpress()` using  `|>`:
+To make the code more concise, you can directly define the list and pass it to
+`rixpress()` using the pipe operator `|>`:
 
 ```{r, eval = FALSE}
 library(rixpress)
@@ -115,31 +117,29 @@ list(
   rixpress()
 ```
 
-Running `rixpress()` does several things:
+Running `rixpress()` performs several actions:
 
-- a folder called `_rixpress` gets created in the project's root path. This
-  folder contains several files that are generated automatically for the
-  pipeline to build successfully;
-- a file called `pipeline.nix` gets generated and as you've surely guessed it,
-  it's the definition of the whole pipeline in the Nix language;
-- finally, the function `rxp_make()` gets also called to actually build the
-  pipeline.
+- creates a folder called `_rixpress` in the project's root directory. This
+  folder contains automatically generated files needed for the pipeline to build
+  successfully.
+- generates a file called `pipeline.nix`, which defines the entire pipeline in
+  the Nix language.
+- calls the function `rxp_make()` to build the pipeline.
 
-However, if you try to run the code above it'll likely fail; this is because
-another piece of the puzzle is missing, namely, the environment the pipeline
-must run in is missing!
+However, if you try to run the code above, it will likely fail. This is because
+a crucial piece is missing: the environment in which the pipeline must run!
 
-## Defining a reproducible shell for execution
+## Defining a Reproducible Shell for Execution
 
-Remember that the whole point of using Nix is that it forces you to be very
-thorough when defining derivations by making you declare their dependencies
-explicitly. But in the case of the pipeline above, where are these dependencies
-defined? Which version of R should be used? And which R packages? The pipeline
-uses the function `filter()` and `select()` from the `{dplyr}` package, so we
-must declare them. But how? This is where `{rix}` gets used: `{rix}` is a
-package that makes it possible to define reproducible development environments
-using very simple R code. For example, we could define an environment with R
-4.5.0 and `{dplyr}` like so:
+Remember that the core purpose of using Nix is to ensure reproducibility by
+forcing you to explicitly declare all dependencies. For our pipeline above, we
+need to specify: Which version of R should be used? Which R packages? The
+pipeline uses `filter()` and `select()` from the `{dplyr}` package, so we must
+declare these dependencies.
+
+This is where the `{rix}` package comes in. `{rix}` allows you to define
+reproducible development environments using simple R code. For example, we can
+define an environment with R and `{dplyr}` like this:
 
 ```{r, eval = FALSE}
 library(rix)
@@ -154,32 +154,29 @@ rix(
 ```
 
 Running this code generates a `default.nix` file that can be built using Nix by
-calling `nix-build`, which builds a development environment that contains
-RStudio, R and `{dplyr}` as of the 11th of April 2025. This environment can be
-used for interactive data analysis like you would if you installed RStudio, R
-and `{dplyr}` using the usual installation methods for your operating system. To
-learn more about `{rix}`, please visit
+calling `nix-build`. This creates a development environment containing RStudio,
+R, and `{dplyr}` as they existed on April 11, 2025. You can use this environment
+for interactive data analysis just as you would with a standard installation of
+RStudio, R, and `{dplyr}`. To learn more about `{rix}`, visit
 [https://docs.ropensci.org/rix/](https://docs.ropensci.org/rix/).
 
-If you want to work on a machine without R nor `{rix}` but with Nix already
-installed, we provide a way to bootstrap a complete environment using this call:
+If you're working on a machine that has Nix installed but doesn't have R or `{rix}`,
+you can bootstrap a complete environment with this command:
 
 ```
 nix-shell --expr "$(curl -sl https://raw.githubusercontent.com/ropensci/rix/main/inst/extdata/default.nix)"
 ```
 
-This will drop you into a shell with R and `{rix}` available. Simply start R by
-typing `R` and then `source("gen-env.R")` to generate the required
-`default.nix`. Then, quit R and the shell (CTRL-D or `quit()` in R, `exit` in
-the terminal) and then build the environment defined by the freshly generated
-`default.nix` by typing `nix-build`.
+This command opens a shell with R and `{rix}` available. Start R by typing `R`
+and then run `source("gen-env.R")` to generate the required `default.nix` file.
+Next, exit R (with CTRL-D or `quit()`) and exit the shell (with `exit`).
+Finally, build the environment by running `nix-build`.
 
-Reproducible development environments generated by `{rix}` are where the
-dependencies of the pipelines get defined. In order to use this environment to
-build a `{rixpress}` pipeline, you also have to add `{rixpress}` to the list of
-packages to install in the environment. Because `{rixpress}` is still being
-developed, it must be installed from GitHub. The script to set up the
-environment will look like this:
+The reproducible development environments generated by `{rix}` define all the
+dependencies needed for your pipeline. To use this environment to build a
+`{rixpress}` pipeline, you must also add `{rixpress}` to the list of packages in
+the environment. Since `{rixpress}` is still under development, it must be
+installed from GitHub. Here's how the complete environment setup script looks:
 
 ```{r, eval = FALSE}
 library(rix)
@@ -199,11 +196,11 @@ rix(
 )
 ```
 
-As explained before, after building this environment using `nix-build` you can
-use it to work interactively on your project, but also to set up your
-reproducible pipeline using `{rixpress}`.
+After building this environment with `nix-build`, you can use it both for
+interactive work on your project and for setting up your reproducible pipeline
+with `{rixpress}`.
 
-This is what the script containing the pipeline will look like:
+Here's what the pipeline script looks like:
 
 ```{r, eval = FALSE}
 library(rixpress)
@@ -228,20 +225,18 @@ list(
   rixpress(project_path = ".")
 ```
 
-This is the setup that we recommend, always have two scripts:
+I recommend always using two separate scripts:
 
-- `gen-env.R` (or similarly named): the script that uses `{rix}` to define the
-  execution environment;
-- `gen-pipeline.R` (or similarly named): the script that uses `{rixpress}` to
-  define the reproducible analytical pipeline.
+- `gen-env.R`: Uses `{rix}` to define the execution environment
+- `gen-pipeline.R`: Uses `{rixpress}` to define the reproducible analytical pipeline
 
-You can easily get started with the `rxp_init()` function which will generate
-these two scripts for you to get started quickly.
+You can quickly create these scripts using the `rxp_init()` function, which
+generates both files with starter code to help you get started quickly.
 
-When executing `gen-pipeline.R` (or its contents, line-by-line), the environment
-defined in the `default.nix` gets used (it is also possible to define separate
-environments for separate derivations, but this is left for later) and you
-should see the following:
+When you run `gen-pipeline.R` (or execute its contents line-by-line), the
+environment defined in `default.nix` is used. (It's also possible to define
+separate environments for different derivations, which we'll cover in a later
+vignette.) Upon successful execution, you should see:
 
 ```
 Build process started...
@@ -252,24 +247,32 @@ Read individual derivations using `rxp_read()` or
 load them into the global environment using `rxp_load()`.
 ```
 
-You can now follow the instructions, and start by using `rxp_inspect()` which
-will show you were the outputs are located. `rxp_inspect()` is especially useful
-in case the pipeline fails, to know which derivations failed and which were
-successfully built. Then, you can run `rxp_read("mtcars_mpg")` to read this
-object in the current interactive session, or `rxp_copy("mtcars_mpg")` to create
-a folder called `pipeline-outputs` which will contain `mtcars_mpg` as an `.rds`
-file (if you call `rxp_copy()` without arguments, all the outputs of the
-pipeline will be copied to this folder).
+Now you can follow these instructions:
 
-## DAG representation of the pipeline
+1. Use `rxp_inspect()` to see where the outputs are located. This function is
+   particularly useful if the pipeline fails, as it shows which derivations
+   succeeded and which failed.
+2. Use `rxp_read("mtcars_mpg")` to read the object into your current R session,
+   or `rxp_load("mtcars_mpg")` to load it directly into your global environment.
+3. Alternatively, use `rxp_copy("mtcars_mpg")` to create a folder called
+   `pipeline-outputs` containing `mtcars_mpg` as an `.rds` file. If you call
+   `rxp_copy()` without arguments, all pipeline outputs will be copied to this
+   folder.
 
-Sometimes it might be useful to inspect a graphical representation of the
-pipeline as a DAG, a directed acyclic graph. You can inspect the DAG before
-building the pipeline by adding the `build = FALSE` argument to `rixpress()`.
-This will not build the pipeline, but instead already generate some useful
-files, such as a json representation of the pipeline located under
-`_rixpress/dag.json`. This should be very quick, and will allow you to visualize
-the graph using `plot_dag()`:
+## DAG Representation of the Pipeline
+
+It's often helpful to visualize your pipeline as a DAG (directed acyclic graph).
+You can generate and inspect this visualization before building the pipeline by
+adding the `build = FALSE` argument to `rixpress()`:
+
+```r
+rixpress(derivs, build = FALSE)
+```
+
+This won't build the pipeline but will generate useful files, including a JSON
+representation of the pipeline at `_rixpress/dag.json`. This process is quick
+and allows you to visualize the graph using `rxp_visnetwork()` or other
+visualization functions:
 
 <figure>
 <img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/master/dag.png" alt="DAG" />
@@ -278,24 +281,32 @@ DAG
 </figcaption>
 </figure>
 
-(this is the DAG of a slightly more complex example).
+(This image shows the DAG of a more complex example pipeline.)
 
-It is also possible to instead return the underlying `igraph` object which then
-allows you to plot the DAG using other tools if you prefer, by using
-`plot_dag(return_igraph = TRUE)`.
+You can also return the underlying `igraph` object to plot the DAG using other
+tools:
 
-You can then build the pipeline using `rxp_make()` instead of removing
-`build = FALSE` from `rixpress()`.
+```r
+dag_graph <- rxp_visnetwork(return_igraph = TRUE)
+```
+
+After reviewing the DAG, you can build the pipeline by running `rxp_make()`
+instead of modifying your original `rixpress()` call.
 
 ## Conclusion
 
-Now that you know the very basics, we invite to check out the examples
-located [here](https://github.com/b-rodrigues/rixpress_demos). Each of these
-examples will teach you about features of `{rixpress}`:
+Now that you understand the basics, we invite you to explore the examples
+located in the [rixpress_demos
+repository](https://github.com/b-rodrigues/rixpress_demos). These examples
+demonstrate additional features of `{rixpress}`, including:
 
-- build a Quarto document;
-- polyglot pipelines and how to transfer data between R and Python derivations;
-- import many files in one go;
-- use multiple environments instead of only one `default.nix` file.
+- Building Quarto documents
+- Creating polyglot pipelines that transfer data between R and Python
+- Importing multiple files at once
+- Using multiple environments instead of a single `default.nix` file
 
-We recommend you check out the [video]() as well.
+For a more detailed walkthrough, check out our [video tutorial](video link to
+follow).
+
+In the next vignette, `vignette("c-polyglot")`, we'll explore how to create
+pipelines that combine R and Python code.
