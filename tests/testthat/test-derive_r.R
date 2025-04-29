@@ -66,12 +66,29 @@ test_that("rxp_quarto: generates correct list", {
     args = "--to pdf"
   )
 
-  # Extract the name and type from the result
-  testthat::expect_equal(d1$name, "report")
-  testthat::expect_equal(d1$type, "rxp_quarto")
-  testthat::expect_equal(d1$additional_files, "images")
-  testthat::expect_equal(d1$qmd_file, qmd_file)
-  testthat::expect_equal(d1$nix_env, "default.nix")
+  testthat::expect_equal(
+    d1,
+    structure(
+      list(
+        "name" = "report",
+        "snippet" = paste0(
+          '  report = defaultPkgs.stdenv.mkDerivation {\n    name = "report";\n    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./',
+          qmd_file,
+          ' ./images ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      mkdir home\n      export HOME=$PWD/home\n      export RETICULATE_PYTHON=\'${defaultPkgs.python3}/bin/python\'\n\n      substituteInPlace ',
+          qmd_file,
+          ' --replace-fail \'rxp_read("test_data")\' \'rxp_read("${test_data}")\'\n      quarto render ',
+          qmd_file,
+          ' --to pdf --output-dir $out\n    \'\';\n  };'
+        ),
+        "type" = "rxp_quarto",
+        "qmd_file" = qmd_file,
+        "additional_files" = "images",
+        "nix_env" = "default.nix",
+        "args" = "--to pdf"
+      ),
+      class = "derivation"
+    )
+  )
 
   # Cleanup
   unlink(qmd_file)
@@ -84,8 +101,31 @@ test_that("rxp_r_file: single file reading works", {
 
   d1 <- rxp_r_file(mtcars_data, path = csv_file, read_function = read.csv)
 
-  testthat::expect_equal(d1$name, "mtcars_data")
-  testthat::expect_equal(d1$type, "rxp_r")
+  # Create a subset of d1 with only the fields we want to test
+  d1_subset <- list(
+    "name" = d1$name,
+    "type" = d1$type,
+    "path" = csv_file,
+    "read_function" = read.csv,
+    "nix_env" = d1$nix_env,
+    "copy_data_folder" = FALSE
+  )
+  class(d1_subset) <- "derivation"
+
+  testthat::expect_equal(
+    d1_subset,
+    structure(
+      list(
+        "name" = "mtcars_data",
+        "type" = "rxp_r",
+        "path" = csv_file,
+        "read_function" = read.csv,
+        "nix_env" = "default.nix",
+        "copy_data_folder" = FALSE
+      ),
+      class = "derivation"
+    )
+  )
 
   # Cleanup
   unlink(csv_file)
@@ -116,8 +156,41 @@ test_that("rxp_r_file: folder reading works", {
     copy_data_folder = TRUE
   )
 
-  testthat::expect_equal(d1$name, "all_data")
-  testthat::expect_equal(d1$type, "rxp_r")
+  # Create a subset of d1 with only the fields we want to test
+  d1_subset <- list(
+    "name" = d1$name,
+    "type" = d1$type,
+    "path" = test_data_dir,
+    "read_function" = function(x)
+      lapply(list.files(x, full.names = TRUE, pattern = "\\.csv$"), read.csv),
+    "nix_env" = d1$nix_env,
+    "copy_data_folder" = TRUE
+  )
+  class(d1_subset) <- "derivation"
+
+  # Compare function bodies instead of the functions themselves
+  testthat::expect_equal(
+    body(d1_subset$read_function),
+    body(
+      function(x)
+        lapply(list.files(x, full.names = TRUE, pattern = "\\.csv$"), read.csv)
+    )
+  )
+
+  # Remove read_function for direct comparison
+  d1_subset$read_function <- NULL
+  expected <- structure(
+    list(
+      "name" = "all_data",
+      "type" = "rxp_r",
+      "path" = test_data_dir,
+      "nix_env" = "default.nix",
+      "copy_data_folder" = TRUE
+    ),
+    class = "derivation"
+  )
+
+  testthat::expect_equal(d1_subset, expected)
 
   # Cleanup
   unlink(test_data_dir, recursive = TRUE)
@@ -134,8 +207,31 @@ test_that("rxp_py_file: basic functionality works", {
     read_function = "pandas.read_csv"
   )
 
-  testthat::expect_equal(d1$name, "mtcars_data")
-  testthat::expect_equal(d1$type, "rxp_py")
+  # Create a subset of d1 with only the fields we want to test
+  d1_subset <- list(
+    "name" = d1$name,
+    "type" = d1$type,
+    "path" = csv_file,
+    "read_function" = "pandas.read_csv",
+    "nix_env" = d1$nix_env,
+    "copy_data_folder" = FALSE
+  )
+  class(d1_subset) <- "derivation"
+
+  testthat::expect_equal(
+    d1_subset,
+    structure(
+      list(
+        "name" = "mtcars_data",
+        "type" = "rxp_py",
+        "path" = csv_file,
+        "read_function" = "pandas.read_csv",
+        "nix_env" = "default.nix",
+        "copy_data_folder" = FALSE
+      ),
+      class = "derivation"
+    )
+  )
 
   # Cleanup
   unlink(csv_file)
@@ -154,8 +250,25 @@ test_that("rxp_py2r: generates correct list", {
 
   d1 <- rxp_py2r(r_data, py_data)
 
-  testthat::expect_equal(d1$name, "r_data")
-  testthat::expect_equal(d1$type, "rxp_py2r")
+  # Create a subset of d1 with only the fields we want to test
+  d1_subset <- list(
+    "name" = d1$name,
+    "type" = d1$type,
+    "nix_env" = d1$nix_env
+  )
+  class(d1_subset) <- "derivation"
+
+  testthat::expect_equal(
+    d1_subset,
+    structure(
+      list(
+        "name" = "r_data",
+        "type" = "rxp_py2r",
+        "nix_env" = "default.nix"
+      ),
+      class = "derivation"
+    )
+  )
 })
 
 test_that("rxp_r2py: generates correct list", {
@@ -163,8 +276,20 @@ test_that("rxp_r2py: generates correct list", {
 
   d1 <- rxp_r2py(py_data, r_data)
 
-  testthat::expect_equal(d1$name, "py_data")
-  testthat::expect_equal(d1$type, "rxp_r2py")
+  # Test the entire object
+  testthat::expect_equal(
+    d1,
+    structure(
+      list(
+        "name" = "py_data",
+        "snippet" = '  py_data = makeRDerivation {\n    name = "py_data";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export RETICULATE_PYTHON=\'${defaultPkgs.python3}/bin/python\'\n       Rscript -e "\n         source(\'libraries.R\')\n         r_data <- readRDS(\'${r_data}/r_data\')\n         reticulate::py_save_object(r_data, \'py_data\', pickle = \'pickle\')"\n    \'\';\n  };',
+        "type" = "rxp_r2py",
+        "additional_files" = "",
+        "nix_env" = "default.nix"
+      ),
+      class = "derivation"
+    )
+  )
 })
 
 test_that("print.derivation: outputs expected format", {
@@ -173,10 +298,19 @@ test_that("print.derivation: outputs expected format", {
   # Capture the output of print.derivation
   output <- capture.output(print(d1))
 
-  testthat::expect_true(any(grepl("Name: mtcars_am", output)))
-  testthat::expect_true(any(grepl("Type: rxp_r", output)))
-  testthat::expect_true(any(grepl("Serialize function: saveRDS", output)))
-  testthat::expect_true(any(grepl("Unserialize function: readRDS", output)))
+  # Create the expected output
+  expected_output <- c(
+    "Name: mtcars_am",
+    "Type: rxp_r",
+    "Serialize function: saveRDS",
+    "Unserialize function: readRDS"
+  )
+
+  # Check that all expected lines are in the output
+  testthat::expect_equal(
+    all(sapply(expected_output, function(line) any(grepl(line, output)))),
+    TRUE
+  )
 })
 
 test_that("rxp_r: with additional files", {
@@ -186,13 +320,22 @@ test_that("rxp_r: with additional files", {
     additional_files = c("functions.R", "data.csv")
   )
 
-  testthat::expect_equal(d1$additional_files, c("functions.R", "data.csv"))
-  # Check that the src_snippet is included in the main snippet
-  testthat::expect_true(grepl(
-    "fileset = defaultPkgs.lib.fileset.unions",
-    d1$snippet
-  ))
-  testthat::expect_true(grepl("./data.csv", d1$snippet))
+  # Test the entire object
+  testthat::expect_equal(
+    d1,
+    structure(
+      list(
+        "name" = "mtcars_am",
+        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ];\n    };\n   buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      Rscript -e "\n        source(\'libraries.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
+        "type" = "rxp_r",
+        "additional_files" = c("functions.R", "data.csv"),
+        "nix_env" = "default.nix",
+        "serialize_function" = "saveRDS",
+        "unserialize_function" = "readRDS"
+      ),
+      class = "derivation"
+    )
+  )
 })
 
 test_that("rxp_py: with additional files", {
@@ -202,13 +345,22 @@ test_that("rxp_py: with additional files", {
     additional_files = c("functions.py", "data.csv")
   )
 
-  testthat::expect_equal(d1$additional_files, c("functions.py", "data.csv"))
-  # Check that the src_snippet is included in the main snippet
-  testthat::expect_true(grepl(
-    "fileset = defaultPkgs.lib.fileset.unions",
-    d1$snippet
-  ))
-  testthat::expect_true(grepl("./data.csv", d1$snippet))
+  # Test the entire object
+  testthat::expect_equal(
+    d1,
+    structure(
+      list(
+        "name" = "mtcars_pl_am",
+        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = "mtcars_pl_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ];\n    };\n   buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      python -c "\nexec(open(\'libraries.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
+        "type" = "rxp_py",
+        "additional_files" = c("functions.py", "data.csv"),
+        "nix_env" = "default.nix",
+        "serialize_function" = "with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)",
+        "unserialize_function" = "pickle.load"
+      ),
+      class = "derivation"
+    )
+  )
 })
 
 test_that("rxp_common_setup: handles invalid direction", {

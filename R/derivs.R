@@ -340,7 +340,8 @@ rxp_quarto <- function(
     type = "rxp_quarto",
     qmd_file = qmd_file,
     additional_files = additional_files,
-    nix_env = nix_env
+    nix_env = nix_env,
+    args = args
   ) |>
     structure(class = "derivation")
 }
