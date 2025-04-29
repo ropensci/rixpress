@@ -81,3 +81,30 @@ test_that("get_nodes_edges errors if dag.json is missing", {
     fixed = FALSE # Use regexp matching because of special characters
   )
 })
+
+test_that("unnest_all_columns correctly unnests data frames", {
+  # Create a test data frame with a list column containing data frames
+  test_df <- data.frame(
+    id = 1:2,
+    stringsAsFactors = FALSE
+  )
+  test_df$nested <- list(
+    data.frame(
+      colA = c("a", "b"),
+      colB = c("x", "y"),
+      stringsAsFactors = FALSE
+    ),
+    data.frame(colA = c("c", "d"), colB = c("z", "w"), stringsAsFactors = FALSE)
+  )
+
+  result <- unnest_all_columns(test_df)
+
+  expected <- data.frame(
+    id = c(1, 2, 1, 2),
+    colA = c("a", "b", "c", "d"),
+    colB = c("x", "y", "z", "w"),
+    stringsAsFactors = FALSE
+  )
+
+  expect_equal(result, expected)
+})

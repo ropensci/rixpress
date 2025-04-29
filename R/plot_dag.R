@@ -99,7 +99,7 @@ rxp_ggdag <- function(nodes_and_edges = get_nodes_edges()) {
   if (!requireNamespace("ggdag", quietly = TRUE)) {
     stop("You need to install {ggdag} to use this feature.")
   }
-  
+
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     stop("You need to install {ggplot2} to use this feature.")
   }
@@ -143,7 +143,11 @@ rxp_ggdag <- function(nodes_and_edges = get_nodes_edges()) {
     rxp_scale +
     rxp_shapes +
     ggdag::geom_dag_node(ggplot2::aes(fill = group, shape = group)) +
-    ggdag::geom_dag_text(ggplot2::aes(label = name), col = "black", nudge_y = -.3) +
+    ggdag::geom_dag_text(
+      ggplot2::aes(label = name),
+      col = "black",
+      nudge_y = -.3
+    ) +
     ggdag::theme_dag()
 }
 
