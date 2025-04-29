@@ -306,15 +306,22 @@ to <code><a href="../reference/rixpress.html">rixpress()</a></code>:</p>
 <p>This won’t build the pipeline but will generate useful files,
 including a JSON representation of the pipeline at
 <code>_rixpress/dag.json</code>. This process is quick and allows you to
-visualize the graph using <code><a href="../reference/rxp_visnetwork.html">rxp_visnetwork()</a></code> or other
-visualization functions:</p>
-<figure><img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/master/dag.png" alt="DAG"><figcaption aria-hidden="true">
+visualize the graph using <code><a href="../reference/rxp_visnetwork.html">rxp_visnetwork()</a></code>, which opens a
+new tab in your web browser with the DAG of the pipeline made using the
+<a href="https://datastorm-open.github.io/visNetwork/" class="external-link">visNetwork</a> package:</p>
+<video id="rixpress-video" width="640" height="360" controls><source src="https://github.com/b-rodrigues/rixpress/raw/refs/heads/main/rxp_visnetwork.mkv" type="video/x-matroska" srcset="NA"></source><!-- Fallback message -->
+Your browser does not support the MKV video format.
+</video><p>(This image shows the DAG of a more complex example pipeline.)</p>
+<p>For static documents, you can use <code><a href="../reference/rxp_ggdag.html">rxp_ggdag()</a></code> which uses
+<a href="https://github.com/r-causal/ggdag" class="external-link">ggdag</a> under the hood:</p>
+<figure><img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/main/dag.png" alt="DAG"><figcaption aria-hidden="true">
 DAG
-</figcaption></figure><p>(This image shows the DAG of a more complex example pipeline.)</p>
-<p>You can also return the underlying <code>igraph</code> object to plot
+</figcaption></figure><p>You can also return the underlying <code>igraph</code> object to plot
 the DAG using other tools:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dag_graph</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_visnetwork.html">rxp_visnetwork</a></span><span class="op">(</span>return_igraph <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/dag_for_ci.html">dag_for_ci</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>which saves the <code>dag.dot</code> object in the project’s
+<code>_rixpress/</code> folder.</p>
 <p>After reviewing the DAG, you can build the pipeline by running
 <code><a href="../reference/rxp_make.html">rxp_make()</a></code> instead of modifying your original
 <code><a href="../reference/rixpress.html">rixpress()</a></code> call.</p>

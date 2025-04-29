@@ -102,8 +102,8 @@
 <p>In the example above, the first derivation loads <code>mtcars.csv</code> (it actually should be a <code>.psv</code> file, since the data is separated by pipes –<code>|</code>… why? just because–). Each output (e.g., <code>mtcars</code>, <code>mtcars_am</code>, <code>mtcars_head</code>, <code>mtcars_tail</code>, <code>mtcars_mpg</code>, <code>page</code>) is built by Nix within the environment defined by the <code>default.nix</code> file. Concretely, <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> made using Nix as a package manager easier for R users, <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> makes it now easy to use Nix as a build automation tool!</p>
 <p>When you run <code><a href="reference/rixpress.html">rixpress()</a></code>, a folder called <code>_rixpress/</code> gets also generated which contains a file with a JSON representation of the pipeline’s DAG (Directed Acyclic Graph). You can visualize the pipeline using <code>plot_dag()</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">plot_dag</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<figure><img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/master/dag.png" alt="DAG"><figcaption aria-hidden="true">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/rxp_ggdag.html">rxp_ggdag</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<figure><img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/main/dag.png" alt="DAG"><figcaption aria-hidden="true">
 DAG
 </figcaption></figure><p>Because the pipeline is built using Nix, the outputs all get stored in the so-called Nix store under <code>/nix/store</code>. It can be annoying to retrieve objects from the Nix store so <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> contains several helper functions:</p>
 <ul>
