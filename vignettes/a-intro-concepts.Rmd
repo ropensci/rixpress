@@ -14,33 +14,33 @@ knitr::opts_chunk$set(
 )
 ```
 
-For a video version of this pipeline, [click here](youtube link to follow).
+For a video version of this tutorial, [click here](youtube link to follow).
 
-This vignette will introduce some jargon and walk you through setting up a
-simple pipeline using `{rixpress}`. It is useful, but not mandatory, to
-understand the concepts laid out in this vignette; we recommend you go through
-it, but if you don't get everything at first, don't worry. Try building a simple
-pipeline by going through the next vignette `vignette("b-basic-usage")` and come
-back to this vignette afterwards, and things should be clearer!
+This vignette introduces key terminology and walks you through setting up a
+simple pipeline using `{rixpress}`. Understanding the concepts presented here is
+helpful but not mandatory. I recommend reading through this vignette, but don't
+worry if you don't grasp everything immediately. You can try building a simple
+pipeline by following the next vignette `vignette("b-basic-usage")` and then
+return to this one; things should be clearer after some hands-on experience!
 
 ## Definitions
 
-In Nix jargon, a derivation *is a specification for running an executable on
-precisely defined input files to repeatably produce output files at uniquely
+In Nix terminology, a derivation is *a specification for running an executable
+on precisely defined input files to repeatably produce output files at uniquely
 determined file system paths.*
 ([source](https://nix.dev/manual/nix/2.25/language/derivations))
 
 In simpler terms, a derivation is a recipe with precisely defined inputs, steps,
-and a fixed output, meaning that for exactly the same inputs and exactly the
-same build steps, exactly the same output is produced. This is important to
-understand because to always build exactly the same output, several measures
-must be taken:
+and a fixed output. This means that given identical inputs and build steps, the
+exact same output will always be produced. To achieve this level of
+reproducibility, several important measures must be taken:
 
-- A derivation must have all of its inputs declared explicitly.
-- Inputs include software dependencies as well as configuration flags or
-  environment variables; in other words, anything necessary for a build process.
-- To ensure the exact same output is always built, the build process occurs in
-  an *hermetic* sandbox.
+- All inputs to a derivation must be explicitly declared.
+- Inputs include not just data files, but also software dependencies,
+  configuration flags, and environment variables, essentially anything necessary
+  for the build process.
+- The build process takes place in a *hermetic* sandbox to ensure the exact same
+  output is always produced.
 
 The next sections of this document explain these three points in more detail.
 
@@ -66,37 +66,40 @@ pkgs.stdenv.mkDerivation {
 }
 ```
 
-I will not go into details: the only thing that matters is that this uses `awk`,
-a common unix data processing tool, to keep the rows of the `mtcars.csv` file
-where its 9th column (the `am` column) equals 1. As you can see, a lot of
-boilerplate code must be written to perform this simple action. However, this is
-entirely, and completely, reproducible: the dependencies are declared and pinned
-to a dated branch of our `rstats-on-nix/nixpkgs` fork, and the only think that
-could make this pipeline fail (well, it's a bit of a stretch to call this a
-*pipeline*) is if the `mtcars.csv` file is not shared with it.
+I won't go into details here, but what's important is that this code uses `awk`,
+a common Unix data processing tool, to filter the `mtcars.csv` file to keep only
+rows where the 9th column (the `am` column) equals 1. As you can see, a
+significant amount of boilerplate code is required to perform this simple
+operation. However, this approach is completely reproducible: the dependencies
+are declared and pinned to a specific dated branch of our
+`rstats-on-nix/nixpkgs` fork, and the only thing that could make this pipeline
+fail (though it's a bit of a stretch to call this a *pipeline*) is if the
+`mtcars.csv` file is not shared with it.
 
-I could then add another step that uses `filtered.csv` as an input and continue
-to process it. If we label the above code as `f` and a subsequent chunk of Nix
-code to `g`, then adding another step would essentially result in the following
-computation: `mtcars |> f |> g`.
-
-The goal of `{rixpress}` is to help you write pipelines like `mtcars |> f |> g`
-without needing to learn Nix, but still benefit from its features.
+You could then add another step that uses `filtered.csv` as input and continue
+processing it. If you label the above code as `f` and a subsequent chunk of Nix
+code as `g`, then adding another step would essentially result in the following
+computation: `mtcars |> f |> g`, where `f` and `g` are pure functions, and the
+pipeline is thus a composition of pure functions.
 
 Nix builds `filtered.csv` in two steps: it first generates a *derivation* from
-this expression, and only then builds it. For our purposes, I will be referring
-to the code as the one above as *derivation*, instead of expression, this to
-avoid confusion with the concept of *expression* in R.
+this expression, and only then builds it. For clarity in this document, I'll
+refer to code like the example above as a *derivation* rather than an
+expression, to avoid confusion with the concept of *expression* in R.
+
+The goal of `{rixpress}` is to help you write pipelines like `mtcars |> f |> g`
+without needing to learn Nix, while still benefiting from its powerful
+reproducibility features.
 
 ## Dependencies of derivations
 
-Nix requires dependencies of any derivation to be explicitely listed and also
-managed by Nix itself. If you're building your output and it requires, say,
+Nix requires dependencies of any derivation to be explicitly listed and also
+managed by Nix itself. If you're building output that requires, for example,
 Quarto, then Quarto must be explicitly listed as an input, even if you already
-have Quarto installed on your system. The same goes for Quarto's dependencies,
-and all the dependencies of dependencies of Quarto, all the way down to the
-common ancestor of all packages. With Nix, to run a linear regression with R,
-you first need to build the universe.
+have Quarto installed on your system. The same applies to Quarto's dependencies,
+and all the dependencies of those dependencies, all the way down to the common
+ancestor of all packages. With Nix, to run a linear regression with R, you
+essentially need to build the entire universe of dependencies first.
 
 In Nix terms, this complete set of packages and their dependencies are what its
 author, Eelco Dolstra, refers to as *component closures*:
@@ -121,40 +124,45 @@ Figure 4 of Dolstra et al. (2004)
 </figure>
 
 In the figure, `subversion` depends on `openssl` which itself depends on
-`glibc`. So if you write a derivation that is supposed to build a data frame
-that is the result of a filter applied to `mtcars`, then this derivation
-requires:
+`glibc`. Similarly, if you write a derivation that builds a data frame by
+filtering `mtcars`, this derivation requires:
 
-- An input file, say, `mtcars.csv`;
-- R and potentially R packages say `{dplyr}`;
-- R's and R packages dependencies;
-- the dependencies of the dependencies (all the way down).
+- An input file, such as `mtcars.csv`.
+- R and potentially R packages like `{dplyr}`.
+- All of R's dependencies and the dependencies of any R packages.
+- The dependencies of those dependencies (all the way down).
 
-All need to be managed by Nix, because if one of these dependencies is "outside"
-this component closure and only available on your machine, then the pipeline
-only *works on your machine*!
+All of these must be managed by Nix. If any dependency exists "outside" this
+component closure and is only available on your machine, then the pipeline will
+only *work on your machine* - defeating the purpose of reproducibility! (It
+should be noted however that there are, sometimes, good reasons to have a
+dependency that is not managed by Nix: see the vignette ON CMDSTANR, but these
+should be the exception rather than the rule).
 
 Nix distinguishes between different types of dependencies (`buildInputs`,
 `nativeBuildInputs`, `propagatedBuildInputs`, `propagatedNativeBuildInputs`) but
-we can skip this concept which is only relevant for packaging upstream software,
+let's skip this concept which is only relevant for packaging upstream software,
 not to define our pipelines. But if you're curious, read
 [this](https://gist.github.com/b-rodrigues/c677b59126d05d43347ed9623ddd5b0c).
 
 ## The Nix store and hermetic builds
 
-When building derivations, their outputs are saved into the so-called *Nix
-store*. Typically located at `/nix/store/`, this folder contains all the
-software and build artifacts produced by Nix. Suppose you write a derivation
-that computes the tail of a file named `mtcars.csv`. Once the derivation is
-built, its output would be stored at a path similar to
-`/nix/store/81k4s9q652jlka0c36khpscnmr8wk7jb-mtcars_tail`, where the long
-cryptographic hash uniquely identifies the build output. This hash is computed
-based on the content of the derivation along with all its inputs and
-dependencies, thereby ensuring that the build is fully reproducible. As a
-result, building the same derivation on two different machines will yield the
-same cryptographic hash, and you can replace the built artifact with the
-derivation that generates it one-to-one. This is exactly like in mathematics; if
-you consider the function $f(x):= x^2$ then writing $f(2)$ or $4$ is the same.
+When building derivations, their outputs are saved into the *Nix store*.
+Typically located at `/nix/store/`, this folder contains all the software and
+build artifacts produced by Nix.
+
+For example, if you write a derivation that computes the tail of a file named
+`mtcars.csv`, once the derivation is built, its output would be stored at a path
+like `/nix/store/81k4s9q652jlka0c36khpscnmr8wk7jb-mtcars_tail`. The long
+cryptographic hash uniquely identifies the build output and is computed based on
+the content of the derivation along with all its inputs and dependencies. This
+ensures that the build is fully reproducible.
+
+As a result, building the same derivation on two different machines will yield
+the same cryptographic hash, and you can substitute the built artifact with the
+derivation that generates it one-to-one. This is analogous to mathematics: if
+you consider the function $f(x):= x^2$, then writing $f(2)$ or $4$ represents
+the same value.
 
 This mechanism is what makes it possible to import and export build artifacts
 between pipelines to avoid having to rebuild everything from scratch on
@@ -165,64 +173,67 @@ functions that allow this, called `export_nix_archive()` and
 To ensure that building derivations always produces exactly the same outputs,
 builds must occur in an isolated environment, often referred to as a sandbox.
 This approach, known as a hermetic build process, ensures that the build is
-unaffected by external factors.
+unaffected by external factors or the state of the host system.
 
-The same goes for environment variables; for example, R users may have to set
-the variable `JAVA_HOME` to make R aware of where the Java runtime is installed.
-However, if Java is required for a derivation, setting the variable `JAVA_HOME`
-outside of the sandbox does not help; it must be set explicitly within the
-sandbox. This also means that if you need to access an API to download some
-data, it will not work because no connection to the internet is allowed from
-within the build sandbox.
+This isolation extends to environment variables as well. For example, R users
+might set the variable `JAVA_HOME` to make R aware of where the Java runtime is
+installed. However, if Java is required for a derivation, setting `JAVA_HOME`
+outside of the sandbox has no effect; it must be explicitly set within the
+sandbox. This isolation also means that if you need to access an API to download
+data, it won't work because no internet connection is allowed from within the
+build sandbox.
 
-This may seem very restrictive, but if you think about it, it makes sense if
-your goal is to achieve complete reproducibility. Indeed, say that you need to
-use a function `f()` to access an API to get data for your analysis: what
-guarantee do you have that running `f()` today will yield the same result as
-running `f()` in six months? One year? Will this API even still be online? For
-reproducibility purposes, you should obtain the data from this API, then version
-and/or archive it, and continue using this data for your analysis (and share it
-with potential reproducers of your study).
+This may seem very restrictive, but it makes perfect sense if your goal is to
+achieve complete reproducibility. Consider a scenario where you need to use a
+function `f()` to access an API to get data for your analysis. What guarantee do
+you have that running `f()` today will yield the same result as running `f()` in
+six months or a year? Will the API even still be online?
+
+For true reproducibility, you should obtain the data from the API once, then
+version and archive it, and continue using this archived data for your analysis
+(and share it with anyone who might want to reproduce your study).
 
 ## Summary and conclusion
 
-As explained at the start of this vignette, Nix will generate a derivation from
-a Nix expression with a process called instantiation. Writing a reproducible
-pipeline with Nix would mean having to write a very long and complex Nix
-expression. `{rixpress}` takes care of this for you.
+As explained at the beginning of this vignette, Nix generates a derivation from
+a Nix expression through a process called instantiation. Writing a reproducible
+pipeline with Nix directly would require writing very long and complex Nix
+expressions. This is where `{rixpress}` comes in - it handles this complexity
+for you.
 
-When instantiating an expression, Nix processes your declarations, resolves all
-the inputs (including source files, build scripts, and external dependencies),
-and computes a unique cryptographic hash. This hash, derived from both the
-contents of your derivation and its entire dependency graph, forms part of the
-derivation's identity. Essentially, it ensures that even the smallest change in
-your inputs will lead to a distinct derivation, safeguarding reproducibility. To
-avoid confusion with the concept of expression in R, we will be referring to Nix
+During instantiation, Nix processes your declarations, resolves all inputs
+(including source files, build scripts, and external dependencies), and computes
+a unique cryptographic hash. This hash is derived from both the contents of your
+derivation and its entire dependency graph, forming part of the derivation's
+identity. This ensures that even the smallest change in your inputs will result
+in a distinct derivation, guaranteeing reproducibility. To avoid confusion with
+the concept of expression in R, throughout this documentation I refer to Nix
 expressions as *derivations*.
 
 Once instantiated, derivations can be built. During the build process, Nix
 constructs an isolated, hermetic environment where only the explicitly declared
-dependencies are available. By doing so, the build is entirely deterministic,
-meaning that the exact same inputs always produce the same outputs, regardless
-of the machine or environment. This isolation not only improves reliability but
-also facilitates debugging and maintenance, as any external variability is
-removed from the equation.
+dependencies are available. This makes the build entirely deterministic, meaning
+that identical inputs always produce identical outputs, regardless of the
+machine or environment. This isolation improves reliability and facilitates
+debugging and maintenance by eliminating external variables.
 
-After a successful build, Nix stores the build output in the Nix store
-(typically located at `/nix/store/`). For instance, if you build a derivation
-that processes the `mtcars.csv` file, the resultant output might be saved under
-a unique path such as `/nix/store/81k4s9q652jlka0c36khpscnmr8wk7jb-mtcars_tail`.
-The cryptographic hash is computed by taking into consideration the derivation's
-input and build process. If *anything* changes, the hash will be different; this
-goes as far as if you change the separator in the `mtcars.csv` data set from `,`
-to `|`, then the resulting `mtcars_tail` object, while looking exactly the same
-to us, will be different from the perspective of Nix, because on of its inputs
-was different.
+After a successful build, Nix stores the output in the Nix store (typically at
+`/nix/store/`). For example, if you build a derivation that processes the
+`mtcars.csv` file, the output might be saved under a unique path like
+`/nix/store/81k4s9q652jlka0c36khpscnmr8wk7jb-mtcars_tail`. The cryptographic
+hash is computed based on the derivation's inputs and build process. If
+*anything* changes, the hash will be different. This is extremely precise - even
+changing the separator in the `mtcars.csv` data set from `,` to `|` will result
+in a different hash, even though the resulting `mtcars_tail` object might look
+identical to us. From Nix's perspective, they're different because one of the
+inputs was different.
 
-The lesson here, is that Nix is quite a complex tool, because it solves quite a
-complex problem. `{rixpress}` (and `{rix}`) are packages that aim to make Nix
-more accessible to users of the R programming language.
+The key takeaway is that Nix is a complex tool because it solves a complex
+problem which is ensuring complete reproducibility across different environments
+and time. `{rixpress}` and `{rix}` are packages designed to make Nix more
+accessible to R users, allowing you to benefit from Nix's reproducibility
+without having to learn all its complexities.
 
-Now that you are familiar with basic Nix concepts, let's move on to the next
-vignette to set up our first, basic, pipeline by going to the
-`vignette("b-basic-usage")` vignette.
+Now that you're familiar with the basic Nix concepts, let's move on to the next
+vignette where you'll set up your first basic pipeline:
+`vignette("b-basic-usage")`.
