@@ -44,11 +44,22 @@ test_that("rxp_py: custom serialization functions work", {
     unserialize_function = "custom_load"
   )
 
+  # Test the entire object
   testthat::expect_equal(
-    d1$serialize_function,
-    "custom_save(globals()['mtcars_pl_am'], 'mtcars_pl_am')"
+    d1,
+    structure(
+      list(
+        "name" = "mtcars_pl_am",
+        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = \"mtcars_pl_am\";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      python -c "\nexec(open(\'libraries.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\ncustom_save(globals()[\'mtcars_pl_am\'], \'mtcars_pl_am\')\n"\n    \'\';\n  };',
+        "type" = "rxp_py",
+        "additional_files" = "",
+        "nix_env" = "default.nix",
+        "serialize_function" = "custom_save(globals()['mtcars_pl_am'], 'mtcars_pl_am')",
+        "unserialize_function" = "custom_load"
+      ),
+      class = "derivation"
+    )
   )
-  testthat::expect_equal(d1$unserialize_function, "custom_load")
 })
 
 test_that("rxp_quarto: generates correct list", {
