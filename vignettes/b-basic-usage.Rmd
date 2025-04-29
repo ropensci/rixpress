@@ -271,24 +271,42 @@ rixpress(derivs, build = FALSE)
 
 This won't build the pipeline but will generate useful files, including a JSON
 representation of the pipeline at `_rixpress/dag.json`. This process is quick
-and allows you to visualize the graph using `rxp_visnetwork()` or other
-visualization functions:
+and allows you to visualize the graph using `rxp_visnetwork()`, which opens
+a new tab in your web browser with the DAG of the pipeline made using the
+`{visNetwork}` package:
 
-<figure>
-<img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/master/dag.png" alt="DAG" />
-<figcaption aria-hidden="true">
-DAG
-</figcaption>
-</figure>
+<video
+  id="rixpress-video"
+  width="640"
+  height="360"
+  controls
+>
+  <source
+    src="https://github.com/b-rodrigues/rixpress/raw/refs/heads/main/rxp_visnetwork.mkv"
+    type="video/x-matroska"
+  />
+  <!-- Fallback message -->
+  Your browser does not support the MKV video format.
+</video>
 
 (This image shows the DAG of a more complex example pipeline.)
+
+For static documents, you can use `rxp_ggdag()` which uses `{ggdag}` under
+the hood:
+
+<figure>
+<img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/main/dag.png" alt="DAG" />
+<figcaption aria-hidden="true">DAG</figcaption>
+</figure>
 
 You can also return the underlying `igraph` object to plot the DAG using other
 tools:
 
 ```r
-dag_graph <- rxp_visnetwork(return_igraph = TRUE)
+dag_for_ci()
 ```
+
+which saves the `dag.dot` object in the project's `_rixpress/` folder.
 
 After reviewing the DAG, you can build the pipeline by running `rxp_make()`
 instead of modifying your original `rixpress()` call.

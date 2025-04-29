@@ -82,11 +82,11 @@ pipeline’s DAG (Directed Acyclic Graph). You can visualize the pipeline
 using `plot_dag()`:
 
 ``` r
-plot_dag()
+rxp_ggdag()
 ```
 
 <figure>
-<img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/master/dag.png" alt="DAG" />
+<img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/main/dag.png" alt="DAG" />
 <figcaption aria-hidden="true">
 DAG
 </figcaption>
