@@ -68,53 +68,51 @@
 
     
     
-<p>This vignette demonstrates how to set up a simple pipeline, and
+<p>This vignette demonstrates how to set up a simple pipeline and
 assumes you’ve read <code><a href="../articles/a-intro-concepts.html">vignette("a-intro-concepts")</a></code>.</p>
-<p>For a video version of this vignette, CHECK OUT THIS UPCOMING VIDEO
-ON YOUTUBE</p>
+<p>For a video version of this tutorial, <a href="youtube%20link%20to%20follow">check out this upcoming video on
+YouTube</a>.</p>
 <div class="section level2">
 <h2 id="analysing-the-mtcars-dataset-using-r-only">Analysing the mtcars dataset using R only<a class="anchor" aria-label="anchor" href="#analysing-the-mtcars-dataset-using-r-only"></a>
 </h2>
-<p><em>This pipeline will only focus on R. For multilingual pipelines,
-read the relevant vignette</em></p>
-<p><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> comes with many functions to help you write
-derivations; these typically start with the string <code>rxp_</code> and
-all have roughly the same structure. The first step in any pipeline is
-to get some data in. To include data in a <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>
-pipeline, you should use <code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code>:</p>
+<p><em>This pipeline focuses only on R. For multilingual pipelines, see
+the <code><a href="../articles/c-polyglot.html">vignette("c-polyglot")</a></code> vignette.</em></p>
+<p><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> provides several functions to help you write
+derivations. These functions typically start with the prefix
+<code>rxp_</code> and follow a similar structure. The first step in any
+pipeline is usually to import data. To include data in a
+<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> pipeline, use <code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_r_file.html">rxp_r_file</a></span><span class="op">(</span></span>
 <span>  name <span class="op">=</span> <span class="va">mtcars</span>,</span>
 <span>  path <span class="op">=</span> <span class="st">'data/mtcars.csv'</span>,</span>
 <span>  read_function <span class="op">=</span> \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span>file <span class="op">=</span> <span class="va">x</span>, sep <span class="op">=</span> <span class="st">"|"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code> uses an R function of only one argument
-which should be the path to the file to be read. In this case, for
-illustration purposes, we assume the columns in the
-<code>mtcars.csv</code> file are separated by the <code>|</code> symbol.
-So we use an anonymous function to set the correct separator and create
-a temporary function of only one argument to read the path,
-<code>'data/mtcars.csv'</code>. You should be aware that doing this
-means that the <code>mtcars.csv</code> file <strong>will be
-copied</strong> to the Nix store. This is essential to how Nix works and
-cannot be avoided.</p>
-<p>Also notice that <code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code> is quite flexible: it’ll
-work with any function to read in a type of file.</p>
-<p>Once that data is read, we need to start manipulating it. To generate
-a similar derivation to the one described in
+<p><code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code> requires an R function with a single
+argument: the path to the file to be read. In this example, we assume
+the columns in the <code>mtcars.csv</code> file are separated by the
+<code>|</code> symbol. We use an anonymous function to set the correct
+separator and create a temporary function with a single argument to read
+the file at <code>'data/mtcars.csv'</code>.</p>
+<p>Important: This approach means that the <code>mtcars.csv</code> file
+<strong>will be copied</strong> to the Nix store. This is essential to
+how Nix works and cannot be avoided.</p>
+<p>Note that <code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code> is quite flexible: it works with
+any function that reads a file, regardless of the file type.</p>
+<p>Once the data is imported, we can start manipulating it. To generate
+a derivation similar to the one described in
 <code><a href="../articles/a-intro-concepts.html">vignette("a-intro-concepts")</a></code>, but using R and
-<a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> to process the data instead of <code>awk</code>,
-one would write:</p>
+<a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> instead of <code>awk</code>, we would write:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
 <span>  name <span class="op">=</span> <span class="va">filtered_mtcars</span>,</span>
 <span>  expr <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">am</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>This should be very familiar to users of the <a href="https://docs.ropensci.org/targets/" class="external-link">targets</a>
-package: just like with the <code>tar_target()</code> function, you just
-need to give a name to the derivation and then command to generate it.
-That’s it: all the required Nix code gets generated by
-<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>.</p>
+<p>This syntax should be familiar to users of the <a href="https://docs.ropensci.org/targets/" class="external-link">targets</a>
+package: similar to the <code>tar_target()</code> function, you simply
+provide a name for the derivation and the expression to generate it.
+That’s all you need to write for <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> to generate all
+the required Nix code automatically.</p>
 <p>To continue transforming the data, you only need to define a new
 derivation:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -122,17 +120,18 @@ derivation:</p>
 <span>  name <span class="op">=</span> <span class="va">mtcars_mpg</span>,</span>
 <span>  expr <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">filtered_mtcars</span>, <span class="va">mpg</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Notice how the name of <code>d1</code> is used in <code>d2</code>:
-this is how the relationship between the derivations is defined.</p>
-<p>Let’s stop here for now, and try to build the pipeline. For this,
-define a list of derivations:</p>
+<p>Notice how the name of <code>d1</code> (<code>filtered_mtcars</code>)
+is used in <code>d2</code>: this is how dependencies between derivations
+are defined.</p>
+<p>Let’s stop here and build our pipeline. First, we need to define a
+list of derivations:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">derivs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">d0</span>, <span class="va">d1</span>, <span class="va">d2</span><span class="op">)</span></span></code></pre></div>
 <p>and pass it to the <code><a href="../reference/rixpress.html">rixpress()</a></code> function:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span><span class="va">derivs</span><span class="op">)</span></span></code></pre></div>
-<p>To avoid having to write so much code, you can instead directly
-define the list and pass it to <code><a href="../reference/rixpress.html">rixpress()</a></code> using
+<p>To make the code more concise, you can directly define the list and
+pass it to <code><a href="../reference/rixpress.html">rixpress()</a></code> using the pipe operator
 <code>|&gt;</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
@@ -155,35 +154,33 @@ define the list and pass it to <code><a href="../reference/rixpress.html">rixpre
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>Running <code><a href="../reference/rixpress.html">rixpress()</a></code> does several things:</p>
+<p>Running <code><a href="../reference/rixpress.html">rixpress()</a></code> performs several actions:</p>
 <ul>
-<li>a folder called <code>_rixpress</code> gets created in the project’s
-root path. This folder contains several files that are generated
-automatically for the pipeline to build successfully;</li>
-<li>a file called <code>pipeline.nix</code> gets generated and as you’ve
-surely guessed it, it’s the definition of the whole pipeline in the Nix
-language;</li>
-<li>finally, the function <code><a href="../reference/rxp_make.html">rxp_make()</a></code> gets also called to
-actually build the pipeline.</li>
+<li>creates a folder called <code>_rixpress</code> in the project’s root
+directory. This folder contains automatically generated files needed for
+the pipeline to build successfully.</li>
+<li>generates a file called <code>pipeline.nix</code>, which defines the
+entire pipeline in the Nix language.</li>
+<li>calls the function <code><a href="../reference/rxp_make.html">rxp_make()</a></code> to build the
+pipeline.</li>
 </ul>
-<p>However, if you try to run the code above it’ll likely fail; this is
-because another piece of the puzzle is missing, namely, the environment
-the pipeline must run in is missing!</p>
+<p>However, if you try to run the code above, it will likely fail. This
+is because a crucial piece is missing: the environment in which the
+pipeline must run!</p>
 </div>
 <div class="section level2">
-<h2 id="defining-a-reproducible-shell-for-execution">Defining a reproducible shell for execution<a class="anchor" aria-label="anchor" href="#defining-a-reproducible-shell-for-execution"></a>
+<h2 id="defining-a-reproducible-shell-for-execution">Defining a Reproducible Shell for Execution<a class="anchor" aria-label="anchor" href="#defining-a-reproducible-shell-for-execution"></a>
 </h2>
-<p>Remember that the whole point of using Nix is that it forces you to
-be very thorough when defining derivations by making you declare their
-dependencies explicitly. But in the case of the pipeline above, where
-are these dependencies defined? Which version of R should be used? And
-which R packages? The pipeline uses the function <code><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter()</a></code>
-and <code>select()</code> from the <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> package, so we
-must declare them. But how? This is where <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> gets used:
-<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> is a package that makes it possible to define
-reproducible development environments using very simple R code. For
-example, we could define an environment with R 4.5.0 and
-<a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> like so:</p>
+<p>Remember that the core purpose of using Nix is to ensure
+reproducibility by forcing you to explicitly declare all dependencies.
+For our pipeline above, we need to specify: Which version of R should be
+used? Which R packages? The pipeline uses <code><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter()</a></code> and
+<code>select()</code> from the <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> package, so we must
+declare these dependencies.</p>
+<p>This is where the <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> package comes in.
+<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> allows you to define reproducible development
+environments using simple R code. For example, we can define an
+environment with R and <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> like this:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rix/" class="external-link">rix</a></span><span class="op">)</span></span>
 <span></span>
@@ -195,31 +192,29 @@ example, we could define an environment with R 4.5.0 and
 <span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Running this code generates a <code>default.nix</code> file that can
-be built using Nix by calling <code>nix-build</code>, which builds a
-development environment that contains RStudio, R and
-<a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> as of the 11th of April 2025. This environment can
-be used for interactive data analysis like you would if you installed
-RStudio, R and <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> using the usual installation methods
-for your operating system. To learn more about <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>,
-please visit <a href="https://docs.ropensci.org/rix/" class="external-link">https://docs.ropensci.org/rix/</a>.</p>
-<p>If you want to work on a machine without R nor <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> but
-with Nix already installed, we provide a way to bootstrap a complete
-environment using this call:</p>
+be built using Nix by calling <code>nix-build</code>. This creates a
+development environment containing RStudio, R, and <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a>
+as they existed on April 11, 2025. You can use this environment for
+interactive data analysis just as you would with a standard installation
+of RStudio, R, and <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a>. To learn more about
+<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, visit <a href="https://docs.ropensci.org/rix/" class="external-link">https://docs.ropensci.org/rix/</a>.</p>
+<p>If you’re working on a machine that has Nix installed but doesn’t
+have R or <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, you can bootstrap a complete environment
+with this command:</p>
 <pre><code>nix-shell --expr "$(curl -sl https://raw.githubusercontent.com/ropensci/rix/main/inst/extdata/default.nix)"</code></pre>
-<p>This will drop you into a shell with R and <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>
-available. Simply start R by typing <code>R</code> and then
+<p>This command opens a shell with R and <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> available.
+Start R by typing <code>R</code> and then run
 <code>source("gen-env.R")</code> to generate the required
-<code>default.nix</code>. Then, quit R and the shell (CTRL-D or
-<code><a href="https://rdrr.io/r/base/quit.html" class="external-link">quit()</a></code> in R, <code>exit</code> in the terminal) and then
-build the environment defined by the freshly generated
-<code>default.nix</code> by typing <code>nix-build</code>.</p>
-<p>Reproducible development environments generated by <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>
-are where the dependencies of the pipelines get defined. In order to use
-this environment to build a <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> pipeline, you also
-have to add <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> to the list of packages to install
-in the environment. Because <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> is still being
-developed, it must be installed from GitHub. The script to set up the
-environment will look like this:</p>
+<code>default.nix</code> file. Next, exit R (with CTRL-D or
+<code><a href="https://rdrr.io/r/base/quit.html" class="external-link">quit()</a></code>) and exit the shell (with <code>exit</code>).
+Finally, build the environment by running <code>nix-build</code>.</p>
+<p>The reproducible development environments generated by
+<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> define all the dependencies needed for your pipeline.
+To use this environment to build a <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> pipeline, you
+must also add <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> to the list of packages in the
+environment. Since <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> is still under development,
+it must be installed from GitHub. Here’s how the complete environment
+setup script looks:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rix/" class="external-link">rix</a></span><span class="op">)</span></span>
 <span></span>
@@ -236,11 +231,10 @@ environment will look like this:</p>
 <span>  project_path <span class="op">=</span> <span class="st">"."</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>As explained before, after building this environment using
-<code>nix-build</code> you can use it to work interactively on your
-project, but also to set up your reproducible pipeline using
-<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>.</p>
-<p>This is what the script containing the pipeline will look like:</p>
+<p>After building this environment with <code>nix-build</code>, you can
+use it both for interactive work on your project and for setting up your
+reproducible pipeline with <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>.</p>
+<p>Here’s what the pipeline script looks like:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span><span class="co"># Define pipeline</span></span>
@@ -262,79 +256,87 @@ project, but also to set up your reproducible pipeline using
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span>project_path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span></code></pre></div>
-<p>This is the setup that we recommend, always have two scripts:</p>
+<p>I recommend always using two separate scripts:</p>
 <ul>
 <li>
-<code>gen-env.R</code> (or similarly named): the script that uses
-<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> to define the execution environment;</li>
+<code>gen-env.R</code>: Uses <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> to define the
+execution environment</li>
 <li>
-<code>gen-pipeline.R</code> (or similarly named): the script that
-uses <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> to define the reproducible analytical
-pipeline.</li>
+<code>gen-pipeline.R</code>: Uses <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> to define
+the reproducible analytical pipeline</li>
 </ul>
-<p>You can easily get started with the <code><a href="../reference/rxp_init.html">rxp_init()</a></code> function
-which will generate these two scripts for you to get started
-quickly.</p>
-<p>When executing <code>gen-pipeline.R</code> (or its contents,
-line-by-line), the environment defined in the <code>default.nix</code>
-gets used (it is also possible to define separate environments for
-separate derivations, but this is left for later) and you should see the
-following:</p>
+<p>You can quickly create these scripts using the
+<code><a href="../reference/rxp_init.html">rxp_init()</a></code> function, which generates both files with
+starter code to help you get started quickly.</p>
+<p>When you run <code>gen-pipeline.R</code> (or execute its contents
+line-by-line), the environment defined in <code>default.nix</code> is
+used. (It’s also possible to define separate environments for different
+derivations, which we’ll cover in a later vignette.) Upon successful
+execution, you should see:</p>
 <pre><code>Build process started...
 
 
 Build successful! Run `rxp_inspect()` for a summary.
 Read individual derivations using `rxp_read()` or
 load them into the global environment using `rxp_load()`.</code></pre>
-<p>You can now follow the instructions, and start by using
-<code><a href="../reference/rxp_inspect.html">rxp_inspect()</a></code> which will show you were the outputs are
-located. <code><a href="../reference/rxp_inspect.html">rxp_inspect()</a></code> is especially useful in case the
-pipeline fails, to know which derivations failed and which were
-successfully built. Then, you can run
-<code>rxp_read("mtcars_mpg")</code> to read this object in the current
-interactive session, or <code>rxp_copy("mtcars_mpg")</code> to create a
-folder called <code>pipeline-outputs</code> which will contain
-<code>mtcars_mpg</code> as an <code>.rds</code> file (if you call
-<code><a href="../reference/rxp_copy.html">rxp_copy()</a></code> without arguments, all the outputs of the
-pipeline will be copied to this folder).</p>
+<p>Now you can follow these instructions:</p>
+<ol style="list-style-type: decimal">
+<li>Use <code><a href="../reference/rxp_inspect.html">rxp_inspect()</a></code> to see where the outputs are located.
+This function is particularly useful if the pipeline fails, as it shows
+which derivations succeeded and which failed.</li>
+<li>Use <code>rxp_read("mtcars_mpg")</code> to read the object into your
+current R session, or <code>rxp_load("mtcars_mpg")</code> to load it
+directly into your global environment.</li>
+<li>Alternatively, use <code>rxp_copy("mtcars_mpg")</code> to create a
+folder called <code>pipeline-outputs</code> containing
+<code>mtcars_mpg</code> as an <code>.rds</code> file. If you call
+<code><a href="../reference/rxp_copy.html">rxp_copy()</a></code> without arguments, all pipeline outputs will be
+copied to this folder.</li>
+</ol>
 </div>
 <div class="section level2">
-<h2 id="dag-representation-of-the-pipeline">DAG representation of the pipeline<a class="anchor" aria-label="anchor" href="#dag-representation-of-the-pipeline"></a>
+<h2 id="dag-representation-of-the-pipeline">DAG Representation of the Pipeline<a class="anchor" aria-label="anchor" href="#dag-representation-of-the-pipeline"></a>
 </h2>
-<p>Sometimes it might be useful to inspect a graphical representation of
-the pipeline as a DAG, a directed acyclic graph. You can inspect the DAG
-before building the pipeline by adding the <code>build = FALSE</code>
-argument to <code><a href="../reference/rixpress.html">rixpress()</a></code>. This will not build the pipeline,
-but instead already generate some useful files, such as a json
-representation of the pipeline located under
-<code>_rixpress/dag.json</code>. This should be very quick, and will
-allow you to visualize the graph using <code>plot_dag()</code>:</p>
+<p>It’s often helpful to visualize your pipeline as a DAG (directed
+acyclic graph). You can generate and inspect this visualization before
+building the pipeline by adding the <code>build = FALSE</code> argument
+to <code><a href="../reference/rixpress.html">rixpress()</a></code>:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span><span class="va">derivs</span>, build <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<p>This won’t build the pipeline but will generate useful files,
+including a JSON representation of the pipeline at
+<code>_rixpress/dag.json</code>. This process is quick and allows you to
+visualize the graph using <code><a href="../reference/rxp_visnetwork.html">rxp_visnetwork()</a></code> or other
+visualization functions:</p>
 <figure><img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/master/dag.png" alt="DAG"><figcaption aria-hidden="true">
 DAG
-</figcaption></figure><p>(this is the DAG of a slightly more complex example).</p>
-<p>It is also possible to instead return the underlying
-<code>igraph</code> object which then allows you to plot the DAG using
-other tools if you prefer, by using
-<code>plot_dag(return_igraph = TRUE)</code>.</p>
-<p>You can then build the pipeline using <code><a href="../reference/rxp_make.html">rxp_make()</a></code> instead
-of removing <code>build = FALSE</code> from <code><a href="../reference/rixpress.html">rixpress()</a></code>.</p>
+</figcaption></figure><p>(This image shows the DAG of a more complex example pipeline.)</p>
+<p>You can also return the underlying <code>igraph</code> object to plot
+the DAG using other tools:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dag_graph</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_visnetwork.html">rxp_visnetwork</a></span><span class="op">(</span>return_igraph <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>After reviewing the DAG, you can build the pipeline by running
+<code><a href="../reference/rxp_make.html">rxp_make()</a></code> instead of modifying your original
+<code><a href="../reference/rixpress.html">rixpress()</a></code> call.</p>
 </div>
 <div class="section level2">
 <h2 id="conclusion">Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>
 </h2>
-<p>Now that you know the very basics, we invite to check out the
-examples located <a href="https://github.com/b-rodrigues/rixpress_demos" class="external-link">here</a>. Each of
-these examples will teach you about features of
-<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>:</p>
+<p>Now that you understand the basics, we invite you to explore the
+examples located in the <a href="https://github.com/b-rodrigues/rixpress_demos" class="external-link">rixpress_demos
+repository</a>. These examples demonstrate additional features of
+<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>, including:</p>
 <ul>
-<li>build a Quarto document;</li>
-<li>polyglot pipelines and how to transfer data between R and Python
-derivations;</li>
-<li>import many files in one go;</li>
-<li>use multiple environments instead of only one
-<code>default.nix</code> file.</li>
+<li>Building Quarto documents</li>
+<li>Creating polyglot pipelines that transfer data between R and
+Python</li>
+<li>Importing multiple files at once</li>
+<li>Using multiple environments instead of a single
+<code>default.nix</code> file</li>
 </ul>
-<p>We recommend you check out the <a href="">video</a> as well.</p>
+<p>For a more detailed walkthrough, check out our <a href="video%20link%20to%20follow">video tutorial</a>.</p>
+<p>In the next vignette, <code><a href="../articles/c-polyglot.html">vignette("c-polyglot")</a></code>, we’ll
+explore how to create pipelines that combine R and Python code.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
