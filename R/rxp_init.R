@@ -22,7 +22,6 @@
 #'
 #' @export
 rxp_init <- function(project_path = ".", skip_prompt = FALSE) {
-
   confirm <- function(question) {
     if (skip_prompt) return(TRUE)
     ans <- readline(paste0(question, " [y/n]: "))
@@ -31,7 +30,9 @@ rxp_init <- function(project_path = ".", skip_prompt = FALSE) {
 
   # Initial confirmation before any action
   if (!confirm(paste0("Initialize project at '", project_path, "'?"))) {
-    message("Operation cancelled by user. No files or directories were created.")
+    message(
+      "Operation cancelled by user. No files or directories were created."
+    )
     return(invisible(FALSE))
   }
 
@@ -83,12 +84,18 @@ rxp_init <- function(project_path = ".", skip_prompt = FALSE) {
     ") |> rixpress(project_path = \".\")"
   )
 
-  # Write files (overwrites existing)
   writeLines(gen_env_lines, env_file)
   message("File ", env_file, " has been written.")
   writeLines(gen_pipeline_lines, pipeline_file)
   message("File ", pipeline_file, " has been written.")
 
+  # Skip Git initialization when on CRAN, CI, or during testing
+  if (!interactive()) {
+    message(
+      "Skipping Git initialization (non-interactive session, CRAN, CI, or test environment detected)."
+    )
+    return(invisible(TRUE))
+  }
 
   if (confirm("Would you like to initialize a Git repository here?")) {
     if (!requireNamespace("usethis", quietly = TRUE)) {
