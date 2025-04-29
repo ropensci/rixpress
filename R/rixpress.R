@@ -63,7 +63,7 @@
 rixpress <- function(derivs, project_path = ".", build = TRUE, ...) {
   generate_dag(
     derivs,
-    output_file = normalizePath(paste0(project_path, "/_rixpress/dag.json"))
+    output_file = file.path(project_path, "_rixpress", "dag.json")
   )
 
   # Need to combine nix envs and additional files into a
@@ -140,11 +140,11 @@ rixpress <- function(derivs, project_path = ".", build = TRUE, ...) {
   flat_pipeline <- gen_flat_pipeline(derivs)
 
   pipeline <- gen_pipeline(
-    dag_file = normalizePath(paste0(project_path, "/_rixpress/dag.json")),
+    dag_file = file.path(paste0(project_path, "/_rixpress/dag.json")),
     flat_pipeline = flat_pipeline
   )
 
-  writeLines(pipeline, normalizePath(paste0(project_path, "/pipeline.nix")))
+  writeLines(pipeline, file.path(project_path, "pipeline.nix"))
 
   if (build) {
     rxp_make(...)

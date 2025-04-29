@@ -109,3 +109,192 @@ test_that("rixpress: several environments", {
     name = "pipeline_several_envs.nix"
   )
 })
+
+test_that("parse_nix_envs handles different environments correctly", {
+  # Create temporary directory for test files
+  temp_dir <- tempfile()
+  dir.create(temp_dir)
+  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
+
+  # Create _rixpress directory
+  rixpress_dir <- file.path(temp_dir, "_rixpress")
+  dir.create(rixpress_dir)
+
+  # Create mock library files
+  writeLines("# R libraries", file.path(rixpress_dir, "default_r_libraries.R"))
+  writeLines(
+    "# Python libraries",
+    file.path(rixpress_dir, "py_env_py_libraries.py")
+  )
+
+  # Set working directory to temp_dir for the test
+  old_wd <- getwd()
+  setwd(temp_dir)
+  on.exit(setwd(old_wd), add = TRUE)
+
+  # Create test derivations with different environments
+  d1 <- list(
+    name = "test_r",
+    snippet = "test_r_snippet",
+    type = "rxp_r",
+    additional_files = "",
+    nix_env = "default.nix",
+    base_name = "default"
+  )
+
+  d2 <- list(
+    name = "test_py",
+    snippet = "test_py_snippet",
+    type = "rxp_py",
+    additional_files = "",
+    nix_env = "data-raw/py2r_example/py-env.nix",
+    base_name = "py_env"
+  )
+
+  # Test the function
+  result <- parse_nix_envs(list(d1, d2))
+
+  # Check that the result contains expected strings for both environments
+  expect_true(grepl("default = import ./default.nix;", result))
+  expect_true(grepl(
+    "py_env = import ./data-raw/py2r_example/py-env.nix;",
+    result
+  ))
+  expect_true(grepl("defaultConfigurePhase", result))
+  expect_true(grepl("py_envConfigurePhase", result))
+})
+
+test_that("gen_pipeline correctly adds dependencies", {
+  # Create temporary directory
+  temp_dir <- tempfile()
+  dir.create(temp_dir)
+  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
+
+  # Create a mock DAG JSON file
+  dag_json <- '{
+    "derivations": [
+      {
+        "deriv_name": ["data_prep"],
+        "depends": [],
+        "type": ["rxp_r"],
+        "unserialize_function": "readRDS"
+      },
+      {
+        "deriv_name": ["analysis"],
+        "depends": ["data_prep"],
+        "type": ["rxp_r"],
+        "unserialize_function": "readRDS"
+      },
+      {
+        "deriv_name": ["py_process"],
+        "depends": ["data_prep"],
+        "type": ["rxp_py"],
+        "unserialize_function": "pickle.load"
+      }
+    ]
+  }'
+
+  dag_file <- file.path(temp_dir, "dag.json")
+  writeLines(dag_json, dag_file)
+
+  # Create a mock flat pipeline
+  flat_pipeline <- c(
+    "let",
+    "  default = import ./default.nix;",
+    "  defaultPkgs = default.pkgs;",
+    "  defaultShell = default.shell;",
+    "  defaultBuildInputs = defaultShell.buildInputs;",
+    "",
+    "  # Function to create R derivations",
+    "  makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:",
+    "    defaultPkgs.stdenv.mkDerivation {",
+    "      inherit name src;",
+    "      dontUnpack = true;",
+    "      inherit buildInputs configurePhase buildPhase;",
+    "      installPhase = ''",
+    "        cp ${name} $out/",
+    "      '';",
+    "    };",
+    "",
+    "  # Function to create Python derivations",
+    "  makePyDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:",
+    "    let",
+    "      pickleFile = \"${name}\";",
+    "    in",
+    "      defaultPkgs.stdenv.mkDerivation {",
+    "        inherit name src;",
+    "        dontUnpack = true;",
+    "        buildInputs = buildInputs;",
+    "        inherit configurePhase buildPhase;",
+    "        installPhase = ''",
+    "          cp ${pickleFile} $out",
+    "        '';",
+    "      };",
+    "",
+    "  # Define all derivations",
+    "  data_prep = makeRDerivation {",
+    "    name = \"data_prep\";",
+    "    buildInputs = defaultBuildInputs;",
+    "    configurePhase = ''",
+    "      cp ${./_rixpress/default_r_libraries.R} r_libraries.R",
+    "      mkdir -p $out",
+    "    '';",
+    "    buildPhase = ''",
+    "      Rscript -e \"",
+    "        source('r_libraries.R')",
+    "        data_prep <- mtcars",
+    "        saveRDS(data_prep, 'data_prep')\"",
+    "    '';",
+    "  };",
+    "",
+    "  analysis = makeRDerivation {",
+    "    name = \"analysis\";",
+    "    buildInputs = defaultBuildInputs;",
+    "    configurePhase = ''",
+    "      cp ${./_rixpress/default_r_libraries.R} r_libraries.R",
+    "      mkdir -p $out",
+    "    '';",
+    "    buildPhase = ''",
+    "      Rscript -e \"",
+    "        source('r_libraries.R')",
+    "        analysis <- summary(mtcars)",
+    "        saveRDS(analysis, 'analysis')\"",
+    "    '';",
+    "  };",
+    "",
+    "  py_process = makePyDerivation {",
+    "    name = \"py_process\";",
+    "    buildInputs = defaultBuildInputs;",
+    "    configurePhase = ''",
+    "      cp ${./_rixpress/default_py_libraries.py} py_libraries.py",
+    "      mkdir -p $out",
+    "    '';",
+    "    buildPhase = ''",
+    "      python -c \"",
+    "import pickle",
+    "import pandas as pd",
+    "py_process = pd.DataFrame({'a': [1, 2, 3]})",
+    "with open('py_process', 'wb') as f:",
+    "    pickle.dump(py_process, f)\"",
+    "    '';",
+    "  };",
+    "",
+    "in",
+    "{",
+    "  inherit data_prep analysis py_process;",
+    "}"
+  )
+
+  # Run gen_pipeline
+  result <- gen_pipeline(dag_file, flat_pipeline)
+
+  # Check that dependencies were added correctly
+  r_dep_line <- grep("data_prep <- readRDS", result, value = TRUE)
+  expect_true(length(r_dep_line) > 0)
+  expect_true(grepl("\\$\\{data_prep\\}/data_prep", r_dep_line))
+
+  py_dep_line <- grep("with open", result, value = TRUE)
+  py_dep_line <- py_dep_line[grepl("data_prep", py_dep_line)]
+  expect_true(length(py_dep_line) > 0)
+  expect_true(grepl("\\$\\{data_prep\\}/data_prep", py_dep_line))
+})
