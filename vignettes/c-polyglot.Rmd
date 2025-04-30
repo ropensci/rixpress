@@ -170,22 +170,22 @@ not as an expression. Also, you'll notice that I had to use `polars.read_csv()`
 instead of the more common `pl.read_csv()`. This is because by default Python
 package get imported using a simple statement `import polars`. If you want to
 change this to `import polars as pl` (`import pandas as pd` and so on), then you
-can use the `adjust_imports()` function. For example:
+can use the `adjust_import()` function. For example:
 
 ```{r, eval = FALSE}
-adjust_imports("import polars", "import polars as pl")
+adjust_import("import polars", "import polars as pl")
 ```
 
-`adjust_imports()` is sometimes mandatory, for example if you want to import a
+`adjust_import()` is sometimes mandatory, for example if you want to import a
 package's submodule:
 
 ```{r, eval = FALSE}
-adjust_imports("import pillow", "from PIL import Image")
+adjust_import("import pillow", "from PIL import Image")
 ```
 
 The package is called `pillow`, so `{rixpress}` will import write the statement
 as `import pillow`, but this will simply not work. So in this case
-`adjust_imports()` must be used.
+`adjust_import()` must be used.
 
 If you want to use JSON to transfer data between derivations, you should use
 the `serialize_function` and `unserialize_function` arguments respectively:

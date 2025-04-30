@@ -149,7 +149,7 @@ test_that("transform_r works correctly", {
   )
 })
 
-test_that("adjust_imports modifies files correctly", {
+test_that("adjust_import modifies files correctly", {
   path_tmpdir <- tempdir()
   path_rixpress <- file.path(path_tmpdir, "_rixpress")
   dir.create(path_rixpress, recursive = TRUE)
@@ -166,7 +166,7 @@ test_that("adjust_imports modifies files correctly", {
   # Perform adjustment (need to temporarily set working directory)
   old_wd <- getwd()
   setwd(path_tmpdir)
-  adjust_imports("import pandas", "import pandas as pd")
+  adjust_import("import pandas", "import pandas as pd")
   setwd(old_wd)
 
   # Check file contents
@@ -180,7 +180,7 @@ test_that("adjust_imports modifies files correctly", {
 
   # Test non-matching import
   setwd(path_tmpdir)
-  adjust_imports("import non_existent", "import something_else")
+  adjust_import("import non_existent", "import something_else")
   setwd(old_wd)
 
   lines1_after <- readLines(file1_path)

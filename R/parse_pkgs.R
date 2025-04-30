@@ -224,7 +224,7 @@ generate_py_libraries_from_nix <- function(
 #' which is incorrect—Python code should import from the `PIL` namespace instead,
 #' e.g., `"from PIL import Image"`.
 #'
-#' Because these adjustments cannot be automated reliably, the `adjust_imports()`
+#' Because these adjustments cannot be automated reliably, the `adjust_import()`
 #' function allows you to search and replace import statements programmatically.
 #' It reads each file in the `_rixpress` folder, performs the replacement,
 #' and writes the modified content back to the file.
@@ -238,10 +238,10 @@ generate_py_libraries_from_nix <- function(
 #'
 #' @examples
 #' \dontrun{
-#' adjust_imports("import pillow", "from PIL import Image")
+#' adjust_import("import pillow", "from PIL import Image")
 #' }
 #' @export
-adjust_imports <- function(old_import, new_import) {
+adjust_import <- function(old_import, new_import) {
   files <- list.files(path = "_rixpress", full.names = TRUE, recursive = TRUE)
   for (file in files) {
     content <- readLines(file, warn = FALSE)

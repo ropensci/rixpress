@@ -46,7 +46,7 @@
 #' want to change import statements. By default if, say, `pandas` is needed to
 #' build a derivation, it will be imported with `import pandas`. However, Python
 #' programmers typically use `import pandas as pd`. To change the automatic
-#' import statements, please refer to `adjust_imports()`.
+#' import statements, please refer to `adjust_import()`.
 #'
 #' @examples
 #' \dontrun{

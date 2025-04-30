@@ -57,7 +57,7 @@ In some cases, due to the automatic handling of Python packages, users might
 want to change import statements. By default if, say, \code{pandas} is needed to
 build a derivation, it will be imported with \verb{import pandas}. However, Python
 programmers typically use \verb{import pandas as pd}. To change the automatic
-import statements, please refer to \code{adjust_imports()}.
+import statements, please refer to \code{adjust_import()}.
 }
 \examples{
 \dontrun{
