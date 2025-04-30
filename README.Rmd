@@ -13,6 +13,8 @@ knitr::opts_chunk$set(
 
 # rixpress: Reproducible Analytical Pipelines with Nix
 
+[![R-hub v2](https://github.com/b-rodrigues/rixpress/actions/workflows/rhub.yaml/badge.svg)](https://github.com/b-rodrigues/rixpress/actions/workflows/rhub.yaml/)
+
 This R packages provides a framework for building multilanguage reproducible
 analytical pipelines by leveraging Nix’s build automation capabilities. It is
 heavily inspired by the R package `{targets}`. It builds upon the `{rix}`
