@@ -17,6 +17,10 @@ knitr::opts_chunk$set(
 This vignette demonstrates how to build a polyglot pipeline and assumes you've
 read `vignette("b-basic-usage")`.
 
+For various examples of polyglot pipelines, check out the folder labeled
+`python_r` in this [github
+repository](https://github.com/b-rodrigues/rixpress_demos/).
+
 For a video version of this vignette, CHECK OUT THIS UPCOMING VIDEO ON YOUTUBE
 
 You can find all the code of this example
@@ -27,8 +31,8 @@ pipeline in this vignette is a slightly simplified version).
 
 ## Analysing the mtcars dataset using R and Python
 
-`{rixpress}` makes it easy to write polyglot or multilingual, data science
-pipelines with derivation that run R or Python code. This vignette explains
+`{rixpress}` makes it easy to write polyglot (multilingual) data science
+pipelines with derivations that run R or Python code. This vignette explains
 how you can easily set up such a pipeline.
 
 First, call `rxp_init()` which will generate two files, `gen-env.R` and
@@ -58,11 +62,30 @@ rix(
 Notice the `py_conf` argument to `rix()`: this will install Python and the
 listed Python packages in that environment. You'll notice that we add
 `{reticulate}` to the list of R packages to install as well; this is only needed
-to convert data between R and Python: Python build steps are executed in a
-standard Python shell without the need to use `{reticulate}`.
+to convert data between R and Python, and only if you can't use JSON to pass
+object to and from Python or R. Python build steps are executed in a standard
+Python shell without the need to use `{reticulate}`, so if you're using JSON
+to transfer data, there is no need to install `{reticulate}`.
 
 If you want to work on a machine without R nor `{rix}` but with Nix already
-installed, we provide a way to bootstrap a complete environment using this call:
+installed, we provide a way to bootstrap a complete environment. First, install
+cachix and configure the `rstats-on-nix` cache:
+
+```bash
+nix-env -iA cachix -f https://cachix.org/api/v1/install
+```
+
+then use the cache:
+
+```bash
+cachix use rstats-on-nix
+```
+
+You only need to do this once per machine you want to use `{rixpress}` on. Many
+thanks to [Cachix](https://www.cachix.org/) for sponsoring the `rstats-on-nix`
+cache!
+
+Then run this line:
 
 ```
 nix-shell --expr "$(curl -sl https://raw.githubusercontent.com/ropensci/rix/main/inst/extdata/default.nix)"
@@ -164,11 +187,65 @@ The package is called `pillow`, so `{rixpress}` will import write the statement
 as `import pillow`, but this will simply not work. So in this case
 `adjust_imports()` must be used.
 
+If you want to use JSON to transfer data between derivations, you should use
+the `serialize_function` and `unserialize_function` arguments respectively:
+
+```{r, eval = FALSE}
+library(rixpress)
+library(igraph)
+
+list(
+  rxp_py_file(
+    name = mtcars_pl,
+    path = "data/mtcars.csv",
+    read_function = "lambda x: polars.read_csv(x, separator='|')"
+  ),
+
+  rxp_py(
+    name = mtcars_pl_am,
+    py_expr = "mtcars_pl.filter(polars.col('am') == 1)",
+    additional_files = "functions.py",
+    serialize_function = "serialize_to_json",
+  ),
+
+  rxp_r(
+    name = mtcars_head,
+    expr = my_head(mtcars_pl_am),
+    additional_files = "functions.R",
+    unserialize_function = "jsonlite::fromJSON"
+  ),
+
+  rxp_r(
+    name = mtcars_mpg,
+    expr = dplyr::select(mtcars_head, mpg)
+  )
+) |>
+  rixpress(project_path = ".", build = FALSE)
+
+
+# Plot DAG for CI
+dag_for_ci()
+```
+
+The Python `serialize_to_json` function is defined in the `functions.py` script
+and looks like this:
+
+```
+def serialize_to_json(pl_df, path):
+    with open(path, 'w') as f:
+        f.write(pl_df.write_json())
+```
+
+The `serialize_function` and `unserialize_function` arguments can be used to
+serialize objects using any function, for example `qs::save()` or machine
+learning-specific functions for specific models such as `xgboost`.
+
 ## Building a Quarto document
 
-The last derivation builds a Quarto document using `rxp_quarto()`. Here again,
-the `additional_files` argument is used to make the derivation aware of required
-files to build the document. Here is what the source of the document looks like:
+The last pipeline I want to discuss builds a Quarto document using
+`rxp_quarto()`. Here again, the `additional_files` argument is used to make the
+derivation aware of required files to build the document. Here is what the
+source of the document looks like:
 
 ````text
 
