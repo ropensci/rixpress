@@ -278,6 +278,9 @@ a new tab in your web browser with the DAG of the pipeline made using the
 <video
   id="rixpress-video"
   controls
+  autoplay
+  loop
+  muted
 >
   <source
     src="https://github.com/b-rodrigues/rixpress/raw/refs/heads/main/rxp_visnetwork.mp4"
