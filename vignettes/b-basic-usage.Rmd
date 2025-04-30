@@ -277,16 +277,14 @@ a new tab in your web browser with the DAG of the pipeline made using the
 
 <video
   id="rixpress-video"
-  width="640"
-  height="360"
   controls
 >
   <source
-    src="https://github.com/b-rodrigues/rixpress/raw/refs/heads/main/rxp_visnetwork.mkv"
-    type="video/x-matroska"
+    src="https://github.com/b-rodrigues/rixpress/raw/refs/heads/main/rxp_visnetwork.mp4"
+    type="video/mp4"
   />
   <!-- Fallback message -->
-  Your browser does not support the MKV video format.
+  Your browser does not support the MP4 video format.
 </video>
 
 (This image shows the DAG of a more complex example pipeline.)
