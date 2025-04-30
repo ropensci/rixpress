@@ -54,20 +54,20 @@ rxp_r <- function(
   serialize_function = NULL,
   unserialize_function = NULL
 ) {
-  out_name <- deparse(substitute(name))
-  expr_str <- deparse(substitute(expr))
+  out_name <- deparse1(substitute(name))
+  expr_str <- deparse1(substitute(expr))
   expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
 
   if (is.null(serialize_function)) {
     serialize_str <- "saveRDS"
   } else {
-    serialize_str <- deparse(substitute(serialize_function))
+    serialize_str <- deparse1(substitute(serialize_function))
   }
 
   if (is.null(unserialize_function)) {
     unserialize_str <- "readRDS"
   } else {
-    unserialize_str <- deparse(substitute(unserialize_function))
+    unserialize_str <- deparse1(substitute(unserialize_function))
   }
 
   build_phase <- sprintf(
@@ -168,7 +168,7 @@ rxp_py <- function(
   serialize_function = NULL,
   unserialize_function = NULL
 ) {
-  out_name <- deparse(substitute(name))
+  out_name <- deparse1(substitute(name))
   py_expr <- gsub("'", "\\'", py_expr, fixed = TRUE)
 
   # Handle serialize_function for the build_phase
@@ -284,7 +284,7 @@ rxp_quarto <- function(
   nix_env = "default.nix",
   args = ""
 ) {
-  out_name <- deparse(substitute(name))
+  out_name <- deparse1(substitute(name))
 
   content <- readLines(qmd_file, warn = FALSE)
   content_str <- paste(content, collapse = "\n")
@@ -447,7 +447,7 @@ rxp_r_file <- function(
   nix_env = "default.nix",
   copy_data_folder = FALSE
 ) {
-  out_name <- deparse(substitute(name))
+  out_name <- deparse1(substitute(name))
   read_func_str <- deparse1(substitute(read_function))
   read_func_str <- gsub("\"", "'", read_func_str)
 
@@ -528,7 +528,7 @@ rxp_py_file <- function(
   nix_env = "default.nix",
   copy_data_folder = FALSE
 ) {
-  out_name <- deparse(substitute(name))
+  out_name <- deparse1(substitute(name))
   # Sanitize the read_function string.
   read_function <- gsub("'", "\\'", read_function, fixed = TRUE)
   if (!is.character(read_function) || length(read_function) != 1) {
@@ -658,8 +658,8 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
 #' }
 #' @export
 rxp_py2r <- function(name, expr, nix_env = "default.nix") {
-  out_name <- deparse(substitute(name))
-  expr_str <- deparse(substitute(expr))
+  out_name <- deparse1(substitute(name))
+  expr_str <- deparse1(substitute(expr))
   rxp_common_setup(out_name, expr_str, nix_env, "py2r")
 }
 
@@ -677,8 +677,8 @@ rxp_py2r <- function(name, expr, nix_env = "default.nix") {
 #' }
 #' @export
 rxp_r2py <- function(name, expr, nix_env = "default.nix") {
-  out_name <- deparse(substitute(name))
-  expr_str <- deparse(substitute(expr))
+  out_name <- deparse1(substitute(name))
+  expr_str <- deparse1(substitute(expr))
   rxp_common_setup(out_name, expr_str, nix_env, "r2py")
 }
 
