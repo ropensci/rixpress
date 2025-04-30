@@ -249,3 +249,53 @@ adjust_import <- function(old_import, new_import) {
     writeLines(new_content, con = file)
   }
 }
+
+#' Add an import statement to Python files in the _rixpress folder matching a Nix environment name
+#'
+#' This function appends a specified import statement to the end of each Python file
+#' within the `_rixpress` folder and its subdirectories, but only for files whose
+#' base name matches the provided Nix environment.
+#'
+#' @param import_statement A character string representing the import statement
+#'   to be added. For example, `"import numpy as np"`.
+#' @param nix_env A character string naming the Nix environment file (e.g.
+#'   `"default.nix"` or `"py-env.nix"` or similar).
+#'
+#' @return No return value; the function performs in-place modifications of the files.
+#'
+#' @examples
+#' \dontrun{
+#' add_import("import numpy as np", "default.nix")
+#' }
+#' @export
+add_import <- function(import_statement, nix_env) {
+  # Validate and extract base name from nix_env
+  if (!is.character(nix_env) || length(nix_env) != 1) {
+    stop("nix_env must be a single character string, e.g. 'default.nix'.")
+  }
+  # Remove .nix extension if present
+  base_name <- sub("\\.nix$", "", nix_env)
+  if (identical(base_name, nix_env)) {
+    warning("Provided nix_env did not end with '.nix'; using entire string as base name.")
+  }
+
+  # Construct regex to match Python files starting with the base name
+  # e.g. ^default.*\.[pP]y$
+  file_pattern <- paste0("^", base_name, ".*\\.[pP]y$")
+
+  # List only .py/.Py files whose names match the base_name prefix
+  files <- list.files(
+    path = "_rixpress", 
+    pattern = file_pattern,
+    full.names = TRUE, 
+    recursive = TRUE
+  )
+
+  # Loop through each matching Python file
+  for (file in files) {
+    content <- readLines(file, warn = FALSE)
+    new_content <- c(content, import_statement)
+    writeLines(new_content, con = file)
+  }
+}
+
