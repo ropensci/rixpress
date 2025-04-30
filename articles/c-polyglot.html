@@ -209,17 +209,17 @@ of the more common <code>pl.read_csv()</code>. This is because by
 default Python package get imported using a simple statement
 <code>import polars</code>. If you want to change this to
 <code>import polars as pl</code> (<code>import pandas as pd</code> and
-so on), then you can use the <code><a href="../reference/adjust_imports.html">adjust_import()</a></code> function. For
+so on), then you can use the <code><a href="../reference/adjust_import.html">adjust_import()</a></code> function. For
 example:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/adjust_imports.html">adjust_import</a></span><span class="op">(</span><span class="st">"import polars"</span>, <span class="st">"import polars as pl"</span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="../reference/adjust_imports.html">adjust_import()</a></code> is sometimes mandatory, for example if
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/adjust_import.html">adjust_import</a></span><span class="op">(</span><span class="st">"import polars"</span>, <span class="st">"import polars as pl"</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="../reference/adjust_import.html">adjust_import()</a></code> is sometimes mandatory, for example if
 you want to import a package’s submodule:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/adjust_imports.html">adjust_import</a></span><span class="op">(</span><span class="st">"import pillow"</span>, <span class="st">"from PIL import Image"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/adjust_import.html">adjust_import</a></span><span class="op">(</span><span class="st">"import pillow"</span>, <span class="st">"from PIL import Image"</span><span class="op">)</span></span></code></pre></div>
 <p>The package is called <code>pillow</code>, so <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>
 will import write the statement as <code>import pillow</code>, but this
-will simply not work. So in this case <code><a href="../reference/adjust_imports.html">adjust_import()</a></code> must
+will simply not work. So in this case <code><a href="../reference/adjust_import.html">adjust_import()</a></code> must
 be used.</p>
 <p>If you want to use JSON to transfer data between derivations, you
 should use the <code>serialize_function</code> and
