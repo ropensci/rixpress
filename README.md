@@ -1,14 +1,18 @@
 
 # rixpress: Reproducible Analytical Pipelines with Nix
 
+[![R-hub
+v2](https://github.com/b-rodrigues/rixpress/actions/workflows/rhub.yaml/badge.svg)](https://github.com/b-rodrigues/rixpress/actions/workflows/rhub.yaml/)
+
 This R packages provides a framework for building multilanguage
 reproducible analytical pipelines by leveraging Nix’s build automation
-capabilities. It is heavily inspired by the R package `{targets}`. It
-builds upon the `{rix}` package, which provides helper function to
-define reproducible development environments as code using Nix ensuring
-the pipeline runs in a fully reproducible Nix-managed environment.
-`{rixpress}` only requires users to write a pipeline using familiar R
-code.
+capabilities. One of the design goals of `{rixpress}` is to mimic the
+user experience of the `{targets}` package, and is thus heavily inspired
+it. It builds upon the `{rix}` package, which provides helper function
+to define reproducible development environments as code using Nix
+ensuring the pipeline runs in a fully reproducible Nix-managed
+environment. `{rixpress}` only requires users to write a pipeline using
+familiar R code.
 
 For example, this R script defines a list of *derivations* defined by
 functions prefixed with `rxp_*()`, which is then passed to `rixpress()`:
@@ -55,9 +59,10 @@ Running `rixpress()` generates a `pipeline.nix` file, which contains all
 the build instructions of all the derivations and final outputs as Nix
 code. It is possible to define derivations that run Python code as well,
 and objects can be passed to and from R or Python by using `rxp_py2r()`
-and `ryp_r2py()`. By default, calling `rixpress()` also builds the
-pipeline, but it’s possible to only generate the `pipeline.nix` file and
-then build the pipeline at a later stage using:
+and `ryp_r2py()`, or by using a common serialization format such as
+JSON. By default, calling `rixpress()` also builds the pipeline, but
+it’s possible to only generate the `pipeline.nix` file and then build
+the pipeline at a later stage using:
 
     rxp_make()
 
@@ -79,7 +84,7 @@ within the environment defined by the `default.nix` file. Concretely,
 When you run `rixpress()`, a folder called `_rixpress/` gets also
 generated which contains a file with a JSON representation of the
 pipeline’s DAG (Directed Acyclic Graph). You can visualize the pipeline
-using `plot_dag()`:
+using `rxp_ggdag()`:
 
 ``` r
 rxp_ggdag()
@@ -93,7 +98,7 @@ DAG
 </figure>
 
 Because the pipeline is built using Nix, the outputs all get stored in
-the so-called Nix store under `/nix/store`. It can be annoying to
+the so-called Nix store under `/nix/store/`. It can be annoying to
 retrieve objects from the Nix store so `{rixpress}` contains several
 helper functions:
 
