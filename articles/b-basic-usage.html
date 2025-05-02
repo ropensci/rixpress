@@ -327,6 +327,28 @@ the DAG using other tools:</p>
 <code><a href="../reference/rixpress.html">rixpress()</a></code> call.</p>
 </div>
 <div class="section level2">
+<h2 id="caveats">Caveats<a class="anchor" aria-label="anchor" href="#caveats"></a>
+</h2>
+<p>There are some caveats that you need to be aware of when using
+<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>. Due to how Nix works, certain things are simply
+not possible:</p>
+<ul>
+<li>as mentioned in the <code><a href="../articles/a-intro-concepts.html">vignette("a-intro-concepts")</a></code>,
+functions are executed in an hermetic sandbox: if they need access to
+some external resource, the build is going to fail. For example, if you
+use some function to get data from an API, you need to get the data in a
+classic interactive R session, save this data on disk, and then you can
+include it in the pipeline.</li>
+<li>all the build artifacts will be saved in the Nix store,
+<code>/nix/store/</code>. If you are working with confidential data,
+make sure no one else can access the <code>/nix/store</code>.</li>
+<li>if you have proprietary R packages, you will need to include them in
+the Nix shell. This is more a discussion for <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, since
+it is <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> that generates the execution environment, so if
+you require some help to package your packages, open an issue <a href="https://github.com/ropensci/rix/issues" class="external-link">on rix’s GitHub</a>.</li>
+</ul>
+</div>
+<div class="section level2">
 <h2 id="conclusion">Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>
 </h2>
 <p>Now that you understand the basics, we invite you to explore the
