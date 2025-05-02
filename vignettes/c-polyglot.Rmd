@@ -317,3 +317,7 @@ rix(
 ```
 
 In the future, other languages could be added to `{rixpress}`, notably Julia.
+
+For an examples that use the Python `xgboost` library to train a machine
+learning model, see [this
+example](https://github.com/b-rodrigues/rixpress_demos/tree/master/r_py_xgboost).

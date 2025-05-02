@@ -682,6 +682,118 @@ rxp_r2py <- function(name, expr, nix_env = "default.nix") {
   rxp_common_setup(out_name, expr_str, nix_env, "r2py")
 }
 
+#' Render an R Markdown document as a Nix derivation
+#'
+#' @param name Symbol, derivation name.
+#' @param rmd_file Character, path to .Rmd file.
+#' @param additional_files Character vector, additional files to include, for example a folder
+#'   containing the pictures to include in the R Markdown document.
+#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
+#' @param params List, parameters to pass to the R Markdown document. Default is NULL.
+#' @details To include objects built in the pipeline, `rxp_read("derivation_name")` should be put
+#'   in the .Rmd file.
+#' @return An object of class derivation which inherits from lists.
+#' @examples
+#' \dontrun{
+#'   # Compile a .Rmd file to a pdf
+#'   # `images` is a folder containing images to include in the R Markdown doc
+#'   rxp_rmd(
+#'     name = report,
+#'     rmd_file = "report.Rmd",
+#'     additional_files = "images"
+#'   )
+#' }
+#' @export
+rxp_rmd <- function(
+  name,
+  rmd_file,
+  additional_files = "",
+  nix_env = "default.nix",
+  params = NULL
+) {
+  out_name <- deparse1(substitute(name))
+
+  content <- readLines(rmd_file, warn = FALSE)
+  content_str <- paste(content, collapse = "\n")
+
+  # Extract unique rxp_read references
+  matches <- gregexpr('rxp_read\\("([^"]+)"\\)', content_str)
+  refs <- regmatches(content_str, matches)[[1]]
+  refs <- sub('rxp_read\\("([^"]+)"\\)', '\\1', refs)
+  refs <- unique(refs)
+
+  # Generate substitution commands for each reference
+  sub_cmds <- sapply(refs, function(ref) {
+    sprintf(
+      "substituteInPlace %s --replace-fail 'rxp_read(\"%s\")' 'rxp_read(\"${%s}\")'",
+      rmd_file,
+      ref,
+      ref
+    )
+  })
+
+  # Prepare render arguments
+  render_args <- "rmarkdown::render(input = file.path('$PWD', rmd_file), output_dir = '$out'"
+  
+  if (!is.null(params)) {
+    params_str <- paste0(
+      "list(", 
+      paste(
+        mapply(
+          function(name, value) sprintf("%s = %s", name, deparse(value)), 
+          names(params), 
+          params
+        ), 
+        collapse = ", "
+      ), 
+      ")"
+    )
+    render_args <- paste0(render_args, sprintf(", params = %s", params_str))
+  }
+  
+  render_args <- paste0(render_args, ")")
+
+  build_phase <- paste(
+    "      mkdir home", 
+    "      export HOME=$PWD/home", 
+    "      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n", 
+    if (length(sub_cmds) > 0)
+      paste("      ", sub_cmds, sep = "", collapse = "\n") else "", 
+    sprintf("      Rscript -e \"rmd_file <- '%s'; %s\"", rmd_file, render_args),
+    sep = "\n"
+  )
+
+  # Prepare the fileset for src
+  fileset_parts <- c(rmd_file, additional_files)
+  fileset_nix <- paste0("./", fileset_parts, collapse = " ")
+
+  # Derive base from nix_env
+  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
+  base <- sub("_nix$", "", base)
+
+  # Generate the Nix derivation snippet with updated buildInputs and configurePhase
+  snippet <- sprintf(
+    "  %s = defaultPkgs.stdenv.mkDerivation {\n    name = \"%s\";\n    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n%s\n    '';\n  };",
+    out_name,
+    out_name,
+    fileset_nix,
+    base,
+    base,
+    build_phase
+  )
+
+  list(
+    name = out_name,
+    snippet = snippet,
+    type = "rxp_rmd",
+    rmd_file = rmd_file,
+    additional_files = additional_files,
+    nix_env = nix_env,
+    params = params
+  ) |>
+    structure(class = "derivation")
+}
+
 #' Print method for derivation objects
 #' @param x An object of class "derivation"
 #' @param ... Additional arguments passed to print methods
@@ -697,6 +809,9 @@ print.derivation <- function(x, ...) {
   }
   if (x$type == "rxp_quarto") {
     cat("QMD file:", x$qmd_file, "\n")
+  }
+  if (x$type == "rxp_rmd") {
+    cat("RMD file:", x$rmd_file, "\n")
   }
   cat(
     "Additional files:",
