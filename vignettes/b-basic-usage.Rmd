@@ -312,6 +312,21 @@ which saves the `dag.dot` object in the project's `_rixpress/` folder.
 After reviewing the DAG, you can build the pipeline by running `rxp_make()`
 instead of modifying your original `rixpress()` call.
 
+## Caveats
+
+There are some caveats that you need to be aware of when using `{rixpress}`.
+Due to how Nix works, certain things are simply not possible:
+
+- as mentioned in the `vignette("a-intro-concepts")`, functions are executed in
+  an hermetic sandbox: if they need access to some external resource, the build
+  is going to fail. For example, if you use some function to get data from an
+  API, you need to get the data in a classic interactive R session, save this
+  data on disk, and then you can include it in the pipeline.
+- all the build artifacts will be saved in the Nix store, `/nix/store/`. If you
+  are working with confidential data, make sure no one else can access the
+  `/nix/store`.
+- if you have proprietary R packages, you will need to include them in the Nix shell. This is more a discussion for `{rix}`, since it is `{rix}` that generates the execution environment, so if you require some help to package your packages, open an issue [on rix's GitHub](https://github.com/ropensci/rix/issues).
+
 ## Conclusion
 
 Now that you understand the basics, we invite you to explore the examples
