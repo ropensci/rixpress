@@ -49,24 +49,37 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
       # Only keep deps
       deps <- Filter(isTRUE, deps)
       deps <- names(deps)
-    } else if (type == "rxp_quarto") {
-      # Try both .qmd and .Qmd extensions
-      qmd_file <- d$qmd_file
-      if (!file.exists(qmd_file)) {
-        qmd_file <- paste0(name, ".Qmd")
-        if (!file.exists(qmd_file)) {
-          stop("Quarto file not found: ", name, ".qmd or ", name, ".Qmd")
+    } else if (type == "rxp_quarto" || type == "rxp_rmd") {
+      # Determine file path and extension based on type
+      if (type == "rxp_quarto") {
+        # Try both .qmd and .Qmd extensions
+        doc_file <- d$qmd_file
+        if (!file.exists(doc_file)) {
+          doc_file <- paste0(name, ".Qmd")
+          if (!file.exists(doc_file)) {
+            stop("Quarto file not found: ", name, ".qmd or ", name, ".Qmd")
+          }
+        }
+      } else { # rxp_rmd
+        # Try .rmd and .Rmd extensions
+        doc_file <- d$rmd_file
+        if (!file.exists(doc_file)) {
+          doc_file <- paste0(name, ".Rmd")
+          if (!file.exists(doc_file)) {
+            stop("R Markdown file not found: ", name, ".rmd or ", name, ".Rmd")
+          }
         }
       }
-      # Read the Quarto file
-      qmd_content <- readLines(qmd_file, warn = FALSE)
-      qmd_text <- paste(qmd_content, collapse = "\n")
+      
+      # Read the document file
+      doc_content <- readLines(doc_file, warn = FALSE)
+      doc_text <- paste(doc_content, collapse = "\n")
 
       # Extract R code chunks (between ```{r} and ```)
       chunk_pattern <- "```\\{r\\}[\\s\\S]*?```"
       chunks <- regmatches(
-        qmd_text,
-        gregexpr(chunk_pattern, qmd_text, perl = TRUE)
+        doc_text,
+        gregexpr(chunk_pattern, doc_text, perl = TRUE)
       )[[1]]
 
       # Process each chunk to find rxp_read() or rxp_load() calls

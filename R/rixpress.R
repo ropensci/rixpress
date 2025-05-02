@@ -80,7 +80,7 @@ rixpress <- function(derivs, project_path = ".", build = TRUE, ...) {
   )
   # Drop quarto objects, as these are handled separately
   nix_expressions_and_additional_files <- lapply(derivs, function(d) {
-    if (d$type == "rxp_quarto") {
+    if (d$type == "rxp_quarto" || d$type == "rxp_rmd") {
       d$additional_files <- ""
     }
     list(
@@ -342,6 +342,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     if (
       length(d$depends) == 0 ||
         d$type == "rxp_quarto" ||
+        d$type == "rxp_rmd" ||
         d$type == "rxp_py2r" ||
         d$type == "rxp_r2py"
     )
@@ -477,7 +478,10 @@ generate_libraries_from_nix <- function(
 
 #' @noRd
 get_need_r <- function(types) {
-  any(types %in% c("rxp_r", "rxp_r_file", "rxp_quarto", "rxp_py2r", "rxp_r2py"))
+  any(
+    types %in%
+      c("rxp_r", "rxp_r_file", "rxp_rmd", "rxp_quarto", "rxp_py2r", "rxp_r2py")
+  )
 }
 
 #' @noRd
