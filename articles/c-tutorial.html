@@ -72,6 +72,8 @@
 <p>This vignette demonstrates how to build a <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>
 pipeline that only uses R derivations. For multilingual pipelines, read
 the next vignette <code><a href="../articles/d-polyglot.html">vignette("d-polyglot")</a></code>.</p>
+<p>If you are more of a visual learner, you can also watch <a href="404">this video</a> which will walk you through the contents of
+this vignette.</p>
 <div class="section level2">
 <h2 id="installing-the-required-software">Installing the required software<a class="anchor" aria-label="anchor" href="#installing-the-required-software"></a>
 </h2>
@@ -112,7 +114,57 @@ R session, and type:</p>
 <p>This will write two files on the root of your project,
 <code>gen-env.R</code> and <code>gen-pipeline.R</code>.
 <code>gen-env.R</code> will look like this:</p>
-<pre><code></code></pre>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># This script defines the default environment the pipeline runs in.",</span></span>
+<span><span class="co"># Add the required packages to execute the code necessary for each derivation.",</span></span>
+<span><span class="co"># If you want to create visual representations of the pipeline, consider adding",</span></span>
+<span><span class="co"># `{visNetwork}` and `{ggdag}` to the list of R packages.",</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rix/" class="external-link">rix</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Define execution environment</span></span>
+<span><span class="fu"><a href="https://docs.ropensci.org/rix/reference/rix.html" class="external-link">rix</a></span><span class="op">(</span></span>
+<span>  date <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  r_pkgs <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  py_conf <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  git_pkgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    <span class="st">"package_name"</span> <span class="op">=</span> <span class="st">"rixpress"</span>,</span>
+<span>    <span class="st">"repo_url"</span> <span class="op">=</span> <span class="st">"https://github.com/b-rodrigues/rixpress"</span>,</span>
+<span>    <span class="st">"commit"</span> <span class="op">=</span> <span class="st">"HEAD"</span>,</span>
+<span>  <span class="op">)</span>,</span>
+<span>  ide <span class="op">=</span> <span class="st">"none"</span>,</span>
+<span>  project_path <span class="op">=</span> <span class="st">"."</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>To execute a <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> pipeline, the environment of
+course needs <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> to be available, but you likely
+require other packages. Let’s add <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> and
+<a href="https://r.igraph.org/" class="external-link">igraph</a> (which is needed to look at the graphical
+representation of the pipeline’s DAG). Open it in any text editor and
+change it to:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rix/" class="external-link">rix</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Define execution environment</span></span>
+<span><span class="fu"><a href="https://docs.ropensci.org/rix/reference/rix.html" class="external-link">rix</a></span><span class="op">(</span></span>
+<span>  date <span class="op">=</span> <span class="st">"2025-04-11"</span>,</span>
+<span>  r_pkgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dplyr"</span>, <span class="st">"igraph"</span><span class="op">)</span>,</span>
+<span>  git_pkgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    package_name <span class="op">=</span> <span class="st">"rixpress"</span>,</span>
+<span>    repo_url <span class="op">=</span> <span class="st">"https://github.com/b-rodrigues/rixpress"</span>,</span>
+<span>    commit <span class="op">=</span> <span class="st">"HEAD"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  ide <span class="op">=</span> <span class="st">"rstudio"</span>,</span>
+<span>  project_path <span class="op">=</span> <span class="st">"."</span>,</span>
+<span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>I’ve added a date, which means that the version of R and R packages
+will be set at the versions available at this date from CRAN, I’ve added
+<a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> and <a href="https://r.igraph.org/" class="external-link">igraph</a> and I’ve also added
+RStudio as the IDE. I can now go back to my temporary Nix shell, and run
+<code>source("gen-env.R")</code>. This will create a
+<code>default.nix</code> file in my project’s folder: this is a Nix file
+that defines my environment. I can now leave my temporary shell by first
+quitting R, then typing CRTL-D or <code>exit</code> and then I can build
+my development environment using <code>nix-build</code>.</p>
 <p>the examples located in the <a href="https://github.com/b-rodrigues/rixpress_demos" class="external-link">rixpress_demos
 repository</a>. These examples demonstrate additional features of
 <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>, including:</p>
