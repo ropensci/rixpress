@@ -11,6 +11,9 @@ This vignette demonstrates how to build a `{rixpress}` pipeline that only uses R
 derivations. For multilingual pipelines, read the next vignette
 `vignette("d-polyglot")`.
 
+If you are more of a visual learner, you can also watch [this video](404) which
+will walk you through the contents of this vignette.
+
 # Installing the required software
 
 If you're using `{rixpress}`, you're likely already familiar with its sister
@@ -55,9 +58,60 @@ rxp_init()
 This will write two files on the root of your project, `gen-env.R` and
 `gen-pipeline.R`. `gen-env.R` will look like this:
 
+```{r, eval = FALSE}
+# This script defines the default environment the pipeline runs in.",
+# Add the required packages to execute the code necessary for each derivation.",
+# If you want to create visual representations of the pipeline, consider adding",
+# `{visNetwork}` and `{ggdag}` to the list of R packages.",
+library(rix)
+
+# Define execution environment
+rix(
+  date = NULL,
+  r_pkgs = NULL,
+  py_conf = NULL,
+  git_pkgs = list(
+    "package_name" = "rixpress",
+    "repo_url" = "https://github.com/b-rodrigues/rixpress",
+    "commit" = "HEAD",
+  ),
+  ide = "none",
+  project_path = "."
+)
 ```
 
+To execute a `{rixpress}` pipeline, the environment of course needs `{rixpress}`
+to be available, but you likely require other packages. Let's add `{dplyr}` and
+`{igraph}` (which is needed to look at the graphical representation of the
+pipeline's DAG). Open it in any text editor and change it to:
+
+```{r, eval = FALSE}
+library(rix)
+
+# Define execution environment
+rix(
+  date = "2025-04-11",
+  r_pkgs = c("dplyr", "igraph"),
+  git_pkgs = list(
+    package_name = "rixpress",
+    repo_url = "https://github.com/b-rodrigues/rixpress",
+    commit = "HEAD"
+  ),
+  ide = "rstudio",
+  project_path = ".",
+  overwrite = TRUE
+)
 ```
+
+I've added a date, which means that the version of R and R packages will be set
+at the versions available at this date from CRAN, I've added `{dplyr}` and
+`{igraph}` and I've also added RStudio as the IDE. I can now go back to my
+temporary Nix shell, and run `source("gen-env.R")`. This will create a
+`default.nix` file in my project's folder: this is a Nix file that defines my
+environment. I can now leave my temporary shell by first quitting R, then typing
+CRTL-D or `exit` and then I can build my development environment using
+`nix-build`.
+
 
 the examples located in the [rixpress_demos
 repository](https://github.com/b-rodrigues/rixpress_demos). These examples
