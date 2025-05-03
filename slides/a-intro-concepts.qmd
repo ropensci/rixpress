@@ -1,0 +1,120 @@
+---
+title: "Reproducible Data Science with Nix: Core Concepts"
+author: "Bruno Rodrigues"
+date: "2025-05-03"
+format:
+  revealjs:
+    theme: solarized
+    slide-number: true
+---
+
+# 3 core concepts
+
+- Derivations
+- Dependencies of derivations
+- Nix store and hermetic builds
+
+## What is Reproducibility?
+
+- Same code + data → same results
+- Needs consistent computational environment
+- Problem: Environments vary across machines
+
+## What is Reproducibility?
+
+- Same code + data + <span style="color:red">execution steps</span> → same results
+- Needs consistent computational environment
+- Problem: Environments vary across machines
+
+## Introducing Nix
+
+- Often introduced as yet another package manager, but...
+
+. . .
+
+- Tool for reproducible builds
+
+. . .
+
+- Build: can be some program, or your data science pipeline!
+
+# What is a Derivation?
+
+- Recipe for building outputs
+- Defines:
+  - Inputs (data, software)
+  - Steps
+  - Output path
+- Deterministic: Same inputs → same outputs
+
+## Example Derivation
+
+```nix
+let
+  pkgs = import (fetchTarball "...") {};
+in
+  pkgs.stdenv.mkDerivation {
+    name = "filtered_mtcars";
+    buildInputs = [ pkgs.gawk ];
+    dontUnpack = true;
+    src = ./mtcars.csv;
+    installPhase = ''
+      mkdir -p $out
+      awk -F',' 'NR==1 || $9=="1" { print }' $src > $out/filtered.csv
+    '';
+  }
+```
+
+# Explicit Dependencies
+
+- All inputs must be declared
+- Includes:
+  - Data files
+  - Software (e.g., R, packages)
+  - Configurations, env variables
+- Prevents hidden dependencies
+
+## Component Closures
+
+- Full set of dependencies
+- Self-contained environment
+- Example: R → packages → system libraries
+- Ensures portability
+
+## Component Closures
+
+<img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/main/vignettes/figure_4.png" alt="Figure 4 from rixpress vignette">
+
+# The Nix Store
+
+- Stores build outputs
+- Unique paths with hashes
+  - e.g., `/nix/store/81k4s9q652jlka0c36khpscnmr8wk7jb-mtcars_tail`
+- Hash reflects inputs + process
+- Enables consistency and sharing
+
+## Hermetic Builds
+
+- Isolated sandbox for builds
+- Only declared dependencies allowed
+- No external influences (e.g., internet, env vars)
+- Guarantees determinism
+
+## {rix} and {rixpress}: Simplifying Nix
+
+- rix: define reproducible development environments with simple R code
+- rixpress: define reproducible pipelines as composition of pure functions
+  `mtcars |> f |> g`
+- Auto-generates Nix expressions
+- Reproducibility without Nix expertise
+
+## Summary
+
+- Nix ensures reproducibility via:
+  - Derivations
+  - Explicit dependencies
+  - Hermetic builds
+- Perfect for data science!
+- `{rix}` and `{rixpress}`: Nix power for R users
+- To know more: [rix's](https://docs.ropensci.org/rix/) and [rixpress's](https://b-rodrigues.github.io/rixpress/) website
+

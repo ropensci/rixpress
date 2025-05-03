@@ -1,5 +1,5 @@
 ---
-title: "Polyglot pipelines and literate programming with Quarto"
+title: "Polyglot pipelines and literate programming with Quarto or R Markdown"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{c-polyglot}
@@ -17,26 +17,63 @@ knitr::opts_chunk$set(
 This vignette demonstrates how to build a polyglot pipeline and assumes you've
 read `vignette("b-basic-usage")`.
 
-For various examples of polyglot pipelines, check out the folder labeled
-`python_r` in this [github
-repository](https://github.com/b-rodrigues/rixpress_demos/).
-
 For a video version of this vignette, CHECK OUT THIS UPCOMING VIDEO ON YOUTUBE
 
 You can find all the code of this example
-[here](https://github.com/b-rodrigues/rixpress_demos/tree/master/python_r). The
-built Quarto document can be viewed
-[here](https://b-rodrigues.github.io/rixpress_demos/python_r/index.html) (the
-pipeline in this vignette is a slightly simplified version).
+[here](https://github.com/b-rodrigues/rixpress_demos/tree/master/r_python_quarto).
+The built Quarto document can be viewed
+[here](https://b-rodrigues.github.io/rixpress_demos/r_python_quarto/index.html)
+(the pipeline in this vignette is a slightly simplified version). For the Rmd
+version, look
+[here](https://github.com/b-rodrigues/rixpress_demos/blob/master/r_python_rmd/Readme.md).
+
+For various other examples of polyglot pipelines, check out the folder labeled
+`python_r` in this [github
+repository](https://github.com/b-rodrigues/rixpress_demos/).
 
 ## Analysing the mtcars dataset using R and Python
 
 `{rixpress}` makes it easy to write polyglot (multilingual) data science
-pipelines with derivations that run R or Python code. This vignette explains
-how you can easily set up such a pipeline.
+pipelines with derivations that run R or Python code. This vignette explains how
+you can easily set up such a pipeline.
 
-First, call `rxp_init()` which will generate two files, `gen-env.R` and
-`gen-pipeline.R`. In `gen-env.R`, we define the execution environment:
+Let's assume that you only have Nix installed on your system, and no R
+installation (this is the ideal scenario: if you plan to use Nix full-time for
+your development environments, you shouldn't have a system-wide installation of
+R).
+
+Before installing R and R packages for your pipeline, install
+[cachix](https://www.cachix.org/) and configure the `rstats-on-nix` cache. This
+way, pre-compiled, binary, packages will be used instead of being built from
+source. Run the following line in a terminal:
+
+```bash
+nix-env -iA cachix -f https://cachix.org/api/v1/install
+```
+
+then use the cache:
+
+```bash
+cachix use rstats-on-nix
+```
+
+There might be a message telling you to add your user to a configuration file by
+executing another command. Do it; you only need to do this once per machine you
+want to use `{rixpress}` on. Many thanks to [Cachix](https://www.cachix.org/)
+for sponsoring the `rstats-on-nix` cache!
+
+Now that the cache is configured, it's time to bootstrap your development
+environment. Run this line:
+
+```
+nix-shell --expr "$(curl -sl https://raw.githubusercontent.com/ropensci/rix/main/inst/extdata/default.nix)"
+```
+
+This will drop you into a temporary shell with R and both `{rix}` and
+`{rixpress}` available. Simply start R by typing `R`, and load `{rixpress}` and
+call `rxp_init()` which will generate two files, `gen-env.R` and
+`gen-pipeline.R`. You can open `gen-env.R` in your favourite text editor and
+define the execution environment in there:
 
 ```{r, eval = FALSE}
 library(rix)
@@ -63,41 +100,20 @@ Notice the `py_conf` argument to `rix()`: this will install Python and the
 listed Python packages in that environment. You'll notice that we add
 `{reticulate}` to the list of R packages to install as well; this is only needed
 to convert data between R and Python, and only if you can't use JSON to pass
-object to and from Python or R. Python build steps are executed in a standard
-Python shell without the need to use `{reticulate}`, so if you're using JSON
-to transfer data, there is no need to install `{reticulate}`.
+objects to and from Python or R. Python build steps are executed in a standard
+Python shell without the need to use `{reticulate}`, so if you're using JSON to
+transfer data, there is no need to install `{reticulate}`.
 
-If you want to work on a machine without R nor `{rix}` but with Nix already
-installed, we provide a way to bootstrap a complete environment. First, install
-cachix and configure the `rstats-on-nix` cache:
+Now that you defined the execution environment of the pipeline, you can run that
+script, still from the temporary Nix shell by running `source("gen-env.R")`.
+This will generate the required `default.nix`. Then, quit R and the temporary
+shell (CTRL-D or `quit()` in R, `exit` in the terminal) and then build the
+environment defined by the freshly generated `default.nix` by typing
+`nix-build`. This will now build the execution environment of the pipeline. You
+can use this environment to work on your project interactively as usual as well.
+To learn more, check out [`{rix}`](https://docs.ropensci.org/rix/).
 
-```bash
-nix-env -iA cachix -f https://cachix.org/api/v1/install
-```
-
-then use the cache:
-
-```bash
-cachix use rstats-on-nix
-```
-
-You only need to do this once per machine you want to use `{rixpress}` on. Many
-thanks to [Cachix](https://www.cachix.org/) for sponsoring the `rstats-on-nix`
-cache!
-
-Then run this line:
-
-```
-nix-shell --expr "$(curl -sl https://raw.githubusercontent.com/ropensci/rix/main/inst/extdata/default.nix)"
-```
-
-This will drop you into a shell with R and `{rix}` available. Simply start R by
-typing `R` and then `source("gen-env.R")` to generate the required
-`default.nix`. Then, quit R and the shell (CTRL-D or `quit()` in R, `exit` in
-the terminal) and then build the environment defined by the freshly generated
-`default.nix` by typing `nix-build`.
-
-Now is time to build the pipeline. Here is a simple example:
+You can now edit the pipeline script in `gen-pipeline.R`:
 
 ```{r, eval = FALSE}
 library(rixpress)
@@ -240,12 +256,12 @@ The `serialize_function` and `unserialize_function` arguments can be used to
 serialize objects using any function, for example `qs::save()` or machine
 learning-specific functions for specific models such as `xgboost`.
 
-## Building a Quarto document
+## Building a Quarto or R Markdown document
 
 The last pipeline I want to discuss builds a Quarto document using
-`rxp_quarto()`. Here again, the `additional_files` argument is used to make the
-derivation aware of required files to build the document. Here is what the
-source of the document looks like:
+`rxp_quarto()` (use `rxp_rmd()` for a R Markdown document). Here again, the
+`additional_files` argument is used to make the derivation aware of required
+files to build the document. Here is what the source of the document looks like:
 
 ````text
 
