@@ -2,7 +2,7 @@
 title: "Polyglot pipelines and literate programming with Quarto or R Markdown"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{c-polyglot}
+  %\VignetteIndexEntry{d-polyglot}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

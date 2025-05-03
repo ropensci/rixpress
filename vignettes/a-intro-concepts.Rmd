@@ -23,6 +23,14 @@ worry if you don't grasp everything immediately. You can try building a simple
 pipeline by following the next vignette `vignette("b-basic-usage")` and then
 return to this one; things should be clearer after some hands-on experience!
 
+Also, this package makes heavy use of its sister package `{rix}`, and we highly
+recommend you first get familiar with Nix by using `{rix}`. With `{rix}`, you'll
+learn how to set up reproducible development environments for data science,
+which you can use for interactive data analysis work. Then, if you want to go
+one step further in the [reproducibility
+spectrum/continuum](https://www.researchgate.net/figure/Reproducibility-spectrum-as-Peng-2011-stated_fig1_354765302),
+this is where `{rixpress}` comes in.
+
 ## Definitions
 
 In Nix terminology, a derivation is *a specification for running an executable
