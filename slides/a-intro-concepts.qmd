@@ -117,4 +117,4 @@ in
 - Perfect for data science!
 - `{rix}` and `{rixpress}`: Nix power for R users
 - To know more: [rix's](https://docs.ropensci.org/rix/) and [rixpress's](https://b-rodrigues.github.io/rixpress/) website
-
+- Next video [rix 5 minute intro](), [rixpress 5 minute intro]()
