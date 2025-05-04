@@ -37,7 +37,7 @@
     <li><a class="dropdown-item" href="../articles/b-core-functions.html">Core rixpress Functions and Usage</a></li>
     <li><a class="dropdown-item" href="../articles/c-tutorial.html">Setting up a pipeline from scratch: a tutorial</a></li>
     <li><a class="dropdown-item" href="../articles/d-polyglot.html">Polyglot pipelines and literate programming with Quarto or R Markdown</a></li>
-    <li><a class="dropdown-item" href="../articles/f-ci.html">Running pipelines in CI</a></li>
+    <li><a class="dropdown-item" href="../articles/e-ci.html">Running pipelines in CI</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -69,15 +69,14 @@
 
     
     
-<p>This vignette explains how to write a <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>
-pipeline, but doesn’t cover everything you need to know just yet. It
-also assumes that you’ve read <code><a href="../articles/a-intro-concepts.html">vignette("a-intro-concepts")</a></code>.
-In the next vignette <code><a href="../articles/c-tutorial.html">vignette("c-tutorial")</a></code>, you’ll learn
-how to set up a complete pipeline from start to finish.</p>
-<p>For a video version of this tutorial, <a href="youtube%20link%20to%20follow">check out this upcoming video on
-YouTube</a>.</p>
+<p>This vignette introduces the core functions required to build a
+<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> pipeline, but doesn’t cover everything you need
+to know just yet. It also assumes that you’ve read
+<code><a href="../articles/a-intro-concepts.html">vignette("a-intro-concepts")</a></code>. In the next vignette
+<code><a href="../articles/c-tutorial.html">vignette("c-tutorial")</a></code>, you’ll learn how to set up a
+complete pipeline from start to finish.</p>
 <div class="section level2">
-<h2 id="analyzing-the-mtcars-dataset-using-r-only">Analyzing the mtcars dataset using R only<a class="anchor" aria-label="anchor" href="#analyzing-the-mtcars-dataset-using-r-only"></a>
+<h2 id="getting-data-into-the-pipeline">Getting data into the pipeline<a class="anchor" aria-label="anchor" href="#getting-data-into-the-pipeline"></a>
 </h2>
 <p><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> provides several functions to help you write
 derivations. These functions typically start with the prefix
@@ -102,6 +101,10 @@ how Nix works and cannot be avoided.</p>
 <p>Note that <code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code> is quite flexible: it works with
 any function that reads a file, regardless of the file type. The path to
 the file can also be a URL.</p>
+</div>
+<div class="section level2">
+<h2 id="declaring-build-steps">Declaring build steps<a class="anchor" aria-label="anchor" href="#declaring-build-steps"></a>
+</h2>
 <p>Once the data is imported, we can start manipulating it. To generate
 a derivation similar to the one described in
 <code><a href="../articles/a-intro-concepts.html">vignette("a-intro-concepts")</a></code>, but using R and
@@ -126,6 +129,10 @@ derivation:</p>
 <p>Notice how the name of <code>d1</code> (<code>filtered_mtcars</code>)
 is used in <code>d2</code>: this is how dependencies between derivations
 are defined.</p>
+</div>
+<div class="section level2">
+<h2 id="generating-the-pipeline">Generating the pipeline<a class="anchor" aria-label="anchor" href="#generating-the-pipeline"></a>
+</h2>
 <p>Let’s stop here and build our pipeline. First, we need to define a
 list of derivations:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -263,6 +270,10 @@ the reproducible analytical pipeline</li>
 <p>You can quickly create these scripts using the
 <code><a href="../reference/rxp_init.html">rxp_init()</a></code> function, which generates both files with
 starter code to help you get started quickly.</p>
+</div>
+<div class="section level2">
+<h2 id="building-and-inspecting-outputs">Building and inspecting outputs<a class="anchor" aria-label="anchor" href="#building-and-inspecting-outputs"></a>
+</h2>
 <p>When you run <code>gen-pipeline.R</code> (or execute its contents
 line-by-line), the environment defined in <code>default.nix</code> is
 used. (It’s also possible to define separate environments for different
@@ -304,7 +315,7 @@ including a JSON representation of the pipeline at
 visualize the graph using <code><a href="../reference/rxp_visnetwork.html">rxp_visnetwork()</a></code>, which opens a
 new tab in your web browser with the DAG of the pipeline made using the
 <a href="https://datastorm-open.github.io/visNetwork/" class="external-link">visNetwork</a> package:</p>
-<video id="rixpress-video" controls autoplay loop muted><source src="https://github.com/b-rodrigues/rixpress/raw/refs/heads/main/rxp_visnetwork.mp4" type="video/mp4" srcset="NA"></source><!-- Fallback message -->
+<video id="rixpress-video" controls autoplay loop muted style="max-width: 100%; height: auto; display: block;"><source src="https://github.com/b-rodrigues/rixpress/raw/refs/heads/main/rxp_visnetwork.mp4" type="video/mp4" srcset="NA"></source><!-- Fallback message -->
 Your browser does not support the MP4 video format.
 </video><p>(This image shows the DAG of a more complex example pipeline.)</p>
 <p>For static documents, you can use <code><a href="../reference/rxp_ggdag.html">rxp_ggdag()</a></code> which uses

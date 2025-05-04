@@ -37,7 +37,7 @@
     <li><a class="dropdown-item" href="../articles/b-core-functions.html">Core rixpress Functions and Usage</a></li>
     <li><a class="dropdown-item" href="../articles/c-tutorial.html">Setting up a pipeline from scratch: a tutorial</a></li>
     <li><a class="dropdown-item" href="../articles/d-polyglot.html">Polyglot pipelines and literate programming with Quarto or R Markdown</a></li>
-    <li><a class="dropdown-item" href="../articles/f-ci.html">Running pipelines in CI</a></li>
+    <li><a class="dropdown-item" href="../articles/e-ci.html">Running pipelines in CI</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -79,7 +79,7 @@ following the next vignette, <code><a href="../articles/b-core-functions.html">v
 and then return to this one; things should become clearer after some
 hands-on experience!</p>
 <p>Also, this package makes heavy use of its sister package
-<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, and we highly recommend that you first get familiar
+<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, and I highly recommend that you first get familiar
 with Nix by using <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>. With <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, you’ll
 learn how to set up reproducible development environments for data
 science, which you can use for interactive data analysis work. Then, if
@@ -198,8 +198,8 @@ filtering <code>mtcars</code>, this derivation requires:</p>
 then the pipeline will only <em>work on your machine</em> - defeating
 the purpose of reproducibility! (It should be noted, however, that there
 are sometimes good reasons to have a dependency that is not managed by
-Nix (see the vignette ON CMDSTANR), but these should be the exception
-rather than the rule).</p>
+Nix (see the <a href="">CMDSTANR example</a> in the examples repo), but
+these should be the exception rather than the rule).</p>
 <p>Nix distinguishes between different types of dependencies
 (<code>buildInputs</code>, <code>nativeBuildInputs</code>,
 <code>propagatedBuildInputs</code>,

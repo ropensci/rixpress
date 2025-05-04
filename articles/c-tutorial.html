@@ -37,7 +37,7 @@
     <li><a class="dropdown-item" href="../articles/b-core-functions.html">Core rixpress Functions and Usage</a></li>
     <li><a class="dropdown-item" href="../articles/c-tutorial.html">Setting up a pipeline from scratch: a tutorial</a></li>
     <li><a class="dropdown-item" href="../articles/d-polyglot.html">Polyglot pipelines and literate programming with Quarto or R Markdown</a></li>
-    <li><a class="dropdown-item" href="../articles/f-ci.html">Running pipelines in CI</a></li>
+    <li><a class="dropdown-item" href="../articles/e-ci.html">Running pipelines in CI</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -164,21 +164,128 @@ RStudio as the IDE. I can now go back to my temporary Nix shell, and run
 <code>default.nix</code> file in my project’s folder: this is a Nix file
 that defines my environment. I can now leave my temporary shell by first
 quitting R, then typing CRTL-D or <code>exit</code> and then I can build
-my development environment using <code>nix-build</code>.</p>
-<p>the examples located in the <a href="https://github.com/b-rodrigues/rixpress_demos" class="external-link">rixpress_demos
-repository</a>. These examples demonstrate additional features of
-<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>, including:</p>
-<ul>
-<li>Building Quarto documents</li>
-<li>Creating polyglot pipelines that transfer data between R and
-Python</li>
-<li>Importing multiple files at once</li>
-<li>Using multiple environments instead of a single
-<code>default.nix</code> file</li>
-</ul>
-<p>For a more detailed walkthrough, check out our <a href="video%20link%20to%20follow">video tutorial</a>.</p>
-<p>In the next vignette, we’ll explore how to create pipelines that
-combine R and Python code.</p>
+my development environment using <code>nix-build</code>. Let’s now drop
+into our development shell by typping <code>nix-shell</code> and launch
+RStudio (or whatever editor you want to use) and open
+<code>gen-pipeline.R</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/rxp_r_file.html">rxp_r_file</a></span><span class="op">(</span></span>
+<span>    name <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    path <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    read_function <span class="op">=</span> \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span>file <span class="op">=</span> <span class="va">x</span>, sep <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
+<span>    name <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    expr <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span>project_path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span></code></pre></div>
+<p>This template starts with <code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code> to load in data,
+and <code><a href="../reference/rxp_r.html">rxp_r()</a></code> to define one step. These two derivations are
+put into a list and then passed to <code><a href="../reference/rixpress.html">rixpress()</a></code>. Let’s start
+by importing data and filtering the data using <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a>:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/rxp_r_file.html">rxp_r_file</a></span><span class="op">(</span></span>
+<span>    name <span class="op">=</span> <span class="va">mtcars</span>,</span>
+<span>    path <span class="op">=</span> <span class="st">'data/mtcars.csv'</span>,</span>
+<span>    read_function <span class="op">=</span> \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span>file <span class="op">=</span> <span class="va">x</span>, sep <span class="op">=</span> <span class="st">"|"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span></span>
+<span>  <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
+<span>    name <span class="op">=</span> <span class="va">filtered_mtcars</span>,</span>
+<span>    expr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">am</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span>project_path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span></code></pre></div>
+<p>Select the pipeline and run it (I highly recommend you use keyboard
+shortcuts to quickly run the above code when working interactively). If
+everything went well, you should see the following in your R
+console:</p>
+<pre><code>Build process started...
+
+
+Build successful! Run `rxp_inspect()` for a summary.
+Read individual derivations using `rxp_read()` or
+load them into the global environment using `rxp_load()`.</code></pre>
+<p>Let’s inspect the pipeline outputs using
+<code><a href="../reference/rxp_inspect.html">rxp_inspect()</a></code>:</p>
+<pre><code>       derivation build_success
+1 all-derivations          TRUE
+2 filtered_mtcars          TRUE
+3          mtcars          TRUE
+                                                         path       output
+1 /nix/store/bz7ynl23bxkb0gza069i6bhxqy8bngmr-all-derivations filtered....
+2 /nix/store/lhmkmbdjpgzillsak3nwv1khlvabbgpa-filtered_mtcars filtered....
+3          /nix/store/0nj75qf7md5xi0517qdi1qpk44466zqi-mtcars       mtcars</code></pre>
+<p>Three things were built: <code>mtcars</code>, which is simply the
+source data set, <code>filtered_mtcars</code> which is the filtered
+data, and then an object you didn’t defined called
+<code>all-derivations</code>: this is mostly for internal usage and you
+can safely ignore it.</p>
+<p>Let’s now use <code><a href="../reference/rxp_read.html">rxp_read()</a></code> to take a look at
+<code>filtered_mtcars</code>:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_read.html">rxp_read</a></span><span class="op">(</span><span class="st">"filtered_mtcars"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>                mpg cyl  disp  hp drat    wt  qsec vs am gear carb
+Mazda RX4      21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4
+Mazda RX4 Wag  21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4
+Datsun 710     22.8   4 108.0  93 3.85 2.320 18.61  1  1    4    1
+Fiat 128       32.4   4  78.7  66 4.08 2.200 19.47  1  1    4    1
+Honda Civic    30.4   4  75.7  52 4.93 1.615 18.52  1  1    4    2
+Toyota Corolla 33.9   4  71.1  65 4.22 1.835 19.90  1  1    4    1
+Fiat X1-9      27.3   4  79.0  66 4.08 1.935 18.90  1  1    4    1
+Porsche 914-2  26.0   4 120.3  91 4.43 2.140 16.70  0  1    5    2
+Lotus Europa   30.4   4  95.1 113 3.77 1.513 16.90  1  1    5    2
+Ford Pantera L 15.8   8 351.0 264 4.22 3.170 14.50  0  1    5    4
+Ferrari Dino   19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6
+Maserati Bora  15.0   8 301.0 335 3.54 3.570 14.60  0  1    5    8
+Volvo 142E     21.4   4 121.0 109 4.11 2.780 18.60  1  1    4    2</code></pre>
+<p>you can save this object like so:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">filtered_mtcars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_read.html">rxp_read</a></span><span class="op">(</span><span class="st">"filtered_mtcars"</span><span class="op">)</span></span></code></pre></div>
+<p>or you can simply use <code>rxp_load("filtered_mtcars")</code> which
+will achieve the same.</p>
+<p>You can now manipulate this object interactively, as usual: maybe you
+still don’t quite know what the next step should be (maybe there’s
+missing values you need to handle somehow, or another such cleaning
+step), but once you know, you can write the next derivation:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/rxp_r_file.html">rxp_r_file</a></span><span class="op">(</span></span>
+<span>    name <span class="op">=</span> <span class="va">mtcars</span>,</span>
+<span>    path <span class="op">=</span> <span class="st">'data/mtcars.csv'</span>,</span>
+<span>    read_function <span class="op">=</span> \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span>file <span class="op">=</span> <span class="va">x</span>, sep <span class="op">=</span> <span class="st">"|"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span></span>
+<span>  <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
+<span>    name <span class="op">=</span> <span class="va">filtered_mtcars</span>,</span>
+<span>    expr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">am</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span></span>
+<span>  <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
+<span>    name <span class="op">=</span> <span class="va">mtcars_mpg</span>,</span>
+<span>    expr <span class="op">=</span> <span class="fu">select</span><span class="op">(</span><span class="va">filtered_mtcars</span>, <span class="va">mpg</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span>project_path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span></code></pre></div>
+<p>Rebuild the pipeline: the first two steps are skipped because they’re
+already available in the Nix store. You can now start the <em>inspect
+-&gt; try stuff -&gt; define derivation -&gt; build pipeline</em> loop
+again for the next derivation.</p>
+<p>You now know the basics of using <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> to build a
+simple pipeline.</p>
+<p>The next vignette <code><a href="../articles/d-polyglot.html">vignette("d-polyglot")</a></code> explains how to
+build a pipeline with both R and Python derivations, as well compiling a
+Quarto document.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
