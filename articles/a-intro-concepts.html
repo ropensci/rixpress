@@ -75,15 +75,15 @@ setting up a simple pipeline using <a href="https://github.com/b-rodrigues/rixpr
 Understanding the concepts presented here is helpful but not mandatory.
 I recommend reading through this vignette, but don’t worry if you don’t
 grasp everything immediately. You can try building a simple pipeline by
-following the next vignette <code><a href="../articles/b-basic-usage.html">vignette("b-basic-usage")</a></code> and
-then return to this one; things should be clearer after some hands-on
-experience!</p>
+following the next vignette, <code><a href="../articles/b-basic-usage.html">vignette("b-basic-usage")</a></code>, and
+then return to this one; things should become clearer after some
+hands-on experience!</p>
 <p>Also, this package makes heavy use of its sister package
-<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, and we highly recommend you first get familiar with
-Nix by using <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>. With <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, you’ll learn
-how to set up reproducible development environments for data science,
-which you can use for interactive data analysis work. Then, if you want
-to go one step further in the <a href="https://www.researchgate.net/figure/Reproducibility-spectrum-as-Peng-2011-stated_fig1_354765302" class="external-link">reproducibility
+<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, and we highly recommend that you first get familiar
+with Nix by using <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>. With <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, you’ll
+learn how to set up reproducible development environments for data
+science, which you can use for interactive data analysis work. Then, if
+you want to go one step further in the <a href="https://www.researchgate.net/figure/Reproducibility-spectrum-as-Peng-2011-stated_fig1_354765302" class="external-link">reproducibility
 spectrum/continuum</a>, this is where <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> comes
 in.</p>
 <div class="section level2">
@@ -157,11 +157,11 @@ while still benefiting from its powerful reproducibility features.</p>
 <div class="section level2">
 <h2 id="dependencies-of-derivations">Dependencies of derivations<a class="anchor" aria-label="anchor" href="#dependencies-of-derivations"></a>
 </h2>
-<p>Nix requires dependencies of any derivation to be explicitly listed
-and also managed by Nix itself. If you’re building output that requires,
-for example, Quarto, then Quarto must be explicitly listed as an input,
-even if you already have Quarto installed on your system. The same
-applies to Quarto’s dependencies, and all the dependencies of those
+<p>Nix requires the dependencies of any derivation to be explicitly
+listed and managed by Nix itself. If you’re building output that
+requires, for example, Quarto, then Quarto must be explicitly listed as
+an input, even if you already have Quarto installed on your system. The
+same applies to Quarto’s dependencies, and all the dependencies of those
 dependencies, all the way down to the common ancestor of all packages.
 With Nix, to run a linear regression with R, you essentially need to
 build the entire universe of dependencies first.</p>
@@ -180,11 +180,11 @@ referenced that are missing on the target system.</p>
 </blockquote>
 <p>(<em>Nix: A Safe and Policy-Free System for Software Deployment</em>,
 Dolstra et al., 2004).</p>
-<p>The figure below, from the same paper illustrates this idea:</p>
+<p>The figure below, from the same paper, illustrates this idea:</p>
 <figure><img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/master/vignettes/figure_4.png" alt="Figure 4 of Dolstra et al. (2004)"><figcaption aria-hidden="true">
 Figure 4 of Dolstra et al. (2004)
 </figcaption></figure><p>In the figure, <code>subversion</code> depends on
-<code>openssl</code> which itself depends on <code>glibc</code>.
+<code>openssl</code>, which itself depends on <code>glibc</code>.
 Similarly, if you write a derivation that builds a data frame by
 filtering <code>mtcars</code>, this derivation requires:</p>
 <ul>
@@ -196,15 +196,15 @@ filtering <code>mtcars</code>, this derivation requires:</p>
 <p>All of these must be managed by Nix. If any dependency exists
 “outside” this component closure and is only available on your machine,
 then the pipeline will only <em>work on your machine</em> - defeating
-the purpose of reproducibility! (It should be noted however that there
-are, sometimes, good reasons to have a dependency that is not managed by
-Nix: see the vignette ON CMDSTANR, but these should be the exception
+the purpose of reproducibility! (It should be noted, however, that there
+are sometimes good reasons to have a dependency that is not managed by
+Nix (see the vignette ON CMDSTANR), but these should be the exception
 rather than the rule).</p>
 <p>Nix distinguishes between different types of dependencies
 (<code>buildInputs</code>, <code>nativeBuildInputs</code>,
 <code>propagatedBuildInputs</code>,
-<code>propagatedNativeBuildInputs</code>) but let’s skip this concept
-which is only relevant for packaging upstream software, not to define
+<code>propagatedNativeBuildInputs</code>), but let’s skip this concept,
+which is only relevant for packaging upstream software, not for defining
 our pipelines. But if you’re curious, read <a href="https://gist.github.com/b-rodrigues/c677b59126d05d43347ed9623ddd5b0c" class="external-link">this</a>.</p>
 </div>
 <div class="section level2">
@@ -301,11 +301,11 @@ will result in a different hash, even though the resulting
 perspective, they’re different because one of the inputs was
 different.</p>
 <p>The key takeaway is that Nix is a complex tool because it solves a
-complex problem which is ensuring complete reproducibility across
-different environments and time. <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> and
-<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> are packages designed to make Nix more accessible to
-R users, allowing you to benefit from Nix’s reproducibility without
-having to learn all its complexities.</p>
+complex problem: ensuring complete reproducibility across different
+environments and time. <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> and <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>
+are packages designed to make Nix more accessible to R users, allowing
+you to benefit from Nix’s reproducibility without having to learn all
+its complexities.</p>
 <p>Now that you’re familiar with the basic Nix concepts, let’s move on
 to the next vignette where you’ll set up your first basic pipeline:
 <code><a href="../articles/b-basic-usage.html">vignette("b-basic-usage")</a></code>.</p>
