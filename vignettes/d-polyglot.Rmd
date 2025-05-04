@@ -341,6 +341,5 @@ demonstrate additional features of `{rixpress}`, including:
 - [Using the Python 'xgboost' library and transfering data to R](https://github.com/b-rodrigues/rixpress_demos/tree/master/r_py_xgboost)
 - [Importing multiple files at once](https://github.com/b-rodrigues/rixpress_demos/tree/master/many_inputs_example)
 - [Using multiple environments instead of a single `default.nix` file](https://github.com/b-rodrigues/rixpress_demos/tree/master/r_multi_envs)
-- [Pipelines that require tools not managed by `Nix` to be available]()
 
 and many others! Don’t hesitate to submit more examples as well!
