@@ -3,11 +3,11 @@ pkgdown: 2.1.2
 pkgdown_sha: ~
 articles:
   a-intro-concepts: a-intro-concepts.html
-  b-basic-usage: b-basic-usage.html
+  b-core-functions: b-core-functions.html
   c-tutorial: c-tutorial.html
   d-polyglot: d-polyglot.html
   f-ci: f-ci.html
-last_built: 2025-05-04T08:30Z
+last_built: 2025-05-04T08:33Z
 urls:
   reference: https://b-rodrigues.github.io/rixpress/reference
   article: https://b-rodrigues.github.io/rixpress/articles
