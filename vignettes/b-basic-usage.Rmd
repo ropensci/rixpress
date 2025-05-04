@@ -1,8 +1,8 @@
 ---
-title: "Basic usage"
+title: "Core rixpress Functions and Usage"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{b-basic-usage}
+  %\VignetteIndexEntry{b-core-functions}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

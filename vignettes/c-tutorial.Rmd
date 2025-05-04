@@ -125,5 +125,5 @@ demonstrate additional features of `{rixpress}`, including:
 For a more detailed walkthrough, check out our [video tutorial](video link to
 follow).
 
-In the next vignette,, we'll explore how to create
+In the next vignette, we'll explore how to create
 pipelines that combine R and Python code.
