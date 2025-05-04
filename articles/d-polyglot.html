@@ -87,10 +87,10 @@ repository</a>.</p>
 (multilingual) data science pipelines with derivations that run R or
 Python code. This vignette explains how you can easily set up such a
 pipeline.</p>
-<p>Let’s assume that you only have Nix installed on your system, and no
-R installation (this is the ideal scenario: if you plan to use Nix
-full-time for your development environments, you shouldn’t have a
-system-wide installation of R).</p>
+<p>Let’s assume that you only have <code>Nix</code> installed on your
+system, and no R installation (this is the ideal scenario: if you plan
+to use <code>Nix</code> full-time for your development environments, you
+shouldn’t have a system-wide installation of R).</p>
 <p>Before installing R and R packages for your pipeline, install <a href="https://www.cachix.org/" class="external-link">cachix</a> and configure the
 <code>rstats-on-nix</code> cache. This way, pre-compiled, binary,
 packages will be used instead of being built from source. Run the
@@ -142,11 +142,11 @@ without the need to use <a href="https://rstudio.github.io/reticulate/" class="e
 JSON to transfer data, there is no need to install
 <a href="https://rstudio.github.io/reticulate/" class="external-link">reticulate</a>.</p>
 <p>Now that you defined the execution environment of the pipeline, you
-can run that script, still from the temporary Nix shell by running
-<code>source("gen-env.R")</code>. This will generate the required
-<code>default.nix</code>. Then, quit R and the temporary shell (CTRL-D
-or <code><a href="https://rdrr.io/r/base/quit.html" class="external-link">quit()</a></code> in R, <code>exit</code> in the terminal) and then
-build the environment defined by the freshly generated
+can run that script, still from the temporary <code>Nix</code> shell by
+running <code>source("gen-env.R")</code>. This will generate the
+required <code>default.nix</code>. Then, quit R and the temporary shell
+(CTRL-D or <code><a href="https://rdrr.io/r/base/quit.html" class="external-link">quit()</a></code> in R, <code>exit</code> in the terminal)
+and then build the environment defined by the freshly generated
 <code>default.nix</code> by typing <code>nix-build</code>. This will now
 build the execution environment of the pipeline. You can use this
 environment to work on your project interactively as usual as well. To
@@ -367,8 +367,8 @@ multiple files at once</a></li>
 <li><a href="https://github.com/b-rodrigues/rixpress_demos/tree/master/r_multi_envs" class="external-link">Using
 multiple environments instead of a single <code>default.nix</code>
 file</a></li>
-<li><a href="">Pipelines that require tools not managed by Nix to be
-available</a></li>
+<li><a href="">Pipelines that require tools not managed by
+<code>Nix</code> to be available</a></li>
 </ul>
 <p>and many others! Don’t hesitate to submit more examples as well!</p>
 </div>
