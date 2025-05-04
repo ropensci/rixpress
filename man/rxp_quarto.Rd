@@ -43,7 +43,7 @@ in the .qmd file.
     name = report,
     qmd_file = "report.qmd",
     additional_files = "images",
-    args = "-- to typst"
+    args = "--to typst"
   )
 }
 }

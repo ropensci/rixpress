@@ -38,7 +38,7 @@ steps that happen:
 - the execution environment gets generated and built;
 - the `rstats-on-nix` cache gets configured to decrease build times, see this
   [documentation](https://docs.ropensci.org/rix/articles/b1-setting-up-and-using-rix-on-linux-and-windows.html#using-the-determinate-systems-installer)
-  (ignore the part about installing Nix);
+  (ignore the part about installing `Nix`);
 - the pipeline gets generated (and potentially built, depending on whether you set
   `build` to `FALSE` in the `rixpress()` call);
 - the dag gets printed;

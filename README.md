@@ -1,16 +1,16 @@
 
-# rixpress: Reproducible Analytical Pipelines with Nix
+# rixpress: Reproducible Analytical Pipelines with `Nix`
 
 [![R-hub
 v2](https://github.com/b-rodrigues/rixpress/actions/workflows/rhub.yaml/badge.svg)](https://github.com/b-rodrigues/rixpress/actions/workflows/rhub.yaml/)
 
 This R package provides a framework for building multilanguage
-reproducible analytical pipelines by leveraging Nix’s build automation
+reproducible analytical pipelines by leveraging `Nix`’s build automation
 capabilities. One of the design goals of `{rixpress}` is to mimic the
 user experience of the `{targets}` package, and is thus heavily inspired
 by it. It builds upon the `{rix}` package, which provides helper
 function to define reproducible development environments as code using
-Nix, ensuring the pipeline runs in a fully reproducible Nix-managed
+`Nix`, ensuring the pipeline runs in a fully reproducible `Nix`-managed
 environment. `{rixpress}` only requires users to write the pipeline
 using familiar R code.
 
@@ -56,7 +56,7 @@ list(
 ```
 
 Running `rixpress()` generates a `pipeline.nix` file, which contains all
-the build instructions of all the derivations and final outputs as Nix
+the build instructions of all the derivations and final outputs as `Nix`
 code. It is possible to define derivations that run Python code as well,
 and objects can be passed to and from R or Python by using `rxp_py2r()`
 and `ryp_r2py()`, or by using a common serialization format such as
@@ -76,10 +76,10 @@ dependencies pinned to a specific date to ensure reproducibility.
 In the example above, the first derivation loads `mtcars.csv` (it
 actually should be a `.psv` file, since the data is separated by pipes
 –`|`… why? just because–). Each output (e.g., `mtcars`, `mtcars_am`,
-`mtcars_head`, `mtcars_tail`, `mtcars_mpg`, `page`) is built by Nix
+`mtcars_head`, `mtcars_tail`, `mtcars_mpg`, `page`) is built by `Nix`
 within the environment defined by the `default.nix` file. Concretely,
-`{rix}` made using Nix as a package manager easier for R users,
-`{rixpress}` makes it now easy to use Nix as a build automation tool!
+`{rix}` made using `Nix` as a package manager easier for R users,
+`{rixpress}` makes it now easy to use `Nix` as a build automation tool!
 
 When you run `rixpress()`, a folder called `_rixpress/` gets also
 generated which contains a file with a JSON representation of the
@@ -97,9 +97,9 @@ DAG
 </figcaption>
 </figure>
 
-Because the pipeline is built using Nix, the outputs all get stored in
-the so-called Nix store under `/nix/store/`. It can be annoying to
-retrieve objects from the Nix store so `{rixpress}` contains several
+Because the pipeline is built using `Nix`, the outputs all get stored in
+the so-called `Nix` store under `/nix/store/`. It can be annoying to
+retrieve objects from the `Nix` store so `{rixpress}` contains several
 helper functions:
 
 - `rxp_read("mtcars_mpg")` reads `mtcars_mpg` into memory;
@@ -125,14 +125,14 @@ which contains many different examples you can take inspiration from.
 
 `{rixpress}` builds on `{rix}`, so we highly recommend you start by
 learning and using `{rix}` before trying your hand at `{rixpress}`. By
-learning how to use `{rix}`, you’ll learn more about Nix, how to install
-and use it, and will then be ready to use `{rixpress}`!
+learning how to use `{rix}`, you’ll learn more about `Nix`, how to
+install and use it, and will then be ready to use `{rixpress}`!
 
 ### Installing rixpress
 
 Since there’s little point in installing `{rixpress}` if you don’t use
-Nix, the ideal way to install `{rixpress}` is instead to use `{rix}` to
-set up a reproducible environment that includes `{rixpress}` and the
+`Nix`, the ideal way to install `{rixpress}` is instead to use `{rix}`
+to set up a reproducible environment that includes `{rixpress}` and the
 other required dependencies for your project. Take a look at the
 [introductory concepts
 vignette](https://b-rodrigues.github.io/rixpress/articles/a-intro_concepts.html)

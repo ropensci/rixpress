@@ -42,7 +42,7 @@ separator and create a temporary function with a single argument to read the
 file at `'data/mtcars.csv'`.
 
 Important: This approach means that the `mtcars.csv` file **will be copied** to
-the Nix store. This is essential to how Nix works and cannot be avoided.
+the `Nix` store. This is essential to how `Nix` works and cannot be avoided.
 
 Note that `rxp_r_file()` is quite flexible: it works with any function that
 reads a file, regardless of the file type. The path to the file can also be a
@@ -64,7 +64,7 @@ d1 <- rxp_r(
 This syntax should be familiar to users of the `{targets}` package: similar to
 the `tar_target()` function, you simply provide a name for the derivation and
 the expression to generate it. That's all you need to write for `{rixpress}` to
-generate all the required Nix code automatically.
+generate all the required `Nix` code automatically.
 
 To continue transforming the data, you only need to define a new derivation:
 
@@ -125,7 +125,7 @@ Running `rixpress()` performs several actions:
   folder contains automatically generated files needed for the pipeline to build
   successfully.
 - generates a file called `pipeline.nix`, which defines the entire pipeline in
-  the Nix language.
+  the `Nix` language.
 - calls the function `rxp_make()` to build the pipeline.
 
 However, if you try to run the code above, it will likely fail. This is because
@@ -133,7 +133,7 @@ a crucial piece is missing: the environment in which the pipeline must run!
 
 ## Defining a Reproducible Shell for Execution
 
-Remember that the core purpose of using Nix is to ensure reproducibility by
+Remember that the core purpose of using `Nix` is to ensure reproducibility by
 forcing you to explicitly declare all dependencies. For our pipeline above, we
 need to specify: Which version of R should be used? Which R packages? The
 pipeline uses `filter()` and `select()` from the `{dplyr}` package, so we must
@@ -155,7 +155,7 @@ rix(
 )
 ```
 
-Running this code generates a `default.nix` file that can be built using Nix by
+Running this code generates a `default.nix` file that can be built using `Nix` by
 calling `nix-build`. This creates a development environment containing RStudio,
 R, and `{dplyr}` as they existed on April 11, 2025. You can use this environment
 for interactive data analysis just as you would with a standard installation of
@@ -310,7 +310,7 @@ instead of modifying your original `rixpress()` call.
 ## Caveats
 
 There are some caveats that you need to be aware of when using `{rixpress}`.
-Due to how Nix works, certain things are simply not possible:
+Due to how `Nix` works, certain things are simply not possible:
 
 - as mentioned in the `vignette("a-intro-concepts")`, functions are executed in
   a hermetic sandbox: if they need access to some external resource, the build
@@ -318,10 +318,10 @@ Due to how Nix works, certain things are simply not possible:
   API, you need to get the data in a classic interactive R session, save this
   data on disk, and then you can include it in the pipeline. The only exception
   to this is `rxp_r_file()` which can download a file from a URL.
-- all build artifacts will be saved in the Nix store, `/nix/store/`. If you
+- all build artifacts will be saved in the `Nix` store, `/nix/store/`. If you
   are working with confidential data, make sure no one else can access the
   `/nix/store`.
-- if you have proprietary R packages, you will need to include them in the Nix
+- if you have proprietary R packages, you will need to include them in the `Nix`
   shell. This is more a discussion for `{rix}`, since it is `{rix}` that
   generates the execution environment, so if you require some help to package
   your packages, open an issue [on the rix GitHub

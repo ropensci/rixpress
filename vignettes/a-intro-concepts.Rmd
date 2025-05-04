@@ -24,7 +24,7 @@ pipeline by following the next vignette, `vignette("b-core-functions")`, and the
 return to this one; things should become clearer after some hands-on experience!
 
 Also, this package makes heavy use of its sister package `{rix}`, and I highly
-recommend that you first get familiar with Nix by using `{rix}`. With `{rix}`, you'll
+recommend that you first get familiar with `Nix` by using `{rix}`. With `{rix}`, you'll
 learn how to set up reproducible development environments for data science,
 which you can use for interactive data analysis work. Then, if you want to go
 one step further in the [reproducibility
@@ -33,7 +33,7 @@ this is where `{rixpress}` comes in.
 
 ## Definitions
 
-In Nix terminology, a derivation is *a specification for running an executable
+In `Nix` terminology, a derivation is *a specification for running an executable
 on precisely defined input files to repeatably produce output files at uniquely
 determined file system paths.*
 ([source](https://nix.dev/manual/nix/2.25/language/derivations))
@@ -54,7 +54,7 @@ The next sections of this document explain these three points in more detail.
 
 ## Derivations
 
-Here is an example of a *simple* Nix expression:
+Here is an example of a *simple* `Nix` expression:
 
 ```
 let
@@ -85,31 +85,31 @@ fail (though it's a bit of a stretch to call this a *pipeline*) is if the
 `mtcars.csv` file is not shared with it.
 
 You could then add another step that uses `filtered.csv` as input and continue
-processing it. If you label the above code as `f` and a subsequent chunk of Nix
+processing it. If you label the above code as `f` and a subsequent chunk of `Nix`
 code as `g`, then adding another step would essentially result in the following
 computation: `mtcars |> f |> g`, where `f` and `g` are pure functions, and the
 pipeline is thus a composition of pure functions.
 
-Nix builds `filtered.csv` in two steps: it first generates a *derivation* from
+`Nix` builds `filtered.csv` in two steps: it first generates a *derivation* from
 this expression, and only then builds it. For clarity in this document, I'll
 refer to code like the example above as a *derivation* rather than an
 expression, to avoid confusion with the concept of *expression* in R.
 
 The goal of `{rixpress}` is to help you write pipelines like `mtcars |> f |> g`
-without needing to learn Nix, while still benefiting from its powerful
+without needing to learn `Nix`, while still benefiting from its powerful
 reproducibility features.
 
 ## Dependencies of derivations
 
-Nix requires the dependencies of any derivation to be explicitly listed and
-managed by Nix itself. If you're building output that requires, for example,
+`Nix` requires the dependencies of any derivation to be explicitly listed and
+managed by `Nix` itself. If you're building output that requires, for example,
 Quarto, then Quarto must be explicitly listed as an input, even if you already
 have Quarto installed on your system. The same applies to Quarto's dependencies,
 and all the dependencies of those dependencies, all the way down to the common
-ancestor of all packages. With Nix, to run a linear regression with R, you
+ancestor of all packages. With `Nix`, to run a linear regression with R, you
 essentially need to build the entire universe of dependencies first.
 
-In Nix terms, this complete set of packages and their dependencies are what its
+In `Nix` terms, this complete set of packages and their dependencies are what its
 author, Eelco Dolstra, refers to as *component closures*:
 
 > The idea is to always deploy component closures: if we deploy a component,
@@ -140,24 +140,24 @@ filtering `mtcars`, this derivation requires:
 - All of R's dependencies and the dependencies of any R packages.
 - The dependencies of those dependencies (all the way down).
 
-All of these must be managed by Nix. If any dependency exists "outside" this
+All of these must be managed by `Nix`. If any dependency exists "outside" this
 component closure and is only available on your machine, then the pipeline will
 only *work on your machine* - defeating the purpose of reproducibility! (It
 should be noted, however, that there are sometimes good reasons to have a
-dependency that is not managed by Nix (see the [CMDSTANR example]() in the
+dependency that is not managed by `Nix` (see the [CMDSTANR example]() in the
 examples repo), but these should be the exception rather than the rule).
 
-Nix distinguishes between different types of dependencies (`buildInputs`,
+`Nix` distinguishes between different types of dependencies (`buildInputs`,
 `nativeBuildInputs`, `propagatedBuildInputs`, `propagatedNativeBuildInputs`), but
 let's skip this concept, which is only relevant for packaging upstream software,
 not for defining our pipelines. But if you're curious, read
 [this](https://gist.github.com/b-rodrigues/c677b59126d05d43347ed9623ddd5b0c).
 
-## The Nix store and hermetic builds
+## The `Nix` store and hermetic builds
 
 When building derivations, their outputs are saved into the *Nix store*.
 Typically located at `/nix/store/`, this folder contains all the software and
-build artifacts produced by Nix.
+build artifacts produced by `Nix`.
 
 For example, if you write a derivation that computes the tail of a file named
 `mtcars.csv`, once the derivation is built, its output would be stored at a path
@@ -203,29 +203,29 @@ version and archive it, and continue using this archived data for your analysis
 
 ## Summary and conclusion
 
-As explained at the beginning of this vignette, Nix generates a derivation from
-a Nix expression through a process called instantiation. Writing a reproducible
-pipeline with Nix directly would require writing very long and complex Nix
+As explained at the beginning of this vignette, `Nix` generates a derivation from
+a `Nix` expression through a process called instantiation. Writing a reproducible
+pipeline with `Nix` directly would require writing very long and complex `Nix`
 expressions. This is where `{rixpress}` comes in - it handles this complexity
 for you.
 
-During instantiation, Nix processes your declarations, resolves all inputs
+During instantiation, `Nix` processes your declarations, resolves all inputs
 (including source files, build scripts, and external dependencies), and computes
 a unique cryptographic hash. This hash is derived from both the contents of your
 derivation and its entire dependency graph, forming part of the derivation's
 identity. This ensures that even the smallest change in your inputs will result
 in a distinct derivation, guaranteeing reproducibility. To avoid confusion with
-the concept of expression in R, throughout this documentation I refer to Nix
+the concept of expression in R, throughout this documentation I refer to `Nix`
 expressions as *derivations*.
 
-Once instantiated, derivations can be built. During the build process, Nix
+Once instantiated, derivations can be built. During the build process, `Nix`
 constructs an isolated, hermetic environment where only the explicitly declared
 dependencies are available. This makes the build entirely deterministic, meaning
 that identical inputs always produce identical outputs, regardless of the
 machine or environment. This isolation improves reliability and facilitates
 debugging and maintenance by eliminating external variables.
 
-After a successful build, Nix stores the output in the Nix store (typically at
+After a successful build, `Nix` stores the output in the `Nix` store (typically at
 `/nix/store/`). For example, if you build a derivation that processes the
 `mtcars.csv` file, the output might be saved under a unique path like
 `/nix/store/81k4s9q652jlka0c36khpscnmr8wk7jb-mtcars_tail`. The cryptographic
@@ -233,15 +233,15 @@ hash is computed based on the derivation's inputs and build process. If
 *anything* changes, the hash will be different. This is extremely precise - even
 changing the separator in the `mtcars.csv` data set from `,` to `|` will result
 in a different hash, even though the resulting `mtcars_tail` object might look
-identical to us. From Nix's perspective, they're different because one of the
+identical to us. From `Nix`'s perspective, they're different because one of the
 inputs was different.
 
-The key takeaway is that Nix is a complex tool because it solves a complex
+The key takeaway is that `Nix` is a complex tool because it solves a complex
 problem: ensuring complete reproducibility across different environments
-and time. `{rixpress}` and `{rix}` are packages designed to make Nix more
-accessible to R users, allowing you to benefit from Nix's reproducibility
+and time. `{rixpress}` and `{rix}` are packages designed to make `Nix` more
+accessible to R users, allowing you to benefit from `Nix`'s reproducibility
 without having to learn all its complexities.
 
-Now that you're familiar with the basic Nix concepts, let's move on to the next
+Now that you're familiar with the basic `Nix` concepts, let's move on to the next
 vignette where you'll set up your first basic pipeline:
 `vignette("b-core-functions")`.

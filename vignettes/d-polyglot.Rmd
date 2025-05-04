@@ -37,8 +37,8 @@ repository](https://github.com/b-rodrigues/rixpress_demos/).
 pipelines with derivations that run R or Python code. This vignette explains how
 you can easily set up such a pipeline.
 
-Let's assume that you only have Nix installed on your system, and no R
-installation (this is the ideal scenario: if you plan to use Nix full-time for
+Let's assume that you only have `Nix` installed on your system, and no R
+installation (this is the ideal scenario: if you plan to use `Nix` full-time for
 your development environments, you shouldn't have a system-wide installation of
 R).
 
@@ -105,7 +105,7 @@ Python shell without the need to use `{reticulate}`, so if you're using JSON to
 transfer data, there is no need to install `{reticulate}`.
 
 Now that you defined the execution environment of the pipeline, you can run that
-script, still from the temporary Nix shell by running `source("gen-env.R")`.
+script, still from the temporary `Nix` shell by running `source("gen-env.R")`.
 This will generate the required `default.nix`. Then, quit R and the temporary
 shell (CTRL-D or `quit()` in R, `exit` in the terminal) and then build the
 environment defined by the freshly generated `default.nix` by typing
@@ -341,6 +341,6 @@ demonstrate additional features of `{rixpress}`, including:
 - [Using the Python 'xgboost' library and transfering data to R](https://github.com/b-rodrigues/rixpress_demos/tree/master/r_py_xgboost)
 - [Importing multiple files at once](https://github.com/b-rodrigues/rixpress_demos/tree/master/many_inputs_example)
 - [Using multiple environments instead of a single `default.nix` file](https://github.com/b-rodrigues/rixpress_demos/tree/master/r_multi_envs)
-- [Pipelines that require tools not managed by Nix to be available]()
+- [Pipelines that require tools not managed by `Nix` to be available]()
 
 and many others! Don’t hesitate to submit more examples as well!

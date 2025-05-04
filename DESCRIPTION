@@ -6,7 +6,7 @@ Authors@R:
 Description: Streamlines the creation of reproducible analytical pipelines using
   `default.nix` expressions generated via `{rix}` for reproducibility. Define
   derivations in R or Python, chain them into a composition of pure functions
-  and build the resulting pipeline using Nix as the underlying end-to-end build
+  and build the resulting pipeline using `Nix` as the underlying end-to-end build
   tool. Functions to plot a DAG representation of the pipeline are included,
   as well as functions to load and inspect intermediary results for interactive
   analysis. Heavily inspired by the `{targets}` package.
