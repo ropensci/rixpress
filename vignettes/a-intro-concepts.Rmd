@@ -20,11 +20,11 @@ This vignette introduces key terminology and walks you through setting up a
 simple pipeline using `{rixpress}`. Understanding the concepts presented here is
 helpful but not mandatory. I recommend reading through this vignette, but don't
 worry if you don't grasp everything immediately. You can try building a simple
-pipeline by following the next vignette `vignette("b-basic-usage")` and then
-return to this one; things should be clearer after some hands-on experience!
+pipeline by following the next vignette, `vignette("b-basic-usage")`, and then
+return to this one; things should become clearer after some hands-on experience!
 
 Also, this package makes heavy use of its sister package `{rix}`, and we highly
-recommend you first get familiar with Nix by using `{rix}`. With `{rix}`, you'll
+recommend that you first get familiar with Nix by using `{rix}`. With `{rix}`, you'll
 learn how to set up reproducible development environments for data science,
 which you can use for interactive data analysis work. Then, if you want to go
 one step further in the [reproducibility
@@ -101,7 +101,7 @@ reproducibility features.
 
 ## Dependencies of derivations
 
-Nix requires dependencies of any derivation to be explicitly listed and also
+Nix requires the dependencies of any derivation to be explicitly listed and
 managed by Nix itself. If you're building output that requires, for example,
 Quarto, then Quarto must be explicitly listed as an input, even if you already
 have Quarto installed on your system. The same applies to Quarto's dependencies,
@@ -122,7 +122,7 @@ author, Eelco Dolstra, refers to as *component closures*:
 
 (*Nix: A Safe and Policy-Free System for Software Deployment*, Dolstra et al., 2004).
 
-The figure below, from the same paper illustrates this idea:
+The figure below, from the same paper, illustrates this idea:
 
 <figure>
 <img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/master/vignettes/figure_4.png" alt="Figure 4 of Dolstra et al. (2004)" />
@@ -131,7 +131,7 @@ Figure 4 of Dolstra et al. (2004)
 </figcaption>
 </figure>
 
-In the figure, `subversion` depends on `openssl` which itself depends on
+In the figure, `subversion` depends on `openssl`, which itself depends on
 `glibc`. Similarly, if you write a derivation that builds a data frame by
 filtering `mtcars`, this derivation requires:
 
@@ -143,14 +143,14 @@ filtering `mtcars`, this derivation requires:
 All of these must be managed by Nix. If any dependency exists "outside" this
 component closure and is only available on your machine, then the pipeline will
 only *work on your machine* - defeating the purpose of reproducibility! (It
-should be noted however that there are, sometimes, good reasons to have a
-dependency that is not managed by Nix: see the vignette ON CMDSTANR, but these
+should be noted, however, that there are sometimes good reasons to have a
+dependency that is not managed by Nix (see the vignette ON CMDSTANR), but these
 should be the exception rather than the rule).
 
 Nix distinguishes between different types of dependencies (`buildInputs`,
-`nativeBuildInputs`, `propagatedBuildInputs`, `propagatedNativeBuildInputs`) but
-let's skip this concept which is only relevant for packaging upstream software,
-not to define our pipelines. But if you're curious, read
+`nativeBuildInputs`, `propagatedBuildInputs`, `propagatedNativeBuildInputs`), but
+let's skip this concept, which is only relevant for packaging upstream software,
+not for defining our pipelines. But if you're curious, read
 [this](https://gist.github.com/b-rodrigues/c677b59126d05d43347ed9623ddd5b0c).
 
 ## The Nix store and hermetic builds
@@ -237,7 +237,7 @@ identical to us. From Nix's perspective, they're different because one of the
 inputs was different.
 
 The key takeaway is that Nix is a complex tool because it solves a complex
-problem which is ensuring complete reproducibility across different environments
+problem: ensuring complete reproducibility across different environments
 and time. `{rixpress}` and `{rix}` are packages designed to make Nix more
 accessible to R users, allowing you to benefit from Nix's reproducibility
 without having to learn all its complexities.
