@@ -110,20 +110,148 @@ temporary Nix shell, and run `source("gen-env.R")`. This will create a
 `default.nix` file in my project's folder: this is a Nix file that defines my
 environment. I can now leave my temporary shell by first quitting R, then typing
 CRTL-D or `exit` and then I can build my development environment using
-`nix-build`.
+`nix-build`. Let’s now drop into our development shell by typping `nix-shell`
+and launch RStudio (or whatever editor you want to use) and open
+`gen-pipeline.R`:
 
 
-the examples located in the [rixpress_demos
-repository](https://github.com/b-rodrigues/rixpress_demos). These examples
-demonstrate additional features of `{rixpress}`, including:
+```{r, eval = FALSE}
+library(rixpress)
+library(igraph)
 
-- Building Quarto documents
-- Creating polyglot pipelines that transfer data between R and Python
-- Importing multiple files at once
-- Using multiple environments instead of a single `default.nix` file
+list(
+  rxp_r_file(
+    name = NULL,
+    path = NULL,
+    read_function = \(x) read.csv(file = x, sep = ",")
+  ),
+  rxp_r(
+    name = NULL,
+    expr = NULL
+  )
+) |> rixpress(project_path = ".")
+```
 
-For a more detailed walkthrough, check out our [video tutorial](video link to
-follow).
+This template starts with `rxp_r_file()` to load in data, and `rxp_r()` to
+define one step. These two derivations are put into a list and then passed to
+`rixpress()`. Let's start by importing data and filtering the data using
+`{dplyr}`:
 
-In the next vignette, we'll explore how to create
-pipelines that combine R and Python code.
+```{r, eval = FALSE}
+library(rixpress)
+library(igraph)
+
+list(
+  rxp_r_file(
+    name = mtcars,
+    path = 'data/mtcars.csv',
+    read_function = \(x) (read.csv(file = x, sep = "|"))
+  ),
+
+  rxp_r(
+    name = filtered_mtcars,
+    expr = filter(mtcars, am == 1)
+  )
+) |> rixpress(project_path = ".")
+```
+
+Select the pipeline and run it (I highly recommend you use keyboard shortcuts
+to quickly run the above code when working interactively). If everything
+went well, you should see the following in your R console:
+
+```
+Build process started...
+
+
+Build successful! Run `rxp_inspect()` for a summary.
+Read individual derivations using `rxp_read()` or
+load them into the global environment using `rxp_load()`.
+```
+
+Let’s inspect the pipeline outputs using `rxp_inspect()`:
+
+```
+       derivation build_success
+1 all-derivations          TRUE
+2 filtered_mtcars          TRUE
+3          mtcars          TRUE
+                                                         path       output
+1 /nix/store/bz7ynl23bxkb0gza069i6bhxqy8bngmr-all-derivations filtered....
+2 /nix/store/lhmkmbdjpgzillsak3nwv1khlvabbgpa-filtered_mtcars filtered....
+3          /nix/store/0nj75qf7md5xi0517qdi1qpk44466zqi-mtcars       mtcars
+```
+
+Three things were built: `mtcars`, which is simply the source data set,
+`filtered_mtcars` which is the filtered data, and then an object you didn't
+defined called `all-derivations`: this is mostly for internal usage and you
+can safely ignore it.
+
+Let's now use `rxp_read()` to take a look at `filtered_mtcars`:
+
+```{r, eval = FALSE}
+rxp_read("filtered_mtcars")
+```
+
+```
+                mpg cyl  disp  hp drat    wt  qsec vs am gear carb
+Mazda RX4      21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4
+Mazda RX4 Wag  21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4
+Datsun 710     22.8   4 108.0  93 3.85 2.320 18.61  1  1    4    1
+Fiat 128       32.4   4  78.7  66 4.08 2.200 19.47  1  1    4    1
+Honda Civic    30.4   4  75.7  52 4.93 1.615 18.52  1  1    4    2
+Toyota Corolla 33.9   4  71.1  65 4.22 1.835 19.90  1  1    4    1
+Fiat X1-9      27.3   4  79.0  66 4.08 1.935 18.90  1  1    4    1
+Porsche 914-2  26.0   4 120.3  91 4.43 2.140 16.70  0  1    5    2
+Lotus Europa   30.4   4  95.1 113 3.77 1.513 16.90  1  1    5    2
+Ford Pantera L 15.8   8 351.0 264 4.22 3.170 14.50  0  1    5    4
+Ferrari Dino   19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6
+Maserati Bora  15.0   8 301.0 335 3.54 3.570 14.60  0  1    5    8
+Volvo 142E     21.4   4 121.0 109 4.11 2.780 18.60  1  1    4    2
+```
+
+you can save this object like so:
+
+```{r, eval = FALSE}
+filtered_mtcars <- rxp_read("filtered_mtcars")
+```
+
+or you can simply use `rxp_load("filtered_mtcars")` which will achieve the same.
+
+You can now manipulate this object interactively, as usual: maybe you still
+don't quite know what the next step should be (maybe there's missing values
+you need to handle somehow, or another such cleaning step), but once you know,
+you can write the next derivation:
+
+```{r, eval = FALSE}
+library(rixpress)
+library(igraph)
+
+list(
+  rxp_r_file(
+    name = mtcars,
+    path = 'data/mtcars.csv',
+    read_function = \(x) (read.csv(file = x, sep = "|"))
+  ),
+
+  rxp_r(
+    name = filtered_mtcars,
+    expr = filter(mtcars, am == 1)
+  ),
+
+  rxp_r(
+    name = mtcars_mpg,
+    expr = select(filtered_mtcars, mpg)
+  )
+) |>
+  rixpress(project_path = ".")
+```
+
+Rebuild the pipeline: the first two steps are skipped because they're already
+available in the Nix store. You can now start the *inspect -> try stuff ->
+define derivation -> build pipeline* loop again for the next derivation.
+
+You now know the basics of using `{rixpress}` to build a simple pipeline.
+
+The next vignette `vignette("d-polyglot")` explains how to build a pipeline
+with both R and Python derivations, as well compiling a Quarto document.
+

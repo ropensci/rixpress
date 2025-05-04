@@ -334,6 +334,13 @@ rix(
 
 In the future, other languages could be added to `{rixpress}`, notably Julia.
 
-For an examples that use the Python `xgboost` library to train a machine
-learning model, see [this
-example](https://github.com/b-rodrigues/rixpress_demos/tree/master/r_py_xgboost).
+For more examples, check out [rixpress_demos
+repository](https://github.com/b-rodrigues/rixpress_demos). These examples
+demonstrate additional features of `{rixpress}`, including:
+
+- [Using the Python 'xgboost' library and transfering data to R](https://github.com/b-rodrigues/rixpress_demos/tree/master/r_py_xgboost)
+- [Importing multiple files at once](https://github.com/b-rodrigues/rixpress_demos/tree/master/many_inputs_example)
+- [Using multiple environments instead of a single `default.nix` file](https://github.com/b-rodrigues/rixpress_demos/tree/master/r_multi_envs)
+- [Pipelines that require tools not managed by Nix to be available]()
+
+and many others! Don’t hesitate to submit more examples as well!

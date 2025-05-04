@@ -14,15 +14,13 @@ knitr::opts_chunk$set(
 )
 ```
 
-This vignette explains how to write a `{rixpress}` pipeline, but doesn't cover
-everything you need to know just yet. It also assumes that you've read
-`vignette("a-intro-concepts")`. In the next vignette `vignette("c-tutorial")`,
-you'll learn how to set up a complete pipeline from start to finish.
+This vignette introduces the core functions required to build a `{rixpress}`
+pipeline, but doesn't cover everything you need to know just yet. It also
+assumes that you've read `vignette("a-intro-concepts")`. In the next vignette
+`vignette("c-tutorial")`, you'll learn how to set up a complete pipeline from
+start to finish.
 
-For a video version of this tutorial, [check out this upcoming video on
-YouTube](youtube link to follow).
-
-## Analyzing the mtcars dataset using R only
+## Getting data into the pipeline
 
 `{rixpress}` provides several functions to help you write derivations. These
 functions typically start with the prefix `rxp_` and follow a similar structure.
@@ -49,6 +47,8 @@ the Nix store. This is essential to how Nix works and cannot be avoided.
 Note that `rxp_r_file()` is quite flexible: it works with any function that
 reads a file, regardless of the file type. The path to the file can also be a
 URL.
+
+## Declaring build steps
 
 Once the data is imported, we can start manipulating it. To generate a
 derivation similar to the one described in `vignette("a-intro-concepts")`, but
@@ -77,6 +77,8 @@ d2 <- rxp_r(
 
 Notice how the name of `d1` (`filtered_mtcars`) is used in `d2`: this is how
 dependencies between derivations are defined.
+
+## Generating the pipeline
 
 Let's stop here and build our pipeline. First, we need to define a list of
 derivations:
@@ -223,6 +225,8 @@ I recommend always using two separate scripts:
 You can quickly create these scripts using the `rxp_init()` function, which
 generates both files with starter code to help you get started quickly.
 
+## Building and inspecting outputs
+
 When you run `gen-pipeline.R` (or execute its contents line-by-line), the
 environment defined in `default.nix` is used. (It's also possible to define
 separate environments for different derivations, which we'll cover in a later
@@ -271,6 +275,7 @@ a new tab in your web browser with the DAG of the pipeline made using the
   autoplay
   loop
   muted
+  style="max-width: 100%; height: auto; display: block;"
 >
   <source
     src="https://github.com/b-rodrigues/rixpress/raw/refs/heads/main/rxp_visnetwork.mp4"

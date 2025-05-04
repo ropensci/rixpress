@@ -23,7 +23,7 @@ worry if you don't grasp everything immediately. You can try building a simple
 pipeline by following the next vignette, `vignette("b-core-functions")`, and then
 return to this one; things should become clearer after some hands-on experience!
 
-Also, this package makes heavy use of its sister package `{rix}`, and we highly
+Also, this package makes heavy use of its sister package `{rix}`, and I highly
 recommend that you first get familiar with Nix by using `{rix}`. With `{rix}`, you'll
 learn how to set up reproducible development environments for data science,
 which you can use for interactive data analysis work. Then, if you want to go
