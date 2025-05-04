@@ -57,6 +57,7 @@ rxp_r <- function(
   out_name <- deparse1(substitute(name))
   expr_str <- deparse1(substitute(expr))
   expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
+  expr_str <- gsub("$", "\\$", expr_str, fixed = TRUE) # Replace $ with \$ for Nix
 
   if (is.null(serialize_function)) {
     serialize_str <- "saveRDS"
@@ -734,31 +735,31 @@ rxp_rmd <- function(
 
   # Prepare render arguments
   render_args <- "rmarkdown::render(input = file.path('$PWD', rmd_file), output_dir = '$out'"
-  
+
   if (!is.null(params)) {
     params_str <- paste0(
-      "list(", 
+      "list(",
       paste(
         mapply(
-          function(name, value) sprintf("%s = %s", name, deparse(value)), 
-          names(params), 
+          function(name, value) sprintf("%s = %s", name, deparse(value)),
+          names(params),
           params
-        ), 
+        ),
         collapse = ", "
-      ), 
+      ),
       ")"
     )
     render_args <- paste0(render_args, sprintf(", params = %s", params_str))
   }
-  
+
   render_args <- paste0(render_args, ")")
 
   build_phase <- paste(
-    "      mkdir home", 
-    "      export HOME=$PWD/home", 
-    "      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n", 
+    "      mkdir home",
+    "      export HOME=$PWD/home",
+    "      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n",
     if (length(sub_cmds) > 0)
-      paste("      ", sub_cmds, sep = "", collapse = "\n") else "", 
+      paste("      ", sub_cmds, sep = "", collapse = "\n") else "",
     sprintf("      Rscript -e \"rmd_file <- '%s'; %s\"", rmd_file, render_args),
     sep = "\n"
   )
