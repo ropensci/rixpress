@@ -21,6 +21,9 @@
 #'   objects like machine learning models. For example, if the parent derivation
 #'   used `keras::save_model_hdf5()` to serialize a model, this derivation
 #'   should use `keras::load_model_hdf5()` to load it correctly.
+#' @param set_env List, defaults to NULL. A named list of environment variables to set
+#'   before running the R script, e.g., list("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan").
+#'   Each entry will be added as an export statement in the build phase.
 #' @details At a basic level, `rxp_r(mtcars_am, filter(mtcars, am == 1))` is
 #'   equivalent to `mtcars <- filter(mtcars, am == 1)`. `rxp_r()` generates the
 #'   required Nix boilerplate to output a so-called "derivation" in Nix jargon.
@@ -52,7 +55,8 @@ rxp_r <- function(
   additional_files = "",
   nix_env = "default.nix",
   serialize_function = NULL,
-  unserialize_function = NULL
+  unserialize_function = NULL,
+  set_env = NULL
 ) {
   out_name <- deparse1(substitute(name))
   expr_str <- deparse1(substitute(expr))
@@ -71,8 +75,24 @@ rxp_r <- function(
     unserialize_str <- deparse1(substitute(unserialize_function))
   }
 
+  # Generate environment variable export statements if set_env is provided
+  env_exports <- ""
+  if (!is.null(set_env)) {
+    env_exports <- paste(
+      sapply(
+        names(set_env),
+        function(var_name) sprintf("export %s=%s", var_name, set_env[[var_name]])
+      ),
+      collapse = "\n      "
+    )
+    if (env_exports != "") {
+      env_exports <- paste0(env_exports, "\n      ")
+    }
+  }
+
   build_phase <- sprintf(
-    "Rscript -e \"\n        source('libraries.R')\n        %s <- %s\n        %s(%s, '%s')\"",
+    "%sRscript -e \"\n        source('libraries.R')\n        %s <- %s\n        %s(%s, '%s')\"",
+    env_exports,
     out_name,
     expr_str,
     serialize_str,
