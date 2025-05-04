@@ -201,9 +201,10 @@ exists “outside” this component closure and is only available on your
 machine, then the pipeline will only <em>work on your machine</em> -
 defeating the purpose of reproducibility! (It should be noted, however,
 that there are sometimes good reasons to have a dependency that is not
-managed by <code>Nix</code> (see the <a href="">CMDSTANR example</a> in
-the examples repo), but these should be the exception rather than the
-rule).</p>
+managed by <code>Nix</code> but in this case you might want to use
+<a href="https://docs.ropensci.org/targets/" class="external-link">targets</a> running inside a Nix shell instead of
+<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>, but these situations should be the exception
+rather than the rule).</p>
 <p><code>Nix</code> distinguishes between different types of
 dependencies (<code>buildInputs</code>, <code>nativeBuildInputs</code>,
 <code>propagatedBuildInputs</code>,
