@@ -273,7 +273,7 @@ rxp_py <- function(
 #'     name = report,
 #'     qmd_file = "report.qmd",
 #'     additional_files = "images",
-#'     args = "-- to typst"
+#'     args = "--to typst"
 #'   )
 #' }
 #' @export
