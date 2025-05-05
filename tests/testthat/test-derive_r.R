@@ -30,7 +30,8 @@ test_that("rxp_py: generates correct list", {
         "additional_files" = "",
         "nix_env" = "default.nix",
         "serialize_function" = "with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)",
-        "unserialize_function" = "pickle.load"
+        "unserialize_function" = "pickle.load",
+        "env_var" = NULL
       ),
       class = "derivation"
     )
@@ -56,7 +57,8 @@ test_that("rxp_py: custom serialization functions work", {
         "additional_files" = "",
         "nix_env" = "default.nix",
         "serialize_function" = "custom_save(globals()['mtcars_pl_am'], 'mtcars_pl_am')",
-        "unserialize_function" = "custom_load"
+        "unserialize_function" = "custom_load",
+        "env_var" = NULL
       ),
       class = "derivation"
     )
@@ -369,7 +371,8 @@ test_that("rxp_py: with additional files", {
         "additional_files" = c("functions.py", "data.csv"),
         "nix_env" = "default.nix",
         "serialize_function" = "with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)",
-        "unserialize_function" = "pickle.load"
+        "unserialize_function" = "pickle.load",
+        "env_var" = NULL
       ),
       class = "derivation"
     )
@@ -389,7 +392,7 @@ test_that("rxp_r: with env_var parameter", {
     structure(
       list(
         "name" = "mtcars_am",
-        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export MY_VAR=test_value\n      export ANOTHER_VAR=123\n      Rscript -e "\n        source(\'libraries.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
+        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export MY_VAR="test_value"\n      export ANOTHER_VAR="123"\n      Rscript -e "\n        source(\'libraries.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
         "type" = "rxp_r",
         "additional_files" = "",
         "nix_env" = "default.nix",

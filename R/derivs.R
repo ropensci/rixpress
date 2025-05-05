@@ -82,7 +82,7 @@ rxp_r <- function(
       sapply(
         names(env_var),
         function(var_name)
-          sprintf("export %s=%s", var_name, env_var[[var_name]])
+          sprintf("export %s=\"%s\"", var_name, env_var[[var_name]])
       ),
       collapse = "\n      "
     )
@@ -159,6 +159,9 @@ rxp_r <- function(
 #' @param unserialize_function Character, defaults to NULL. The name of the
 #'   Python function used to unserialize the object. It must accept one
 #'   argument: the file path.
+#' @param env_var List, defaults to NULL. A named list of environment variables to set
+#'   before running the Python script, e.g., c(PYTHONPATH = "/path/to/modules").
+#'   Each entry will be added as an export statement in the build phase.
 #' @details At a basic level,
 #'   `rxp_py(mtcars_am, "mtcars.filter(polars.col('am') == 1).to_pandas()")`
 #'    is equivalent to
@@ -189,7 +192,8 @@ rxp_py <- function(
   additional_files = "",
   nix_env = "default.nix",
   serialize_function = NULL,
-  unserialize_function = NULL
+  unserialize_function = NULL,
+  env_var = NULL
 ) {
   out_name <- deparse1(substitute(name))
   py_expr <- gsub("'", "\\'", py_expr, fixed = TRUE)
@@ -223,8 +227,25 @@ rxp_py <- function(
     unserialize_str <- unserialize_function
   }
 
+  # Generate environment variable export statements if env_var is provided
+  env_exports <- ""
+  if (!is.null(env_var)) {
+    env_exports <- paste(
+      sapply(
+        names(env_var),
+        function(var_name)
+          sprintf("export %s=\"%s\"", var_name, env_var[[var_name]])
+      ),
+      collapse = "\n      "
+    )
+    if (env_exports != "") {
+      env_exports <- paste0(env_exports, "\n      ")
+    }
+  }
+
   # Construct build_phase
   build_phase <- paste0(
+    env_exports,
     "python -c \"\n",
     "exec(open('libraries.py').read())\n",
     "exec('",
@@ -271,7 +292,8 @@ rxp_py <- function(
     additional_files = additional_files,
     nix_env = nix_env,
     serialize_function = serialize_str,
-    unserialize_function = unserialize_str
+    unserialize_function = unserialize_str,
+    env_var = env_var
   ) |>
     structure(class = "derivation")
 }
