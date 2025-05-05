@@ -307,6 +307,9 @@ rxp_py <- function(
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
 #' @param args A character of additional arguments to be passed directly to
 #'   the `quarto` command.
+#' @param env_var List, defaults to NULL. A named list of environment variables to set
+#'   before running the Quarto render command, e.g., c(QUARTO_PROFILE = "production").
+#'   Each entry will be added as an export statement in the build phase.
 #' @details To include object built in the pipeline, `rxp_read("derivation_name")` should be put
 #'   in the .qmd file.
 #' @return An object of class derivation which inherits from lists.
@@ -327,7 +330,8 @@ rxp_quarto <- function(
   qmd_file,
   additional_files = "",
   nix_env = "default.nix",
-  args = ""
+  args = "",
+  env_var = NULL
 ) {
   out_name <- deparse1(substitute(name))
 
@@ -350,10 +354,27 @@ rxp_quarto <- function(
     )
   })
 
+  # Generate environment variable export statements if env_var is provided
+  env_exports <- ""
+  if (!is.null(env_var)) {
+    env_exports <- paste(
+      sapply(
+        names(env_var),
+        function(var_name)
+          sprintf("      export %s=\"%s\"", var_name, env_var[[var_name]])
+      ),
+      collapse = "\n"
+    )
+    if (env_exports != "") {
+      env_exports <- paste0(env_exports, "\n")
+    }
+  }
+
   build_phase <- paste(
     "      mkdir home", # Added 4 spaces
     "      export HOME=$PWD/home", # Added 4 spaces
-    "      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n", # Added 4 spaces
+    "      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'", # Added 4 spaces
+    env_exports,
     if (length(sub_cmds) > 0)
       paste("      ", sub_cmds, sep = "", collapse = "\n") else "", # Added 4 spaces
     sprintf("      quarto render %s %s --output-dir $out", qmd_file, args), # Added 4 spaces
@@ -386,7 +407,8 @@ rxp_quarto <- function(
     qmd_file = qmd_file,
     additional_files = additional_files,
     nix_env = nix_env,
-    args = args
+    args = args,
+    env_var = env_var
   ) |>
     structure(class = "derivation")
 }
@@ -865,5 +887,12 @@ print.derivation <- function(x, ...) {
     "\n"
   )
   cat("Nix env:", x$nix_env, "\n")
-  cat("Env variables:", x$env_var, "\n")
+  if ("env_var" %in% names(x)) {
+    cat(
+      "Env variables:",
+      if (is.null(x$env_var)) "None" else
+        paste(names(x$env_var), x$env_var, sep = "=", collapse = ", "),
+      "\n"
+    )
+  }
 }
