@@ -491,3 +491,120 @@ test_that("rxp_quarto: with env_var parameter", {
   # Cleanup
   unlink(qmd_file)
 })
+
+test_that("rxp_r_file: with env_var parameter", {
+  # Create a temporary CSV for testing
+  csv_file <- tempfile(fileext = ".csv")
+  write.csv(mtcars[1:5, ], csv_file, row.names = FALSE)
+
+  d1 <- rxp_r_file(
+    mtcars_data, 
+    path = csv_file, 
+    read_function = read.csv,
+    env_var = c(R_DATA_DIR = "/path/to/data", R_DEBUG = "TRUE")
+  )
+
+  # Test the entire object
+  testthat::expect_equal(
+    d1,
+    structure(
+      list(
+        "name" = "mtcars_data",
+        "snippet" = paste0(
+          '  mtcars_data = makeRDerivation {\n    name = "mtcars_data";\n    src = ./',
+          csv_file,
+          ';\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export R_DATA_DIR=/path/to/data\n      export R_DEBUG=TRUE\n      cp $src input_file\n      Rscript -e "\n        source(\'libraries.R\')\n        data <- do.call(read.csv, list(\'input_file\'))\n        saveRDS(data, \'mtcars_data\')"\n    \'\';\n  };'
+        ),
+        "type" = "rxp_r",
+        "additional_files" = "",
+        "nix_env" = "default.nix",
+        "env_var" = c(R_DATA_DIR = "/path/to/data", R_DEBUG = "TRUE")
+      ),
+      class = "derivation"
+    )
+  )
+
+  # Cleanup
+  unlink(csv_file)
+})
+
+test_that("rxp_py_file: with env_var parameter", {
+  # Create a temporary CSV for testing
+  csv_file <- tempfile(fileext = ".csv")
+  write.csv(mtcars[1:5, ], csv_file, row.names = FALSE)
+
+  d1 <- rxp_py_file(
+    mtcars_data, 
+    path = csv_file, 
+    read_function = "pandas.read_csv",
+    env_var = c(PYTHONPATH = "/custom/modules", PYTHON_DEBUG = "1")
+  )
+
+  # Test the entire object
+  testthat::expect_equal(
+    d1,
+    structure(
+      list(
+        "name" = "mtcars_data",
+        "snippet" = paste0(
+          '  mtcars_data = makePyDerivation {\n    name = "mtcars_data";\n    src = ./',
+          csv_file,
+          ';\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export PYTHONPATH=/custom/modules\n      export PYTHON_DEBUG=1\n      cp $src input_file\npython -c "\nexec(open(\'libraries.py\').read())\nfile_path = \'input_file\'\ndata = eval(\'pandas.read_csv\')(file_path)\nwith open(\'mtcars_data\', \'wb\') as f:\n    pickle.dump(data, f)\n"\n\n    \'\';\n  };'
+        ),
+        "type" = "rxp_py",
+        "additional_files" = "",
+        "nix_env" = "default.nix",
+        "env_var" = c(PYTHONPATH = "/custom/modules", PYTHON_DEBUG = "1")
+      ),
+      class = "derivation"
+    )
+  )
+
+  # Cleanup
+  unlink(csv_file)
+})
+
+test_that("rxp_rmd: with env_var parameter", {
+  # Create a temporary Rmd file for testing
+  rmd_file <- tempfile(fileext = ".Rmd")
+  writeLines(
+    "---\ntitle: Test\n---\n\nThis is a test R Markdown document with rxp_read(\"test_data\").",
+    rmd_file
+  )
+
+  d1 <- rxp_rmd(
+    report,
+    rmd_file,
+    additional_files = "images",
+    env_var = c(RSTUDIO_PANDOC = "/usr/local/bin/pandoc", R_LIBS_USER = "/custom/r/libs")
+  )
+
+  # Test the entire object
+  testthat::expect_equal(
+    d1,
+    structure(
+      list(
+        "name" = "report",
+        "snippet" = paste0(
+          '  report = defaultPkgs.stdenv.mkDerivation {\n    name = "report";\n    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./',
+          rmd_file,
+          ' ./images ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      mkdir home\n      export HOME=$PWD/home\n      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python\n      export RSTUDIO_PANDOC=/usr/local/bin/pandoc\n      export R_LIBS_USER=/custom/r/libs\n\n      substituteInPlace ',
+          rmd_file,
+          ' --replace-fail \'rxp_read("test_data")\' \'rxp_read("${test_data}")\'\n      Rscript -e "rmd_file <- \'',
+          rmd_file,
+          '\'; rmarkdown::render(input = file.path(\'$PWD\', rmd_file), output_dir = \'$out\')"\n    \'\';\n  };'
+        ),
+        "type" = "rxp_rmd",
+        "rmd_file" = rmd_file,
+        "additional_files" = "images",
+        "nix_env" = "default.nix",
+        "params" = NULL,
+        "env_var" = c(RSTUDIO_PANDOC = "/usr/local/bin/pandoc", R_LIBS_USER = "/custom/r/libs")
+      ),
+      class = "derivation"
+    )
+  )
+
+  # Cleanup
+  unlink(rmd_file)
+})
