@@ -10,7 +10,8 @@ test_that("rxp_r: generates correct list", {
         "additional_files" = "",
         "nix_env" = "default.nix",
         "serialize_function" = "saveRDS",
-        "unserialize_function" = "readRDS"
+        "unserialize_function" = "readRDS",
+        "env_var" = NULL
       ),
       class = "derivation"
     )
@@ -342,7 +343,8 @@ test_that("rxp_r: with additional files", {
         "additional_files" = c("functions.R", "data.csv"),
         "nix_env" = "default.nix",
         "serialize_function" = "saveRDS",
-        "unserialize_function" = "readRDS"
+        "unserialize_function" = "readRDS",
+        "env_var" = NULL
       ),
       class = "derivation"
     )
@@ -374,6 +376,32 @@ test_that("rxp_py: with additional files", {
   )
 })
 
+test_that("rxp_r: with env_var parameter", {
+  d1 <- rxp_r(
+    mtcars_am,
+    dplyr::filter(mtcars, am == 1),
+    env_var = c(MY_VAR = "test_value", ANOTHER_VAR = "123")
+  )
+
+  # Test the entire object
+  testthat::expect_equal(
+    d1,
+    structure(
+      list(
+        "name" = "mtcars_am",
+        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export MY_VAR=test_value\n      export ANOTHER_VAR=123\n      Rscript -e "\n        source(\'libraries.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
+        "type" = "rxp_r",
+        "additional_files" = "",
+        "nix_env" = "default.nix",
+        "serialize_function" = "saveRDS",
+        "unserialize_function" = "readRDS",
+        "env_var" = c(MY_VAR = "test_value", ANOTHER_VAR = "123")
+      ),
+      class = "derivation"
+    )
+  )
+})
+
 test_that("rxp_common_setup: handles invalid direction", {
   testthat::expect_error(
     rxp_common_setup(
@@ -383,5 +411,31 @@ test_that("rxp_common_setup: handles invalid direction", {
       "invalid_direction"
     ),
     "Invalid direction. Use 'py2r' or 'r2py'."
+  )
+})
+
+test_that("rxp_py: with env_var parameter", {
+  d1 <- rxp_py(
+    mtcars_pl_am,
+    "mtcars_pl.filter(pl.col('am') == 1)",
+    env_var = c(PYTHON_ENV = "production", DEBUG = "0")
+  )
+
+  # Test the entire object
+  testthat::expect_equal(
+    d1,
+    structure(
+      list(
+        "name" = "mtcars_pl_am",
+        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = "mtcars_pl_am";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export PYTHON_ENV="production"\n      export DEBUG="0"\n      python -c "\nexec(open(\'libraries.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
+        "type" = "rxp_py",
+        "additional_files" = "",
+        "nix_env" = "default.nix",
+        "serialize_function" = "with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)",
+        "unserialize_function" = "pickle.load",
+        "env_var" = c(PYTHON_ENV = "production", DEBUG = "0")
+      ),
+      class = "derivation"
+    )
   )
 })
