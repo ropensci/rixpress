@@ -88,7 +88,7 @@ test_that("rxp_quarto: generates correct list", {
         "snippet" = paste0(
           '  report = defaultPkgs.stdenv.mkDerivation {\n    name = "report";\n    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./',
           qmd_file,
-          ' ./images ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      mkdir home\n      export HOME=$PWD/home\n      export RETICULATE_PYTHON=\'${defaultPkgs.python3}/bin/python\'\n\n      substituteInPlace ',
+          ' ./images ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      mkdir home\n      export HOME=$PWD/home\n      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python\n\n      substituteInPlace ',
           qmd_file,
           ' --replace-fail \'rxp_read("test_data")\' \'rxp_read("${test_data}")\'\n      quarto render ',
           qmd_file,
@@ -98,7 +98,8 @@ test_that("rxp_quarto: generates correct list", {
         "qmd_file" = qmd_file,
         "additional_files" = "images",
         "nix_env" = "default.nix",
-        "args" = "--to pdf"
+        "args" = "--to pdf",
+        "env_var" = NULL
       ),
       class = "derivation"
     )
@@ -296,7 +297,7 @@ test_that("rxp_r2py: generates correct list", {
     structure(
       list(
         "name" = "py_data",
-        "snippet" = '  py_data = makeRDerivation {\n    name = "py_data";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export RETICULATE_PYTHON=\'${defaultPkgs.python3}/bin/python\'\n       Rscript -e "\n         source(\'libraries.R\')\n         r_data <- readRDS(\'${r_data}/r_data\')\n         reticulate::py_save_object(r_data, \'py_data\', pickle = \'pickle\')"\n    \'\';\n  };',
+        "snippet" = '  py_data = makeRDerivation {\n    name = "py_data";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python\n       Rscript -e "\n         source(\'libraries.R\')\n         r_data <- readRDS(\'${r_data}/r_data\')\n         reticulate::py_save_object(r_data, \'py_data\', pickle = \'pickle\')"\n    \'\';\n  };',
         "type" = "rxp_r2py",
         "additional_files" = "",
         "nix_env" = "default.nix"
@@ -392,7 +393,7 @@ test_that("rxp_r: with env_var parameter", {
     structure(
       list(
         "name" = "mtcars_am",
-        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export MY_VAR="test_value"\n      export ANOTHER_VAR="123"\n      Rscript -e "\n        source(\'libraries.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
+        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export MY_VAR=test_value\n      export ANOTHER_VAR=123\n      Rscript -e "\n        source(\'libraries.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
         "type" = "rxp_r",
         "additional_files" = "",
         "nix_env" = "default.nix",
@@ -430,7 +431,7 @@ test_that("rxp_py: with env_var parameter", {
     structure(
       list(
         "name" = "mtcars_pl_am",
-        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = "mtcars_pl_am";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export PYTHON_ENV="production"\n      export DEBUG="0"\n      python -c "\nexec(open(\'libraries.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
+        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = "mtcars_pl_am";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export PYTHON_ENV=production\n      export DEBUG=0\n      python -c "\nexec(open(\'libraries.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
         "type" = "rxp_py",
         "additional_files" = "",
         "nix_env" = "default.nix",
@@ -441,4 +442,52 @@ test_that("rxp_py: with env_var parameter", {
       class = "derivation"
     )
   )
+})
+
+test_that("rxp_quarto: with env_var parameter", {
+  # Create a temporary qmd file for testing
+  qmd_file <- tempfile(fileext = ".qmd")
+  writeLines(
+    "---\ntitle: Test\n---\n\nThis is a test quarto document with rxp_read(\"test_data\").",
+    qmd_file
+  )
+
+  d1 <- rxp_quarto(
+    report,
+    qmd_file,
+    additional_files = "images",
+    args = "--to pdf",
+    env_var = c(QUARTO_PROFILE = "production", QUARTO_RENDER_TOKEN = "abc123")
+  )
+
+  testthat::expect_equal(
+    d1,
+    structure(
+      list(
+        "name" = "report",
+        "snippet" = paste0(
+          '  report = defaultPkgs.stdenv.mkDerivation {\n    name = "report";\n    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./',
+          qmd_file,
+          ' ./images ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      mkdir home\n      export HOME=$PWD/home\n      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python\n      export QUARTO_PROFILE=production\n      export QUARTO_RENDER_TOKEN=abc123\n\n      substituteInPlace ',
+          qmd_file,
+          ' --replace-fail \'rxp_read("test_data")\' \'rxp_read("${test_data}")\'\n      quarto render ',
+          qmd_file,
+          ' --to pdf --output-dir $out\n    \'\';\n  };'
+        ),
+        "type" = "rxp_quarto",
+        "qmd_file" = qmd_file,
+        "additional_files" = "images",
+        "nix_env" = "default.nix",
+        "args" = "--to pdf",
+        "env_var" = c(
+          QUARTO_PROFILE = "production",
+          QUARTO_RENDER_TOKEN = "abc123"
+        )
+      ),
+      class = "derivation"
+    )
+  )
+
+  # Cleanup
+  unlink(qmd_file)
 })

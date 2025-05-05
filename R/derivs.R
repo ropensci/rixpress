@@ -82,7 +82,7 @@ rxp_r <- function(
       sapply(
         names(env_var),
         function(var_name)
-          sprintf("export %s=\"%s\"", var_name, env_var[[var_name]])
+          sprintf("export %s=%s", var_name, env_var[[var_name]])
       ),
       collapse = "\n      "
     )
@@ -234,7 +234,7 @@ rxp_py <- function(
       sapply(
         names(env_var),
         function(var_name)
-          sprintf("export %s=\"%s\"", var_name, env_var[[var_name]])
+          sprintf("export %s=%s", var_name, env_var[[var_name]])
       ),
       collapse = "\n      "
     )
@@ -361,7 +361,7 @@ rxp_quarto <- function(
       sapply(
         names(env_var),
         function(var_name)
-          sprintf("      export %s=\"%s\"", var_name, env_var[[var_name]])
+          sprintf("      export %s=%s", var_name, env_var[[var_name]])
       ),
       collapse = "\n"
     )
@@ -373,7 +373,7 @@ rxp_quarto <- function(
   build_phase <- paste(
     "      mkdir home", # Added 4 spaces
     "      export HOME=$PWD/home", # Added 4 spaces
-    "      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'", # Added 4 spaces
+    "      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python", # Added 4 spaces
     env_exports,
     if (length(sub_cmds) > 0)
       paste("      ", sub_cmds, sep = "", collapse = "\n") else "", # Added 4 spaces
@@ -687,7 +687,7 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
   }
 
   build_phase <- sprintf(
-    "export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n       Rscript -e \"\n         source('libraries.R')\n%s\"",
+    "export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python\n       Rscript -e \"\n         source('libraries.R')\n%s\"",
     r_command
   )
 
