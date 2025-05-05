@@ -21,6 +21,9 @@
 #'   objects like machine learning models. For example, if the parent derivation
 #'   used `keras::save_model_hdf5()` to serialize a model, this derivation
 #'   should use `keras::load_model_hdf5()` to load it correctly.
+#' @param env_var List, defaults to NULL. A named list of environment variables to set
+#'   before running the R script, e.g., list("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan").
+#'   Each entry will be added as an export statement in the build phase.
 #' @details At a basic level, `rxp_r(mtcars_am, filter(mtcars, am == 1))` is
 #'   equivalent to `mtcars <- filter(mtcars, am == 1)`. `rxp_r()` generates the
 #'   required Nix boilerplate to output a so-called "derivation" in Nix jargon.
@@ -52,7 +55,8 @@ rxp_r <- function(
   additional_files = "",
   nix_env = "default.nix",
   serialize_function = NULL,
-  unserialize_function = NULL
+  unserialize_function = NULL,
+  env_var = NULL
 ) {
   out_name <- deparse1(substitute(name))
   expr_str <- deparse1(substitute(expr))
@@ -71,8 +75,25 @@ rxp_r <- function(
     unserialize_str <- deparse1(substitute(unserialize_function))
   }
 
+  # Generate environment variable export statements if env_var is provided
+  env_exports <- ""
+  if (!is.null(env_var)) {
+    env_exports <- paste(
+      sapply(
+        names(env_var),
+        function(var_name)
+          sprintf("export %s=%s", var_name, env_var[[var_name]])
+      ),
+      collapse = "\n      "
+    )
+    if (env_exports != "") {
+      env_exports <- paste0(env_exports, "\n      ")
+    }
+  }
+
   build_phase <- sprintf(
-    "Rscript -e \"\n        source('libraries.R')\n        %s <- %s\n        %s(%s, '%s')\"",
+    "%sRscript -e \"\n        source('libraries.R')\n        %s <- %s\n        %s(%s, '%s')\"",
+    env_exports,
     out_name,
     expr_str,
     serialize_str,
@@ -115,7 +136,8 @@ rxp_r <- function(
     additional_files = additional_files,
     nix_env = nix_env,
     serialize_function = serialize_str,
-    unserialize_function = unserialize_str
+    unserialize_function = unserialize_str,
+    env_var = env_var
   ) |>
     structure(class = "derivation")
 }
@@ -137,6 +159,9 @@ rxp_r <- function(
 #' @param unserialize_function Character, defaults to NULL. The name of the
 #'   Python function used to unserialize the object. It must accept one
 #'   argument: the file path.
+#' @param env_var List, defaults to NULL. A named list of environment variables to set
+#'   before running the Python script, e.g., c(PYTHONPATH = "/path/to/modules").
+#'   Each entry will be added as an export statement in the build phase.
 #' @details At a basic level,
 #'   `rxp_py(mtcars_am, "mtcars.filter(polars.col('am') == 1).to_pandas()")`
 #'    is equivalent to
@@ -167,7 +192,8 @@ rxp_py <- function(
   additional_files = "",
   nix_env = "default.nix",
   serialize_function = NULL,
-  unserialize_function = NULL
+  unserialize_function = NULL,
+  env_var = NULL
 ) {
   out_name <- deparse1(substitute(name))
   py_expr <- gsub("'", "\\'", py_expr, fixed = TRUE)
@@ -201,8 +227,25 @@ rxp_py <- function(
     unserialize_str <- unserialize_function
   }
 
+  # Generate environment variable export statements if env_var is provided
+  env_exports <- ""
+  if (!is.null(env_var)) {
+    env_exports <- paste(
+      sapply(
+        names(env_var),
+        function(var_name)
+          sprintf("export %s=%s", var_name, env_var[[var_name]])
+      ),
+      collapse = "\n      "
+    )
+    if (env_exports != "") {
+      env_exports <- paste0(env_exports, "\n      ")
+    }
+  }
+
   # Construct build_phase
   build_phase <- paste0(
+    env_exports,
     "python -c \"\n",
     "exec(open('libraries.py').read())\n",
     "exec('",
@@ -249,7 +292,8 @@ rxp_py <- function(
     additional_files = additional_files,
     nix_env = nix_env,
     serialize_function = serialize_str,
-    unserialize_function = unserialize_str
+    unserialize_function = unserialize_str,
+    env_var = env_var
   ) |>
     structure(class = "derivation")
 }
@@ -263,6 +307,9 @@ rxp_py <- function(
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
 #' @param args A character of additional arguments to be passed directly to
 #'   the `quarto` command.
+#' @param env_var List, defaults to NULL. A named list of environment variables to set
+#'   before running the Quarto render command, e.g., c(QUARTO_PROFILE = "production").
+#'   Each entry will be added as an export statement in the build phase.
 #' @details To include object built in the pipeline, `rxp_read("derivation_name")` should be put
 #'   in the .qmd file.
 #' @return An object of class derivation which inherits from lists.
@@ -283,7 +330,8 @@ rxp_quarto <- function(
   qmd_file,
   additional_files = "",
   nix_env = "default.nix",
-  args = ""
+  args = "",
+  env_var = NULL
 ) {
   out_name <- deparse1(substitute(name))
 
@@ -306,10 +354,27 @@ rxp_quarto <- function(
     )
   })
 
+  # Generate environment variable export statements if env_var is provided
+  env_exports <- ""
+  if (!is.null(env_var)) {
+    env_exports <- paste(
+      sapply(
+        names(env_var),
+        function(var_name)
+          sprintf("      export %s=%s", var_name, env_var[[var_name]])
+      ),
+      collapse = "\n"
+    )
+    if (env_exports != "") {
+      env_exports <- paste0(env_exports, "\n")
+    }
+  }
+
   build_phase <- paste(
     "      mkdir home", # Added 4 spaces
     "      export HOME=$PWD/home", # Added 4 spaces
-    "      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n", # Added 4 spaces
+    "      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python", # Added 4 spaces
+    env_exports,
     if (length(sub_cmds) > 0)
       paste("      ", sub_cmds, sep = "", collapse = "\n") else "", # Added 4 spaces
     sprintf("      quarto render %s %s --output-dir $out", qmd_file, args), # Added 4 spaces
@@ -342,7 +407,8 @@ rxp_quarto <- function(
     qmd_file = qmd_file,
     additional_files = additional_files,
     nix_env = nix_env,
-    args = args
+    args = args,
+    env_var = env_var
   ) |>
     structure(class = "derivation")
 }
@@ -359,6 +425,9 @@ rxp_quarto <- function(
 #' @param type Character, the type of derivation ("rxp_r" or "rxp_py").
 #' @param derivation_func Character, the Nix derivation function ("makeRDerivation" or "makePyDerivation").
 #' @param library_ext Character, the library file extension ("R" or "py").
+#' @param env_var List, defaults to NULL. A named list of environment variables to set
+#'   before running the script, e.g., c(DATA_PATH = "/path/to/data").
+#'   Each entry will be added as an export statement in the build phase.
 #' @return A list with `name`, `snippet`, `type`, and `nix_env`.
 rxp_file_common <- function(
   out_name,
@@ -367,7 +436,8 @@ rxp_file_common <- function(
   build_phase,
   type,
   derivation_func,
-  library_ext
+  library_ext,
+  env_var = NULL
 ) {
   # Handle source: URL or local path
   src_part <- if (grepl("^https?://", path)) {
@@ -390,6 +460,27 @@ rxp_file_common <- function(
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
 
+  # Generate environment variable export statements if env_var is provided
+  env_exports <- ""
+  if (!is.null(env_var)) {
+    env_exports <- paste(
+      sapply(
+        names(env_var),
+        function(var_name)
+          sprintf("export %s=%s", var_name, env_var[[var_name]])
+      ),
+      collapse = "\n      "
+    )
+    if (env_exports != "") {
+      env_exports <- paste0(env_exports, "\n      ")
+    }
+  }
+
+  # Add env_exports to the build_phase
+  if (env_exports != "") {
+    build_phase <- paste0(env_exports, build_phase)
+  }
+
   # Build the Nix derivation snippet
   snippet <- sprintf(
     "  %s = %s {\n    name = \"%s\";\n    src = %s;\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
@@ -407,7 +498,8 @@ rxp_file_common <- function(
     snippet = snippet,
     type = type,
     additional_files = "",
-    nix_env = nix_env
+    nix_env = nix_env,
+    env_var = env_var
   ) |>
     structure(class = "derivation")
 }
@@ -422,6 +514,9 @@ rxp_file_common <- function(
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
 #' @param copy_data_folder Logical, if TRUE then the entire folder is copied
 #'   recursively into the build sandbox.
+#' @param env_var List, defaults to NULL. A named list of environment variables to set
+#'   before running the R script, e.g., c(DATA_PATH = "/path/to/data").
+#'   Each entry will be added as an export statement in the build phase.
 #' @details
 #'   There are three ways to read in data in a rixpress pipeline:
 #'   the first is to point directly
@@ -446,7 +541,8 @@ rxp_r_file <- function(
   path,
   read_function,
   nix_env = "default.nix",
-  copy_data_folder = FALSE
+  copy_data_folder = FALSE,
+  env_var = NULL
 ) {
   out_name <- deparse1(substitute(name))
   read_func_str <- deparse1(substitute(read_function))
@@ -489,7 +585,8 @@ rxp_r_file <- function(
     build_phase = build_phase,
     type = "rxp_r",
     derivation_func = "makeRDerivation",
-    library_ext = "R"
+    library_ext = "R",
+    env_var = env_var
   )
 }
 
@@ -505,6 +602,9 @@ rxp_r_file <- function(
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
 #' @param copy_data_folder Logical, if TRUE then the entire folder is
 #'   copied recursively into the build sandbox.
+#' @param env_var List, defaults to NULL. A named list of environment variables to set
+#'   before running the Python script, e.g., c(PYTHONPATH = "/path/to/modules").
+#'   Each entry will be added as an export statement in the build phase.
 #' @details
 #'   There are three ways to read in data in a rixpress pipeline:
 #'   the first is to point directly a file, for example,
@@ -527,7 +627,8 @@ rxp_py_file <- function(
   path,
   read_function,
   nix_env = "default.nix",
-  copy_data_folder = FALSE
+  copy_data_folder = FALSE,
+  env_var = NULL
 ) {
   out_name <- deparse1(substitute(name))
   # Sanitize the read_function string.
@@ -572,7 +673,8 @@ rxp_py_file <- function(
     build_phase = build_phase,
     type = "rxp_py",
     derivation_func = "makePyDerivation",
-    library_ext = "py"
+    library_ext = "py",
+    env_var = env_var
   )
 }
 
@@ -621,7 +723,7 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
   }
 
   build_phase <- sprintf(
-    "export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n       Rscript -e \"\n         source('libraries.R')\n%s\"",
+    "export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python\n       Rscript -e \"\n         source('libraries.R')\n%s\"",
     r_command
   )
 
@@ -691,6 +793,9 @@ rxp_r2py <- function(name, expr, nix_env = "default.nix") {
 #'   containing the pictures to include in the R Markdown document.
 #' @param nix_env Character, path to the Nix environment file, default is "default.nix".
 #' @param params List, parameters to pass to the R Markdown document. Default is NULL.
+#' @param env_var List, defaults to NULL. A named list of environment variables to set
+#'   before running the R Markdown render command, e.g., c(RSTUDIO_PANDOC = "/path/to/pandoc").
+#'   Each entry will be added as an export statement in the build phase.
 #' @details To include objects built in the pipeline, `rxp_read("derivation_name")` should be put
 #'   in the .Rmd file.
 #' @return An object of class derivation which inherits from lists.
@@ -710,7 +815,8 @@ rxp_rmd <- function(
   rmd_file,
   additional_files = "",
   nix_env = "default.nix",
-  params = NULL
+  params = NULL,
+  env_var = NULL
 ) {
   out_name <- deparse1(substitute(name))
 
@@ -754,10 +860,27 @@ rxp_rmd <- function(
 
   render_args <- paste0(render_args, ")")
 
+  # Generate environment variable export statements if env_var is provided
+  env_exports <- ""
+  if (!is.null(env_var)) {
+    env_exports <- paste(
+      sapply(
+        names(env_var),
+        function(var_name)
+          sprintf("      export %s=%s", var_name, env_var[[var_name]])
+      ),
+      collapse = "\n"
+    )
+    if (env_exports != "") {
+      env_exports <- paste0(env_exports, "\n")
+    }
+  }
+
   build_phase <- paste(
     "      mkdir home",
     "      export HOME=$PWD/home",
-    "      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'\n",
+    "      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python",
+    env_exports,
     if (length(sub_cmds) > 0)
       paste("      ", sub_cmds, sep = "", collapse = "\n") else "",
     sprintf("      Rscript -e \"rmd_file <- '%s'; %s\"", rmd_file, render_args),
@@ -790,7 +913,8 @@ rxp_rmd <- function(
     rmd_file = rmd_file,
     additional_files = additional_files,
     nix_env = nix_env,
-    params = params
+    params = params,
+    env_var = env_var
   ) |>
     structure(class = "derivation")
 }
@@ -821,4 +945,12 @@ print.derivation <- function(x, ...) {
     "\n"
   )
   cat("Nix env:", x$nix_env, "\n")
+  if ("env_var" %in% names(x)) {
+    cat(
+      "Env variables:",
+      if (is.null(x$env_var)) "None" else
+        paste(names(x$env_var), x$env_var, sep = "=", collapse = ", "),
+      "\n"
+    )
+  }
 }

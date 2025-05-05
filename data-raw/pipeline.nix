@@ -60,9 +60,10 @@ let
     buildInputs = default2BuildInputs;
     configurePhase = default2ConfigurePhase;
     buildPhase = ''
+      export Huhu=boink
       Rscript -e "
-        source('libraries.R')
         mtcars <- readRDS('${mtcars}/mtcars')
+        source('libraries.R')
         mtcars_am <- filter(mtcars, am == 1)
         saveRDS(mtcars_am, 'mtcars_am')"
     '';
