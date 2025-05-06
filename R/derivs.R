@@ -253,7 +253,7 @@ rxp_py <- function(
     if (env_exports != "") env_exports <- paste0(env_exports, "\n      ")
   }
 
-  fileset_parts <- setdiff(additional_files, "functions.R")
+  fileset_parts <- setdiff(additional_files, "functions.py")
   fileset_parts <- fileset_parts[nzchar(fileset_parts)]
 
   # build copy command for additional files
