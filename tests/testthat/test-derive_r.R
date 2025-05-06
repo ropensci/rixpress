@@ -341,7 +341,7 @@ test_that("rxp_r: with additional files", {
     structure(
       list(
         "name" = "mtcars_am",
-        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ];\n    };\n   buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      Rscript -e "\n        source(\'libraries.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
+        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ];\n    };\n   buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r ${./data.csv} .\n      Rscript -e "\n        source(\'libraries.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
         "type" = "rxp_r",
         "additional_files" = c("functions.R", "data.csv"),
         "nix_env" = "default.nix",
@@ -367,7 +367,7 @@ test_that("rxp_py: with additional files", {
     structure(
       list(
         "name" = "mtcars_pl_am",
-        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = "mtcars_pl_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ];\n    };\n   buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      python -c "\nexec(open(\'libraries.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
+        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = "mtcars_pl_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ];\n    };\n   buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r ${./data.csv} .\n      python -c "\nexec(open(\'libraries.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
         "type" = "rxp_py",
         "additional_files" = c("functions.py", "data.csv"),
         "nix_env" = "default.nix",
@@ -498,8 +498,8 @@ test_that("rxp_r_file: with env_var parameter", {
   write.csv(mtcars[1:5, ], csv_file, row.names = FALSE)
 
   d1 <- rxp_r_file(
-    mtcars_data, 
-    path = csv_file, 
+    mtcars_data,
+    path = csv_file,
     read_function = read.csv,
     env_var = c(R_DATA_DIR = "/path/to/data", R_DEBUG = "TRUE")
   )
@@ -534,8 +534,8 @@ test_that("rxp_py_file: with env_var parameter", {
   write.csv(mtcars[1:5, ], csv_file, row.names = FALSE)
 
   d1 <- rxp_py_file(
-    mtcars_data, 
-    path = csv_file, 
+    mtcars_data,
+    path = csv_file,
     read_function = "pandas.read_csv",
     env_var = c(PYTHONPATH = "/custom/modules", PYTHON_DEBUG = "1")
   )
@@ -576,7 +576,10 @@ test_that("rxp_rmd: with env_var parameter", {
     report,
     rmd_file,
     additional_files = "images",
-    env_var = c(RSTUDIO_PANDOC = "/usr/local/bin/pandoc", R_LIBS_USER = "/custom/r/libs")
+    env_var = c(
+      RSTUDIO_PANDOC = "/usr/local/bin/pandoc",
+      R_LIBS_USER = "/custom/r/libs"
+    )
   )
 
   # Test the entire object
@@ -599,7 +602,10 @@ test_that("rxp_rmd: with env_var parameter", {
         "additional_files" = "images",
         "nix_env" = "default.nix",
         "params" = NULL,
-        "env_var" = c(RSTUDIO_PANDOC = "/usr/local/bin/pandoc", R_LIBS_USER = "/custom/r/libs")
+        "env_var" = c(
+          RSTUDIO_PANDOC = "/usr/local/bin/pandoc",
+          R_LIBS_USER = "/custom/r/libs"
+        )
       ),
       class = "derivation"
     )

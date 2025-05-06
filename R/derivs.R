@@ -91,9 +91,21 @@ rxp_r <- function(
     }
   }
 
+  # Prepare the fileset for src
+  # Remove functions.R as this is handled separately
+  fileset_parts <- setdiff(additional_files, "functions.R")
+
+  # build copy command for additional files
+  copy_cmd <- ""
+  if (!identical(fileset_parts, character(0)) && fileset_parts != "") {
+    src_paths <- sprintf("${./%s}", fileset_parts)
+    copy_cmd <- paste0("cp -r ", paste(src_paths, collapse = " "), " .\n      ")
+  }
+
   build_phase <- sprintf(
-    "%sRscript -e \"\n        source('libraries.R')\n        %s <- %s\n        %s(%s, '%s')\"",
+    "%s%sRscript -e \"\n        source('libraries.R')\n        %s <- %s\n        %s(%s, '%s')\"",
     env_exports,
+    copy_cmd,
     out_name,
     expr_str,
     serialize_str,
@@ -105,9 +117,6 @@ rxp_r <- function(
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
 
-  # Prepare the fileset for src
-  # Remove functions.R as this is handled separately
-  fileset_parts <- setdiff(additional_files, "functions.R")
   if (identical(fileset_parts, character(0)) || fileset_parts == "") {
     src_snippet <- ""
   } else {
@@ -118,7 +127,6 @@ rxp_r <- function(
     )
   }
 
-  # Updated snippet with buildInputs and configurePhase
   snippet <- sprintf(
     "  %s = makeRDerivation {\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
     out_name,
@@ -141,6 +149,7 @@ rxp_r <- function(
   ) |>
     structure(class = "derivation")
 }
+
 
 #' rxp_py Creates a Nix expression running a Python function
 #'
@@ -206,9 +215,8 @@ rxp_py <- function(
       out_name
     )
   } else {
-    if (!is.character(serialize_function)) {
+    if (!is.character(serialize_function))
       stop("serialize_function must be a character string or NULL")
-    }
     serialize_str <- sprintf(
       "%s(globals()['%s'], '%s')",
       serialize_function,
@@ -221,9 +229,8 @@ rxp_py <- function(
   if (is.null(unserialize_function)) {
     unserialize_str <- "pickle.load"
   } else {
-    if (!is.character(unserialize_function)) {
+    if (!is.character(unserialize_function))
       stop("unserialize_function must be a character string or NULL")
-    }
     unserialize_str <- unserialize_function
   }
 
@@ -233,19 +240,27 @@ rxp_py <- function(
     env_exports <- paste(
       sapply(
         names(env_var),
-        function(var_name)
-          sprintf("export %s=%s", var_name, env_var[[var_name]])
+        function(var) sprintf("export %s=%s", var, env_var[[var]])
       ),
       collapse = "\n      "
     )
-    if (env_exports != "") {
-      env_exports <- paste0(env_exports, "\n      ")
-    }
+    if (env_exports != "") env_exports <- paste0(env_exports, "\n      ")
   }
 
-  # Construct build_phase
+  # Prepare fileset parts once
+  fileset_parts <- setdiff(additional_files, "functions.py")
+
+  # Prepare cp commands if there are any additional files or directories
+  cp_cmds <- ""
+  if (!identical(fileset_parts, character(0)) && fileset_parts != "") {
+    src_paths <- paste0("${./", fileset_parts, "}")
+    cp_cmds <- paste0("cp -r ", paste(src_paths, collapse = " "), " .\n      ")
+  }
+
+  # Construct build_phase including cp commands then python execution
   build_phase <- paste0(
     env_exports,
+    cp_cmds,
     "python -c \"\n",
     "exec(open('libraries.py').read())\n",
     "exec('",
@@ -262,8 +277,7 @@ rxp_py <- function(
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
 
-  # Prepare the fileset for src
-  fileset_parts <- setdiff(additional_files, "functions.py")
+  # Prepare the src snippet only once using the same fileset_parts
   if (identical(fileset_parts, character(0)) || fileset_parts == "") {
     src_snippet <- ""
   } else {

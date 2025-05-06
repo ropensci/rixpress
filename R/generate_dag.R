@@ -60,7 +60,8 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
             stop("Quarto file not found: ", name, ".qmd or ", name, ".Qmd")
           }
         }
-      } else { # rxp_rmd
+      } else {
+        # rxp_rmd
         # Try .rmd and .Rmd extensions
         doc_file <- d$rmd_file
         if (!file.exists(doc_file)) {
@@ -70,7 +71,7 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
           }
         }
       }
-      
+
       # Read the document file
       doc_content <- readLines(doc_file, warn = FALSE)
       doc_text <- paste(doc_content, collapse = "\n")

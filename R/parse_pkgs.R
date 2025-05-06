@@ -276,7 +276,9 @@ add_import <- function(import_statement, nix_env) {
   # Remove .nix extension if present
   base_name <- sub("\\.nix$", "", nix_env)
   if (identical(base_name, nix_env)) {
-    warning("Provided nix_env did not end with '.nix'; using entire string as base name.")
+    warning(
+      "Provided nix_env did not end with '.nix'; using entire string as base name."
+    )
   }
 
   # Construct regex to match Python files starting with the base name
@@ -285,9 +287,9 @@ add_import <- function(import_statement, nix_env) {
 
   # List only .py/.Py files whose names match the base_name prefix
   files <- list.files(
-    path = "_rixpress", 
+    path = "_rixpress",
     pattern = file_pattern,
-    full.names = TRUE, 
+    full.names = TRUE,
     recursive = TRUE
   )
 
@@ -298,4 +300,3 @@ add_import <- function(import_statement, nix_env) {
     writeLines(new_content, con = file)
   }
 }
-
