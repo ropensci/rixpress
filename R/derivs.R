@@ -21,11 +21,12 @@
 #'   objects like machine learning models. For example, if the parent derivation
 #'   used `keras::save_model_hdf5()` to serialize a model, this derivation
 #'   should use `keras::load_model_hdf5()` to load it correctly.
-#' @param env_var List, defaults to NULL. A named list of environment variables to set
-#'   before running the R script, e.g., list("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan").
+#' @param env_var Character vector, defaults to NULL. A named vector of
+#'   environment variables to set before running the R script, e.g.,
+#'   c("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan").
 #'   Each entry will be added as an export statement in the build phase.
 #' @details At a basic level, `rxp_r(mtcars_am, filter(mtcars, am == 1))` is
-#'   equivalent to `mtcars <- filter(mtcars, am == 1)`. `rxp_r()` generates the
+#'   equivalent to `mtcars_am <- filter(mtcars, am == 1)`. `rxp_r()` generates the
 #'   required Nix boilerplate to output a so-called "derivation" in Nix jargon.
 #'   A Nix derivation is a recipe that defines how to create an output (in this
 #'   case `mtcars_am`) including its dependencies, build steps, and output
@@ -41,11 +42,11 @@
 #'    expr = filter(mtcars, am == 1),
 #'    serialize_function = qs::qsave
 #'   )
-#'   # Unerialize using qs::read in the next derivation
+#'   # Unerialize using qs::qread in the next derivation
 #'   rxp_r(
 #'    name = mtcars_mpg,
 #'    expr = select(filtered_mtcars, mpg),
-#'    unserialize_function = qs::read
+#'    unserialize_function = qs::qread
 #'   )
 #' }
 #' @export
@@ -128,7 +129,6 @@ rxp_r <- function(
       "   src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ",
       fileset_nix
     )
-    
   } else {
     src_snippet <- ""
   }
@@ -174,7 +174,7 @@ rxp_r <- function(
 #' @param unserialize_function Character, defaults to NULL. The name of the
 #'   Python function used to unserialize the object. It must accept one
 #'   argument: the file path.
-#' @param env_var List, defaults to NULL. A named list of environment variables to set
+#' @param env_var Character vector, defaults to NULL. A named vector of environment variables
 #'   before running the Python script, e.g., c(PYTHONPATH = "/path/to/modules").
 #'   Each entry will be added as an export statement in the build phase.
 #' @details At a basic level,
@@ -295,8 +295,7 @@ rxp_py <- function(
       fileset_nix
     )
   } else {
-
-	src_snippet <- ""
+    src_snippet <- ""
   }
 
   # Generate the Nix snippet
@@ -327,16 +326,18 @@ rxp_py <- function(
 #'
 #' @param name Symbol, derivation name.
 #' @param qmd_file Character, path to .qmd file.
-#' @param additional_files Character vector, additional files to include, for example a folder
-#'   containing the picture to include in the Quarto document.
-#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
-#' @param args A character of additional arguments to be passed directly to
-#'   the `quarto` command.
-#' @param env_var List, defaults to NULL. A named list of environment variables to set
-#'   before running the Quarto render command, e.g., c(QUARTO_PROFILE = "production").
-#'   Each entry will be added as an export statement in the build phase.
-#' @details To include object built in the pipeline, `rxp_read("derivation_name")` should be put
-#'   in the .qmd file.
+#' @param additional_files Character vector, additional files to include, for
+#'   example a folder containing images to include in the Quarto document.
+#' @param nix_env Character, path to the Nix environment file, default is
+#'   "default.nix".
+#' @param args A character of additional arguments to be passed directly to the
+#'   `quarto` command.
+#' @param env_var List, defaults to NULL. A named list of environment variables
+#'   to set before running the Quarto render command, e.g., c(QUARTO_PROFILE =
+#'   "production"). Each entry will be added as an export statement in the build
+#'   phase.
+#' @details To include built derivations in the document,
+#'   `rxp_read("derivation_name")` should be put in the .qmd file.
 #' @return An object of class derivation which inherits from lists.
 #' @examples
 #' \dontrun{
@@ -396,13 +397,13 @@ rxp_quarto <- function(
   }
 
   build_phase <- paste(
-    "      mkdir home", # Added 4 spaces
-    "      export HOME=$PWD/home", # Added 4 spaces
-    "      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python", # Added 4 spaces
+    "      mkdir home",
+    "      export HOME=$PWD/home",
+    "      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python",
     env_exports,
     if (length(sub_cmds) > 0)
-      paste("      ", sub_cmds, sep = "", collapse = "\n") else "", # Added 4 spaces
-    sprintf("      quarto render %s %s --output-dir $out", qmd_file, args), # Added 4 spaces
+      paste("      ", sub_cmds, sep = "", collapse = "\n") else "",
+    sprintf("      quarto render %s %s --output-dir $out", qmd_file, args),
     sep = "\n"
   )
 
@@ -448,10 +449,11 @@ rxp_quarto <- function(
 #' @param nix_env Character, path to the Nix environment file.
 #' @param build_phase Character, the language-specific build phase script.
 #' @param type Character, the type of derivation ("rxp_r" or "rxp_py").
-#' @param derivation_func Character, the Nix derivation function ("makeRDerivation" or "makePyDerivation").
+#' @param derivation_func Character, the Nix derivation function
+#'   ("makeRDerivation" or "makePyDerivation").
 #' @param library_ext Character, the library file extension ("R" or "py").
-#' @param env_var List, defaults to NULL. A named list of environment variables to set
-#'   before running the script, e.g., c(DATA_PATH = "/path/to/data").
+#' @param env_var List, defaults to NULL. A named list of environment variables
+#'   to set before running the script, e.g., c(DATA_PATH = "/path/to/data").
 #'   Each entry will be added as an export statement in the build phase.
 #' @return A list with `name`, `snippet`, `type`, and `nix_env`.
 rxp_file_common <- function(
@@ -534,31 +536,29 @@ rxp_file_common <- function(
 #' Creates a Nix expression that reads in a file (or folder of data) using R.
 #'
 #' @param name Symbol, the name of the derivation.
-#' @param path Character, the file path to include (e.g., "data/mtcars.shp") or a folder path (e.g., "data"). See details.
-#' @param read_function Function, an R function to read the data, taking one argument (the path).
-#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
+#' @param path Character, the file path to include (e.g., "data/mtcars.shp") or
+#'   a folder path (e.g., "data"). See details.
+#' @param read_function Function, an R function to read the data, taking one
+#'   argument (the path).
+#' @param nix_env Character, path to the Nix environment file, default is
+#'   "default.nix".
 #' @param copy_data_folder Logical, if TRUE then the entire folder is copied
 #'   recursively into the build sandbox.
-#' @param env_var List, defaults to NULL. A named list of environment variables to set
-#'   before running the R script, e.g., c(DATA_PATH = "/path/to/data").
-#'   Each entry will be added as an export statement in the build phase.
-#' @details
-#'   There are three ways to read in data in a rixpress pipeline:
-#'   the first is to point directly
-#'   a file, for example,
-#'   `rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)`.
-#'   The second way is to point to a file but to also include of the files in
-#'   the "data/" folder (the folder can named something else).
-#'   This is needed when data is split between several files, such as a shapefile
-#'   which typically also needs other files such as `.shx` and `.dbf` files.
-#'   For this, `copy_data_folder` must be set to `TRUE`.
-#'   The last way to read in data, is to only point to a folder,
-#'   and use a function that recursively reads in all data. For example
-#'   `rxp_r_file(many_csvs, path = "data",
-#'      read_function = \(x)(readr::read_csv(
-#'        list.files(x, full.names = TRUE, pattern = ".csv$"))))`
-#'   the provided anonymous function will read all the `.csv` files
-#'   in the `data/` folder.
+#' @param env_var List, defaults to NULL. A named list of environment variables
+#'   to set before running the R script, e.g., c(VAR = "hello"). Each entry will
+#'   be added as an export statement in the build phase.
+#' @details There are three ways to read in data in a rixpress pipeline: the
+#'   first is to point directly to a file, for example, `rxp_r_file(mtcars, path
+#'   = "data/mtcars.csv", read_function = read.csv)`. The second way is to point
+#'   to a file but to also include the files in the "data/" folder (the folder
+#'   can be named something else). This is needed when data is split between
+#'   several files, such as a shapefile which typically also needs other files
+#'   such as `.shx` and `.dbf` files. For this, `copy_data_folder` must be set
+#'   to `TRUE`. The last way to read in data, is to only point to a folder, and
+#'   use a function that recursively reads in all data. For example
+#'   `rxp_r_file(many_csvs, path = "data", read_function = \(x)(readr::read_csv(
+#'   list.files(x, full.names = TRUE, pattern = ".csv$"))))` the provided
+#'   anonymous function will read all the `.csv` files in the `data/` folder.
 #' @return An object of class derivation which inherits from lists.
 #' @export
 rxp_r_file <- function(
@@ -617,34 +617,35 @@ rxp_r_file <- function(
 
 #' rxp_py_file
 #'
-#' Creates a Nix expression that reads in a file (or folder of data) using Python.
+#' Creates a Nix expression that reads in a file (or folder of data) using
+#' Python.
 #'
 #' @param name Symbol, the name of the derivation.
-#' @param path Character, the file path to include (e.g., "data/mtcars.shp")
-#'   or a folder path (e.g., "data"). See details.
-#' @param read_function Character, a Python function to read the data,
-#'   taking one argument (the path).
-#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
-#' @param copy_data_folder Logical, if TRUE then the entire folder is
-#'   copied recursively into the build sandbox.
-#' @param env_var List, defaults to NULL. A named list of environment variables to set
-#'   before running the Python script, e.g., c(PYTHONPATH = "/path/to/modules").
-#'   Each entry will be added as an export statement in the build phase.
-#' @details
-#'   There are three ways to read in data in a rixpress pipeline:
-#'   the first is to point directly a file, for example,
-#'   `rxp_py_file(mtcars, path = "data/mtcars.csv", read_function = pandas.read_csv)`.
-#'   The second way is to point to a file but to also include of the files in
-#'   the "data/" folder (the folder can named something else).
-#'   This is needed when data is split between several files, such as a shapefile
-#'   which typically also needs other files such as `.shx` and `.dbf` files.
-#'   For this, `copy_data_folder` must be set to `TRUE`.
-#'   The last way to read in data, is to only point to a folder,
-#'   and use a function that recursively reads in all data. For example
-#'   `rxp_py_file(many_csvs, path = "data",
-#'      read_function = 'lambda x: pandas.read_csv(os.path.join(x, os.listdir(x)[0]),
-#'        delimiter="|")')`
-#'   the provided anonymous function will read all the `.csv` file in the `data/` folder.
+#' @param path Character, the file path to include (e.g., "data/mtcars.shp") or
+#'   a folder path (e.g., "data"). See details.
+#' @param read_function Character, a Python function to read the data, taking
+#'   one argument (the path).
+#' @param nix_env Character, path to the Nix environment file, default is
+#'   "default.nix".
+#' @param copy_data_folder Logical, if TRUE then the entire folder is copied
+#'   recursively into the build sandbox.
+#' @param env_var List, defaults to NULL. A named list of environment variables
+#'   to set before running the Python script, e.g., c(PYTHONPATH =
+#'   "/path/to/modules"). Each entry will be added as an export statement in the
+#'   build phase.
+#' @details There are three ways to read in data in a rixpress pipeline: the
+#'   first is to point directly to a file, for example, `rxp_py_file(mtcars, path =
+#'   "data/mtcars.csv", read_function = pandas.read_csv)`. The second way is to
+#'   point to a file but to also include of the files in the "data/" folder (the
+#'   folder can named something else). This is needed when data is split between
+#'   several files, such as a shapefile which typically also needs other files
+#'   such as `.shx` and `.dbf` files. For this, `copy_data_folder` must be set
+#'   to `TRUE`. The last way to read in data, is to only point to a folder, and
+#'   use a function that recursively reads in all data. For example
+#'   `rxp_py_file(many_csvs, path = "data", read_function = 'lambda x:
+#'   pandas.read_csv(os.path.join(x, os.listdir(x)[0]), delimiter="|")')` the
+#'   provided anonymous function will read all the `.csv` file in the `data/`
+#'   folder.
 #' @return An object of class derivation which inherits from lists.
 #' @export
 rxp_py_file <- function(
@@ -712,8 +713,10 @@ rxp_py_file <- function(
 #' @param out_name Character, name of the derivation.
 #' @param expr_str Character, name of the object being transferred.
 #' @param nix_env Character, path to the Nix environment file.
-#' @param direction Character, either "py2r" (Python to R) or "r2py" (R to Python).
-#' @return A list with elements: `name`, `snippet`, `type`, `additional_files`, `nix_env`.
+#' @param direction Character, either "py2r" (Python to R) or "r2py" (R to
+#'   Python).
+#' @return A list with elements: `name`, `snippet`, `type`, `additional_files`,
+#'   `nix_env`.
 rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
   if (!requireNamespace("reticulate", quietly = TRUE)) {
     stop(
@@ -776,9 +779,10 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
 #'
 #' @param name Symbol, name of the derivation.
 #' @param expr Symbol, Python object to be loaded into R.
-#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
-#' @details `rxp_py2r(my_obj, my_python_object)` loads a serialized
-#'   Python object and saves it as an RDS file using `reticulate::py_load_object()`.
+#' @param nix_env Character, path to the Nix environment file, default is
+#'   "default.nix".
+#' @details `rxp_py2r(my_obj, my_python_object)` loads a serialized Python
+#'   object and saves it as an RDS file using `reticulate::py_load_object()`.
 #' @return An object of class derivation which inherits from lists.
 #' @examples
 #' \dontrun{
@@ -795,7 +799,8 @@ rxp_py2r <- function(name, expr, nix_env = "default.nix") {
 #'
 #' @param name Symbol, name of the derivation.
 #' @param expr Symbol, R object to be saved into a Python pickle.
-#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
+#' @param nix_env Character, path to the Nix environment file, default is
+#'   "default.nix".
 #' @details `rxp_r2py(my_obj, my_r_object)` saves an R object to a Python pickle
 #'   using `reticulate::py_save_object()`.
 #' @return An object of class derivation which inherits from lists.
@@ -814,15 +819,19 @@ rxp_r2py <- function(name, expr, nix_env = "default.nix") {
 #'
 #' @param name Symbol, derivation name.
 #' @param rmd_file Character, path to .Rmd file.
-#' @param additional_files Character vector, additional files to include, for example a folder
-#'   containing the pictures to include in the R Markdown document.
-#' @param nix_env Character, path to the Nix environment file, default is "default.nix".
-#' @param params List, parameters to pass to the R Markdown document. Default is NULL.
-#' @param env_var List, defaults to NULL. A named list of environment variables to set
-#'   before running the R Markdown render command, e.g., c(RSTUDIO_PANDOC = "/path/to/pandoc").
-#'   Each entry will be added as an export statement in the build phase.
-#' @details To include objects built in the pipeline, `rxp_read("derivation_name")` should be put
-#'   in the .Rmd file.
+#' @param additional_files Character vector, additional files to include, for
+#'   example a folder containing the pictures to include in the R Markdown
+#'   document.
+#' @param nix_env Character, path to the Nix environment file, default is
+#'   "default.nix".
+#' @param params List, parameters to pass to the R Markdown document. Default is
+#'   NULL.
+#' @param env_var List, defaults to NULL. A named list of environment variables
+#'   to set before running the R Markdown render command, e.g., c(RSTUDIO_PANDOC
+#'   = "/path/to/pandoc"). Each entry will be added as an export statement in
+#'   the build phase.
+#' @details To include objects built in the pipeline,
+#'   `rxp_read("derivation_name")` should be put in the .Rmd file.
 #' @return An object of class derivation which inherits from lists.
 #' @examples
 #' \dontrun{
@@ -920,7 +929,6 @@ rxp_rmd <- function(
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
 
-  # Generate the Nix derivation snippet with updated buildInputs and configurePhase
   snippet <- sprintf(
     "  %s = defaultPkgs.stdenv.mkDerivation {\n    name = \"%s\";\n    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n%s\n    '';\n  };",
     out_name,
