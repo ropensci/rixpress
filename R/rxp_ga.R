@@ -38,10 +38,10 @@ rxp_ga <- function() {
 
   file.copy(source, path, overwrite = TRUE)
 
-  # Generate dag.dot to view in CI
-  dag_for_ci()
-
   if (identical(Sys.getenv("TESTTHAT"), "false")) {
+    # Generate dag.dot to view in CI
+    dag_for_ci()
+
     message("GitHub Actions workflow file saved to: ", path)
   }
 

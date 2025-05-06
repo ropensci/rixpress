@@ -11,7 +11,7 @@ d1 <- rxp_r(
   mtcars_am,
   filter(mtcars, am == 1),
   nix_env = "default2.nix",
-  set_env = list("Huhu" = "boink")
+  env_var = list("Huhu" = "boink")
 )
 
 d2 <- rxp_r(
