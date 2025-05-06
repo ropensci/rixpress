@@ -52,7 +52,8 @@
 <span>  <span class="va">rmd_file</span>,</span>
 <span>  additional_files <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  nix_env <span class="op">=</span> <span class="st">"default.nix"</span>,</span>
-<span>  params <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  params <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  env_var <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -79,6 +80,12 @@ containing the pictures to include in the R Markdown document.</p></dd>
 
 <dt id="arg-params">params<a class="anchor" aria-label="anchor" href="#arg-params"></a></dt>
 <dd><p>List, parameters to pass to the R Markdown document. Default is NULL.</p></dd>
+
+
+<dt id="arg-env-var">env_var<a class="anchor" aria-label="anchor" href="#arg-env-var"></a></dt>
+<dd><p>List, defaults to NULL. A named list of environment variables to set
+before running the R Markdown render command, e.g., c(RSTUDIO_PANDOC = "/path/to/pandoc").
+Each entry will be added as an export statement in the build phase.</p></dd>
 
 </dl></div>
     <div class="section level2">

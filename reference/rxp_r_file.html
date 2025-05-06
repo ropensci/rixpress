@@ -52,7 +52,8 @@
 <span>  <span class="va">path</span>,</span>
 <span>  <span class="va">read_function</span>,</span>
 <span>  nix_env <span class="op">=</span> <span class="st">"default.nix"</span>,</span>
-<span>  copy_data_folder <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  copy_data_folder <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  env_var <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -79,6 +80,12 @@
 <dt id="arg-copy-data-folder">copy_data_folder<a class="anchor" aria-label="anchor" href="#arg-copy-data-folder"></a></dt>
 <dd><p>Logical, if TRUE then the entire folder is copied
 recursively into the build sandbox.</p></dd>
+
+
+<dt id="arg-env-var">env_var<a class="anchor" aria-label="anchor" href="#arg-env-var"></a></dt>
+<dd><p>List, defaults to NULL. A named list of environment variables to set
+before running the R script, e.g., c(DATA_PATH = "/path/to/data").
+Each entry will be added as an export statement in the build phase.</p></dd>
 
 </dl></div>
     <div class="section level2">

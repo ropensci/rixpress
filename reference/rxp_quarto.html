@@ -52,7 +52,8 @@
 <span>  <span class="va">qmd_file</span>,</span>
 <span>  additional_files <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  nix_env <span class="op">=</span> <span class="st">"default.nix"</span>,</span>
-<span>  args <span class="op">=</span> <span class="st">""</span></span>
+<span>  args <span class="op">=</span> <span class="st">""</span>,</span>
+<span>  env_var <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -80,6 +81,12 @@ containing the picture to include in the Quarto document.</p></dd>
 <dt id="arg-args">args<a class="anchor" aria-label="anchor" href="#arg-args"></a></dt>
 <dd><p>A character of additional arguments to be passed directly to
 the <code>quarto</code> command.</p></dd>
+
+
+<dt id="arg-env-var">env_var<a class="anchor" aria-label="anchor" href="#arg-env-var"></a></dt>
+<dd><p>List, defaults to NULL. A named list of environment variables to set
+before running the Quarto render command, e.g., c(QUARTO_PROFILE = "production").
+Each entry will be added as an export statement in the build phase.</p></dd>
 
 </dl></div>
     <div class="section level2">

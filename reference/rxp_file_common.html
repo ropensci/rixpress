@@ -54,7 +54,8 @@
 <span>  <span class="va">build_phase</span>,</span>
 <span>  <span class="va">type</span>,</span>
 <span>  <span class="va">derivation_func</span>,</span>
-<span>  <span class="va">library_ext</span></span>
+<span>  <span class="va">library_ext</span>,</span>
+<span>  env_var <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -88,6 +89,12 @@
 
 <dt id="arg-library-ext">library_ext<a class="anchor" aria-label="anchor" href="#arg-library-ext"></a></dt>
 <dd><p>Character, the library file extension ("R" or "py").</p></dd>
+
+
+<dt id="arg-env-var">env_var<a class="anchor" aria-label="anchor" href="#arg-env-var"></a></dt>
+<dd><p>List, defaults to NULL. A named list of environment variables to set
+before running the script, e.g., c(DATA_PATH = "/path/to/data").
+Each entry will be added as an export statement in the build phase.</p></dd>
 
 </dl></div>
     <div class="section level2">
