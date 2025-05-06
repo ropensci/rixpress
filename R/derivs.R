@@ -97,7 +97,7 @@ rxp_r <- function(
 
   # build copy command for additional files
   copy_cmd <- ""
-  if (!identical(fileset_parts, character(0) && fileset_parts != "") {
+  if (!identical(fileset_parts, character(0)) && fileset_parts != "") {
     # for each path, copy to same name in build dir
     copy_cmd <- paste(
       sapply(fileset_parts, function(f) {
@@ -261,7 +261,7 @@ rxp_py <- function(
 
   # Prepare cp commands if there are any additional files or directories
   copy_cmd <- ""
-  if (!identical(fileset_parts, character(0) && fileset_parts != "") {
+  if (!identical(fileset_parts, character(0)) && fileset_parts != "") {
     # for each path, copy to same name in build dir
     copy_cmd <- paste(
       sapply(fileset_parts, function(f) {
