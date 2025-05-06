@@ -11,7 +11,8 @@ rxp_file_common(
   build_phase,
   type,
   derivation_func,
-  library_ext
+  library_ext,
+  env_var = NULL
 )
 }
 \arguments{
@@ -28,6 +29,10 @@ rxp_file_common(
 \item{derivation_func}{Character, the Nix derivation function ("makeRDerivation" or "makePyDerivation").}
 
 \item{library_ext}{Character, the library file extension ("R" or "py").}
+
+\item{env_var}{List, defaults to NULL. A named list of environment variables to set
+before running the script, e.g., c(DATA_PATH = "/path/to/data").
+Each entry will be added as an export statement in the build phase.}
 }
 \value{
 A list with \code{name}, \code{snippet}, \code{type}, and \code{nix_env}.

@@ -10,7 +10,8 @@ rxp_r(
   additional_files = "",
   nix_env = "default.nix",
   serialize_function = NULL,
-  unserialize_function = NULL
+  unserialize_function = NULL,
+  env_var = NULL
 )
 }
 \arguments{
@@ -41,6 +42,10 @@ unserialize objects transferred between derivations. By default,
 objects like machine learning models. For example, if the parent derivation
 used \code{keras::save_model_hdf5()} to serialize a model, this derivation
 should use \code{keras::load_model_hdf5()} to load it correctly.}
+
+\item{env_var}{List, defaults to NULL. A named list of environment variables to set
+before running the R script, e.g., list("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan").
+Each entry will be added as an export statement in the build phase.}
 }
 \value{
 An object of class derivation which inherits from lists.

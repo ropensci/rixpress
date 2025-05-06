@@ -9,7 +9,8 @@ rxp_quarto(
   qmd_file,
   additional_files = "",
   nix_env = "default.nix",
-  args = ""
+  args = "",
+  env_var = NULL
 )
 }
 \arguments{
@@ -24,6 +25,10 @@ containing the picture to include in the Quarto document.}
 
 \item{args}{A character of additional arguments to be passed directly to
 the \code{quarto} command.}
+
+\item{env_var}{List, defaults to NULL. A named list of environment variables to set
+before running the Quarto render command, e.g., c(QUARTO_PROFILE = "production").
+Each entry will be added as an export statement in the build phase.}
 }
 \value{
 An object of class derivation which inherits from lists.

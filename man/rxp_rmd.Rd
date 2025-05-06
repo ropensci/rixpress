@@ -9,7 +9,8 @@ rxp_rmd(
   rmd_file,
   additional_files = "",
   nix_env = "default.nix",
-  params = NULL
+  params = NULL,
+  env_var = NULL
 )
 }
 \arguments{
@@ -23,6 +24,10 @@ containing the pictures to include in the R Markdown document.}
 \item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
 
 \item{params}{List, parameters to pass to the R Markdown document. Default is NULL.}
+
+\item{env_var}{List, defaults to NULL. A named list of environment variables to set
+before running the R Markdown render command, e.g., c(RSTUDIO_PANDOC = "/path/to/pandoc").
+Each entry will be added as an export statement in the build phase.}
 }
 \value{
 An object of class derivation which inherits from lists.

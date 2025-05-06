@@ -10,7 +10,8 @@ rxp_py(
   additional_files = "",
   nix_env = "default.nix",
   serialize_function = NULL,
-  unserialize_function = NULL
+  unserialize_function = NULL,
+  env_var = NULL
 )
 }
 \arguments{
@@ -34,6 +35,10 @@ the default behavior uses \code{pickle.dump}. Define this function in
 \item{unserialize_function}{Character, defaults to NULL. The name of the
 Python function used to unserialize the object. It must accept one
 argument: the file path.}
+
+\item{env_var}{List, defaults to NULL. A named list of environment variables to set
+before running the Python script, e.g., c(PYTHONPATH = "/path/to/modules").
+Each entry will be added as an export statement in the build phase.}
 }
 \value{
 An object of class derivation which inherits from lists.

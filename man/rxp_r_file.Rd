@@ -9,7 +9,8 @@ rxp_r_file(
   path,
   read_function,
   nix_env = "default.nix",
-  copy_data_folder = FALSE
+  copy_data_folder = FALSE,
+  env_var = NULL
 )
 }
 \arguments{
@@ -23,6 +24,10 @@ rxp_r_file(
 
 \item{copy_data_folder}{Logical, if TRUE then the entire folder is copied
 recursively into the build sandbox.}
+
+\item{env_var}{List, defaults to NULL. A named list of environment variables to set
+before running the R script, e.g., c(DATA_PATH = "/path/to/data").
+Each entry will be added as an export statement in the build phase.}
 }
 \value{
 An object of class derivation which inherits from lists.
