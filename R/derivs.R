@@ -97,10 +97,19 @@ rxp_r <- function(
 
   # build copy command for additional files
   copy_cmd <- ""
-  if (!identical(fileset_parts, character(0)) && fileset_parts != "") {
-    src_paths <- sprintf("${./%s}", fileset_parts)
-    copy_cmd <- paste0("cp -r ", paste(src_paths, collapse = " "), " .\n      ")
+  if (length(fileset_parts) > 0 && fileset_parts != "") {
+    # for each path, copy to same name in build dir
+    copy_cmd <- paste(
+      sapply(fileset_parts, function(f) {
+        src <- sprintf("${./%s}", f)
+        dest <- f
+        sprintf("cp -r %s %s", src, dest)
+      }),
+      collapse = "\n      "
+    )
+    copy_cmd <- paste0(copy_cmd, "\n      ")
   }
+
 
   build_phase <- sprintf(
     "%s%sRscript -e \"\n        source('libraries.R')\n        %s <- %s\n        %s(%s, '%s')\"",
@@ -251,16 +260,24 @@ rxp_py <- function(
   fileset_parts <- setdiff(additional_files, "functions.py")
 
   # Prepare cp commands if there are any additional files or directories
-  cp_cmds <- ""
-  if (!identical(fileset_parts, character(0)) && fileset_parts != "") {
-    src_paths <- paste0("${./", fileset_parts, "}")
-    cp_cmds <- paste0("cp -r ", paste(src_paths, collapse = " "), " .\n      ")
+  copy_cmd <- ""
+  if (length(fileset_parts) > 0 && fileset_parts != "") {
+    # for each path, copy to same name in build dir
+    copy_cmd <- paste(
+      sapply(fileset_parts, function(f) {
+        src <- sprintf("${./%s}", f)
+        dest <- f
+        sprintf("cp -r %s %s", src, dest)
+      }),
+      collapse = "\n      "
+    )
+    copy_cmd <- paste0(copy_cmd, "\n      ")
   }
 
   # Construct build_phase including cp commands then python execution
   build_phase <- paste0(
     env_exports,
-    cp_cmds,
+    copy_cmd,
     "python -c \"\n",
     "exec(open('libraries.py').read())\n",
     "exec('",
