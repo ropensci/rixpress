@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 This vignette demonstrates how to build a polyglot pipeline and assumes you've
-read `vignette("c-polyglot")`.
+read `vignette("d-polyglot")`.
 
 A video version of this vignette is planned for future release on YouTube.
 
@@ -32,30 +32,30 @@ function in your project's root. This will generate a GitHub Actions `.yaml`
 file to run the pipeline on each push or pull request. Here are the different
 steps that happen:
 
-- if previous runs artifacts exist, those get restored to avoid recomputing them
+- if previous run artifacts exist, those are restored to avoid recomputing them
   using `rixpress::import_nix_archive()`;
-- required software gets installed;
-- the execution environment gets generated and built;
-- the `rstats-on-nix` cache gets configured to decrease build times, see this
+- required software is installed;
+- the execution environment is generated and built;
+- the `rstats-on-nix` cache is configured to decrease build times, see this
   [documentation](https://docs.ropensci.org/rix/articles/b1-setting-up-and-using-rix-on-linux-and-windows.html#using-the-determinate-systems-installer)
   (ignore the part about installing `Nix`);
-- the pipeline gets generated (and potentially built, depending on whether you set
+- the pipeline is generated (and potentially built, depending on whether you set
   `build` to `FALSE` in the `rixpress()` call);
-- the dag gets printed;
-- the pipeline gets built: if you set `build` to `TRUE` previously, the build
-  process gets skipped anyway;
-- the build artifacts and their paths get printed;
-- the build artifacts get archived for reuse using
+- the DAG gets printed;
+- the pipeline is built: if you set `build` to `TRUE` previously, the build
+  process is skipped anyway;
+- the build artifacts and their paths are printed;
+- the build artifacts are archived for reuse using
   `rixpress::export_nix_archive()` for subsequent runs and are pushed to the
   `rixpress-runs` branch.
 
-Let me explain how it is possible to view the DAG in CI. In an interactive
+Let me explain how to view the DAG in CI. In an interactive
 session, you only need to call `plot_dag()` to see a graphical representation of
-the pipeline. But in CI, since there's no graphical interface, so you need to
-use a tool that allows to represent the pipeline in text mode. One such tool is
+the pipeline. But in CI, since there's no graphical interface, you need to
+use a tool that allows you to represent the pipeline in text mode. One such tool is
 the `stacked-dag` package for the Haskell programming language. It takes an
 `igraph` object as a `.dot` file, and returns a textual representation of the
-DAG. So there's a step in the `.yaml` file used to run the pipeline in CI that
+DAG. So, there's a step in the `.yaml` file used to run the pipeline in CI that
 does exactly this:
 
 ```
@@ -68,7 +68,7 @@ does exactly this:
     fi
 ```
 
-As you can see, `stacked-dag` shows the file under the `_rixpress/dag.dot`
+As you can see, `stacked-dag` processes the file from the `_rixpress/dag.dot`
 folder. When calling `rxp_ga()`, the `dag_for_ci()` function is called
 automatically to generate the `.dot` file and put it in the right spot.
 

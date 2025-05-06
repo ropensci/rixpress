@@ -19,7 +19,7 @@ will walk you through the contents of this vignette.
 If you're using `{rixpress}`, you're likely already familiar with its sister
 package `{rix}`, which helps you set up reproducible development environments
 for R or Python using `Nix`. As such, you likely already have `Nix` installed on your
-system. If that is not the case, read the following [`{rix}` vignette to learn
+system. If not, read the following [`{rix}` vignette to learn
 how to set up `Nix` on Linux or
 Windows](https://docs.ropensci.org/rix/articles/b1-setting-up-and-using-rix-on-linux-and-windows.html),
 or [this one if you're on macOS](https://docs.ropensci.org/rix/articles/b2-setting-up-and-using-rix-on-macos.html).
@@ -38,16 +38,15 @@ In this vignette, I'm going to assume the following:
   `rstats-on-nix` cache;
 - you've read through the previous two vignettes.
 
-If you're already familiar with `{rix}`, you'll likely know that you can use the
-following command to get access to a temporary `Nix` shell that provides R,
-`{rix}`, and `{rixpress}` (copy and paste it into a terminal in the folder where
-you want to start your project):
+If you're already familiar with `{rix}`, you likely know that you can use the
+following command in your project's root directory to get access to a temporary
+`Nix` shell that provides R, `{rix}`, and `{rixpress}`:
 
 ```bash
 nix-shell --expr "$(curl -sl https://raw.githubusercontent.com/ropensci/rix/main/inst/extdata/default.nix)"
 ```
 
-This will drop you into a `Nix` session. Type `R` to start an R session, and then type:
+This will start a `Nix` session. Type `R` to start an R session, and then type:
 
 ```{r, eval = FALSE}
 library(rixpress)
@@ -80,10 +79,10 @@ rix(
 )
 ```
 
-To execute a `{rixpress}` pipeline, the environment needs `{rixpress}`
-to be available, but you likely require other packages. Let's add `{dplyr}` and
+To execute a `{rixpress}` pipeline, the environment needs `{rixpress}` to be
+available, but you likely require other packages. Let's add `{dplyr}` and
 `{igraph}` (which is needed to view the graphical representation of the
-pipeline's DAG). Open it in any text editor and change it to:
+pipeline's DAG). Open `gen-env.R` in any text editor and change it to:
 
 ```{r, eval = FALSE}
 library(rix)
@@ -106,13 +105,13 @@ rix(
 I've added a date, which means that the versions of R and R packages will be set
 to the versions available on this date from CRAN, and I've added `{dplyr}` and
 `{igraph}`. I've also added RStudio as the IDE. I can now go back to my
-temporary `Nix` shell, and run `source("gen-env.R")`. This will create a
-`default.nix` file in my project's folder: this is a `Nix` file that defines my
-environment. I can now leave my temporary shell by first quitting R, then typing
-CRTL-D or `exit`. Then I can build my development environment using
-`nix-build`. Let’s now drop into our development shell by typing `nix-shell`
-and launch RStudio (or whatever editor you want to use) and open
-`gen-pipeline.R`:
+temporary `Nix` shell and run `Rscript gen-env.R` (or `source("gen-env.R")`
+inside an R session). This will create a `default.nix` file in my project's
+folder: this is a `Nix` file that defines my environment. I can now leave my
+temporary shell by first quitting R (if applicable), then typing CTRL-D or `exit`.
+Then I can build my development environment using `nix-build`. Let's now enter
+our development shell by typing `nix-shell` and launch RStudio (or whatever
+editor you want to use) and open `gen-pipeline.R`:
 
 
 ```{r, eval = FALSE}
@@ -134,8 +133,7 @@ list(
 
 This template starts with `rxp_r_file()` to load data, and `rxp_r()` to
 define a step. These two derivations are put into a list and then passed to
-`rixpress()`. Let's start by importing data and filtering the data using
-`{dplyr}`:
+`rixpress()`. Let's start by importing data and filtering it using `{dplyr}`:
 
 ```{r, eval = FALSE}
 library(rixpress)
@@ -157,7 +155,7 @@ list(
 
 Select the pipeline and run it (I highly recommend you use keyboard shortcuts
 to quickly run the above code when working interactively). If everything
-went well, you should see the following in your R console:
+went well, you will see the following in your R console:
 
 ```
 Build process started...
@@ -181,10 +179,10 @@ Let’s inspect the pipeline outputs using `rxp_inspect()`:
 3          /nix/store/0nj75qf7md5xi0517qdi1qpk44466zqi-mtcars       mtcars
 ```
 
-Three things were built: `mtcars`, which is simply the source data set,
-`filtered_mtcars` which is the filtered data, and then an object you didn't
-define called `all-derivations`: this is mostly for internal use and you
-can safely ignore it.
+Three things were built: `mtcars`, which is simply the source data set;
+`filtered_mtcars`, which is the filtered data; and an object you didn't
+define called `all-derivations`. This last object is mostly for internal
+`{rixpress}` use, and you can safely ignore it.
 
 Let's now use `rxp_read()` to take a look at `filtered_mtcars`:
 
@@ -218,8 +216,8 @@ filtered_mtcars <- rxp_read("filtered_mtcars")
 or you can simply use `rxp_load("filtered_mtcars")` which will achieve the same
 result.
 
-You can now manipulate this object interactively, as usual. Maybe you still
-don't quite know what the next step should be (maybe there are missing values
+You can now manipulate this object interactively, as usual. You might still
+not quite know what the next step should be (maybe there are missing values
 you need to handle somehow, or another such cleaning step), but once you know
 the next steps, you can write the next derivation:
 

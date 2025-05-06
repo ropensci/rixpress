@@ -82,7 +82,7 @@ operation. However, this approach is completely reproducible: the dependencies
 are declared and pinned to a specific dated branch of our
 `rstats-on-nix/nixpkgs` fork, and the only thing that could make this pipeline
 fail (though it's a bit of a stretch to call this a *pipeline*) is if the
-`mtcars.csv` file is not shared with it.
+`mtcars.csv` file is not provided to it.
 
 You could then add another step that uses `filtered.csv` as input and continue
 processing it. If you label the above code as `f` and a subsequent chunk of `Nix`
@@ -115,7 +115,7 @@ author, Eelco Dolstra, refers to as *component closures*:
 > The idea is to always deploy component closures: if we deploy a component,
 > then we must also deploy its dependencies, their dependencies, and so on. That
 > is, we must always deploy a set of components that is closed under the
-> ''depends on'' relation. Since closures are selfcontained, they are the units
+> ''depends on'' relation. Since closures are self-contained, they are the units
 > of complete software deployment. After all, if a set of components is not
 > closed, it is not safe to deploy, since using them might cause other
 > components to be referenced that are missing on the target system.
@@ -144,7 +144,7 @@ All of these must be managed by `Nix`. If any dependency exists "outside" this
 component closure and is only available on your machine, then the pipeline will
 only *work on your machine* - defeating the purpose of reproducibility! (It
 should be noted, however, that there are sometimes good reasons to have a
-dependency that is not managed by `Nix` but in this case you might want to use
+dependency that is not managed by `Nix`, in which case you might prefer to use
 `{targets}` running inside a Nix shell instead of `{rixpress}`, but these
 situations should be the exception rather than the rule).
 

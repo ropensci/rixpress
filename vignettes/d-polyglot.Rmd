@@ -44,7 +44,7 @@ R).
 
 Before installing R and R packages for your pipeline, install
 [cachix](https://www.cachix.org/) and configure the `rstats-on-nix` cache. This
-way, pre-compiled, binary, packages will be used instead of being built from
+way, pre-compiled, binary packages will be used instead of being built from
 source. Run the following line in a terminal:
 
 ```bash
@@ -58,7 +58,7 @@ cachix use rstats-on-nix
 ```
 
 There might be a message telling you to add your user to a configuration file by
-executing another command. Do it; you only need to do this once per machine you
+executing another command. If so, follow the instructions; you only need to do this once per machine you
 want to use `{rixpress}` on. Many thanks to [Cachix](https://www.cachix.org/)
 for sponsoring the `rstats-on-nix` cache!
 
@@ -73,7 +73,7 @@ This will drop you into a temporary shell with R and both `{rix}` and
 `{rixpress}` available. Simply start R by typing `R`, and load `{rixpress}` and
 call `rxp_init()` which will generate two files, `gen-env.R` and
 `gen-pipeline.R`. You can open `gen-env.R` in your favourite text editor and
-define the execution environment in there:
+define the execution environment there:
 
 ```{r, eval = FALSE}
 library(rix)
@@ -98,20 +98,20 @@ rix(
 
 Notice the `py_conf` argument to `rix()`: this will install Python and the
 listed Python packages in that environment. You'll notice that we add
-`{reticulate}` to the list of R packages to install as well; this is only needed
-to convert data between R and Python, and only if you can't use JSON to pass
-objects to and from Python or R. Python build steps are executed in a standard
-Python shell without the need to use `{reticulate}`, so if you're using JSON to
-transfer data, there is no need to install `{reticulate}`.
+`{reticulate}` to the list of R packages to install as well; this is primarily
+for converting data between R and Python if you're not using a universal format
+like JSON. Python build steps are executed in a standard Python shell and do not
+require `{reticulate}` for Python code execution itself, so if you're only using
+JSON to transfer data, `{reticulate}` is not required.
 
-Now that you defined the execution environment of the pipeline, you can run that
-script, still from the temporary `Nix` shell by running `source("gen-env.R")`.
-This will generate the required `default.nix`. Then, quit R and the temporary
-shell (CTRL-D or `quit()` in R, `exit` in the terminal) and then build the
-environment defined by the freshly generated `default.nix` by typing
-`nix-build`. This will now build the execution environment of the pipeline. You
-can use this environment to work on your project interactively as usual as well.
-To learn more, check out [`{rix}`](https://docs.ropensci.org/rix/).
+Now that you defined the execution environment of the pipeline, you can run the
+`gen-env.R` script, still from the temporary `Nix` shell by running
+`source("gen-env.R")`. This will generate the required `default.nix`. Then, quit
+R and the temporary shell (CTRL-D or `quit()` in R, `exit` in the terminal) and
+then build the environment defined by the freshly generated `default.nix` by
+typing `nix-build`. This will now build the execution environment of the
+pipeline. You can use this environment to work on your project interactively as
+usual. To learn more, check out [`{rix}`](https://docs.ropensci.org/rix/).
 
 You can now edit the pipeline script in `gen-pipeline.R`:
 
@@ -173,18 +173,18 @@ list(
   rixpress(project_path = ".")
 ```
 
-As you can see, it starts off by reading in some data using the Python polars
+As you can see, it starts by reading in some data using the Python polars
 package, and then converts it to an R data frame for further manipulation,
 converts it back to a Python data frame and back to R. You'll notice that at
 some point the *head* of the data is computed using a user-defined function
 called `my_head()`. User-defined functions should all go into a script called
-`functions.R` or `functions.py` and derivation that use them need to be aware of
-them by setting the `additional_files` argument (if derivation need further
-files to be available, these can be put there as well. A main difference between
+`functions.R` or `functions.py` and derivations that use them need to be aware of
+them by setting the `additional_files` argument (if derivations need further
+files to be available, these can also be specified there. A main difference between
 `rxp_py()` and `rxp_r()` is that Python code should be passed as a string, and
 not as an expression. Also, you'll notice that I had to use `polars.read_csv()`
 instead of the more common `pl.read_csv()`. This is because by default Python
-package get imported using a simple statement `import polars`. If you want to
+packages get imported using a simple statement `import polars`. If you want to
 change this to `import polars as pl` (`import pandas as pd` and so on), then you
 can use the `adjust_import()` function. For example:
 
@@ -199,7 +199,7 @@ package's submodule:
 adjust_import("import pillow", "from PIL import Image")
 ```
 
-The package is called `pillow`, so `{rixpress}` will import write the statement
+The package is called `pillow`, so `{rixpress}` will write the statement
 as `import pillow`, but this will simply not work. So in this case
 `adjust_import()` must be used.
 
@@ -254,12 +254,12 @@ def serialize_to_json(pl_df, path):
 
 The `serialize_function` and `unserialize_function` arguments can be used to
 serialize objects using any function, for example `qs::save()` or machine
-learning-specific functions for specific models such as `xgboost`.
+learning-specific functions for specific models, such as those from `xgboost`.
 
 ## Building a Quarto or R Markdown document
 
 The last pipeline I want to discuss builds a Quarto document using
-`rxp_quarto()` (use `rxp_rmd()` for a R Markdown document). Here again, the
+`rxp_quarto()` (use `rxp_rmd()` for an R Markdown document). Here again, the
 `additional_files` argument is used to make the derivation aware of required
 files to build the document. Here is what the source of the document looks like:
 

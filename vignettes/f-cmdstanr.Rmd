@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 This vignette details how to effectively use the `{cmdstanr}` package within a
 `{rixpress}` pipeline for Bayesian statistical modeling with Stan. For a general
 introduction to `{rixpress}` and its core concepts, please refer to
-`vignette("a-introductory-concepts")` and `vignette("b-core-functions")`.
+`vignette("a-intro-concepts")` and `vignette("b-core-functions")`.
 
 `{cmdstanr}` provides a user-friendly R interface to `cmdstan`, Stan's
 command-line interface. While powerful, its reliance on external processes and
@@ -29,7 +29,7 @@ environment of `{rixpress}`.
 As with any `{rixpress}` pipeline, the first step is to define the execution
 environment using `{rix}`:
 
-````r
+```r
 library(rix)
 
 rix(
@@ -52,7 +52,7 @@ rix(
   project_path = ".",
   overwrite = TRUE
 )
-````
+```
 
 Key points in this environment definition:
 
@@ -62,12 +62,12 @@ Key points in this environment definition:
     on CRAN. Pinning to a specific commit is recommended for maximum
     reproducibility.
 
-With the environment set up, we can define the pipeline. 
+With the environment set up, we can define the pipeline:
 
 ## Setting up the pipeline
 
 The Stan model code itself should reside in a `.stan` file. We use
-`rxp_r_file()` to bring its content into the pipeline as a character string.
+`rxp_r_file()` to bring its contents into the pipeline as a character string.
 
 ```r
 rxp_r_file(
@@ -80,7 +80,7 @@ rxp_r_file(
 
 Next, we define parameters and simulate some data for our model.
 
-````r
+```r
   rxp_r(
     parameters,
     list(
@@ -107,7 +107,7 @@ Next, we define parameters and simulate some data for our model.
     inputs,
     list(N = parameters$N, x = x, y = y)
   ),
-````
+```
 
 ## Compiling and Sampling the Model
 
@@ -150,7 +150,7 @@ cmdstan_model_wrapper <- function(
 
 Now, we use this wrapper in our pipeline:
 
-````r
+```r
 # ... (continuation of pipeline_steps list)
   rxp_r(
     model, # Target name for the fitted model object
@@ -163,7 +163,7 @@ Now, we use this wrapper in our pipeline:
     serialize_function = "save_model",
     env_var = c("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan")
   )
-````
+```
 
 **Explanation of the Wrapper Approach:**
 
@@ -189,7 +189,7 @@ Now, we use this wrapper in our pipeline:
     step. `{cmdstanr}` uses this variable to locate the `cmdstan` installation.
     The `${defaultPkgs.cmdstan}` is a Nix interpolation that resolves to the
     path of the `cmdstan` package in the Nix store. If the environment providing
-    `cmdstan` would be called something else, say, `cmdstan-env.nix`, then you’d
+    `cmdstan` were named differently, for example `cmdstan-env.nix`, then you would
     need to use `${cmdstan_envPkgs.cmdstan}`.
 
 ### Custom Serialization
@@ -206,7 +206,7 @@ save_model <- function(fitted_model, path, ...) {
 
 By specifying `serialize_function = "save_model"` in the `rxp_r()` call,
 `{rixpress}` will use this function instead of the default `saveRDS()`. The fitted
-model can then be read back using `rxp_read("model")`, which will internally use
+model can then be read using `rxp_read("model")`, which will internally use
 `readRDS()`.
 
 ## Summary
