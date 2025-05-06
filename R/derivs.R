@@ -94,10 +94,11 @@ rxp_r <- function(
   # Prepare the fileset for src
   # Remove functions.R as this is handled separately
   fileset_parts <- setdiff(additional_files, "functions.R")
+  fileset_parts <- fileset_parts[nzchar(fileset_parts)]
 
   # build copy command for additional files
   copy_cmd <- ""
-  if (!identical(fileset_parts, character(0)) && fileset_parts != "") {
+  if (length(fileset_parts) > 0) {
     # for each path, copy to same name in build dir
     copy_cmd <- paste(
       sapply(fileset_parts, function(f) {
@@ -256,12 +257,12 @@ rxp_py <- function(
     if (env_exports != "") env_exports <- paste0(env_exports, "\n      ")
   }
 
-  # Prepare fileset parts once
-  fileset_parts <- setdiff(additional_files, "functions.py")
+  fileset_parts <- setdiff(additional_files, "functions.R")
+  fileset_parts <- fileset_parts[nzchar(fileset_parts)]
 
-  # Prepare cp commands if there are any additional files or directories
+  # build copy command for additional files
   copy_cmd <- ""
-  if (!identical(fileset_parts, character(0)) && fileset_parts != "") {
+  if (length(fileset_parts) > 0) {
     # for each path, copy to same name in build dir
     copy_cmd <- paste(
       sapply(fileset_parts, function(f) {
