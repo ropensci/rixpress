@@ -1,53 +1,104 @@
-#' rxp_r Creates a Nix expression running an R function
-#' @param name Symbol, name of the derivation.
-#' @param expr R code to generate the expression.
-#' @param additional_files Character vector, additional files to include. Custom
-#'   functions must go into a script called "functions.R", and additional files
-#'   that need to be accessible during the build process can be named anything.
-#' @param nix_env Character, path to the Nix environment file, default is
-#'   "default.nix".
-#' @param serialize_function Function, defaults to NULL. A function used to
-#'   serialize objects for transfer between derivations. It must accept two
-#'   arguments: the object to serialize (first), and the target file path
-#'   (second). If your function has a different signature, wrap it to match this
-#'   interface. By default, `saveRDS()` is used, but this may yield unexpected
-#'   results, especially for complex objects like machine learning models. For
-#'   instance, for `{keras}` models, use `keras::save_model_hdf5()` to capture
-#'   the full model (architecture, weights, training config, optimizer state,
-#'   etc.).
-#' @param unserialize_function Function, defaults to NULL. A function used to
-#'   unserialize objects transferred between derivations. By default,
-#'   `readRDS()` is used, but this may produce unexpected results with complex
-#'   objects like machine learning models. For example, if the parent derivation
-#'   used `keras::save_model_hdf5()` to serialize a model, this derivation
-#'   should use `keras::load_model_hdf5()` to load it correctly.
-#' @param env_var List, defaults to NULL. A named list of environment variables to set
-#'   before running the R script, e.g., list("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan").
-#'   Each entry will be added as an export statement in the build phase.
-#' @details At a basic level, `rxp_r(mtcars_am, filter(mtcars, am == 1))` is
-#'   equivalent to `mtcars <- filter(mtcars, am == 1)`. `rxp_r()` generates the
-#'   required Nix boilerplate to output a so-called "derivation" in Nix jargon.
-#'   A Nix derivation is a recipe that defines how to create an output (in this
-#'   case `mtcars_am`) including its dependencies, build steps, and output
-#'   paths.
-#' @return An object of class derivation which inherits from lists.
-#' @examples \dontrun{
-#'   # Basic usage
-#'   rxp_r(name = filtered_mtcars, expr = filter(mtcars, am == 1))
+#' Common helper for rxp_r and rxp_py
 #'
-#'   # Serialize object using qs
-#'   rxp_r(
-#'    name = filtered_mtcars,
-#'    expr = filter(mtcars, am == 1),
-#'    serialize_function = qs::qsave
-#'   )
-#'   # Unerialize using qs::read in the next derivation
-#'   rxp_r(
-#'    name = mtcars_mpg,
-#'    expr = select(filtered_mtcars, mpg),
-#'    unserialize_function = qs::read
-#'   )
-#' }
+#' @param name Symbol; the name of the derivation (unquoted).
+#' @param expr_str Character; the code expression (R or Python) as a string.
+#' @param additional_files Character vector; extra files or directories to include in src (excluding the language-specific script).
+#' @param nix_env Character; path to the Nix environment file (e.g. "default.nix").
+#' @param serialize_str Character; code snippet to serialize the output object.
+#' @param unserialize_str Character; name of the function to unserialize in downstream derivations.
+#' @param env_var Named list; environment variables to export before execution.
+#' @param shebang_command List; with elements `drv` (derivation function name), `type` (derivation type),
+#'   `file_script` (language-specific support file to exclude from fileset), and `cmd` (function to build execution command).
+#'
+#' @details Handles Nix boilerplate: environment exports, copying additional files, constructing `src` snippet, and assembling the final derivation snippet.
+#' @return A list of class "derivation" containing `name`, `snippet`, `type`, and metadata.
+rxp_rpy_common <- function(
+  name,
+  expr_str,
+  additional_files = "",
+  nix_env = "default.nix",
+  serialize_str,
+  unserialize_str,
+  env_var = NULL,
+  shebang_command
+) {
+  out_name <- deparse1(substitute(name))
+
+  # environment exports
+  env_exports <- ""
+  if (!is.null(env_var)) {
+    env_exports <- paste(
+      sapply(names(env_var), function(var) sprintf("export %s=%s", var, env_var[[var]])),
+      collapse = "\n      "
+    )
+    if (env_exports != "") env_exports <- paste0(env_exports, "\n      ")
+  }
+
+  # prepare additional files
+  fileset_parts <- setdiff(additional_files, shebang_command$file_script)
+  fileset_parts <- fileset_parts[nzchar(fileset_parts)]
+  copy_cmd <- ""
+  if (length(fileset_parts) > 0) {
+    copy_lines <- vapply(
+      fileset_parts,
+      function(f) sprintf("cp -r ${./%s} %s", f, f),
+      character(1)
+    )
+    copy_cmd <- paste0(paste(copy_lines, collapse = "\n      "), "\n      ")
+  }
+
+  # buildPhase body
+  build_phase <- sprintf(
+    "%s%s%s",
+    env_exports,
+    copy_cmd,
+    shebang_command$cmd(expr_str, out_name, serialize_str)
+  )
+
+  # nix src snippet
+  if (length(fileset_parts) > 0) {
+    fileset_nix <- paste0("./", fileset_parts, collapse = " ")
+    src_snippet <- sprintf(
+      "   src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ",
+      fileset_nix
+    )
+  } else {
+    src_snippet <- ""
+  }
+
+  # derive base
+  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
+  base <- sub("_nix$", "", base)
+
+  # assemble snippet
+  snippet <- sprintf(
+    "  %s = %s {\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
+    out_name,
+    shebang_command$drv,
+    out_name,
+    src_snippet,
+    base,
+    base,
+    build_phase
+  )
+
+  list(
+    name = out_name,
+    snippet = snippet,
+    type = shebang_command$type,
+    additional_files = additional_files,
+    nix_env = nix_env,
+    serialize_function = serialize_str,
+    unserialize_function = unserialize_str,
+    env_var = env_var
+  ) |> structure(class = "derivation")
+}
+
+#' R-specific derivation generator
+#'
+#' @rdname rxp_rpy_common
+#' @param expr R expression to evaluate inside the derivation.
+#' @inheritParams rxp_rpy_common
 #' @export
 rxp_r <- function(
   name,
@@ -58,148 +109,31 @@ rxp_r <- function(
   unserialize_function = NULL,
   env_var = NULL
 ) {
-  out_name <- deparse1(substitute(name))
   expr_str <- deparse1(substitute(expr))
-  expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
-  expr_str <- gsub("$", "\\$", expr_str, fixed = TRUE) # Replace $ with \$ for Nix
+  expr_str <- gsub("\"", "'", expr_str)
+  expr_str <- gsub("$", "\\$", expr_str, fixed = TRUE)
+  serialize_str <- if (is.null(serialize_function)) "saveRDS" else deparse1(substitute(serialize_function))
+  unserialize_str <- if (is.null(unserialize_function)) "readRDS" else deparse1(substitute(unserialize_function))
 
-  if (is.null(serialize_function)) {
-    serialize_str <- "saveRDS"
-  } else {
-    serialize_str <- deparse1(substitute(serialize_function))
-  }
-
-  if (is.null(unserialize_function)) {
-    unserialize_str <- "readRDS"
-  } else {
-    unserialize_str <- deparse1(substitute(unserialize_function))
-  }
-
-  # Generate environment variable export statements if env_var is provided
-  env_exports <- ""
-  if (!is.null(env_var)) {
-    env_exports <- paste(
-      sapply(
-        names(env_var),
-        function(var_name)
-          sprintf("export %s=%s", var_name, env_var[[var_name]])
-      ),
-      collapse = "\n      "
-    )
-    if (env_exports != "") {
-      env_exports <- paste0(env_exports, "\n      ")
-    }
-  }
-
-  # Prepare the fileset for src
-  # Remove functions.R as this is handled separately
-  fileset_parts <- setdiff(additional_files, "functions.R")
-  fileset_parts <- fileset_parts[nzchar(fileset_parts)]
-
-  # build copy command for additional files
-  copy_cmd <- ""
-  if (length(fileset_parts) > 0) {
-    copy_lines <- vapply(
-      fileset_parts,
-      function(f) sprintf("cp -r ${./%s} %s", f, f),
-      character(1)
-    )
-    copy_cmd <- paste0(paste(copy_lines, collapse = "\n      "), "\n      ")
-  }
-
-  build_phase <- sprintf(
-    "%s%sRscript -e \"\n        source('libraries.R')\n        %s <- %s\n        %s(%s, '%s')\"",
-    env_exports,
-    copy_cmd,
-    out_name,
-    expr_str,
-    serialize_str,
-    out_name,
-    out_name
-  )
-
-  # Derive base from nix_env
-  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
-  base <- sub("_nix$", "", base)
-
-  if (length(fileset_parts) > 0) {
-    fileset_nix <- paste0("./", fileset_parts, collapse = " ")
-    src_snippet <- sprintf(
-      "   src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ",
-      fileset_nix
-    )
-    
-  } else {
-    src_snippet <- ""
-  }
-
-  snippet <- sprintf(
-    "  %s = makeRDerivation {\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
-    out_name,
-    out_name,
-    src_snippet,
-    base,
-    base,
-    build_phase
-  )
-
-  list(
-    name = out_name,
-    snippet = snippet,
+  shebang_command <- list(
+    drv = "makeRDerivation",
     type = "rxp_r",
-    additional_files = additional_files,
-    nix_env = nix_env,
-    serialize_function = serialize_str,
-    unserialize_function = unserialize_str,
-    env_var = env_var
-  ) |>
-    structure(class = "derivation")
+    file_script = "functions.R",
+    cmd = function(expr_str, out_name, serialize_str) {
+      sprintf("Rscript -e \"source('libraries.R'); %s <- %s; %s(%s, '%s')\"",
+              out_name, expr_str, serialize_str, out_name, out_name)
+    }
+  )
+
+  rxp_rpy_common(name, expr_str, additional_files, nix_env,
+                 serialize_str, unserialize_str, env_var, shebang_command)
 }
 
-
-#' rxp_py Creates a Nix expression running a Python function
+#' Python-specific derivation generator
 #'
-#' @param name Symbol, name of the derivation.
-#' @param py_expr Character, Python code to generate the expression.
-#' @param additional_files Character vector, additional files to include. Custom
-#'   functions must go into a script called "functions.py", and additional files
-#'   that need to be accessible during the build process can be named anything.
-#' @param nix_env Character, path to the Nix environment file, default is
-#'   "default.nix".
-#' @param serialize_function Character, defaults to NULL. The name of the Python
-#'   function used to serialize the object. It must accept two arguments: the
-#'   object to serialize (first), and the target file path (second). If NULL,
-#'   the default behavior uses `pickle.dump`. Define this function in
-#'   `functions.py`.
-#' @param unserialize_function Character, defaults to NULL. The name of the
-#'   Python function used to unserialize the object. It must accept one
-#'   argument: the file path.
-#' @param env_var List, defaults to NULL. A named list of environment variables to set
-#'   before running the Python script, e.g., c(PYTHONPATH = "/path/to/modules").
-#'   Each entry will be added as an export statement in the build phase.
-#' @details At a basic level,
-#'   `rxp_py(mtcars_am, "mtcars.filter(polars.col('am') == 1).to_pandas()")`
-#'    is equivalent to
-#'   `mtcars_am = mtcars.filter(polars.col('am') == 1).to_pandas()`. `rxp_py()`
-#'   generates the required Nix boilerplate to output a so-called "derivation"
-#'   in Nix jargon. A Nix derivation is a recipe that defines how to create an
-#'   output (in this case `mtcars_am`) including its dependencies, build steps,
-#'   and output paths.
-#' @return An object of class derivation which inherits from lists.
-#' @examples
-#' \dontrun{
-#'   rxp_py(
-#'     mtcars_pl_am,
-#'     py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()"
-#'   )
-#'
-#'   # Custom serialization
-#'   rxp_py(
-#'     mtcars_pl_am,
-#'     py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()",
-#'     serialize_function = "serialize_model",
-#'     additional_files = "functions.py")
-#' }
+#' @rdname rxp_rpy_common
+#' @param py_expr Character; Python expression to evaluate inside the derivation.
+#' @inheritParams rxp_rpy_common
 #' @export
 rxp_py <- function(
   name,
@@ -210,118 +144,29 @@ rxp_py <- function(
   unserialize_function = NULL,
   env_var = NULL
 ) {
-  out_name <- deparse1(substitute(name))
   py_expr <- gsub("'", "\\'", py_expr, fixed = TRUE)
+  serialize_str <- if (is.null(serialize_function))
+    sprintf("with open('%s', 'wb') as f: pickle.dump(globals()['%s'], f)", name, name)
+  else sprintf("%s(globals()['%s'], '%s')", serialize_function, name, name)
+  unserialize_str <- if (is.null(unserialize_function)) "pickle.load" else unserialize_function
 
-  # Handle serialize_function for the build_phase
-  if (is.null(serialize_function)) {
-    serialize_str <- sprintf(
-      "with open('%s', 'wb') as f: pickle.dump(globals()['%s'], f)",
-      out_name,
-      out_name
-    )
-  } else {
-    if (!is.character(serialize_function))
-      stop("serialize_function must be a character string or NULL")
-    serialize_str <- sprintf(
-      "%s(globals()['%s'], '%s')",
-      serialize_function,
-      out_name,
-      out_name
-    )
-  }
-
-  # Handle unserialize_function to pass down
-  if (is.null(unserialize_function)) {
-    unserialize_str <- "pickle.load"
-  } else {
-    if (!is.character(unserialize_function))
-      stop("unserialize_function must be a character string or NULL")
-    unserialize_str <- unserialize_function
-  }
-
-  # Generate environment variable export statements if env_var is provided
-  env_exports <- ""
-  if (!is.null(env_var)) {
-    env_exports <- paste(
-      sapply(
-        names(env_var),
-        function(var) sprintf("export %s=%s", var, env_var[[var]])
-      ),
-      collapse = "\n      "
-    )
-    if (env_exports != "") env_exports <- paste0(env_exports, "\n      ")
-  }
-
-  fileset_parts <- setdiff(additional_files, "functions.py")
-  fileset_parts <- fileset_parts[nzchar(fileset_parts)]
-
-  # build copy command for additional files
-  copy_cmd <- ""
-  if (length(fileset_parts) > 0) {
-    copy_lines <- vapply(
-      fileset_parts,
-      function(f) sprintf("cp -r ${./%s} %s", f, f),
-      character(1)
-    )
-    copy_cmd <- paste0(paste(copy_lines, collapse = "\n      "), "\n      ")
-  }
-
-  # Construct build_phase including cp commands then python execution
-  build_phase <- paste0(
-    env_exports,
-    copy_cmd,
-    "python -c \"\n",
-    "exec(open('libraries.py').read())\n",
-    "exec('",
-    out_name,
-    " = ",
-    py_expr,
-    "')\n",
-    serialize_str,
-    "\n",
-    "\""
-  )
-
-  # Derive base from nix_env
-  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
-  base <- sub("_nix$", "", base)
-
-  # Prepare the src snippet only once using the same fileset_parts
-  if (length(fileset_parts) > 0) {
-    fileset_nix <- paste0("./", fileset_parts, collapse = " ")
-    src_snippet <- sprintf(
-      "   src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ",
-      fileset_nix
-    )
-  } else {
-
-	src_snippet <- ""
-  }
-
-  # Generate the Nix snippet
-  snippet <- sprintf(
-    "  %s = makePyDerivation {\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
-    out_name,
-    out_name,
-    src_snippet,
-    base,
-    base,
-    build_phase
-  )
-
-  list(
-    name = out_name,
-    snippet = snippet,
+  shebang_command <- list(
+    drv = "makePyDerivation",
     type = "rxp_py",
-    additional_files = additional_files,
-    nix_env = nix_env,
-    serialize_function = serialize_str,
-    unserialize_function = unserialize_str,
-    env_var = env_var
-  ) |>
-    structure(class = "derivation")
+    file_script = "functions.py",
+    cmd = function(expr_str, out_name, serialize_str) {
+      paste0(
+        "python -c \"exec(open('libraries.py').read()); ",
+        sprintf("%s = %s; %s", out_name, expr_str, serialize_str),
+        "\""
+      )
+    }
+  )
+
+  rxp_rpy_common(name, py_expr, additional_files, nix_env,
+                 serialize_str, unserialize_str, env_var, shebang_command)
 }
+
 
 #' Render a Quarto document as a Nix derivation
 #'
