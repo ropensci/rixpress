@@ -127,14 +127,15 @@ rxp_r <- function(
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
 
-  if (identical(fileset_parts, character(0)) || fileset_parts == "") {
-    src_snippet <- ""
-  } else {
+  if (length(fileset_parts) > 0) {
     fileset_nix <- paste0("./", fileset_parts, collapse = " ")
     src_snippet <- sprintf(
       "   src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ",
       fileset_nix
     )
+    
+  } else {
+    src_snippet <- ""
   }
 
   snippet <- sprintf(
@@ -296,14 +297,15 @@ rxp_py <- function(
   base <- sub("_nix$", "", base)
 
   # Prepare the src snippet only once using the same fileset_parts
-  if (identical(fileset_parts, character(0)) || fileset_parts == "") {
-    src_snippet <- ""
-  } else {
+  if (length(fileset_parts) > 0) {
     fileset_nix <- paste0("./", fileset_parts, collapse = " ")
     src_snippet <- sprintf(
       "   src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ",
       fileset_nix
     )
+  } else {
+
+	src_snippet <- ""
   }
 
   # Generate the Nix snippet
