@@ -99,18 +99,13 @@ rxp_r <- function(
   # build copy command for additional files
   copy_cmd <- ""
   if (length(fileset_parts) > 0) {
-    # for each path, copy to same name in build dir
-    copy_cmd <- paste(
-      sapply(fileset_parts, function(f) {
-        src <- sprintf("${./%s}", f)
-        dest <- f
-        sprintf("cp -r %s %s", src, dest)
-      }),
-      collapse = "\n      "
+    copy_lines <- vapply(
+      fileset_parts,
+      function(f) sprintf("cp -r ${./%s} %s", f, f),
+      character(1)
     )
-    copy_cmd <- paste0(copy_cmd, "\n      ")
+    copy_cmd <- paste0(paste(copy_lines, collapse = "\n      "), "\n      ")
   }
-
 
   build_phase <- sprintf(
     "%s%sRscript -e \"\n        source('libraries.R')\n        %s <- %s\n        %s(%s, '%s')\"",
@@ -264,16 +259,12 @@ rxp_py <- function(
   # build copy command for additional files
   copy_cmd <- ""
   if (length(fileset_parts) > 0) {
-    # for each path, copy to same name in build dir
-    copy_cmd <- paste(
-      sapply(fileset_parts, function(f) {
-        src <- sprintf("${./%s}", f)
-        dest <- f
-        sprintf("cp -r %s %s", src, dest)
-      }),
-      collapse = "\n      "
+    copy_lines <- vapply(
+      fileset_parts,
+      function(f) sprintf("cp -r ${./%s} %s", f, f),
+      character(1)
     )
-    copy_cmd <- paste0(copy_cmd, "\n      ")
+    copy_cmd <- paste0(paste(copy_lines, collapse = "\n      "), "\n      ")
   }
 
   # Construct build_phase including cp commands then python execution
