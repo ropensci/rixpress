@@ -138,8 +138,8 @@ However, this approach is completely reproducible: the dependencies are
 declared and pinned to a specific dated branch of our
 <code>rstats-on-nix/nixpkgs</code> fork, and the only thing that could
 make this pipeline fail (though it’s a bit of a stretch to call this a
-<em>pipeline</em>) is if the <code>mtcars.csv</code> file is not shared
-with it.</p>
+<em>pipeline</em>) is if the <code>mtcars.csv</code> file is not
+provided to it.</p>
 <p>You could then add another step that uses <code>filtered.csv</code>
 as input and continue processing it. If you label the above code as
 <code>f</code> and a subsequent chunk of <code>Nix</code> code as
@@ -177,7 +177,7 @@ dependencies are what its author, Eelco Dolstra, refers to as
 component, then we must also deploy its dependencies, their
 dependencies, and so on. That is, we must always deploy a set of
 components that is closed under the ‘’depends on’’ relation. Since
-closures are selfcontained, they are the units of complete software
+closures are self-contained, they are the units of complete software
 deployment. After all, if a set of components is not closed, it is not
 safe to deploy, since using them might cause other components to be
 referenced that are missing on the target system.</p>
@@ -202,7 +202,7 @@ exists “outside” this component closure and is only available on your
 machine, then the pipeline will only <em>work on your machine</em> -
 defeating the purpose of reproducibility! (It should be noted, however,
 that there are sometimes good reasons to have a dependency that is not
-managed by <code>Nix</code> but in this case you might want to use
+managed by <code>Nix</code>, in which case you might prefer to use
 <a href="https://docs.ropensci.org/targets/" class="external-link">targets</a> running inside a Nix shell instead of
 <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>, but these situations should be the exception
 rather than the rule).</p>

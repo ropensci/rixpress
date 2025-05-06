@@ -74,7 +74,7 @@
 <code>{cmdstanr}</code> package within a <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>
 pipeline for Bayesian statistical modeling with Stan. For a general
 introduction to <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> and its core concepts, please
-refer to <code>vignette("a-introductory-concepts")</code> and
+refer to <code><a href="../articles/a-intro-concepts.html">vignette("a-intro-concepts")</a></code> and
 <code><a href="../articles/b-core-functions.html">vignette("b-core-functions")</a></code>.</p>
 <p><code>{cmdstanr}</code> provides a user-friendly R interface to
 <code>cmdstan</code>, Stan’s command-line interface. While powerful, its
@@ -120,13 +120,13 @@ pipeline.</li>
 it’s not available on CRAN. Pinning to a specific commit is recommended
 for maximum reproducibility.</li>
 </ul>
-<p>With the environment set up, we can define the pipeline.</p>
+<p>With the environment set up, we can define the pipeline:</p>
 </div>
 <div class="section level2">
 <h2 id="setting-up-the-pipeline">Setting up the pipeline<a class="anchor" aria-label="anchor" href="#setting-up-the-pipeline"></a>
 </h2>
 <p>The Stan model code itself should reside in a <code>.stan</code>
-file. We use <code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code> to bring its content into the
+file. We use <code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code> to bring its contents into the
 pipeline as a character string.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_r_file.html">rxp_r_file</a></span><span class="op">(</span></span>
@@ -249,8 +249,8 @@ sandbox for this specific step. <code>{cmdstanr}</code> uses this
 variable to locate the <code>cmdstan</code> installation. The
 <code>${defaultPkgs.cmdstan}</code> is a Nix interpolation that resolves
 to the path of the <code>cmdstan</code> package in the Nix store. If the
-environment providing <code>cmdstan</code> would be called something
-else, say, <code>cmdstan-env.nix</code>, then you’d need to use
+environment providing <code>cmdstan</code> were named differently, for
+example <code>cmdstan-env.nix</code>, then you would need to use
 <code>${cmdstan_envPkgs.cmdstan}</code>.</li>
 </ol>
 <div class="section level3">
@@ -267,7 +267,7 @@ define a simple wrapper for this to use with
 <p>By specifying <code>serialize_function = "save_model"</code> in the
 <code><a href="../reference/rxp_r.html">rxp_r()</a></code> call, <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> will use this
 function instead of the default <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS()</a></code>. The fitted model
-can then be read back using <code>rxp_read("model")</code>, which will
+can then be read using <code>rxp_read("model")</code>, which will
 internally use <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code>.</p>
 </div>
 </div>

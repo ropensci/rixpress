@@ -82,7 +82,7 @@ this vignette.</p>
 familiar with its sister package <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, which helps you set
 up reproducible development environments for R or Python using
 <code>Nix</code>. As such, you likely already have <code>Nix</code>
-installed on your system. If that is not the case, read the following <a href="https://docs.ropensci.org/rix/articles/b1-setting-up-and-using-rix-on-linux-and-windows.html" class="external-link"><code>{rix}</code>
+installed on your system. If not, read the following <a href="https://docs.ropensci.org/rix/articles/b1-setting-up-and-using-rix-on-linux-and-windows.html" class="external-link"><code>{rix}</code>
 vignette to learn how to set up <code>Nix</code> on Linux or
 Windows</a>, or <a href="https://docs.ropensci.org/rix/articles/b2-setting-up-and-using-rix-on-macos.html" class="external-link">this
 one if you’re on macOS</a>.</p>
@@ -105,14 +105,13 @@ R);</li>
 cache;</li>
 <li>you’ve read through the previous two vignettes.</li>
 </ul>
-<p>If you’re already familiar with <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, you’ll likely
-know that you can use the following command to get access to a temporary
-<code>Nix</code> shell that provides R, <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, and
-<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> (copy and paste it into a terminal in the folder
-where you want to start your project):</p>
+<p>If you’re already familiar with <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, you likely know
+that you can use the following command in your project’s root directory
+to get access to a temporary <code>Nix</code> shell that provides R,
+<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, and <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="ex">nix-shell</span> <span class="at">--expr</span> <span class="st">"</span><span class="va">$(</span><span class="ex">curl</span> <span class="at">-sl</span> https://raw.githubusercontent.com/ropensci/rix/main/inst/extdata/default.nix<span class="va">)</span><span class="st">"</span></span></code></pre></div>
-<p>This will drop you into a <code>Nix</code> session. Type
-<code>R</code> to start an R session, and then type:</p>
+<p>This will start a <code>Nix</code> session. Type <code>R</code> to
+start an R session, and then type:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span></span>
@@ -144,7 +143,8 @@ where you want to start your project):</p>
 <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> to be available, but you likely require other
 packages. Let’s add <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> and <a href="https://r.igraph.org/" class="external-link">igraph</a>
 (which is needed to view the graphical representation of the pipeline’s
-DAG). Open it in any text editor and change it to:</p>
+DAG). Open <code>gen-env.R</code> in any text editor and change it
+to:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rix/" class="external-link">rix</a></span><span class="op">)</span></span>
 <span></span>
@@ -165,14 +165,15 @@ DAG). Open it in any text editor and change it to:</p>
 will be set to the versions available on this date from CRAN, and I’ve
 added <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> and <a href="https://r.igraph.org/" class="external-link">igraph</a>. I’ve also added
 RStudio as the IDE. I can now go back to my temporary <code>Nix</code>
-shell, and run <code>source("gen-env.R")</code>. This will create a
-<code>default.nix</code> file in my project’s folder: this is a
+shell and run <code>Rscript gen-env.R</code> (or
+<code>source("gen-env.R")</code> inside an R session). This will create
+a <code>default.nix</code> file in my project’s folder: this is a
 <code>Nix</code> file that defines my environment. I can now leave my
-temporary shell by first quitting R, then typing CRTL-D or
-<code>exit</code>. Then I can build my development environment using
-<code>nix-build</code>. Let’s now drop into our development shell by
-typing <code>nix-shell</code> and launch RStudio (or whatever editor you
-want to use) and open <code>gen-pipeline.R</code>:</p>
+temporary shell by first quitting R (if applicable), then typing CTRL-D
+or <code>exit</code>. Then I can build my development environment using
+<code>nix-build</code>. Let’s now enter our development shell by typing
+<code>nix-shell</code> and launch RStudio (or whatever editor you want
+to use) and open <code>gen-pipeline.R</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
@@ -191,7 +192,7 @@ want to use) and open <code>gen-pipeline.R</code>:</p>
 <p>This template starts with <code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code> to load data, and
 <code><a href="../reference/rxp_r.html">rxp_r()</a></code> to define a step. These two derivations are put
 into a list and then passed to <code><a href="../reference/rixpress.html">rixpress()</a></code>. Let’s start by
-importing data and filtering the data using <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a>:</p>
+importing data and filtering it using <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
@@ -210,8 +211,7 @@ importing data and filtering the data using <a href="https://dplyr.tidyverse.org
 <span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span>project_path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span></code></pre></div>
 <p>Select the pipeline and run it (I highly recommend you use keyboard
 shortcuts to quickly run the above code when working interactively). If
-everything went well, you should see the following in your R
-console:</p>
+everything went well, you will see the following in your R console:</p>
 <pre><code>Build process started...
 
 
@@ -229,10 +229,10 @@ load them into the global environment using `rxp_load()`.</code></pre>
 <span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="dv">2</span> <span class="sc">/</span>nix<span class="sc">/</span>store<span class="sc">/</span>lhmkmbdjpgzillsak3nwv1khlvabbgpa<span class="sc">-</span>filtered_mtcars filtered....</span>
 <span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="dv">3</span>          <span class="sc">/</span>nix<span class="sc">/</span>store<span class="sc">/</span><span class="dv">0</span>nj75qf7md5xi0517qdi1qpk44466zqi<span class="sc">-</span>mtcars       mtcars</span></code></pre></div>
 <p>Three things were built: <code>mtcars</code>, which is simply the
-source data set, <code>filtered_mtcars</code> which is the filtered
-data, and then an object you didn’t define called
-<code>all-derivations</code>: this is mostly for internal use and you
-can safely ignore it.</p>
+source data set; <code>filtered_mtcars</code>, which is the filtered
+data; and an object you didn’t define called
+<code>all-derivations</code>. This last object is mostly for internal
+<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> use, and you can safely ignore it.</p>
 <p>Let’s now use <code><a href="../reference/rxp_read.html">rxp_read()</a></code> to take a look at
 <code>filtered_mtcars</code>:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -256,8 +256,8 @@ Volvo 142E     21.4   4 121.0 109 4.11 2.780 18.60  1  1    4    2</code></pre>
 <code class="sourceCode R"><span><span class="va">filtered_mtcars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_read.html">rxp_read</a></span><span class="op">(</span><span class="st">"filtered_mtcars"</span><span class="op">)</span></span></code></pre></div>
 <p>or you can simply use <code>rxp_load("filtered_mtcars")</code> which
 will achieve the same result.</p>
-<p>You can now manipulate this object interactively, as usual. Maybe you
-still don’t quite know what the next step should be (maybe there are
+<p>You can now manipulate this object interactively, as usual. You might
+still not quite know what the next step should be (maybe there are
 missing values you need to handle somehow, or another such cleaning
 step), but once you know the next steps, you can write the next
 derivation:</p>

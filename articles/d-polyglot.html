@@ -93,17 +93,17 @@ system, and no R installation (this is the ideal scenario: if you plan
 to use <code>Nix</code> full-time for your development environments, you
 shouldn’t have a system-wide installation of R).</p>
 <p>Before installing R and R packages for your pipeline, install <a href="https://www.cachix.org/" class="external-link">cachix</a> and configure the
-<code>rstats-on-nix</code> cache. This way, pre-compiled, binary,
+<code>rstats-on-nix</code> cache. This way, pre-compiled, binary
 packages will be used instead of being built from source. Run the
 following line in a terminal:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="ex">nix-env</span> <span class="at">-iA</span> cachix <span class="at">-f</span> https://cachix.org/api/v1/install</span></code></pre></div>
 <p>then use the cache:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="ex">cachix</span> use rstats-on-nix</span></code></pre></div>
 <p>There might be a message telling you to add your user to a
-configuration file by executing another command. Do it; you only need to
-do this once per machine you want to use <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> on.
-Many thanks to <a href="https://www.cachix.org/" class="external-link">Cachix</a> for
-sponsoring the <code>rstats-on-nix</code> cache!</p>
+configuration file by executing another command. If so, follow the
+instructions; you only need to do this once per machine you want to use
+<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> on. Many thanks to <a href="https://www.cachix.org/" class="external-link">Cachix</a> for sponsoring the
+<code>rstats-on-nix</code> cache!</p>
 <p>Now that the cache is configured, it’s time to bootstrap your
 development environment. Run this line:</p>
 <pre><code>nix-shell --expr "$(curl -sl https://raw.githubusercontent.com/ropensci/rix/main/inst/extdata/default.nix)"</code></pre>
@@ -113,7 +113,7 @@ by typing <code>R</code>, and load <a href="https://github.com/b-rodrigues/rixpr
 <code><a href="../reference/rxp_init.html">rxp_init()</a></code> which will generate two files,
 <code>gen-env.R</code> and <code>gen-pipeline.R</code>. You can open
 <code>gen-env.R</code> in your favourite text editor and define the
-execution environment in there:</p>
+execution environment there:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rix/" class="external-link">rix</a></span><span class="op">)</span></span>
 <span></span>
@@ -136,22 +136,22 @@ execution environment in there:</p>
 <p>Notice the <code>py_conf</code> argument to <code><a href="https://docs.ropensci.org/rix/reference/rix.html" class="external-link">rix()</a></code>: this
 will install Python and the listed Python packages in that environment.
 You’ll notice that we add <a href="https://rstudio.github.io/reticulate/" class="external-link">reticulate</a> to the list of R
-packages to install as well; this is only needed to convert data between
-R and Python, and only if you can’t use JSON to pass objects to and from
-Python or R. Python build steps are executed in a standard Python shell
-without the need to use <a href="https://rstudio.github.io/reticulate/" class="external-link">reticulate</a>, so if you’re using
-JSON to transfer data, there is no need to install
-<a href="https://rstudio.github.io/reticulate/" class="external-link">reticulate</a>.</p>
+packages to install as well; this is primarily for converting data
+between R and Python if you’re not using a universal format like JSON.
+Python build steps are executed in a standard Python shell and do not
+require <a href="https://rstudio.github.io/reticulate/" class="external-link">reticulate</a> for Python code execution itself, so
+if you’re only using JSON to transfer data, <a href="https://rstudio.github.io/reticulate/" class="external-link">reticulate</a> is
+not required.</p>
 <p>Now that you defined the execution environment of the pipeline, you
-can run that script, still from the temporary <code>Nix</code> shell by
-running <code>source("gen-env.R")</code>. This will generate the
-required <code>default.nix</code>. Then, quit R and the temporary shell
-(CTRL-D or <code><a href="https://rdrr.io/r/base/quit.html" class="external-link">quit()</a></code> in R, <code>exit</code> in the terminal)
-and then build the environment defined by the freshly generated
-<code>default.nix</code> by typing <code>nix-build</code>. This will now
-build the execution environment of the pipeline. You can use this
-environment to work on your project interactively as usual as well. To
-learn more, check out <a href="https://docs.ropensci.org/rix/" class="external-link"><code>{rix}</code></a>.</p>
+can run the <code>gen-env.R</code> script, still from the temporary
+<code>Nix</code> shell by running <code>source("gen-env.R")</code>. This
+will generate the required <code>default.nix</code>. Then, quit R and
+the temporary shell (CTRL-D or <code><a href="https://rdrr.io/r/base/quit.html" class="external-link">quit()</a></code> in R,
+<code>exit</code> in the terminal) and then build the environment
+defined by the freshly generated <code>default.nix</code> by typing
+<code>nix-build</code>. This will now build the execution environment of
+the pipeline. You can use this environment to work on your project
+interactively as usual. To learn more, check out <a href="https://docs.ropensci.org/rix/" class="external-link"><code>{rix}</code></a>.</p>
 <p>You can now edit the pipeline script in
 <code>gen-pipeline.R</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -210,21 +210,21 @@ learn more, check out <a href="https://docs.ropensci.org/rix/" class="external-l
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span>project_path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span></code></pre></div>
-<p>As you can see, it starts off by reading in some data using the
-Python polars package, and then converts it to an R data frame for
-further manipulation, converts it back to a Python data frame and back
-to R. You’ll notice that at some point the <em>head</em> of the data is
+<p>As you can see, it starts by reading in some data using the Python
+polars package, and then converts it to an R data frame for further
+manipulation, converts it back to a Python data frame and back to R.
+You’ll notice that at some point the <em>head</em> of the data is
 computed using a user-defined function called <code>my_head()</code>.
 User-defined functions should all go into a script called
-<code>functions.R</code> or <code>functions.py</code> and derivation
+<code>functions.R</code> or <code>functions.py</code> and derivations
 that use them need to be aware of them by setting the
-<code>additional_files</code> argument (if derivation need further files
-to be available, these can be put there as well. A main difference
-between <code><a href="../reference/rxp_py.html">rxp_py()</a></code> and <code><a href="../reference/rxp_r.html">rxp_r()</a></code> is that Python
-code should be passed as a string, and not as an expression. Also,
-you’ll notice that I had to use <code>polars.read_csv()</code> instead
-of the more common <code>pl.read_csv()</code>. This is because by
-default Python package get imported using a simple statement
+<code>additional_files</code> argument (if derivations need further
+files to be available, these can also be specified there. A main
+difference between <code><a href="../reference/rxp_py.html">rxp_py()</a></code> and <code><a href="../reference/rxp_r.html">rxp_r()</a></code> is
+that Python code should be passed as a string, and not as an expression.
+Also, you’ll notice that I had to use <code>polars.read_csv()</code>
+instead of the more common <code>pl.read_csv()</code>. This is because
+by default Python packages get imported using a simple statement
 <code>import polars</code>. If you want to change this to
 <code>import polars as pl</code> (<code>import pandas as pd</code> and
 so on), then you can use the <code><a href="../reference/adjust_import.html">adjust_import()</a></code> function. For
@@ -236,9 +236,9 @@ you want to import a package’s submodule:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/adjust_import.html">adjust_import</a></span><span class="op">(</span><span class="st">"import pillow"</span>, <span class="st">"from PIL import Image"</span><span class="op">)</span></span></code></pre></div>
 <p>The package is called <code>pillow</code>, so <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>
-will import write the statement as <code>import pillow</code>, but this
-will simply not work. So in this case <code><a href="../reference/adjust_import.html">adjust_import()</a></code> must
-be used.</p>
+will write the statement as <code>import pillow</code>, but this will
+simply not work. So in this case <code><a href="../reference/adjust_import.html">adjust_import()</a></code> must be
+used.</p>
 <p>If you want to use JSON to transfer data between derivations, you
 should use the <code>serialize_function</code> and
 <code>unserialize_function</code> arguments respectively:</p>
@@ -285,14 +285,14 @@ should use the <code>serialize_function</code> and
 <p>The <code>serialize_function</code> and
 <code>unserialize_function</code> arguments can be used to serialize
 objects using any function, for example <code>qs::save()</code> or
-machine learning-specific functions for specific models such as
-<code>xgboost</code>.</p>
+machine learning-specific functions for specific models, such as those
+from <code>xgboost</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="building-a-quarto-or-r-markdown-document">Building a Quarto or R Markdown document<a class="anchor" aria-label="anchor" href="#building-a-quarto-or-r-markdown-document"></a>
 </h2>
 <p>The last pipeline I want to discuss builds a Quarto document using
-<code><a href="../reference/rxp_quarto.html">rxp_quarto()</a></code> (use <code><a href="../reference/rxp_rmd.html">rxp_rmd()</a></code> for a R Markdown
+<code><a href="../reference/rxp_quarto.html">rxp_quarto()</a></code> (use <code><a href="../reference/rxp_rmd.html">rxp_rmd()</a></code> for an R Markdown
 document). Here again, the <code>additional_files</code> argument is
 used to make the derivation aware of required files to build the
 document. Here is what the source of the document looks like:</p>
