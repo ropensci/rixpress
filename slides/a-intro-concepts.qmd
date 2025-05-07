@@ -1,7 +1,6 @@
 ---
 title: "Reproducible Data Science with Nix: Core Concepts"
 author: "Bruno Rodrigues"
-date: "2025-05-03"
 format:
   revealjs:
     theme: solarized

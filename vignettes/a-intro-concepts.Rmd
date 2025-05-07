@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-For a video version of this tutorial, [click here](youtube link to follow).
+For a video version of this tutorial, [click here](https://youtu.be/bMiNfXJdgXg).
 
 This vignette introduces key terminology and walks you through setting up a
 simple pipeline using `{rixpress}`. Understanding the concepts presented here is
