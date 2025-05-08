@@ -4,7 +4,7 @@ let
   py_envShell = py_env.shell;
   py_envBuildInputs = py_envShell.buildInputs;
   py_envConfigurePhase = ''
-    cp ${./_rixpress/} 
+    cp ${./_rixpress/py_env_libraries.py} libraries.py
     mkdir -p $out
   '';
   
