@@ -36,16 +36,16 @@ parse_packages <- function(
 
   # Extract and clean lines within the block
   block_lines <- lines[(start_idx + 1):(end_idx - 1)]
-  block_lines <- gsub("#.*", "", block_lines) # Remove comments
+  block_lines <- gsub("#.*", "", block_lines)
   block_lines <- trimws(block_lines)
   block_lines <- block_lines[block_lines != ""]
 
   # Remove inherit statements
   # (e.g., "inherit (pkgs.rPackages)" or "inherit (pkgs.python312Packages)")
   inherit_pattern <- "inherit \\(pkgs\\.[a-zA-Z0-9]+\\)"
-  block_lines <- gsub(inherit_pattern, "", block_lines) # Remove inherit line
+  block_lines <- gsub(inherit_pattern, "", block_lines)
 
-  block_lines <- gsub(";", "", block_lines) # Remove semicolons
+  block_lines <- gsub(";", "", block_lines)
 
   # Split into package names and apply transformation
   packages <- unlist(strsplit(paste(block_lines, collapse = " "), "\\s+"))
@@ -72,7 +72,8 @@ parse_rpkgs_git <- function(
 
   # Pattern to find the start of a buildRPackage definition
   # e.g., my_pkg = (pkgs.rPackages.buildRPackage {
-  # We capture the variable name for context if needed, but don't use it for the package name itself
+  # We capture the variable name for context if needed,
+  # but don't use it for the package name itself
   build_r_pkg_start_pattern <- "^\\s*([a-zA-Z0-9_.-]+)\\s*=\\s*\\(pkgs\\.rPackages\\.buildRPackage\\s*\\{"
   start_indices <- grep(build_r_pkg_start_pattern, lines)
 
@@ -139,16 +140,13 @@ generate_libraries_script <- function(
   import_formatter,
   additional_file_pattern
 ) {
-  # Generate import statements
   import_lines <- sapply(packages, import_formatter)
 
-  # Filter additional files based on the pattern
   additional_scripts <- Filter(
     function(x) grepl(additional_file_pattern, x),
     additional_files
   )
 
-  # Append additional content if present
   if (length(additional_scripts) > 0) {
     list_additional_content <- lapply(additional_scripts, readLines)
     additional_content <- Reduce(append, list_additional_content)
@@ -157,7 +155,6 @@ generate_libraries_script <- function(
     output <- import_lines
   }
 
-  # Create directory if it doesn't exist
   output_dir <- dirname(outfile)
   if (!dir.exists(output_dir)) {
     dir.create(output_dir, recursive = TRUE)
@@ -166,7 +163,6 @@ generate_libraries_script <- function(
   writeLines(output, outfile)
 }
 
-# R-specific helpers
 #' @noRd
 transform_r <- function(packages) {
   gsub("_", ".", packages) # in nixpkgs: data_table, but in CRAN data.table
@@ -180,7 +176,6 @@ import_formatter_r <- function(package) {
   paste0("library(", package, ")") # R import format
 }
 
-# Python-specific helpers
 #' @noRd
 adjust_py_packages <- function(packages) {
   # Only needed for interactive work
@@ -195,7 +190,7 @@ adjust_py_packages <- function(packages) {
 
 #' @noRd
 import_formatter_py <- function(package) {
-  paste0("import ", package) # Python import format
+  paste0("import ", package)
 }
 
 #' Generate a script with import statements from a default.nix file
@@ -204,19 +199,20 @@ import_formatter_py <- function(package) {
 #' @param additional_files Character vector of additional files to include
 #' @param project_path Path to root of project, typically "."
 #' @param language Language to generate the script for ("R" or "Python")
-#' @return A script file for the specified language, or NULL if no packages are found
+#' @return A script file for the specified language,
+#'   or NULL if no packages are found
 #' @noRd
 generate_r_or_py_libraries_from_nix <- function(
   nix_file,
   additional_files = "",
-  project_path = ".", # Added default for project_path
+  project_path = ".",
   language
 ) {
   all_parsed_packages <- c()
 
   if (language == "R") {
     block_name <- "rpkgs"
-    transform_func <- transform_r # Renamed for clarity
+    transform_func <- transform_r
     adjust <- adjust_r_packages
     import_formatter <- import_formatter_r
     additional_file_pattern <- "functions\\.[Rr]"
@@ -244,13 +240,13 @@ generate_r_or_py_libraries_from_nix <- function(
     }
   } else if (language == "Python") {
     block_name <- "pyconf"
-    transform_func <- identity # Renamed for clarity
+    transform_func <- identity
     adjust <- adjust_py_packages
     import_formatter <- import_formatter_py
     additional_file_pattern <- "functions\\.py"
     extension <- "py"
 
-    # Python packages are typically only in the main block
+    # Python packages are only in the main block
     packages_from_block <- parse_packages(
       nix_file = nix_file,
       project_path = project_path,
@@ -269,31 +265,22 @@ generate_r_or_py_libraries_from_nix <- function(
     return(NULL)
   }
 
-  # Remove duplicates and apply adjustments
   packages <- unique(all_parsed_packages)
   packages <- adjust(packages)
-
-  # Sort packages alphabetically for consistent output
   packages <- sort(packages)
 
-  # Generate output file name
-  nix_file_name_cleaned <- gsub("[^a-zA-Z0-9_.-]", "_", basename(nix_file)) # Use basename
-  nix_file_name_cleaned <- sub("(\\.[^.]+)$|_nix$", "", nix_file_name_cleaned) # Remove .nix or any extension
+  nix_file_name_cleaned <- gsub("[^a-zA-Z0-9_.-]", "_", basename(nix_file))
+  nix_file_name_cleaned <- sub("(\\.[^.]+)$|_nix$", "", nix_file_name_cleaned)
 
-  outfile_dir <- file.path(project_path, "_rixpress") # Define output directory
-  # Create directory if it doesn't exist (moved to generate_libraries_script, but good to have here too for clarity or if used elsewhere)
-  # if (!dir.exists(outfile_dir)) {
-  #   dir.create(outfile_dir, recursive = TRUE)
-  # }
+  outfile_dir <- file.path(project_path, "_rixpress")
 
   outfile <- file.path(
-    outfile_dir, # Use defined output directory
+    outfile_dir,
     paste0(nix_file_name_cleaned, "_libraries.", extension)
   )
 
   message(paste("Generating library script for", language, "at:", outfile))
 
-  # Generate the script
   generate_libraries_script(
     packages,
     additional_files,
@@ -302,17 +289,17 @@ generate_r_or_py_libraries_from_nix <- function(
     additional_file_pattern
   )
 
-  return(outfile) # Return the path to the generated file
+  return(outfile)
 }
 
 #' @noRd
 generate_r_libraries_from_nix <- function(
   nix_file,
   additional_files = "",
-  project_path = "." # Added default
+  project_path = "."
 ) {
   generate_r_or_py_libraries_from_nix(
-    nix_file = nix_file, # Explicitly name args
+    nix_file = nix_file,
     additional_files = additional_files,
     project_path = project_path,
     language = "R"
@@ -323,10 +310,10 @@ generate_r_libraries_from_nix <- function(
 generate_py_libraries_from_nix <- function(
   nix_file,
   additional_files = "",
-  project_path = "." # Added default
+  project_path = "."
 ) {
   generate_r_or_py_libraries_from_nix(
-    nix_file = nix_file, # Explicitly name args
+    nix_file = nix_file,
     additional_files = additional_files,
     project_path = project_path,
     language = "Python"
@@ -337,22 +324,23 @@ generate_py_libraries_from_nix <- function(
 #'
 #' When calling `rixpress()`, a file containing Python import statements is
 #' automatically generated inside the `_rixpress` folder. For example, if the
-#' `numpy` package is needed, the file will include a line like `"import numpy"`.
-#' However, Python programmers often write `"import numpy as np"` instead.
+#' `numpy` package is needed, the file will include a line like
+#' `"import numpy"`. However, Python programmers often write
+#' `"import numpy as np"` instead.
 #'
-#' In some cases, the correct import statement is entirely different. For example,
-#' for the `pillow` package, the generated file will contain `"import pillow"`,
-#' which is incorrect—Python code should import from the `PIL` namespace instead,
-#' e.g., `"from PIL import Image"`.
+#' In some cases, the correct import statement is entirely different. For
+#' example, for the `pillow` package, the generated file will contain
+#' `"import pillow"`, which is incorrect—Python code should import from the
+#' `PIL` namespace instead, e.g., `"from PIL import Image"`.
 #'
 #' Because these adjustments cannot be automated reliably, the `adjust_import()`
 #' function allows you to search and replace import statements programmatically.
-#' It reads each file in the `_rixpress` folder, performs the replacement,
-#' and writes the modified content back to the file.
-#' @param old_import A character string representing the import statement to
-#'   be replaced. For example, `"import pillow"`.
-#' @param new_import A character string representing the new import statement
-#'   to replace with. For example, `"from PIL import Image"`.
+#' It reads each file in the `_rixpress` folder, performs the replacement, and
+#' writes the modified content back to the file.
+#' @param old_import A character string representing the import statement to be
+#'   replaced. For example, `"import pillow"`.
+#' @param new_import A character string representing the new import statement to
+#'   replace with. For example, `"from PIL import Image"`.
 #' @param project_path Path to root of project, typically ".".
 #'
 #' @return No return value; the function performs in-place
@@ -384,11 +372,12 @@ adjust_import <- function(old_import, new_import, project_path = ".") {
   }
 }
 
-#' Add an import statement to Python files in the _rixpress folder matching a Nix environment name
+#' Add an import statement to Python files in the _rixpress folder matching a
+#' Nix environment name
 #'
-#' This function appends a specified import statement to the end of each Python file
-#' within the `_rixpress` folder and its subdirectories, but only for files whose
-#' base name matches the provided Nix environment.
+#' This function appends a specified import statement to the end of each Python
+#' file within the `_rixpress` folder and its subdirectories, but only for files
+#' whose base name matches the provided Nix environment.
 #'
 #' @param import_statement A character string representing the import statement
 #'   to be added. For example, `"import numpy as np"`.
@@ -396,7 +385,8 @@ adjust_import <- function(old_import, new_import, project_path = ".") {
 #'   `"default.nix"` or `"py-env.nix"` or similar).
 #' @param project_path Path to root of project, typically ".".
 #'
-#' @return No return value; the function performs in-place modifications of the files.
+#' @return No return value; the function performs in-place modifications of the
+#'   files.
 #'
 #' @examples
 #' \dontrun{
@@ -434,10 +424,10 @@ add_import <- function(import_statement, nix_env, project_path = ".") {
 
   # List only .py/.Py files whose names match the base_name prefix
   files <- list.files(
-    path = rixpress_folder, # Use specific folder
+    path = rixpress_folder,
     pattern = file_pattern,
     full.names = TRUE,
-    recursive = TRUE # Keep recursive in case of future subdirs in _rixpress
+    recursive = TRUE
   )
 
   if (length(files) == 0) {
