@@ -205,7 +205,7 @@ import_formatter_py <- function(package) {
 generate_r_or_py_libraries_from_nix <- function(
   nix_file,
   additional_files = "",
-  project_path = ".",
+  project_path,
   language
 ) {
   all_parsed_packages <- c()
@@ -261,7 +261,6 @@ generate_r_or_py_libraries_from_nix <- function(
   }
 
   if (length(all_parsed_packages) == 0) {
-    message(paste("No packages found for", language, "in", nix_file))
     return(NULL)
   }
 
@@ -269,17 +268,15 @@ generate_r_or_py_libraries_from_nix <- function(
   packages <- adjust(packages)
   packages <- sort(packages)
 
-  nix_file_name_cleaned <- gsub("[^a-zA-Z0-9_.-]", "_", basename(nix_file))
-  nix_file_name_cleaned <- sub("(\\.[^.]+)$|_nix$", "", nix_file_name_cleaned)
+  nix_file_name <- gsub("[^a-zA-Z0-9]", "_", nix_file)
+  nix_file_name <- sub("_nix$", "", nix_file_name)
 
   outfile_dir <- file.path(project_path, "_rixpress")
 
   outfile <- file.path(
     outfile_dir,
-    paste0(nix_file_name_cleaned, "_libraries.", extension)
+    paste0(nix_file_name, "_libraries.", extension)
   )
-
-  message(paste("Generating library script for", language, "at:", outfile))
 
   generate_libraries_script(
     packages,
@@ -296,12 +293,12 @@ generate_r_or_py_libraries_from_nix <- function(
 generate_r_libraries_from_nix <- function(
   nix_file,
   additional_files = "",
-  project_path = "."
+  project_path
 ) {
   generate_r_or_py_libraries_from_nix(
-    nix_file = nix_file,
-    additional_files = additional_files,
-    project_path = project_path,
+    nix_file,
+    additional_files,
+    project_path,
     language = "R"
   )
 }
@@ -310,13 +307,13 @@ generate_r_libraries_from_nix <- function(
 generate_py_libraries_from_nix <- function(
   nix_file,
   additional_files = "",
-  project_path = "."
+  project_path
 ) {
   generate_r_or_py_libraries_from_nix(
-    nix_file = nix_file,
-    additional_files = additional_files,
-    project_path = project_path,
-    language = "Python"
+    nix_file,
+    additional_files,
+    project_path,
+    "Python"
   )
 }
 
@@ -406,9 +403,8 @@ add_import <- function(import_statement, nix_env, project_path = ".") {
   if (!is.character(nix_env) || length(nix_env) != 1) {
     stop("nix_env must be a single character string, e.g. 'default.nix'.")
   }
-  # Remove .nix extension if present
-  base_name <- sub("\\.nix$", "", basename(nix_env)) # Use basename here too
-  if (identical(base_name, basename(nix_env))) {
+  base_name <- sub("\\.nix$", "", nix_env)
+  if (identical(base_name, nix_env)) {
     warning(
       "Provided nix_env did not end with '.nix'; using entire string as base name."
     )
@@ -418,8 +414,8 @@ add_import <- function(import_statement, nix_env, project_path = ".") {
   # e.g. ^default.*\.[pP]y$
   file_pattern <- paste0(
     "^",
-    gsub("[^a-zA-Z0-9_.-]", "_", base_name),
-    "_libraries\\.[pP]y$"
+    base_name,
+    ".*\\.[pP]y$"
   )
 
   # List only .py/.Py files whose names match the base_name prefix
