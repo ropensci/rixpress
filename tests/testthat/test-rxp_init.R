@@ -1,4 +1,5 @@
 test_that("rxp_init creates expected files", {
+  testthat::skip_on_cran()
   # Create a temporary directory for testing
   test_dir <- tempfile("rxp_init_test")
   dir.create(test_dir)
