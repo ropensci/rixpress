@@ -45,7 +45,7 @@ should use \code{keras::load_model_hdf5()} to load it correctly.}
 
 \item{env_var}{Character vector, defaults to NULL. A named vector of
 environment variables to set before running the R script, e.g.,
-c("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan").
+\verb{c("CMDSTAN" = "$\{defaultPkgs.cmdstan\}/opt/cmdstan)"}.
 Each entry will be added as an export statement in the build phase.}
 }
 \value{

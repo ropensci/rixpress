@@ -2,9 +2,10 @@
 % Please edit documentation in R/parse_pkgs.R
 \name{add_import}
 \alias{add_import}
-\title{Add an import statement to Python files in the _rixpress folder matching a Nix environment name}
+\title{Add an import statement to Python files in the _rixpress folder matching a
+Nix environment name}
 \usage{
-add_import(import_statement, nix_env)
+add_import(import_statement, nix_env, project_path = ".")
 }
 \arguments{
 \item{import_statement}{A character string representing the import statement
@@ -12,17 +13,23 @@ to be added. For example, \code{"import numpy as np"}.}
 
 \item{nix_env}{A character string naming the Nix environment file (e.g.
 \code{"default.nix"} or \code{"py-env.nix"} or similar).}
+
+\item{project_path}{Path to root of project, typically ".".}
 }
 \value{
-No return value; the function performs in-place modifications of the files.
+No return value; the function performs in-place modifications of the
+files.
 }
 \description{
-This function appends a specified import statement to the end of each Python file
-within the \verb{_rixpress} folder and its subdirectories, but only for files whose
-base name matches the provided Nix environment.
+This function appends a specified import statement to the end of each Python
+file within the \verb{_rixpress} folder and its subdirectories, but only for files
+whose base name matches the provided Nix environment.
 }
 \examples{
 \dontrun{
+# Assuming project is in current working directory
 add_import("import numpy as np", "default.nix")
+# If project is elsewhere:
+# add_import("import numpy as np", "default.nix", project_path = "path/to/project")
 }
 }

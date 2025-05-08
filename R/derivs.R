@@ -23,7 +23,7 @@
 #'   should use `keras::load_model_hdf5()` to load it correctly.
 #' @param env_var Character vector, defaults to NULL. A named vector of
 #'   environment variables to set before running the R script, e.g.,
-#'   c("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan").
+#'   `c("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan)"`.
 #'   Each entry will be added as an export statement in the build phase.
 #' @details At a basic level, `rxp_r(mtcars_am, filter(mtcars, am == 1))` is
 #'   equivalent to `mtcars_am <- filter(mtcars, am == 1)`. `rxp_r()` generates the
@@ -718,7 +718,6 @@ rxp_py_file <- function(
 #' @return A list with elements: `name`, `snippet`, `type`, `additional_files`,
 #'   `nix_env`.
 rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
-
   expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
