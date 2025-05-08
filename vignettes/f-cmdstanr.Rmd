@@ -212,22 +212,21 @@ model can then be read using `rxp_read("model")`, which will internally use
 ## Summary
 
 Using `{cmdstanr}` with `{rixpress}` involves these key considerations:
-1.  **Environment Setup**: Include `cmdstan` in `system_pkgs` and `{cmdstanr}`
-    (from Git) in your `{rix}` environment definition.
-2.  **Model Code**: Read your `.stan` file into the pipeline as a string using
-    `rxp_r_file()`.
-3.  **Wrapper Function**: Implement a wrapper function that:
-    *   Takes the model code string and writes it to a temporary `.stan` file *inside the wrapper*.
-    *   Calls `cmdstanr::cmdstan_model()` on this temporary file.
-    *   Calls `model$sample()` to fit the model.
-    *   Returns the fitted model object.
-4.  **Single Pipeline Step**: Perform model compilation and sampling within the
-    *same* `rxp_r()` call using the wrapper.
-5.  **`CMDSTAN` Environment Variable**: Set the `CMDSTAN` environment variable
-    for the `rxp_r()` step that runs the wrapper, pointing to the Nix store path
-    of `cmdstan`.
-6.  **Custom Serialization**: Use `{cmdstanr}`'s `$save_object()` method via a
-    custom `serialize_function` for robust saving of the fitted model.
+- Include `cmdstan` in `system_pkgs` and `{cmdstanr}` (from Git) in your
+  `{rix}` environment definition.
+- Read your `.stan` file into the pipeline using `rxp_r_file()`.
+- Implement a wrapper function that:
+   *   Takes the model code string and writes it to a temporary `.stan` file
+       *inside the wrapper*.
+   *   Calls `cmdstanr::cmdstan_model()` on this temporary file.
+   *   Calls `model$sample()` to fit the model.
+   *   Returns the fitted model object.
+- Perform model compilation and sampling within the *same* `rxp_r()` call using
+  the wrapper.
+- Set the `CMDSTAN` environment variable for the `rxp_r()` step that runs the
+  wrapper, pointing to the Nix store path of `cmdstan`.
+- Use `{cmdstanr}`'s `$save_object()` method via a custom `serialize_function`
+  for robust saving of the fitted model.
 
 This approach ensures that `cmdstan` can operate correctly within the isolated
 and reproducible environment provided by `{rixpress}` and Nix.
