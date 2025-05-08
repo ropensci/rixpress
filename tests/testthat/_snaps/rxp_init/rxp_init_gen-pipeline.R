@@ -12,4 +12,4 @@ list(
     expr = NULL
   )
 ) |>
-  rixpress(project_path = ".")
+  rixpress(build = TRUE)
