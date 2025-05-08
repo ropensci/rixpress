@@ -11,7 +11,8 @@ rxp_py2r(name, expr, nix_env = "default.nix")
 
 \item{expr}{Symbol, Python object to be loaded into R.}
 
-\item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
+\item{nix_env}{Character, path to the Nix environment file, default is
+"default.nix".}
 }
 \value{
 An object of class derivation which inherits from lists.
@@ -20,8 +21,8 @@ An object of class derivation which inherits from lists.
 Transfer Python object into an R session.
 }
 \details{
-\code{rxp_py2r(my_obj, my_python_object)} loads a serialized
-Python object and saves it as an RDS file using \code{reticulate::py_load_object()}.
+\code{rxp_py2r(my_obj, my_python_object)} loads a serialized Python
+object and saves it as an RDS file using \code{reticulate::py_load_object()}.
 }
 \examples{
 \dontrun{

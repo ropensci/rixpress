@@ -18,16 +18,20 @@ rxp_rmd(
 
 \item{rmd_file}{Character, path to .Rmd file.}
 
-\item{additional_files}{Character vector, additional files to include, for example a folder
-containing the pictures to include in the R Markdown document.}
+\item{additional_files}{Character vector, additional files to include, for
+example a folder containing the pictures to include in the R Markdown
+document.}
 
-\item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
+\item{nix_env}{Character, path to the Nix environment file, default is
+"default.nix".}
 
-\item{params}{List, parameters to pass to the R Markdown document. Default is NULL.}
+\item{params}{List, parameters to pass to the R Markdown document. Default is
+NULL.}
 
-\item{env_var}{List, defaults to NULL. A named list of environment variables to set
-before running the R Markdown render command, e.g., c(RSTUDIO_PANDOC = "/path/to/pandoc").
-Each entry will be added as an export statement in the build phase.}
+\item{env_var}{List, defaults to NULL. A named list of environment variables
+to set before running the R Markdown render command, e.g., c(RSTUDIO_PANDOC
+= "/path/to/pandoc"). Each entry will be added as an export statement in
+the build phase.}
 }
 \value{
 An object of class derivation which inherits from lists.
@@ -36,8 +40,8 @@ An object of class derivation which inherits from lists.
 Render an R Markdown document as a Nix derivation
 }
 \details{
-To include objects built in the pipeline, \code{rxp_read("derivation_name")} should be put
-in the .Rmd file.
+To include objects built in the pipeline,
+\code{rxp_read("derivation_name")} should be put in the .Rmd file.
 }
 \examples{
 \dontrun{

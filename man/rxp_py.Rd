@@ -36,7 +36,7 @@ the default behavior uses \code{pickle.dump}. Define this function in
 Python function used to unserialize the object. It must accept one
 argument: the file path.}
 
-\item{env_var}{List, defaults to NULL. A named list of environment variables to set
+\item{env_var}{Character vector, defaults to NULL. A named vector of environment variables
 before running the Python script, e.g., c(PYTHONPATH = "/path/to/modules").
 Each entry will be added as an export statement in the build phase.}
 }

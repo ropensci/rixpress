@@ -43,8 +43,9 @@ objects like machine learning models. For example, if the parent derivation
 used \code{keras::save_model_hdf5()} to serialize a model, this derivation
 should use \code{keras::load_model_hdf5()} to load it correctly.}
 
-\item{env_var}{List, defaults to NULL. A named list of environment variables to set
-before running the R script, e.g., list("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan").
+\item{env_var}{Character vector, defaults to NULL. A named vector of
+environment variables to set before running the R script, e.g.,
+c("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan").
 Each entry will be added as an export statement in the build phase.}
 }
 \value{
@@ -55,7 +56,7 @@ rxp_r Creates a Nix expression running an R function
 }
 \details{
 At a basic level, \code{rxp_r(mtcars_am, filter(mtcars, am == 1))} is
-equivalent to \code{mtcars <- filter(mtcars, am == 1)}. \code{rxp_r()} generates the
+equivalent to \code{mtcars_am <- filter(mtcars, am == 1)}. \code{rxp_r()} generates the
 required Nix boilerplate to output a so-called "derivation" in Nix jargon.
 A Nix derivation is a recipe that defines how to create an output (in this
 case \code{mtcars_am}) including its dependencies, build steps, and output
@@ -72,11 +73,11 @@ paths.
    expr = filter(mtcars, am == 1),
    serialize_function = qs::qsave
   )
-  # Unerialize using qs::read in the next derivation
+  # Unerialize using qs::qread in the next derivation
   rxp_r(
    name = mtcars_mpg,
    expr = select(filtered_mtcars, mpg),
-   unserialize_function = qs::read
+   unserialize_function = qs::qread
   )
 }
 }

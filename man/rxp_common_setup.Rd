@@ -13,10 +13,12 @@ rxp_common_setup(out_name, expr_str, nix_env, direction)
 
 \item{nix_env}{Character, path to the Nix environment file.}
 
-\item{direction}{Character, either "py2r" (Python to R) or "r2py" (R to Python).}
+\item{direction}{Character, either "py2r" (Python to R) or "r2py" (R to
+Python).}
 }
 \value{
-A list with elements: \code{name}, \code{snippet}, \code{type}, \code{additional_files}, \code{nix_env}.
+A list with elements: \code{name}, \code{snippet}, \code{type}, \code{additional_files},
+\code{nix_env}.
 }
 \description{
 This function constructs the \code{build_phase} and Nix derivation snippet

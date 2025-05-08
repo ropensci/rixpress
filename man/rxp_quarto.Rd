@@ -18,17 +18,19 @@ rxp_quarto(
 
 \item{qmd_file}{Character, path to .qmd file.}
 
-\item{additional_files}{Character vector, additional files to include, for example a folder
-containing the picture to include in the Quarto document.}
+\item{additional_files}{Character vector, additional files to include, for
+example a folder containing images to include in the Quarto document.}
 
-\item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
+\item{nix_env}{Character, path to the Nix environment file, default is
+"default.nix".}
 
-\item{args}{A character of additional arguments to be passed directly to
-the \code{quarto} command.}
+\item{args}{A character of additional arguments to be passed directly to the
+\code{quarto} command.}
 
-\item{env_var}{List, defaults to NULL. A named list of environment variables to set
-before running the Quarto render command, e.g., c(QUARTO_PROFILE = "production").
-Each entry will be added as an export statement in the build phase.}
+\item{env_var}{List, defaults to NULL. A named list of environment variables
+to set before running the Quarto render command, e.g., c(QUARTO_PROFILE =
+"production"). Each entry will be added as an export statement in the build
+phase.}
 }
 \value{
 An object of class derivation which inherits from lists.
@@ -37,8 +39,8 @@ An object of class derivation which inherits from lists.
 Render a Quarto document as a Nix derivation
 }
 \details{
-To include object built in the pipeline, \code{rxp_read("derivation_name")} should be put
-in the .qmd file.
+To include built derivations in the document,
+\code{rxp_read("derivation_name")} should be put in the .qmd file.
 }
 \examples{
 \dontrun{

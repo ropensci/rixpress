@@ -26,12 +26,13 @@ rxp_file_common(
 
 \item{type}{Character, the type of derivation ("rxp_r" or "rxp_py").}
 
-\item{derivation_func}{Character, the Nix derivation function ("makeRDerivation" or "makePyDerivation").}
+\item{derivation_func}{Character, the Nix derivation function
+("makeRDerivation" or "makePyDerivation").}
 
 \item{library_ext}{Character, the library file extension ("R" or "py").}
 
-\item{env_var}{List, defaults to NULL. A named list of environment variables to set
-before running the script, e.g., c(DATA_PATH = "/path/to/data").
+\item{env_var}{List, defaults to NULL. A named list of environment variables
+to set before running the script, e.g., c(DATA_PATH = "/path/to/data").
 Each entry will be added as an export statement in the build phase.}
 }
 \value{

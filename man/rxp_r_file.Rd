@@ -16,18 +16,21 @@ rxp_r_file(
 \arguments{
 \item{name}{Symbol, the name of the derivation.}
 
-\item{path}{Character, the file path to include (e.g., "data/mtcars.shp") or a folder path (e.g., "data"). See details.}
+\item{path}{Character, the file path to include (e.g., "data/mtcars.shp") or
+a folder path (e.g., "data"). See details.}
 
-\item{read_function}{Function, an R function to read the data, taking one argument (the path).}
+\item{read_function}{Function, an R function to read the data, taking one
+argument (the path).}
 
-\item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
+\item{nix_env}{Character, path to the Nix environment file, default is
+"default.nix".}
 
 \item{copy_data_folder}{Logical, if TRUE then the entire folder is copied
 recursively into the build sandbox.}
 
-\item{env_var}{List, defaults to NULL. A named list of environment variables to set
-before running the R script, e.g., c(DATA_PATH = "/path/to/data").
-Each entry will be added as an export statement in the build phase.}
+\item{env_var}{List, defaults to NULL. A named list of environment variables
+to set before running the R script, e.g., c(VAR = "hello"). Each entry will
+be added as an export statement in the build phase.}
 }
 \value{
 An object of class derivation which inherits from lists.
@@ -36,18 +39,14 @@ An object of class derivation which inherits from lists.
 Creates a Nix expression that reads in a file (or folder of data) using R.
 }
 \details{
-There are three ways to read in data in a rixpress pipeline:
-the first is to point directly
-a file, for example,
-\code{rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)}.
-The second way is to point to a file but to also include of the files in
-the "data/" folder (the folder can named something else).
-This is needed when data is split between several files, such as a shapefile
-which typically also needs other files such as \code{.shx} and \code{.dbf} files.
-For this, \code{copy_data_folder} must be set to \code{TRUE}.
-The last way to read in data, is to only point to a folder,
-and use a function that recursively reads in all data. For example
-\verb{rxp_r_file(many_csvs, path = "data", read_function = \\(x)(readr::read_csv( list.files(x, full.names = TRUE, pattern = ".csv$"))))}
-the provided anonymous function will read all the \code{.csv} files
-in the \verb{data/} folder.
+There are three ways to read in data in a rixpress pipeline: the
+first is to point directly to a file, for example, \code{rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)}. The second way is to point
+to a file but to also include the files in the "data/" folder (the folder
+can be named something else). This is needed when data is split between
+several files, such as a shapefile which typically also needs other files
+such as \code{.shx} and \code{.dbf} files. For this, \code{copy_data_folder} must be set
+to \code{TRUE}. The last way to read in data, is to only point to a folder, and
+use a function that recursively reads in all data. For example
+\verb{rxp_r_file(many_csvs, path = "data", read_function = \\(x)(readr::read_csv( list.files(x, full.names = TRUE, pattern = ".csv$"))))} the provided
+anonymous function will read all the \code{.csv} files in the \verb{data/} folder.
 }

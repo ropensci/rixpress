@@ -11,7 +11,8 @@ rxp_r2py(name, expr, nix_env = "default.nix")
 
 \item{expr}{Symbol, R object to be saved into a Python pickle.}
 
-\item{nix_env}{Character, path to the Nix environment file, default is "default.nix".}
+\item{nix_env}{Character, path to the Nix environment file, default is
+"default.nix".}
 }
 \value{
 An object of class derivation which inherits from lists.
