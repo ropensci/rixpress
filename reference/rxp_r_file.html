@@ -67,15 +67,18 @@
 
 
 <dt id="arg-path">path<a class="anchor" aria-label="anchor" href="#arg-path"></a></dt>
-<dd><p>Character, the file path to include (e.g., "data/mtcars.shp") or a folder path (e.g., "data"). See details.</p></dd>
+<dd><p>Character, the file path to include (e.g., "data/mtcars.shp") or
+a folder path (e.g., "data"). See details.</p></dd>
 
 
 <dt id="arg-read-function">read_function<a class="anchor" aria-label="anchor" href="#arg-read-function"></a></dt>
-<dd><p>Function, an R function to read the data, taking one argument (the path).</p></dd>
+<dd><p>Function, an R function to read the data, taking one
+argument (the path).</p></dd>
 
 
 <dt id="arg-nix-env">nix_env<a class="anchor" aria-label="anchor" href="#arg-nix-env"></a></dt>
-<dd><p>Character, path to the Nix environment file, default is "default.nix".</p></dd>
+<dd><p>Character, path to the Nix environment file, default is
+"default.nix".</p></dd>
 
 
 <dt id="arg-copy-data-folder">copy_data_folder<a class="anchor" aria-label="anchor" href="#arg-copy-data-folder"></a></dt>
@@ -84,9 +87,9 @@ recursively into the build sandbox.</p></dd>
 
 
 <dt id="arg-env-var">env_var<a class="anchor" aria-label="anchor" href="#arg-env-var"></a></dt>
-<dd><p>List, defaults to NULL. A named list of environment variables to set
-before running the R script, e.g., c(DATA_PATH = "/path/to/data").
-Each entry will be added as an export statement in the build phase.</p></dd>
+<dd><p>List, defaults to NULL. A named list of environment variables
+to set before running the R script, e.g., c(VAR = "hello"). Each entry will
+be added as an export statement in the build phase.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -95,20 +98,16 @@ Each entry will be added as an export statement in the build phase.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>There are three ways to read in data in a rixpress pipeline:
-the first is to point directly
-a file, for example,
-<code>rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)</code>.
-The second way is to point to a file but to also include of the files in
-the "data/" folder (the folder can named something else).
-This is needed when data is split between several files, such as a shapefile
-which typically also needs other files such as <code>.shx</code> and <code>.dbf</code> files.
-For this, <code>copy_data_folder</code> must be set to <code>TRUE</code>.
-The last way to read in data, is to only point to a folder,
-and use a function that recursively reads in all data. For example
-<code>rxp_r_file(many_csvs, path = "data", read_function = \(x)(readr::read_csv( list.files(x, full.names = TRUE, pattern = ".csv$"))))</code>
-the provided anonymous function will read all the <code>.csv</code> files
-in the <code>data/</code> folder.</p>
+    <p>There are three ways to read in data in a rixpress pipeline: the
+first is to point directly to a file, for example, <code>rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)</code>. The second way is to point
+to a file but to also include the files in the "data/" folder (the folder
+can be named something else). This is needed when data is split between
+several files, such as a shapefile which typically also needs other files
+such as <code>.shx</code> and <code>.dbf</code> files. For this, <code>copy_data_folder</code> must be set
+to <code>TRUE</code>. The last way to read in data, is to only point to a folder, and
+use a function that recursively reads in all data. For example
+<code>rxp_r_file(many_csvs, path = "data", read_function = \(x)(readr::read_csv( list.files(x, full.names = TRUE, pattern = ".csv$"))))</code> the provided
+anonymous function will read all the <code>.csv</code> files in the <code>data/</code> folder.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -104,8 +104,9 @@ should use <code>keras::load_model_hdf5()</code> to load it correctly.</p></dd>
 
 
 <dt id="arg-env-var">env_var<a class="anchor" aria-label="anchor" href="#arg-env-var"></a></dt>
-<dd><p>List, defaults to NULL. A named list of environment variables to set
-before running the R script, e.g., list("CMDSTAN" = "$defaultPkgs.cmdstan/opt/cmdstan").
+<dd><p>Character vector, defaults to NULL. A named vector of
+environment variables to set before running the R script, e.g.,
+c("CMDSTAN" = "$defaultPkgs.cmdstan/opt/cmdstan").
 Each entry will be added as an export statement in the build phase.</p></dd>
 
 </dl></div>
@@ -116,7 +117,7 @@ Each entry will be added as an export statement in the build phase.</p></dd>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>At a basic level, <code>rxp_r(mtcars_am, filter(mtcars, am == 1))</code> is
-equivalent to <code>mtcars &lt;- filter(mtcars, am == 1)</code>. <code>rxp_r()</code> generates the
+equivalent to <code>mtcars_am &lt;- filter(mtcars, am == 1)</code>. <code>rxp_r()</code> generates the
 required Nix boilerplate to output a so-called "derivation" in Nix jargon.
 A Nix derivation is a recipe that defines how to create an output (in this
 case <code>mtcars_am</code>) including its dependencies, build steps, and output
@@ -135,11 +136,11 @@ paths.</p>
 <span class="r-in"><span>   expr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">am</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>   serialize_function <span class="op">=</span> <span class="fu">qs</span><span class="fu">::</span><span class="va">qsave</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="co"># Unerialize using qs::read in the next derivation</span></span></span>
+<span class="r-in"><span>  <span class="co"># Unerialize using qs::qread in the next derivation</span></span></span>
 <span class="r-in"><span>  <span class="fu">rxp_r</span><span class="op">(</span></span></span>
 <span class="r-in"><span>   name <span class="op">=</span> <span class="va">mtcars_mpg</span>,</span></span>
 <span class="r-in"><span>   expr <span class="op">=</span> <span class="fu">select</span><span class="op">(</span><span class="va">filtered_mtcars</span>, <span class="va">mpg</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>   unserialize_function <span class="op">=</span> <span class="fu">qs</span><span class="fu">::</span><span class="va">read</span></span></span>
+<span class="r-in"><span>   unserialize_function <span class="op">=</span> <span class="fu">qs</span><span class="fu">::</span><span class="va">qread</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>

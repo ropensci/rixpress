@@ -71,22 +71,26 @@
 
 
 <dt id="arg-additional-files">additional_files<a class="anchor" aria-label="anchor" href="#arg-additional-files"></a></dt>
-<dd><p>Character vector, additional files to include, for example a folder
-containing the pictures to include in the R Markdown document.</p></dd>
+<dd><p>Character vector, additional files to include, for
+example a folder containing the pictures to include in the R Markdown
+document.</p></dd>
 
 
 <dt id="arg-nix-env">nix_env<a class="anchor" aria-label="anchor" href="#arg-nix-env"></a></dt>
-<dd><p>Character, path to the Nix environment file, default is "default.nix".</p></dd>
+<dd><p>Character, path to the Nix environment file, default is
+"default.nix".</p></dd>
 
 
 <dt id="arg-params">params<a class="anchor" aria-label="anchor" href="#arg-params"></a></dt>
-<dd><p>List, parameters to pass to the R Markdown document. Default is NULL.</p></dd>
+<dd><p>List, parameters to pass to the R Markdown document. Default is
+NULL.</p></dd>
 
 
 <dt id="arg-env-var">env_var<a class="anchor" aria-label="anchor" href="#arg-env-var"></a></dt>
-<dd><p>List, defaults to NULL. A named list of environment variables to set
-before running the R Markdown render command, e.g., c(RSTUDIO_PANDOC = "/path/to/pandoc").
-Each entry will be added as an export statement in the build phase.</p></dd>
+<dd><p>List, defaults to NULL. A named list of environment variables
+to set before running the R Markdown render command, e.g., c(RSTUDIO_PANDOC
+= "/path/to/pandoc"). Each entry will be added as an export statement in
+the build phase.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -95,8 +99,8 @@ Each entry will be added as an export statement in the build phase.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>To include objects built in the pipeline, <code>rxp_read("derivation_name")</code> should be put
-in the .Rmd file.</p>
+    <p>To include objects built in the pipeline,
+<code>rxp_read("derivation_name")</code> should be put in the .Rmd file.</p>
     </div>
 
     <div class="section level2">
