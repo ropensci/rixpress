@@ -275,25 +275,22 @@ internally use <code><a href="https://rdrr.io/r/base/readRDS.html" class="extern
 <h2 id="summary">Summary<a class="anchor" aria-label="anchor" href="#summary"></a>
 </h2>
 <p>Using <code>{cmdstanr}</code> with <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> involves
-these key considerations: 1. <strong>Environment Setup</strong>: Include
-<code>cmdstan</code> in <code>system_pkgs</code> and
-<code>{cmdstanr}</code> (from Git) in your <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>
-environment definition. 2. <strong>Model Code</strong>: Read your
-<code>.stan</code> file into the pipeline as a string using
-<code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code>. 3. <strong>Wrapper Function</strong>:
-Implement a wrapper function that: * Takes the model code string and
-writes it to a temporary <code>.stan</code> file <em>inside the
-wrapper</em>. * Calls <code>cmdstanr::cmdstan_model()</code> on this
-temporary file. * Calls <code>model$sample()</code> to fit the model. *
-Returns the fitted model object. 4. <strong>Single Pipeline
-Step</strong>: Perform model compilation and sampling within the
-<em>same</em> <code><a href="../reference/rxp_r.html">rxp_r()</a></code> call using the wrapper. 5.
-<strong><code>CMDSTAN</code> Environment Variable</strong>: Set the
+these key considerations: - Include <code>cmdstan</code> in
+<code>system_pkgs</code> and <code>{cmdstanr}</code> (from Git) in your
+<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> environment definition. - Read your
+<code>.stan</code> file into the pipeline using
+<code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code>. - Implement a wrapper function that: * Takes
+the model code string and writes it to a temporary <code>.stan</code>
+file <em>inside the wrapper</em>. * Calls
+<code>cmdstanr::cmdstan_model()</code> on this temporary file. * Calls
+<code>model$sample()</code> to fit the model. * Returns the fitted model
+object. - Perform model compilation and sampling within the
+<em>same</em> <code><a href="../reference/rxp_r.html">rxp_r()</a></code> call using the wrapper. - Set the
 <code>CMDSTAN</code> environment variable for the <code><a href="../reference/rxp_r.html">rxp_r()</a></code>
 step that runs the wrapper, pointing to the Nix store path of
-<code>cmdstan</code>. 6. <strong>Custom Serialization</strong>: Use
-<code>{cmdstanr}</code>’s <code>$save_object()</code> method via a
-custom <code>serialize_function</code> for robust saving of the fitted
+<code>cmdstan</code>. - Use <code>{cmdstanr}</code>’s
+<code>$save_object()</code> method via a custom
+<code>serialize_function</code> for robust saving of the fitted
 model.</p>
 <p>This approach ensures that <code>cmdstan</code> can operate correctly
 within the isolated and reproducible environment provided by
