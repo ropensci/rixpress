@@ -1,7 +1,7 @@
 let
  pkgs = import (fetchTarball "https://github.com/rstats-on-nix/nixpkgs/archive/2025-03-17.tar.gz") {};
  
-  pypkgs = builtins.attrValues {
+  pyconf = builtins.attrValues {
     inherit (pkgs.python312Packages) 
       pandas
       polars
@@ -25,7 +25,7 @@ shell = pkgs.mkShell {
    LC_PAPER = "en_US.UTF-8";
    LC_MEASUREMENT = "en_US.UTF-8";
 
-  buildInputs = [ pypkgs system_packages ];
+  buildInputs = [ pyconf system_packages ];
   
 };
 in

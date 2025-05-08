@@ -25,7 +25,6 @@ let
   quarto_envShell = quarto_env.shell;
   quarto_envBuildInputs = quarto_envShell.buildInputs;
   quarto_envConfigurePhase = ''
-    cp ${./_rixpress/quarto_env_libraries.py} libraries.py
     cp ${./_rixpress/quarto_env_libraries.R} libraries.R
     mkdir -p $out
   '';
@@ -93,7 +92,7 @@ with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)
     buildInputs = defaultBuildInputs;
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
-      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'
+      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python
        Rscript -e "
          source('libraries.R')
          mtcars_am <- reticulate::py_load_object('${mtcars_pl_am}/mtcars_pl_am', pickle = 'pickle', convert = TRUE)
@@ -119,7 +118,7 @@ with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)
     buildInputs = defaultBuildInputs;
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
-      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'
+      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python
        Rscript -e "
          source('libraries.R')
          mtcars_head <- readRDS('${mtcars_head}/mtcars_head')
@@ -146,7 +145,7 @@ with open('mtcars_tail_py', 'wb') as f: pickle.dump(globals()['mtcars_tail_py'],
     buildInputs = defaultBuildInputs;
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
-      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'
+      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python
        Rscript -e "
          source('libraries.R')
          mtcars_tail <- reticulate::py_load_object('${mtcars_tail_py}/mtcars_tail_py', pickle = 'pickle', convert = TRUE)
@@ -178,7 +177,7 @@ with open('mtcars_tail_py', 'wb') as f: pickle.dump(globals()['mtcars_tail_py'],
     buildPhase = ''
       mkdir home
       export HOME=$PWD/home
-      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'
+      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python
 
       substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_head")' 'rxp_read("${mtcars_head}")'
       substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail")' 'rxp_read("${mtcars_tail}")'
