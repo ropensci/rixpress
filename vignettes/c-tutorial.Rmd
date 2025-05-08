@@ -128,7 +128,7 @@ list(
     name = NULL,
     expr = NULL
   )
-) |> rixpress(project_path = ".")
+) |> rixpress(build = TRUE)
 ```
 
 This template starts with `rxp_r_file()` to load data, and `rxp_r()` to
@@ -150,7 +150,7 @@ list(
     name = filtered_mtcars,
     expr = filter(mtcars, am == 1)
   )
-) |> rixpress(project_path = ".")
+) |> rixpress(build = TRUE)
 ```
 
 Select the pipeline and run it (I highly recommend you use keyboard shortcuts
@@ -242,7 +242,7 @@ list(
     expr = select(filtered_mtcars, mpg)
   )
 ) |>
-  rixpress(project_path = ".")
+  rixpress(build = TRUE)
 ```
 
 Rebuild the pipeline. The first two steps are skipped because they're already
