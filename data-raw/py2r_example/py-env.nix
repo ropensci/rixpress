@@ -57,8 +57,9 @@ shell = pkgs.mkShell {
    LC_MEASUREMENT = "en_US.UTF-8";
 
   buildInputs = [ rix rpkgs pyconf tex system_packages ];
-  
+
 };
+
 in
 {
   inherit pkgs shell;
