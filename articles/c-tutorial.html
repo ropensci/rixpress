@@ -188,7 +188,7 @@ to use) and open <code>gen-pipeline.R</code>:</p>
 <span>    name <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>    expr <span class="op">=</span> <span class="cn">NULL</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span>project_path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span>build <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>This template starts with <code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code> to load data, and
 <code><a href="../reference/rxp_r.html">rxp_r()</a></code> to define a step. These two derivations are put
 into a list and then passed to <code><a href="../reference/rixpress.html">rixpress()</a></code>. Let’s start by
@@ -208,7 +208,7 @@ importing data and filtering it using <a href="https://dplyr.tidyverse.org" clas
 <span>    name <span class="op">=</span> <span class="va">filtered_mtcars</span>,</span>
 <span>    expr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">am</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span>project_path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span>build <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>Select the pipeline and run it (I highly recommend you use keyboard
 shortcuts to quickly run the above code when working interactively). If
 everything went well, you will see the following in your R console:</p>
@@ -282,7 +282,7 @@ derivation:</p>
 <span>    expr <span class="op">=</span> <span class="fu">select</span><span class="op">(</span><span class="va">filtered_mtcars</span>, <span class="va">mpg</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span>project_path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span>build <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>Rebuild the pipeline. The first two steps are skipped because they’re
 already available in the <code>Nix</code> store. You can now start the
 <em>inspect -&gt; try stuff -&gt; define derivation -&gt; build
