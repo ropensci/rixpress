@@ -60,10 +60,9 @@ let
     buildInputs = default2BuildInputs;
     configurePhase = default2ConfigurePhase;
     buildPhase = ''
-      export Huhu=boink
       Rscript -e "
-        mtcars <- readRDS('${mtcars}/mtcars')
         source('libraries.R')
+        mtcars <- readRDS('${mtcars}/mtcars')
         mtcars_am <- filter(mtcars, am == 1)
         saveRDS(mtcars_am, 'mtcars_am')"
     '';
@@ -119,7 +118,7 @@ let
     buildPhase = ''
       mkdir home
       export HOME=$PWD/home
-      export RETICULATE_PYTHON='${defaultPkgs.python3}/bin/python'
+      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python
 
       substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_head")' 'rxp_read("${mtcars_head}")'
       substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail")' 'rxp_read("${mtcars_tail}")'

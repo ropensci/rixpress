@@ -718,11 +718,6 @@ rxp_py_file <- function(
 #' @return A list with elements: `name`, `snippet`, `type`, `additional_files`,
 #'   `nix_env`.
 rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
-  if (!requireNamespace("reticulate", quietly = TRUE)) {
-    stop(
-      "The 'reticulate' package is required to convert between Python and R objects.\nPlease install it to use these functions."
-    )
-  }
 
   expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
