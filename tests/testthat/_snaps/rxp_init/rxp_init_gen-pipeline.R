@@ -11,4 +11,5 @@ list(
     name = NULL,
     expr = NULL
   )
-) |> rixpress(project_path = ".")
+) |>
+  rixpress(project_path = ".")
