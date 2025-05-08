@@ -275,23 +275,33 @@ internally use <code><a href="https://rdrr.io/r/base/readRDS.html" class="extern
 <h2 id="summary">Summary<a class="anchor" aria-label="anchor" href="#summary"></a>
 </h2>
 <p>Using <code>{cmdstanr}</code> with <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> involves
-these key considerations: - Include <code>cmdstan</code> in
-<code>system_pkgs</code> and <code>{cmdstanr}</code> (from Git) in your
-<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> environment definition. - Read your
-<code>.stan</code> file into the pipeline using
-<code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code>. - Implement a wrapper function that: * Takes
-the model code string and writes it to a temporary <code>.stan</code>
-file <em>inside the wrapper</em>. * Calls
-<code>cmdstanr::cmdstan_model()</code> on this temporary file. * Calls
-<code>model$sample()</code> to fit the model. * Returns the fitted model
-object. - Perform model compilation and sampling within the
-<em>same</em> <code><a href="../reference/rxp_r.html">rxp_r()</a></code> call using the wrapper. - Set the
-<code>CMDSTAN</code> environment variable for the <code><a href="../reference/rxp_r.html">rxp_r()</a></code>
-step that runs the wrapper, pointing to the Nix store path of
-<code>cmdstan</code>. - Use <code>{cmdstanr}</code>’s
-<code>$save_object()</code> method via a custom
-<code>serialize_function</code> for robust saving of the fitted
-model.</p>
+these key considerations:</p>
+<ul>
+<li><p>Include <code>cmdstan</code> in <code>system_pkgs</code> and
+<code>{cmdstanr}</code> (from Git) in your <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>
+environment definition.</p></li>
+<li><p>Read your <code>.stan</code> file into the pipeline using
+<code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code>.</p></li>
+<li>
+<p>Implement a wrapper function that:</p>
+<ul>
+<li>Takes the model code string and writes it to a temporary
+<code>.stan</code> file <em>inside the wrapper</em>.</li>
+<li>Calls <code>cmdstanr::cmdstan_model()</code> on this temporary
+file.</li>
+<li>Calls <code>model$sample()</code> to fit the model.</li>
+<li>Returns the fitted model object.</li>
+</ul>
+</li>
+<li><p>Perform model compilation and sampling within the <em>same</em>
+<code><a href="../reference/rxp_r.html">rxp_r()</a></code> call using the wrapper.</p></li>
+<li><p>Set the <code>CMDSTAN</code> environment variable for the
+<code><a href="../reference/rxp_r.html">rxp_r()</a></code> step that runs the wrapper, pointing to the Nix
+store path of <code>cmdstan</code>.</p></li>
+<li><p>Use <code>{cmdstanr}</code>’s <code>$save_object()</code> method
+via a custom <code>serialize_function</code> for robust saving of the
+fitted model.</p></li>
+</ul>
 <p>This approach ensures that <code>cmdstan</code> can operate correctly
 within the isolated and reproducible environment provided by
 <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> and Nix.</p>
