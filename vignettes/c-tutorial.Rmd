@@ -11,7 +11,7 @@ This vignette demonstrates how to build a `{rixpress}` pipeline that only uses R
 derivations. For multilingual pipelines, read the next vignette
 `vignette("d-polyglot")`.
 
-If you are more of a visual learner, you can also watch [this video](404) which
+If you are more of a visual learner, you can also watch [this video](https://www.youtube.com/watch?v=IXKd5ySzzSU) which
 will walk you through the contents of this vignette.
 
 # Installing the required software
