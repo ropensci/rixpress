@@ -408,7 +408,7 @@ rxp_quarto <- function(
   )
 
   # Prepare the fileset for src
-  if (additional_files == "") {
+  if (identical(additional_files, "")) {
     additional_files <- NULL
   }
   fileset_parts <- c(qmd_file, additional_files)
