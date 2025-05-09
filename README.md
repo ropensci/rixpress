@@ -4,6 +4,15 @@
 [![R-hub
 v2](https://github.com/b-rodrigues/rixpress/actions/workflows/rhub.yaml/badge.svg)](https://github.com/b-rodrigues/rixpress/actions/workflows/rhub.yaml/)
 
+<p>
+If you want to watch a 2-Minute video introduction, click the image
+below:
+</p>
+
+<a href="https://www.youtube.com/watch?v=a1eNG9TFZ_o" target="_blank" rel="noopener noreferrer">
+<img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/main/video_thumbnail.png" alt="Video Thumbnail" style="width:100%; max-width:560px; height:auto; display:block; margin:0 auto;">
+</a>
+
 This R package provides a framework for building multilanguage
 reproducible analytical pipelines by leveraging `Nix`’s build automation
 capabilities. One of the design goals of `{rixpress}` is to mimic the
