@@ -62,6 +62,10 @@
 <a class="anchor" aria-label="anchor" href="#rixpress-reproducible-analytical-pipelines-with-nix"></a>
 </h1></div>
 <p><a href="https://github.com/b-rodrigues/rixpress/actions/workflows/rhub.yaml/" class="external-link"><img src="https://github.com/b-rodrigues/rixpress/actions/workflows/rhub.yaml/badge.svg" alt="R-hub v2"></a></p>
+<p>
+If you want to watch a 2-Minute video introduction, click the image below:
+</p>
+<p><a href="https://www.youtube.com/watch?v=a1eNG9TFZ_o" target="_blank" rel="noopener noreferrer" class="external-link"> <img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/main/video_thumbnail.png" alt="Video Thumbnail" style="width:100%; max-width:560px; height:auto; display:block; margin:0 auto;"></a></p>
 <p>This R package provides a framework for building multilanguage reproducible analytical pipelines by leveraging <code>Nix</code>’s build automation capabilities. One of the design goals of <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> is to mimic the user experience of the <a href="https://docs.ropensci.org/targets/" class="external-link">targets</a> package, and is thus heavily inspired by it. It builds upon the <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> package, which provides helper function to define reproducible development environments as code using <code>Nix</code>, ensuring the pipeline runs in a fully reproducible <code>Nix</code>-managed environment. <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> only requires users to write the pipeline using familiar R code.</p>
 <p>For example, this R script defines a list of <em>derivations</em> defined by functions prefixed with <code>rxp_*()</code>, which is then passed to <code><a href="reference/rixpress.html">rixpress()</a></code>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
