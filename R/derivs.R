@@ -408,6 +408,9 @@ rxp_quarto <- function(
   )
 
   # Prepare the fileset for src
+  if (additional_files == "") {
+    additional_files <- NULL
+  }
   fileset_parts <- c(qmd_file, additional_files)
   fileset_nix <- paste0("./", fileset_parts, collapse = " ")
 
