@@ -457,7 +457,6 @@ add_import <- function(import_statement, nix_env, project_path = ".") {
     ) {
       new_content <- c(content, import_statement)
       writeLines(new_content, con = file)
-      message(paste("Added import to:", file))
     } else {
       message(paste("Import statement already present in:", file))
     }
