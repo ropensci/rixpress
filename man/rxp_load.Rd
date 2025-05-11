@@ -4,10 +4,14 @@
 \alias{rxp_load}
 \title{Load output of a derivation}
 \usage{
-rxp_load(derivation_name)
+rxp_load(derivation_name, which_log = NULL)
 }
 \arguments{
 \item{derivation_name}{Character, the name of the derivation.}
+
+\item{which_log}{Character, defaults to NULL. If NULL the most recent
+build log is used. If a string is provided, it's used as a
+regular expression to match against available log files.}
 }
 \value{
 Nothing, this function has the side effect of loading objects into
@@ -32,8 +36,10 @@ loading fails, the path to the object is returned instead.
   # Load an R object
   rxp_load("mtcars")
 
-  # Load a Python
+  # Load a Python object
   rxp_load("my_python_model")
-
+  
+  # Load from a specific build log
+  rxp_load("mtcars", which_log = "2025-05-10")
 }
 }

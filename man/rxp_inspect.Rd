@@ -4,7 +4,15 @@
 \alias{rxp_inspect}
 \title{Inspect the build result of a pipeline.}
 \usage{
-rxp_inspect()
+rxp_inspect(project_path = ".", which_log = NULL)
+}
+\arguments{
+\item{project_path}{Character, defaults to ".".
+Path to the root directory of the project.}
+
+\item{which_log}{Character, defaults to NULL. If NULL the most recent
+build log is used. If a string is provided, it's used as a
+regular expression to match against available log files.}
 }
 \value{
 A data frame with derivation names, if their build was successful,
