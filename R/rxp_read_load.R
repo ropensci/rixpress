@@ -69,7 +69,7 @@ rxp_read_load_setup <- function(derivation_name, which_log = NULL) {
 #' @return The derivation's output.
 #' @examples \dontrun{
 #'   mtcars <- rxp_read("mtcars")
-#'   
+#'
 #'   # Read from a specific build log
 #'   mtcars <- rxp_read("mtcars", which_log = "2025-05-10")
 #' }
@@ -127,7 +127,7 @@ rxp_read <- function(derivation_name, which_log = NULL) {
 #'
 #'   # Load a Python object
 #'   rxp_load("my_python_model")
-#'   
+#'
 #'   # Load from a specific build log
 #'   rxp_load("mtcars", which_log = "2025-05-10")
 #' }

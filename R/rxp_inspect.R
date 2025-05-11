@@ -73,22 +73,22 @@ rxp_inspect <- function(project_path = ".", which_log = NULL) {
 
   # Get all available logs
   logs_df <- rxp_list_logs(project_path)
-  
+
   if (nrow(logs_df) == 0) {
     stop("No build logs found, did you build the pipeline?")
   }
-  
+
   if (is.null(which_log)) {
     # Use the most recent log
     log_path <- file.path(rixpress_dir, logs_df$filename[1])
   } else {
     # Find logs matching the pattern
     matches <- grep(which_log, logs_df$filename, value = TRUE)
-    
+
     if (length(matches) == 0) {
       stop("No build logs found matching the pattern: ", which_log)
     }
-    
+
     # Get the full path of the most recent matching log
     match_idx <- match(matches[1], logs_df$filename)
     log_path <- file.path(rixpress_dir, logs_df$filename[match_idx])
