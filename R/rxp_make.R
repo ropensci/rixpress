@@ -105,7 +105,6 @@ rxp_make <- function(verbose = FALSE, max_jobs = 1, cores = 1) {
 
   # Save both the timestamped version and the standard version
   saveRDS(build_log, log_filename)
-  saveRDS(build_log, "_rixpress/build_log.rds")
 
   failures <- subset(build_log, subset = !build_success)
   if (nrow(failures) > 0) {

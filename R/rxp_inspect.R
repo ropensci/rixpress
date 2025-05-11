@@ -1,3 +1,54 @@
+#' @title List all available build logs
+#' @description Returns a data frame with information about all build logs
+#'     in the project's _rixpress directory.
+#'
+#' @param project_path Character, defaults to ".".
+#'   Path to the root directory of the project.
+#'
+#' @return A data frame with log filenames, modification times, and file sizes.
+#' @export
+rxp_list_logs <- function(project_path = ".") {
+  rixpress_dir <- file.path(project_path, "_rixpress")
+
+  if (!dir.exists(rixpress_dir)) {
+    stop("_rixpress directory not found. Did you initialize the project?")
+  }
+
+  # Find all build log files
+  log_files <- list.files(
+    path = rixpress_dir,
+    pattern = "build_log.*\\.rds$",
+    full.names = TRUE
+  )
+
+  if (length(log_files) == 0) {
+    message("No build logs found in ", rixpress_dir)
+    return(data.frame(
+      filename = character(0),
+      modification_time = character(0),
+      size_kb = numeric(0)
+    ))
+  }
+
+  # Get file information
+  file_info <- file.info(log_files)
+
+  # Create data frame with relevant information
+  logs_df <- data.frame(
+    filename = basename(log_files),
+    modification_time = file_info$mtime,
+    size_kb = round(file_info$size / 1024, 2)
+  )
+
+  # Sort by modification time (most recent first)
+  logs_df <- logs_df[order(logs_df$modification_time, decreasing = TRUE), ]
+
+  # Reset row names
+  rownames(logs_df) <- NULL
+
+  logs_df
+}
+
 #' @title Inspect the build result of a pipeline.
 #' @description Returns a data frame with four columns:
 #'     - derivation: the name of the derivation
@@ -8,10 +59,11 @@
 #'               successfully. Several outputs for a single derivation
 #'               are possible.
 #'
-#' @param project_path Character, path to the project directory where the _rixpress folder is located.
-#'   Defaults to the current directory.
-#' @param which_log Character or NULL, if NULL the most recent build log is used.
-#'   If a string is provided, it's used as a regular expression to match against available log files.
+#' @param project_path Character, defaults to ".".
+#'   Path to the root directory of the project.
+#' @param which_log Character, defaults to NULL. If NULL the most recent
+#'   build log is used. If a string is provided, it's used as a
+#'   regular expression to match against available log files.
 #'
 #' @return A data frame with derivation names, if their build was successful,
 #'   their paths in the /nix/store, and their build outputs.
