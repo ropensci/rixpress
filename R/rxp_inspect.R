@@ -71,46 +71,27 @@ rxp_list_logs <- function(project_path = ".") {
 rxp_inspect <- function(project_path = ".", which_log = NULL) {
   rixpress_dir <- file.path(project_path, "_rixpress")
 
+  # Get all available logs
+  logs_df <- rxp_list_logs(project_path)
+  
+  if (nrow(logs_df) == 0) {
+    stop("No build logs found, did you build the pipeline?")
+  }
+  
   if (is.null(which_log)) {
-    # Use the standard build log
-    log_path <- file.path(rixpress_dir, "build_log.rds")
-    if (!file.exists(log_path)) {
-      stop("Build log not found, did you build the pipeline?")
-    }
+    # Use the most recent log
+    log_path <- file.path(rixpress_dir, logs_df$filename[1])
   } else {
     # Find logs matching the pattern
-    log_files <- list.files(
-      path = rixpress_dir,
-      pattern = paste0("build_log_.*", which_log, ".*\\.rds$"),
-      full.names = TRUE
-    )
-
-    if (length(log_files) == 0) {
-      # Try a more general search if no matches
-      log_files <- list.files(
-        path = rixpress_dir,
-        pattern = paste0("build_log_.*\\.rds$"),
-        full.names = TRUE
-      )
-
-      if (length(log_files) == 0) {
-        stop("No build logs found matching the pattern: ", which_log)
-      }
-
-      # Filter using grep
-      matches <- grep(which_log, log_files, value = TRUE)
-      if (length(matches) == 0) {
-        stop("No build logs found matching the pattern: ", which_log)
-      }
-      log_files <- matches
+    matches <- grep(which_log, logs_df$filename, value = TRUE)
+    
+    if (length(matches) == 0) {
+      stop("No build logs found matching the pattern: ", which_log)
     }
-
-    # Sort by modification time (most recent first)
-    file_info <- file.info(log_files)
-    log_files <- log_files[order(file_info$mtime, decreasing = TRUE)]
-
-    # Use the most recent matching log
-    log_path <- log_files[1]
+    
+    # Get the full path of the most recent matching log
+    match_idx <- match(matches[1], logs_df$filename)
+    log_path <- file.path(rixpress_dir, logs_df$filename[match_idx])
     message("Using log file: ", basename(log_path))
   }
 
