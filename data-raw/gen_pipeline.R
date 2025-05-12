@@ -15,7 +15,7 @@ d1 <- rxp_r(
 
 d2 <- rxp_r(
   mtcars_head,
-  my_head(mtcars_am),
+  my_head(mtcars_am, 10),
   additional_files = "functions.R",
   nix_env = "default.nix"
 )

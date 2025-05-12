@@ -77,7 +77,34 @@ rxp_make <- function(verbose = FALSE, max_jobs = 1, cores = 1) {
 
   build_log <- do.call(rbind, build_log)
 
-  saveRDS(build_log, "_rixpress/build_log.rds")
+  # Get timestamp
+  timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
+
+  # Extract hash of all-derivations from the path
+  all_derivs_row <- which(build_log$derivation == "all-derivations")
+  all_derivs_hash <- ""
+  if (length(all_derivs_row) > 0) {
+    path <- build_log$path[all_derivs_row[1]]
+    # Extract hash from path (format: /nix/store/HASH-all-derivations)
+    all_derivs_hash <- gsub(
+      "^/nix/store/([^-]+)-all-derivations.*$",
+      "\\1",
+      path
+    )
+    if (all_derivs_hash == path) {
+      all_derivs_hash <- "" # If regex didn't match
+    }
+  }
+
+  # Save with timestamp and hash
+  log_filename <- sprintf(
+    "_rixpress/build_log_%s%s.rds",
+    timestamp,
+    ifelse(all_derivs_hash != "", paste0("_", all_derivs_hash), "")
+  )
+
+  # Save both the timestamped version and the standard version
+  saveRDS(build_log, log_filename)
 
   failures <- subset(build_log, subset = !build_success)
   if (nrow(failures) > 0) {

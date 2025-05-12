@@ -1,10 +1,13 @@
 #' Core setup function for rxp_read() and rxp_load()
 #' @param derivation_name The name of the derivation.
+#' @param which_log Character, defaults to NULL. If NULL the most recent
+#'   build log is used. If a string is provided, it's used as a
+#'   regular expression to match against available log files.
 #' @details If a path to the store is passed, return it, otherwise
 #'   returns the path to the object(s).
 #' @return A character vector of paths to the matching files.
 #' @noRd
-rxp_read_load_setup <- function(derivation_name) {
+rxp_read_load_setup <- function(derivation_name, which_log = NULL) {
   # if derivation_name is a full path to the /nix/store simply return it
   # this is useful for Quarto documents
   if (grepl("^/nix/store/", derivation_name)) {
@@ -17,7 +20,7 @@ rxp_read_load_setup <- function(derivation_name) {
     }
   }
 
-  build_log <- rxp_inspect()
+  build_log <- rxp_inspect(which_log = which_log)
 
   derivation <- build_log[build_log$derivation == derivation_name, ]
 
@@ -60,13 +63,19 @@ rxp_read_load_setup <- function(derivation_name) {
 #'   successfully read the object, the path to the object is
 #'   returned instead.
 #' @param derivation_name Character, the name of the derivation.
+#' @param which_log Character, defaults to NULL. If NULL the most recent
+#'   build log is used. If a string is provided, it's used as a
+#'   regular expression to match against available log files.
 #' @return The derivation's output.
 #' @examples \dontrun{
 #'   mtcars <- rxp_read("mtcars")
+#'
+#'   # Read from a specific build log
+#'   mtcars <- rxp_read("mtcars", which_log = "2025-05-10")
 #' }
 #' @export
-rxp_read <- function(derivation_name) {
-  files <- rxp_read_load_setup(derivation_name)
+rxp_read <- function(derivation_name, which_log = NULL) {
+  files <- rxp_read_load_setup(derivation_name, which_log)
 
   if (length(files) != 1) {
     return(files)
@@ -105,6 +114,9 @@ rxp_read <- function(derivation_name) {
 #'   outputs (which can happen when building a Quarto document for example) or
 #'   loading fails, the path to the object is returned instead.
 #' @param derivation_name Character, the name of the derivation.
+#' @param which_log Character, defaults to NULL. If NULL the most recent
+#'   build log is used. If a string is provided, it's used as a
+#'   regular expression to match against available log files.
 #' @return Nothing, this function has the side effect of loading objects into
 #'   the parent frame.
 
@@ -113,13 +125,15 @@ rxp_read <- function(derivation_name) {
 #'   # Load an R object
 #'   rxp_load("mtcars")
 #'
-#'   # Load a Python
+#'   # Load a Python object
 #'   rxp_load("my_python_model")
 #'
+#'   # Load from a specific build log
+#'   rxp_load("mtcars", which_log = "2025-05-10")
 #' }
 #' @export
-rxp_load <- function(derivation_name) {
-  files <- rxp_read_load_setup(derivation_name)
+rxp_load <- function(derivation_name, which_log = NULL) {
+  files <- rxp_read_load_setup(derivation_name, which_log)
   if (length(files) != 1) {
     return(files)
   }

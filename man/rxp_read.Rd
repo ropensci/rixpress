@@ -4,10 +4,14 @@
 \alias{rxp_read}
 \title{Read output of a derivation}
 \usage{
-rxp_read(derivation_name)
+rxp_read(derivation_name, which_log = NULL)
 }
 \arguments{
 \item{derivation_name}{Character, the name of the derivation.}
+
+\item{which_log}{Character, defaults to NULL. If NULL the most recent
+build log is used. If a string is provided, it's used as a
+regular expression to match against available log files.}
 }
 \value{
 The derivation's output.
@@ -30,5 +34,8 @@ returned instead.
 \examples{
 \dontrun{
   mtcars <- rxp_read("mtcars")
+  
+  # Read from a specific build log
+  mtcars <- rxp_read("mtcars", which_log = "2025-05-10")
 }
 }
