@@ -34,7 +34,7 @@ returned instead.
 \examples{
 \dontrun{
   mtcars <- rxp_read("mtcars")
-  
+
   # Read from a specific build log
   mtcars <- rxp_read("mtcars", which_log = "2025-05-10")
 }

@@ -4,11 +4,21 @@
 \alias{export_nix_archive}
 \title{Export Nix store paths to an archive}
 \usage{
-export_nix_archive(archive_file = "_rixpress/pipeline_outputs.nar")
+export_nix_archive(
+  archive_file = "_rixpress/pipeline_outputs.nar",
+  which_log = NULL,
+  project_path = "."
+)
 }
 \arguments{
 \item{archive_file}{Character, path to the archive, defaults to
 "_rixpress/pipeline-outputs.nar"}
+
+\item{which_log}{Character or NULL, regex pattern to match a specific log file.
+If NULL (default), the most recent log file will be used.}
+
+\item{project_path}{Character, defaults to ".".
+Path to the root directory of the project.}
 }
 \description{
 Creates a single archive file containing the specified Nix store paths

@@ -38,7 +38,7 @@ loading fails, the path to the object is returned instead.
 
   # Load a Python object
   rxp_load("my_python_model")
-  
+
   # Load from a specific build log
   rxp_load("mtcars", which_log = "2025-05-10")
 }
