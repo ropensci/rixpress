@@ -1000,6 +1000,11 @@ rxp_rmd <- function(
 #' @param x An object of class "derivation"
 #' @param ... Additional arguments passed to print methods
 #' @return Nothing, prints a summary of the derivation object to the console.
+#' @examples
+#' \dontrun{
+#' # d0 is a previously defined derivation
+#'   print(d0)
+#' }
 #' @export
 print.derivation <- function(x, ...) {
   cat("Name:", x$name, "\n")
