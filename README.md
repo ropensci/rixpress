@@ -3,6 +3,8 @@
 
 [![R-hub
 v2](https://github.com/b-rodrigues/rixpress/actions/workflows/rhub.yaml/badge.svg)](https://github.com/b-rodrigues/rixpress/actions/workflows/rhub.yaml/)
+[![Status at rOpenSci Software Peer
+Review](https://badges.ropensci.org/706_status.svg)](https://github.com/ropensci/software-review/issues/706)
 
 <p>
 If you want to watch a 2-Minute video introduction, click the image
