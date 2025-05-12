@@ -116,6 +116,33 @@ provided anonymous function will read all the <code>.csv</code> file in the <cod
 folder.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span>  <span class="co"># Read a CSV file with pandas</span></span></span>
+<span class="r-in"><span>  <span class="fu">rxp_py_file</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    name <span class="op">=</span> <span class="va">pandas_data</span>,</span></span>
+<span class="r-in"><span>    path <span class="op">=</span> <span class="st">"data/dataset.csv"</span>,</span></span>
+<span class="r-in"><span>    read_function <span class="op">=</span> <span class="st">"pandas.read_csv"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span>  </span></span>
+<span class="r-in"><span>  <span class="co"># Read a geospatial file with geopandas</span></span></span>
+<span class="r-in"><span>  <span class="fu">rxp_py_file</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    name <span class="op">=</span> <span class="va">geopandas_data</span>,</span></span>
+<span class="r-in"><span>    path <span class="op">=</span> <span class="st">"data/boundaries.shp"</span>,</span></span>
+<span class="r-in"><span>    read_function <span class="op">=</span> <span class="st">"geopandas.read_file"</span>,</span></span>
+<span class="r-in"><span>    copy_data_folder <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span>  </span></span>
+<span class="r-in"><span>  <span class="co"># Read all CSV files in a directory using a lambda function</span></span></span>
+<span class="r-in"><span>  <span class="fu">rxp_py_file</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    name <span class="op">=</span> <span class="va">all_csvs</span>,</span></span>
+<span class="r-in"><span>    path <span class="op">=</span> <span class="st">"data"</span>,</span></span>
+<span class="r-in"><span>    read_function <span class="op">=</span> <span class="st">"lambda x: [pandas.read_csv(os.path.join(x, f)) for f in os.listdir(x) if f.endswith('.csv')]"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
