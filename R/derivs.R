@@ -80,10 +80,11 @@ rxp_r <- function(
   env_exports <- ""
   if (!is.null(env_var)) {
     env_exports <- paste(
-      sapply(
+      vapply(
         names(env_var),
         function(var_name)
-          sprintf("export %s=%s", var_name, env_var[[var_name]])
+          sprintf("export %s=%s", var_name, env_var[[var_name]]),
+        character(1)
       ),
       collapse = "\n      "
     )
@@ -244,9 +245,10 @@ rxp_py <- function(
   env_exports <- ""
   if (!is.null(env_var)) {
     env_exports <- paste(
-      sapply(
+      vapply(
         names(env_var),
-        function(var) sprintf("export %s=%s", var, env_var[[var]])
+        function(var) sprintf("export %s=%s", var, env_var[[var]]),
+        character(1)
       ),
       collapse = "\n      "
     )
@@ -371,23 +373,28 @@ rxp_quarto <- function(
   refs <- unique(refs)
 
   # Generate substitution commands for each reference
-  sub_cmds <- sapply(refs, function(ref) {
-    sprintf(
-      "substituteInPlace %s --replace-fail 'rxp_read(\"%s\")' 'rxp_read(\"${%s}\")'",
-      qmd_file,
-      ref,
-      ref
-    )
-  })
+  sub_cmds <- vapply(
+    refs,
+    function(ref) {
+      sprintf(
+        "substituteInPlace %s --replace-fail 'rxp_read(\"%s\")' 'rxp_read(\"${%s}\")'",
+        qmd_file,
+        ref,
+        ref
+      )
+    },
+    character(1)
+  )
 
   # Generate environment variable export statements if env_var is provided
   env_exports <- ""
   if (!is.null(env_var)) {
     env_exports <- paste(
-      sapply(
+      vapply(
         names(env_var),
         function(var_name)
-          sprintf("      export %s=%s", var_name, env_var[[var_name]])
+          sprintf("      export %s=%s", var_name, env_var[[var_name]]),
+        character(1)
       ),
       collapse = "\n"
     )
@@ -458,6 +465,19 @@ rxp_quarto <- function(
 #' @param env_var List, defaults to NULL. A named list of environment variables
 #'   to set before running the script, e.g., c(DATA_PATH = "/path/to/data").
 #'   Each entry will be added as an export statement in the build phase.
+#' @examples
+#' \dontrun{
+#'   rxp_file_common(
+#'     out_name = out_name,
+#'     path = actual_path,
+#'     nix_env = nix_env,
+#'     build_phase = build_phase,
+#'     type = "rxp_r",
+#'     derivation_func = "makeRDerivation",
+#'     library_ext = "R",
+#'     env_var = env_var
+#'   )
+#' }
 #' @return A list with `name`, `snippet`, `type`, and `nix_env`.
 rxp_file_common <- function(
   out_name,
@@ -494,10 +514,11 @@ rxp_file_common <- function(
   env_exports <- ""
   if (!is.null(env_var)) {
     env_exports <- paste(
-      sapply(
+      vapply(
         names(env_var),
         function(var_name)
-          sprintf("export %s=%s", var_name, env_var[[var_name]])
+          sprintf("export %s=%s", var_name, env_var[[var_name]]),
+        character(1)
       ),
       collapse = "\n      "
     )
@@ -908,14 +929,18 @@ rxp_rmd <- function(
   refs <- unique(refs)
 
   # Generate substitution commands for each reference
-  sub_cmds <- sapply(refs, function(ref) {
-    sprintf(
-      "substituteInPlace %s --replace-fail 'rxp_read(\"%s\")' 'rxp_read(\"${%s}\")'",
-      rmd_file,
-      ref,
-      ref
-    )
-  })
+  sub_cmds <- vapply(
+    refs,
+    function(ref) {
+      sprintf(
+        "substituteInPlace %s --replace-fail 'rxp_read(\"%s\")' 'rxp_read(\"${%s}\")'",
+        rmd_file,
+        ref,
+        ref
+      )
+    },
+    character(1)
+  )
 
   # Prepare render arguments
   render_args <- "rmarkdown::render(input = file.path('$PWD', rmd_file), output_dir = '$out'"
@@ -942,10 +967,11 @@ rxp_rmd <- function(
   env_exports <- ""
   if (!is.null(env_var)) {
     env_exports <- paste(
-      sapply(
+      vapply(
         names(env_var),
         function(var_name)
-          sprintf("      export %s=%s", var_name, env_var[[var_name]])
+          sprintf("      export %s=%s", var_name, env_var[[var_name]]),
+        character(1)
       ),
       collapse = "\n"
     )
