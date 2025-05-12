@@ -1,6 +1,6 @@
 Package: rixpress
 Title: Build Reproducible Analytical Pipelines With Nix
-Version: 0.1.0
+Version: 0.2.0
 Authors@R:
     person("Bruno", "Rodrigues", , "bruno@brodrigues.co", role = c("aut", "cre"))
 Description: Streamlines the creation of reproducible analytical pipelines using
@@ -9,7 +9,7 @@ Description: Streamlines the creation of reproducible analytical pipelines using
   and build the resulting pipeline using `Nix` as the underlying end-to-end build
   tool. Functions to plot a DAG representation of the pipeline are included,
   as well as functions to load and inspect intermediary results for interactive
-  analysis. Heavily inspired by the `{targets}` package.
+  analysis. User experience heavily inspired by the `{targets}` package.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
