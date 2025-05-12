@@ -13,7 +13,7 @@
 #' \dontrun{
 #'   # Build the pipeline with default settings
 #'   rxp_make()
-#'   
+#'
 #'   # Build with verbose output and parallel execution
 #'   rxp_make(verbose = TRUE, max_jobs = 4, cores = 2)
 #' }
@@ -77,8 +77,8 @@ rxp_make <- function(verbose = FALSE, max_jobs = 1, cores = 1) {
 
     data.frame(
       derivation = gsub("\\.drv$", "", gsub("^[^-]*-", "", drv_path)),
-      build_success = sapply(output_checks, `[[`, "build_success"),
-      path = sapply(output_checks, `[[`, "path"),
+      build_success = vapply(output_checks, `[[`, logical(1), "build_success"),
+      path = vapply(output_checks, `[[`, character(1), "path"),
       output = I(lapply(output_checks, `[[`, "files"))
     )
   })
@@ -156,7 +156,7 @@ rxp_make <- function(verbose = FALSE, max_jobs = 1, cores = 1) {
 #' \dontrun{
 #'   # Export the most recent build to the default location
 #'   export_nix_archive()
-#'   
+#'
 #'   # Export a specific build to a custom location
 #'   export_nix_archive(
 #'     archive_file = "my_archive.nar",
@@ -215,7 +215,7 @@ export_nix_archive <- function(
 #' \dontrun{
 #'   # Import from the default archive location
 #'   import_nix_archive()
-#'   
+#'
 #'   # Import from a custom archive file
 #'   import_nix_archive("path/to/my_archive.nar")
 #' }
