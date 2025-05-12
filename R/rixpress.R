@@ -448,7 +448,13 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
       ""
     }
 
-    load_lines <- sapply(deps, load_line, indent, unserialize_function)
+    load_lines <- vapply(
+      deps,
+      load_line,
+      indent,
+      unserialize_function,
+      FUN.VALUE = character(1)
+    )
     pipeline <- append(pipeline, load_lines, after = build_phase_idx + 2)
   }
 
