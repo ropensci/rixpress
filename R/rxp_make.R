@@ -139,16 +139,45 @@ rxp_make <- function(verbose = FALSE, max_jobs = 1, cores = 1) {
 #'
 #' @param archive_file Character, path to the archive, defaults to
 #'   "_rixpress/pipeline-outputs.nar"
+#' @param which_log Character or NULL, regex pattern to match a specific log file.
+#'   If NULL (default), the most recent log file will be used.
+#' @param project_path Character, defaults to ".".
+#'   Path to the root directory of the project.
 #'
 #' @export
 export_nix_archive <- function(
-  archive_file = "_rixpress/pipeline_outputs.nar"
+  archive_file = "_rixpress/pipeline_outputs.nar",
+  which_log = NULL,
+  project_path = "."
 ) {
-  if (!file.exists("_rixpress/build_log.rds")) {
-    stop("Build the pipeline before exporting archive.")
+  rixpress_dir <- file.path(project_path, "_rixpress")
+
+  # Get all available logs
+  logs_df <- rxp_list_logs(project_path)
+
+  if (nrow(logs_df) == 0) {
+    stop("No build logs found, did you build the pipeline?")
   }
 
-  store_paths <- readRDS("_rixpress/build_log.rds")$path
+  if (is.null(which_log)) {
+    # Use the most recent log
+    log_path <- file.path(rixpress_dir, logs_df$filename[1])
+  } else {
+    # Find logs matching the pattern
+    matches <- grep(which_log, logs_df$filename, value = TRUE)
+
+    if (length(matches) == 0) {
+      stop("No build logs found matching the pattern: ", which_log)
+    }
+
+    # Get the full path of the most recent matching log
+    match_idx <- match(matches[1], logs_df$filename)
+    log_path <- file.path(rixpress_dir, logs_df$filename[match_idx])
+    message("Using log file: ", basename(log_path))
+  }
+
+  message("Using build log: ", basename(log_path))
+  store_paths <- readRDS(log_path)$path
 
   message("Exporting store paths to ", archive_file)
   system2("nix-store", args = c("--export", store_paths), stdout = archive_file)
