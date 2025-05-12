@@ -122,8 +122,8 @@ rxp_make <- function(verbose = FALSE, max_jobs = 1, cores = 1) {
   if (build_process$status == 0) {
     message(
       "Build successful! Run `rxp_inspect()` for a summary.\n",
-      "Read individual derivations using `rxp_read()` or\n",
-      "load them into the global environment using `rxp_load()`."
+      "Use `rxp_read(\"derivation_name\")` to read objects or\n",
+      "`rxp_load(\"derivation_name\")` to load them into the global environment."
     )
   }
 

@@ -9,7 +9,11 @@
 #'   returns the path to the object(s).
 #' @return A character vector of paths to the matching files.
 #' @noRd
-rxp_read_load_setup <- function(derivation_name, which_log = NULL, project_path = ".") {
+rxp_read_load_setup <- function(
+  derivation_name,
+  which_log = NULL,
+  project_path = "."
+) {
   # if derivation_name is a full path to the /nix/store simply return it
   # this is useful for Quarto documents
   if (grepl("^/nix/store/", derivation_name)) {
@@ -46,7 +50,7 @@ rxp_read_load_setup <- function(derivation_name, which_log = NULL, project_path 
       !requireNamespace("reticulate", quietly = TRUE)
   ) {
     stop(
-      "The '' package is required to load .pickle files.\nPlease install it to use this feature."
+      "The 'reticulate' package is required to load .pickle files.\nPlease install it to use this feature."
     )
   }
   file_paths
@@ -168,6 +172,7 @@ rxp_load <- function(derivation_name, which_log = NULL, project_path = ".") {
 
   # If we got back a path (i.e. both readers failed), just return it
   if (is.character(value) && length(value) == 1 && value == path) {
+    message("Note: Returning file path instead of loaded object.")
     return(path)
   }
 
