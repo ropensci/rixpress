@@ -9,6 +9,14 @@
 #' @importFrom processx run
 #' @importFrom utils capture.output
 #' @return A character vector of paths to the built outputs.
+#' @examples
+#' \dontrun{
+#'   # Build the pipeline with default settings
+#'   rxp_make()
+#'   
+#'   # Build with verbose output and parallel execution
+#'   rxp_make(verbose = TRUE, max_jobs = 4, cores = 2)
+#' }
 #' @export
 rxp_make <- function(verbose = FALSE, max_jobs = 1, cores = 1) {
   message("Build process started...\n", "\n")
@@ -144,7 +152,17 @@ rxp_make <- function(verbose = FALSE, max_jobs = 1, cores = 1) {
 #' @param project_path Character, defaults to ".".
 #'   Path to the root directory of the project.
 #' @return Nothing, creates an archive file at the specified location.
-#'
+#' @examples
+#' \dontrun{
+#'   # Export the most recent build to the default location
+#'   export_nix_archive()
+#'   
+#'   # Export a specific build to a custom location
+#'   export_nix_archive(
+#'     archive_file = "my_archive.nar",
+#'     which_log = "20250510"
+#'   )
+#' }
 #' @export
 export_nix_archive <- function(
   archive_file = "_rixpress/pipeline_outputs.nar",
@@ -193,7 +211,14 @@ export_nix_archive <- function(
 #' @param archive_file Character, path to the archive, defaults to
 #'   "_rixpress/pipeline-outputs.nar"
 #' @return Nothing, imports the archive contents into the local Nix store.
-#'
+#' @examples
+#' \dontrun{
+#'   # Import from the default archive location
+#'   import_nix_archive()
+#'   
+#'   # Import from a custom archive file
+#'   import_nix_archive("path/to/my_archive.nar")
+#' }
 #' @export
 import_nix_archive <- function(
   archive_file = "_rixpress/pipeline_outputs.nar"

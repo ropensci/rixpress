@@ -6,6 +6,14 @@
 #'   Path to the root directory of the project.
 #'
 #' @return A data frame with log filenames, modification times, and file sizes.
+#' @examples
+#' \dontrun{
+#'   # List all build logs in the current project
+#'   logs <- rxp_list_logs()
+#'   
+#'   # List logs from a specific project directory
+#'   logs <- rxp_list_logs("path/to/project")
+#' }
 #' @export
 rxp_list_logs <- function(project_path = ".") {
   rixpress_dir <- file.path(project_path, "_rixpress")
@@ -67,6 +75,17 @@ rxp_list_logs <- function(project_path = ".") {
 #'
 #' @return A data frame with derivation names, if their build was successful,
 #'   their paths in the /nix/store, and their build outputs.
+#' @examples
+#' \dontrun{
+#'   # Inspect the most recent build
+#'   build_results <- rxp_inspect()
+#'   
+#'   # Inspect a specific build log
+#'   build_results <- rxp_inspect(which_log = "20250510")
+#'   
+#'   # Check which derivations failed
+#'   failed <- subset(build_results, !build_success)
+#' }
 #' @export
 rxp_inspect <- function(project_path = ".", which_log = NULL) {
   rixpress_dir <- file.path(project_path, "_rixpress")

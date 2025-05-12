@@ -650,6 +650,30 @@ rxp_r_file <- function(
 #'   provided anonymous function will read all the `.csv` file in the `data/`
 #'   folder.
 #' @return An object of class derivation which inherits from lists.
+#' @examples
+#' \dontrun{
+#'   # Read a CSV file with pandas
+#'   rxp_py_file(
+#'     name = pandas_data,
+#'     path = "data/dataset.csv",
+#'     read_function = "pandas.read_csv"
+#'   )
+#'   
+#'   # Read a geospatial file with geopandas
+#'   rxp_py_file(
+#'     name = geopandas_data,
+#'     path = "data/boundaries.shp",
+#'     read_function = "geopandas.read_file",
+#'     copy_data_folder = TRUE
+#'   )
+#'   
+#'   # Read all CSV files in a directory using a lambda function
+#'   rxp_py_file(
+#'     name = all_csvs,
+#'     path = "data",
+#'     read_function = "lambda x: [pandas.read_csv(os.path.join(x, f)) for f in os.listdir(x) if f.endswith('.csv')]"
+#'   )
+#' }
 #' @export
 rxp_py_file <- function(
   name,
@@ -720,6 +744,17 @@ rxp_py_file <- function(
 #'   Python).
 #' @return A list with elements: `name`, `snippet`, `type`, `additional_files`,
 #'   `nix_env`.
+#' @examples
+#' \dontrun{
+#'   # This is an internal function used by rxp_py2r and rxp_r2py
+#'   # Not typically called directly by users
+#'   deriv <- rxp_common_setup(
+#'     out_name = "r_data",
+#'     expr_str = "py_data",
+#'     nix_env = "default.nix",
+#'     direction = "py2r"
+#'   )
+#' }
 rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
   expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
