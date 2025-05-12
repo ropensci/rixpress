@@ -14,10 +14,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-library(rixpress)
-```
-
 ## Introduction
 
 When building a pipeline, all the build artifacts are store in the Nix store of
@@ -47,7 +43,7 @@ rxp_list_logs()
 
 This will return a data frame with information about all available logs:
 
-```
+```{r, eval=FALSE}
                                                         filename   modification_time size_kb
 1 build_log_20250511_194737_242khmf40s7bd7rli9bj4xggg38zhn7w.rds 2025-05-11 19:47:37    0.49
 2 build_log_20250511_194238_242khmf40s7bd7rli9bj4xggg38zhn7w.rds 2025-05-11 19:42:38    0.49
@@ -78,7 +74,8 @@ the log filenames. If multiple logs match, the most recent one is used.
 
 ## Reading and Loading Data from Specific Builds
 
-The `rxp_read()` and `rxp_load()` functions also accept a `which_log` parameter, allowing you to read or load data from specific builds:
+The `rxp_read()` and `rxp_load()` functions also accept a `which_log` parameter,
+allowing you to read or load data from specific builds:
 
 ```{r, eval=FALSE}
 # Read output from the most recent build
