@@ -563,6 +563,24 @@ rxp_file_common <- function(
 #'   list.files(x, full.names = TRUE, pattern = ".csv$"))))` the provided
 #'   anonymous function will read all the `.csv` files in the `data/` folder.
 #' @return An object of class derivation which inherits from lists.
+#' @examples
+#' \dontrun{
+#'   # Read a CSV file
+#'   rxp_r_file(
+#'     name = mtcars,
+#'     path = "data/mtcars.csv",
+#'     read_function = \(x) (read.csv(file = x, sep = "|"))
+#'   )
+#'
+#'   # Read all CSV files in a directory using a lambda function
+#'  rxp_r_file(
+#'    name = mtcars_r,
+#'    path = "data",
+#'    read_function = \(x)
+#'      (readr::read_delim(list.files(x, full.names = TRUE), delim = "|")),
+#'    copy_data_folder = TRUE
+#'  )
+#' }
 #' @export
 rxp_r_file <- function(
   name,
@@ -658,21 +676,15 @@ rxp_r_file <- function(
 #'     path = "data/dataset.csv",
 #'     read_function = "pandas.read_csv"
 #'   )
-#'   
-#'   # Read a geospatial file with geopandas
-#'   rxp_py_file(
-#'     name = geopandas_data,
-#'     path = "data/boundaries.shp",
-#'     read_function = "geopandas.read_file",
-#'     copy_data_folder = TRUE
-#'   )
-#'   
-#'   # Read all CSV files in a directory using a lambda function
-#'   rxp_py_file(
-#'     name = all_csvs,
-#'     path = "data",
-#'     read_function = "lambda x: [pandas.read_csv(os.path.join(x, f)) for f in os.listdir(x) if f.endswith('.csv')]"
-#'   )
+#'
+#' # Read all CSV files in a directory using a
+#' # user defined function
+#'  rxp_py_file(
+#'   name = mtcars_py,
+#'   path = 'data',
+#'   read_function = "read_many_csvs",
+#'   copy_data_folder = TRUE
+#' )
 #' }
 #' @export
 rxp_py_file <- function(
