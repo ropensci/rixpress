@@ -4,7 +4,7 @@
 \alias{rxp_read}
 \title{Read output of a derivation}
 \usage{
-rxp_read(derivation_name, which_log = NULL)
+rxp_read(derivation_name, which_log = NULL, project_path = ".")
 }
 \arguments{
 \item{derivation_name}{Character, the name of the derivation.}
@@ -12,6 +12,9 @@ rxp_read(derivation_name, which_log = NULL)
 \item{which_log}{Character, defaults to NULL. If NULL the most recent
 build log is used. If a string is provided, it's used as a
 regular expression to match against available log files.}
+
+\item{project_path}{Character, defaults to ".".
+Path to the root directory of the project.}
 }
 \value{
 The derivation's output.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/derivs.R
 \name{rxp_py}
 \alias{rxp_py}
-\title{rxp_py Creates a Nix expression running a Python function}
+\title{Create a Nix expression running a Python function}
 \usage{
 rxp_py(
   name,
@@ -44,7 +44,7 @@ Each entry will be added as an export statement in the build phase.}
 An object of class derivation which inherits from lists.
 }
 \description{
-rxp_py Creates a Nix expression running a Python function
+Create a Nix expression running a Python function
 }
 \details{
 At a basic level,

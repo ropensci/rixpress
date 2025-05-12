@@ -4,7 +4,7 @@
 \alias{rxp_load}
 \title{Load output of a derivation}
 \usage{
-rxp_load(derivation_name, which_log = NULL)
+rxp_load(derivation_name, which_log = NULL, project_path = ".")
 }
 \arguments{
 \item{derivation_name}{Character, the name of the derivation.}
@@ -12,6 +12,9 @@ rxp_load(derivation_name, which_log = NULL)
 \item{which_log}{Character, defaults to NULL. If NULL the most recent
 build log is used. If a string is provided, it's used as a
 regular expression to match against available log files.}
+
+\item{project_path}{Character, defaults to ".".
+Path to the root directory of the project.}
 }
 \value{
 Nothing, this function has the side effect of loading objects into
@@ -27,7 +30,7 @@ in the current session using \code{assign(..., envir = parent.frame())}, which
 corresponds to the global environment in a regular interactive session. If
 you're trying to load a Python object and \code{{reticulate}} is available,
 \code{reticulate::py_load_object()} is used and then the object gets loaded into
-the golbal environment. In case the derivation is pointing to several
+the global environment. In case the derivation is pointing to several
 outputs (which can happen when building a Quarto document for example) or
 loading fails, the path to the object is returned instead.
 }
