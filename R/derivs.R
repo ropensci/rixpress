@@ -1,4 +1,4 @@
-#' rxp_r Creates a Nix expression running an R function
+#' Create a Nix expression running an R function
 #' @param name Symbol, name of the derivation.
 #' @param expr R code to generate the expression.
 #' @param additional_files Character vector, additional files to include. Custom
@@ -157,7 +157,7 @@ rxp_r <- function(
 }
 
 
-#' rxp_py Creates a Nix expression running a Python function
+#' Create a Nix expression running a Python function
 #'
 #' @param name Symbol, name of the derivation.
 #' @param py_expr Character, Python code to generate the expression.

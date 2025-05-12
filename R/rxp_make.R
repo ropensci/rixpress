@@ -1,11 +1,11 @@
 #' Build pipeline using Nix
 #'
 #' Runs `nix-build` with a quiet flag, outputting to `_rixpress/result`.
-#' @param max_jobs Integer, number of derivations to be built in parallel.
-#' @param cores Integer, number of cores a derivation can use during build.
 #' @param verbose Logical, defaults to FALSE. Set to TRUE to see nix's
 #'   standard output, can be useful to check what is happening if the
 #'   build process takes long.
+#' @param max_jobs Integer, number of derivations to be built in parallel.
+#' @param cores Integer, number of cores a derivation can use during build.
 #' @importFrom processx run
 #' @importFrom utils capture.output
 #' @return A character vector of paths to the built outputs.
