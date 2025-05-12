@@ -41,3 +41,17 @@ A list with \code{name}, \code{snippet}, \code{type}, and \code{nix_env}.
 \description{
 Creates a Nix expression with shared logic for R and Python file reading.
 }
+\examples{
+\dontrun{
+  rxp_file_common(
+    out_name = out_name,
+    path = actual_path,
+    nix_env = nix_env,
+    build_phase = build_phase,
+    type = "rxp_r",
+    derivation_func = "makeRDerivation",
+    library_ext = "R",
+    env_var = env_var
+  )
+}
+}

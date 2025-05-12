@@ -50,3 +50,22 @@ use a function that recursively reads in all data. For example
 \verb{rxp_r_file(many_csvs, path = "data", read_function = \\(x)(readr::read_csv( list.files(x, full.names = TRUE, pattern = ".csv$"))))} the provided
 anonymous function will read all the \code{.csv} files in the \verb{data/} folder.
 }
+\examples{
+\dontrun{
+  # Read a CSV file
+  rxp_r_file(
+    name = mtcars,
+    path = "data/mtcars.csv",
+    read_function = \(x) (read.csv(file = x, sep = "|"))
+  )
+
+  # Read all CSV files in a directory using a lambda function
+ rxp_r_file(
+   name = mtcars_r,
+   path = "data",
+   read_function = \(x)
+     (readr::read_delim(list.files(x, full.names = TRUE), delim = "|")),
+   copy_data_folder = TRUE
+ )
+}
+}

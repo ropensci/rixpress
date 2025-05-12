@@ -21,7 +21,7 @@ Useful for transferring built outputs between machines.
 \dontrun{
   # Import from the default archive location
   import_nix_archive()
-  
+
   # Import from a custom archive file
   import_nix_archive("path/to/my_archive.nar")
 }

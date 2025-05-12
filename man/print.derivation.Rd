@@ -17,3 +17,9 @@ Nothing, prints a summary of the derivation object to the console.
 \description{
 Print method for derivation objects
 }
+\examples{
+\dontrun{
+# d0 is a previously defined derivation
+  print(d0)
+}
+}

@@ -33,7 +33,7 @@ its Nix store.
 \dontrun{
   # Export the most recent build to the default location
   export_nix_archive()
-  
+
   # Export a specific build to a custom location
   export_nix_archive(
     archive_file = "my_archive.nar",

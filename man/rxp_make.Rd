@@ -25,7 +25,7 @@ Runs \code{nix-build} with a quiet flag, outputting to \verb{_rixpress/result}.
 \dontrun{
   # Build the pipeline with default settings
   rxp_make()
-  
+
   # Build with verbose output and parallel execution
   rxp_make(verbose = TRUE, max_jobs = 4, cores = 2)
 }
