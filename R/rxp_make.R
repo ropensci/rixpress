@@ -143,6 +143,7 @@ rxp_make <- function(verbose = FALSE, max_jobs = 1, cores = 1) {
 #'   If NULL (default), the most recent log file will be used.
 #' @param project_path Character, defaults to ".".
 #'   Path to the root directory of the project.
+#' @return Nothing, creates an archive file at the specified location.
 #'
 #' @export
 export_nix_archive <- function(
@@ -191,6 +192,7 @@ export_nix_archive <- function(
 #'
 #' @param archive_file Character, path to the archive, defaults to
 #'   "_rixpress/pipeline-outputs.nar"
+#' @return Nothing, imports the archive contents into the local Nix store.
 #'
 #' @export
 import_nix_archive <- function(

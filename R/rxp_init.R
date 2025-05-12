@@ -14,6 +14,9 @@
 #' - `gen-env.R`: Script to define an execution environment with `{rix}`.
 #' - `gen-pipeline.R`: Defines a data pipeline with `{rixpress}`.
 #'
+#' @return Logical. Returns TRUE if initialization was successful, FALSE if the
+#'   operation was cancelled by the user.
+#'
 #' @examples
 #' # Default usage (will prompt before any action)
 #' \dontrun{
