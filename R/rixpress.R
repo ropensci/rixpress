@@ -91,17 +91,15 @@ rixpress <- function(derivs, project_path = ".", build = TRUE, ...) {
   })
 
   flat_list <- list(
-    nix_env = vapply(
+    nix_env = sapply(
       X = nix_expressions_and_additional_files,
       FUN = `[[`,
-      FUN.VALUE = character(1),
       "nix_env",
       USE.NAMES = FALSE
     ),
-    additional_files = vapply(
+    additional_files = sapply(
       X = nix_expressions_and_additional_files,
       FUN = `[[`,
-      FUN.VALUE = character(1),
       "additional_files",
       USE.NAMES = FALSE
     )
