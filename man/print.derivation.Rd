@@ -11,6 +11,9 @@
 
 \item{...}{Additional arguments passed to print methods}
 }
+\value{
+Nothing, prints a summary of the derivation object to the console.
+}
 \description{
 Print method for derivation objects
 }

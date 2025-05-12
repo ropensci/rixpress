@@ -47,7 +47,6 @@ dag_for_ci <- function(
 #' @examples \dontrun{
 #'   get_nodes_edges()
 #' }
-#' @export
 #' @importFrom jsonlite fromJSON
 get_nodes_edges <- function(path_dag = "_rixpress/dag.json") {
   # Check if the DAG file exists

@@ -53,3 +53,28 @@ use a function that recursively reads in all data. For example
 provided anonymous function will read all the \code{.csv} file in the \verb{data/}
 folder.
 }
+\examples{
+\dontrun{
+  # Read a CSV file with pandas
+  rxp_py_file(
+    name = pandas_data,
+    path = "data/dataset.csv",
+    read_function = "pandas.read_csv"
+  )
+  
+  # Read a geospatial file with geopandas
+  rxp_py_file(
+    name = geopandas_data,
+    path = "data/boundaries.shp",
+    read_function = "geopandas.read_file",
+    copy_data_folder = TRUE
+  )
+  
+  # Read all CSV files in a directory using a lambda function
+  rxp_py_file(
+    name = all_csvs,
+    path = "data",
+    read_function = "lambda x: [pandas.read_csv(os.path.join(x, f)) for f in os.listdir(x) if f.endswith('.csv')]"
+  )
+}
+}

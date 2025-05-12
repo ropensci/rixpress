@@ -20,9 +20,24 @@ If NULL (default), the most recent log file will be used.}
 \item{project_path}{Character, defaults to ".".
 Path to the root directory of the project.}
 }
+\value{
+Nothing, creates an archive file at the specified location.
+}
 \description{
 Creates a single archive file containing the specified Nix store paths
 and their dependencies.
 This archive can be transferred to another machine and imported into
 its Nix store.
+}
+\examples{
+\dontrun{
+  # Export the most recent build to the default location
+  export_nix_archive()
+  
+  # Export a specific build to a custom location
+  export_nix_archive(
+    archive_file = "my_archive.nar",
+    which_log = "20250510"
+  )
+}
 }

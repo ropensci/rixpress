@@ -24,3 +24,15 @@ A list with elements: \code{name}, \code{snippet}, \code{type}, \code{additional
 This function constructs the \code{build_phase} and Nix derivation snippet
 based on the given parameters.
 }
+\examples{
+\dontrun{
+  # This is an internal function used by rxp_py2r and rxp_r2py
+  # Not typically called directly by users
+  deriv <- rxp_common_setup(
+    out_name = "r_data",
+    expr_str = "py_data",
+    nix_env = "default.nix",
+    direction = "py2r"
+  )
+}
+}

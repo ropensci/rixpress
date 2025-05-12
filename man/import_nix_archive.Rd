@@ -10,7 +10,19 @@ import_nix_archive(archive_file = "_rixpress/pipeline_outputs.nar")
 \item{archive_file}{Character, path to the archive, defaults to
 "_rixpress/pipeline-outputs.nar"}
 }
+\value{
+Nothing, imports the archive contents into the local Nix store.
+}
 \description{
 Imports the store paths contained in an archive file into the local Nix store.
 Useful for transferring built outputs between machines.
+}
+\examples{
+\dontrun{
+  # Import from the default archive location
+  import_nix_archive()
+  
+  # Import from a custom archive file
+  import_nix_archive("path/to/my_archive.nar")
+}
 }

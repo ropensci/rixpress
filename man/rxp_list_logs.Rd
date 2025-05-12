@@ -17,3 +17,12 @@ A data frame with log filenames, modification times, and file sizes.
 Returns a data frame with information about all build logs
 in the project's _rixpress directory.
 }
+\examples{
+\dontrun{
+  # List all build logs in the current project
+  logs <- rxp_list_logs()
+  
+  # List logs from a specific project directory
+  logs <- rxp_list_logs("path/to/project")
+}
+}

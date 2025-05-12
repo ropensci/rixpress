@@ -12,6 +12,10 @@ rxp_init(project_path = ".", skip_prompt = FALSE)
 \item{skip_prompt}{Logical. If TRUE, skips all confirmation prompts and proceeds
 with initialization, useful on continuous integration. Defaults to FALSE.}
 }
+\value{
+Logical. Returns TRUE if initialization was successful, FALSE if the
+operation was cancelled by the user.
+}
 \description{
 Generates \code{gen-env.R} and \code{gen-pipeline.R} scripts in the specified project
 directory, after asking the user for confirmation. If the user declines, no

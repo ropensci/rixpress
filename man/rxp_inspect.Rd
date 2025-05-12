@@ -28,3 +28,15 @@ Empty outputs mean that this derivation was not built
 successfully. Several outputs for a single derivation
 are possible.
 }
+\examples{
+\dontrun{
+  # Inspect the most recent build
+  build_results <- rxp_inspect()
+  
+  # Inspect a specific build log
+  build_results <- rxp_inspect(which_log = "20250510")
+  
+  # Check which derivations failed
+  failed <- subset(build_results, !build_success)
+}
+}
