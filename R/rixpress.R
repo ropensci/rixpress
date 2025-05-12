@@ -91,15 +91,17 @@ rixpress <- function(derivs, project_path = ".", build = TRUE, ...) {
   })
 
   flat_list <- list(
-    nix_env = sapply(
-      nix_expressions_and_additional_files,
-      `[[`,
+    nix_env = vapply(
+      X = nix_expressions_and_additional_files,
+      FUN = `[[`,
+      FUN.VALUE = character(1),
       "nix_env",
       USE.NAMES = FALSE
     ),
-    additional_files = sapply(
-      nix_expressions_and_additional_files,
-      `[[`,
+    additional_files = vapply(
+      X = nix_expressions_and_additional_files,
+      FUN = `[[`,
+      FUN.VALUE = character(1),
       "additional_files",
       USE.NAMES = FALSE
     )
@@ -178,7 +180,7 @@ parse_nix_envs <- function(derivs) {
     }
   )
   # path to libraries file
-  derivs <- sapply(
+  derivs <- lapply(
     derivs,
     function(d) {
       d$library <- list.files("_rixpress", pattern = d$base_name)
@@ -189,8 +191,7 @@ parse_nix_envs <- function(derivs) {
         "library" = d$library,
         "library_in_sandbox" = d$library_in_sandbox
       )
-    },
-    simplify = FALSE
+    }
   )
 
   derivs <- unique(derivs)
@@ -250,16 +251,20 @@ parse_nix_envs <- function(derivs) {
 #'   function.
 #' @noRd
 gen_flat_pipeline <- function(derivs) {
-  derivation_texts <- sapply(derivs, function(d) d$snippet)
+  derivation_texts <- vapply(
+    derivs,
+    function(d) d$snippet,
+    FUN.VALUE = character(1)
+  )
   derivations_code <- paste(derivation_texts, collapse = "\n\n")
 
-  deriv_names <- sapply(derivs, function(d) d$name)
+  deriv_names <- vapply(derivs, function(d) d$name, character(1))
   names_line <- paste(deriv_names, collapse = " ")
 
   nix_envs <- parse_nix_envs(derivs)
 
   # Determine required functions
-  types <- sapply(derivs, function(d) d$type)
+  types <- vapply(derivs, function(d) d$type, character(1))
   need_r <- get_need_r(types)
   need_py <- get_need_py(types)
 
