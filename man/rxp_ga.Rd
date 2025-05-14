@@ -25,4 +25,10 @@ to give read and write permissions to the GitHub Actions bot.
   rxp_ga()
 }
 }
+\seealso{
+Other utilities: 
+\code{\link{print.derivation}()},
+\code{\link{rxp_init}()},
+\code{\link{rxp_list_logs}()}
+}
 \concept{utilities}

@@ -47,8 +47,8 @@ loading fails, the path to the object is returned instead.
 }
 }
 \seealso{
-Other storage: 
+Other storage functions: 
 \code{\link{rxp_copy}()},
 \code{\link{rxp_read}()}
 }
-\concept{storage}
+\concept{storage functions}

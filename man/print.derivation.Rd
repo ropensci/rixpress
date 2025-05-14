@@ -23,3 +23,10 @@ Print method for derivation objects
   print(d0)
 }
 }
+\seealso{
+Other utilities: 
+\code{\link{rxp_ga}()},
+\code{\link{rxp_init}()},
+\code{\link{rxp_list_logs}()}
+}
+\concept{utilities}

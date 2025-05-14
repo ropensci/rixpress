@@ -1,4 +1,5 @@
 #' @title List all available build logs
+#' @family utilities
 #' @description Returns a data frame with information about all build logs
 #'     in the project's _rixpress directory.
 #'

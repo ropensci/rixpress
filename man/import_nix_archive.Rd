@@ -27,9 +27,8 @@ Useful for transferring built outputs between machines.
 }
 }
 \seealso{
-Other pipeline: 
+Other pipeline functions: 
 \code{\link{export_nix_archive}()},
-\code{\link{rixpress}()},
 \code{\link{rxp_make}()}
 }
-\concept{pipeline}
+\concept{pipeline functions}

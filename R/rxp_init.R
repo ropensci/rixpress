@@ -1,5 +1,6 @@
 #' Initialize rixpress project
 #'
+#' @family utilities
 #' @description
 #' Generates `gen-env.R` and `gen-pipeline.R` scripts in the specified project
 #'   directory, after asking the user for confirmation. If the user declines, no

@@ -43,8 +43,8 @@ returned instead.
 }
 }
 \seealso{
-Other storage: 
+Other storage functions: 
 \code{\link{rxp_copy}()},
 \code{\link{rxp_load}()}
 }
-\concept{storage}
+\concept{storage functions}

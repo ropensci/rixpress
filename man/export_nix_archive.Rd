@@ -42,9 +42,8 @@ its Nix store.
 }
 }
 \seealso{
-Other pipeline: 
+Other pipeline functions: 
 \code{\link{import_nix_archive}()},
-\code{\link{rixpress}()},
 \code{\link{rxp_make}()}
 }
-\concept{pipeline}
+\concept{pipeline functions}

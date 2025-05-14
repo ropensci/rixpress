@@ -26,3 +26,10 @@ in the project's _rixpress directory.
   logs <- rxp_list_logs("path/to/project")
 }
 }
+\seealso{
+Other utilities: 
+\code{\link{print.derivation}()},
+\code{\link{rxp_ga}()},
+\code{\link{rxp_init}()}
+}
+\concept{utilities}

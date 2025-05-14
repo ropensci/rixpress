@@ -26,9 +26,8 @@ by \code{rixpress()}.
 }
 }
 \seealso{
-Other visualisation: 
+Other visualisation functions: 
 \code{\link{dag_for_ci}()},
-\code{\link{rxp_ggdag}()},
-\code{\link{rxp_visnetwork}()}
+\code{\link{rxp_ggdag}()}
 }
-\concept{visualisation}
+\concept{visualisation functions}

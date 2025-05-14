@@ -1,6 +1,6 @@
 #' @title Export DAG of pipeline and prepare it for rendering on CI
 
-#' @family visualisation
+#' @family visualisation functions
 #' @description This function generates a DOT file representation of the
 #'   pipeline DAG, suitable for visualization, potentially on CI platforms. It
 #'   is called by `rxp_ga()`.
@@ -49,6 +49,7 @@ dag_for_ci <- function(
 #'   get_nodes_edges()
 #' }
 #' @importFrom jsonlite fromJSON
+#' @noRd
 get_nodes_edges <- function(path_dag = "_rixpress/dag.json") {
   # Check if the DAG file exists
   if (!file.exists(path_dag)) {
@@ -86,7 +87,7 @@ get_nodes_edges <- function(path_dag = "_rixpress/dag.json") {
 
 #' @title Create a Directed Acyclic Graph (DAG) representing the pipeline
 #'   using `{ggplot2}`
-#' @family visualisation
+#' @family visualisation functions
 #' @description Uses `{ggdag}` to generate the plot. `{ggdag}` is a soft
 #'   dependency of `{rixpress}` so you need to install it to use this
 #'   function.

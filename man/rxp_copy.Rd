@@ -35,8 +35,8 @@ input, as is the case for \code{html} output.
 }
 }
 \seealso{
-Other storage: 
+Other storage functions: 
 \code{\link{rxp_load}()},
 \code{\link{rxp_read}()}
 }
-\concept{storage}
+\concept{storage functions}

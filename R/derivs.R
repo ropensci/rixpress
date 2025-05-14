@@ -1038,6 +1038,7 @@ rxp_rmd <- function(
 #' # d0 is a previously defined derivation
 #'   print(d0)
 #' }
+#' @family utilities
 #' @export
 print.derivation <- function(x, ...) {
   cat("Name:", x$name, "\n")

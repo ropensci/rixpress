@@ -24,9 +24,8 @@ function.
 }
 }
 \seealso{
-Other visualisation: 
+Other visualisation functions: 
 \code{\link{dag_for_ci}()},
-\code{\link{generate_dag}()},
-\code{\link{rxp_visnetwork}()}
+\code{\link{generate_dag}()}
 }
-\concept{visualisation}
+\concept{visualisation functions}
