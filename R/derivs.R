@@ -161,6 +161,7 @@ rxp_r <- function(
 
 #' Create a Nix expression running a Python function
 #'
+#' @family derivations
 #' @param name Symbol, name of the derivation.
 #' @param py_expr Character, Python code to generate the expression.
 #' @param additional_files Character vector, additional files to include. Custom
@@ -467,6 +468,7 @@ rxp_qmd <- function(
 #' @param env_var List, defaults to NULL. A named list of environment variables
 #'   to set before running the script, e.g., c(DATA_PATH = "/path/to/data").
 #'   Each entry will be added as an export statement in the build phase.
+#' @keywords internal
 #' @examples
 #' \dontrun{
 #'   rxp_file_common(
@@ -561,6 +563,7 @@ rxp_file_common <- function(
 #'
 #' Creates a Nix expression that reads in a file (or folder of data) using R.
 #'
+#' @family derivations
 #' @param name Symbol, the name of the derivation.
 #' @param path Character, the file path to include (e.g., "data/mtcars.shp") or
 #'   a folder path (e.g., "data"). See details.
@@ -780,6 +783,7 @@ rxp_py_file <- function(
 #'   Python).
 #' @return A list with elements: `name`, `snippet`, `type`, `additional_files`,
 #'   `nix_env`.
+#' @keywords internal
 #' @examples
 #' \dontrun{
 #'   # This is an internal function used by rxp_py2r and rxp_r2py
@@ -845,7 +849,7 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
 
 #' Transfer Python object into an R session.
 #'
-#' @family interop function
+#' @family interop functions
 #' @param name Symbol, name of the derivation.
 #' @param expr Symbol, Python object to be loaded into R.
 #' @param nix_env Character, path to the Nix environment file, default is

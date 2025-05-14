@@ -21,7 +21,7 @@ in the project's _rixpress directory.
 \dontrun{
   # List all build logs in the current project
   logs <- rxp_list_logs()
-  
+
   # List logs from a specific project directory
   logs <- rxp_list_logs("path/to/project")
 }
@@ -31,6 +31,7 @@ Other utilities:
 \code{\link{print.derivation}()},
 \code{\link{rxp_copy}()},
 \code{\link{rxp_init}()},
+\code{\link{rxp_inspect}()},
 \code{\link{rxp_load}()},
 \code{\link{rxp_read}()}
 }

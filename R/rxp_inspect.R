@@ -11,7 +11,7 @@
 #' \dontrun{
 #'   # List all build logs in the current project
 #'   logs <- rxp_list_logs()
-#'   
+#'
 #'   # List logs from a specific project directory
 #'   logs <- rxp_list_logs("path/to/project")
 #' }
@@ -59,6 +59,7 @@ rxp_list_logs <- function(project_path = ".") {
 }
 
 #' @title Inspect the build result of a pipeline.
+#' @family utilities
 #' @description Returns a data frame with four columns:
 #'     - derivation: the name of the derivation
 #'     - build_success: whether the build was successful or not
@@ -80,10 +81,10 @@ rxp_list_logs <- function(project_path = ".") {
 #' \dontrun{
 #'   # Inspect the most recent build
 #'   build_results <- rxp_inspect()
-#'   
+#'
 #'   # Inspect a specific build log
 #'   build_results <- rxp_inspect(which_log = "20250510")
-#'   
+#'
 #'   # Check which derivations failed
 #'   failed <- subset(build_results, !build_success)
 #' }

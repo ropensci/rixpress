@@ -29,4 +29,8 @@ using \code{reticulate::py_save_object()}.
   rxp_r2py(my_obj, my_r_object)
 }
 }
+\seealso{
+Other interop functions: 
+\code{\link{rxp_py2r}()}
+}
 \concept{interop functions}

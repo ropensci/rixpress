@@ -69,3 +69,12 @@ anonymous function will read all the \code{.csv} files in the \verb{data/} folde
  )
 }
 }
+\seealso{
+Other derivations: 
+\code{\link{rxp_py}()},
+\code{\link{rxp_py_file}()},
+\code{\link{rxp_qmd}()},
+\code{\link{rxp_r}()},
+\code{\link{rxp_rmd}()}
+}
+\concept{derivations}

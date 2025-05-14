@@ -56,8 +56,10 @@ To include objects built in the pipeline,
 }
 \seealso{
 Other derivations: 
+\code{\link{rxp_py}()},
 \code{\link{rxp_py_file}()},
 \code{\link{rxp_qmd}()},
-\code{\link{rxp_r}()}
+\code{\link{rxp_r}()},
+\code{\link{rxp_r_file}()}
 }
 \concept{derivations}

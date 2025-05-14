@@ -74,8 +74,10 @@ folder.
 }
 \seealso{
 Other derivations: 
+\code{\link{rxp_py}()},
 \code{\link{rxp_qmd}()},
 \code{\link{rxp_r}()},
+\code{\link{rxp_r_file}()},
 \code{\link{rxp_rmd}()}
 }
 \concept{derivations}

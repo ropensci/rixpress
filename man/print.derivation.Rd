@@ -27,6 +27,7 @@ Print method for derivation objects
 Other utilities: 
 \code{\link{rxp_copy}()},
 \code{\link{rxp_init}()},
+\code{\link{rxp_inspect}()},
 \code{\link{rxp_list_logs}()},
 \code{\link{rxp_load}()},
 \code{\link{rxp_read}()}

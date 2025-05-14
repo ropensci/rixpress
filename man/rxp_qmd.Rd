@@ -56,8 +56,10 @@ To include built derivations in the document,
 }
 \seealso{
 Other derivations: 
+\code{\link{rxp_py}()},
 \code{\link{rxp_py_file}()},
 \code{\link{rxp_r}()},
+\code{\link{rxp_r_file}()},
 \code{\link{rxp_rmd}()}
 }
 \concept{derivations}

@@ -29,4 +29,8 @@ object and saves it as an RDS file using \code{reticulate::py_load_object()}.
 rxp_py2r(my_obj, my_python_object)
 }
 }
-\concept{interop function}
+\seealso{
+Other interop functions: 
+\code{\link{rxp_r2py}()}
+}
+\concept{interop functions}

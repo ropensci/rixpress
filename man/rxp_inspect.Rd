@@ -32,11 +32,21 @@ are possible.
 \dontrun{
   # Inspect the most recent build
   build_results <- rxp_inspect()
-  
+
   # Inspect a specific build log
   build_results <- rxp_inspect(which_log = "20250510")
-  
+
   # Check which derivations failed
   failed <- subset(build_results, !build_success)
 }
 }
+\seealso{
+Other utilities: 
+\code{\link{print.derivation}()},
+\code{\link{rxp_copy}()},
+\code{\link{rxp_init}()},
+\code{\link{rxp_list_logs}()},
+\code{\link{rxp_load}()},
+\code{\link{rxp_read}()}
+}
+\concept{utilities}
