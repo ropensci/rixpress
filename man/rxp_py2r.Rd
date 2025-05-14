@@ -29,13 +29,4 @@ object and saves it as an RDS file using \code{reticulate::py_load_object()}.
 rxp_py2r(my_obj, my_python_object)
 }
 }
-\seealso{
-Other derivations: 
-\code{\link{rxp_file_common}()},
-\code{\link{rxp_py_file}()},
-\code{\link{rxp_qmd}()},
-\code{\link{rxp_r}()},
-\code{\link{rxp_r2py}()},
-\code{\link{rxp_rmd}()}
-}
-\concept{derivations}
+\concept{interop function}

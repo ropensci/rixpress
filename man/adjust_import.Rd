@@ -46,7 +46,7 @@ adjust_import("import pillow", "from PIL import Image")
 }
 }
 \seealso{
-Other utililies: 
+Other python import: 
 \code{\link{add_import}()}
 }
-\concept{utililies}
+\concept{python import}

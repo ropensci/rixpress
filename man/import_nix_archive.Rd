@@ -27,8 +27,7 @@ Useful for transferring built outputs between machines.
 }
 }
 \seealso{
-Other pipeline functions: 
-\code{\link{export_nix_archive}()},
-\code{\link{rxp_make}()}
+Other archive caching functions: 
+\code{\link{export_nix_archive}()}
 }
-\concept{pipeline functions}
+\concept{archive caching functions}

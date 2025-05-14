@@ -83,11 +83,8 @@ paths.
 }
 \seealso{
 Other derivations: 
-\code{\link{rxp_file_common}()},
-\code{\link{rxp_py2r}()},
 \code{\link{rxp_py_file}()},
 \code{\link{rxp_qmd}()},
-\code{\link{rxp_r2py}()},
 \code{\link{rxp_rmd}()}
 }
 \concept{derivations}

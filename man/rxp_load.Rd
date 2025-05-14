@@ -47,8 +47,11 @@ loading fails, the path to the object is returned instead.
 }
 }
 \seealso{
-Other storage functions: 
+Other utilities: 
+\code{\link{print.derivation}()},
 \code{\link{rxp_copy}()},
+\code{\link{rxp_init}()},
+\code{\link{rxp_list_logs}()},
 \code{\link{rxp_read}()}
 }
-\concept{storage functions}
+\concept{utilities}

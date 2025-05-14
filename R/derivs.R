@@ -456,7 +456,6 @@ rxp_qmd <- function(
 #'
 #' Creates a Nix expression with shared logic for R and Python file reading.
 #'
-#' @family derivations
 #' @param out_name Character, the name of the derivation as a string.
 #' @param path Character, the file path (URL or local) or folder path.
 #' @param nix_env Character, path to the Nix environment file.
@@ -846,7 +845,7 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
 
 #' Transfer Python object into an R session.
 #'
-#' @family derivations
+#' @family interop function
 #' @param name Symbol, name of the derivation.
 #' @param expr Symbol, Python object to be loaded into R.
 #' @param nix_env Character, path to the Nix environment file, default is
@@ -867,7 +866,7 @@ rxp_py2r <- function(name, expr, nix_env = "default.nix") {
 
 #' Transfer R object into a Python session.
 #'
-#' @family derivations
+#' @family interop functions
 #' @param name Symbol, name of the derivation.
 #' @param expr Symbol, R object to be saved into a Python pickle.
 #' @param nix_env Character, path to the Nix environment file, default is

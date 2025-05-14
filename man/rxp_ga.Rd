@@ -26,9 +26,8 @@ to give read and write permissions to the GitHub Actions bot.
 }
 }
 \seealso{
-Other utilities: 
-\code{\link{print.derivation}()},
-\code{\link{rxp_init}()},
-\code{\link{rxp_list_logs}()}
+Other ci utilities: 
+\code{\link{dag_for_ci}()},
+\code{\link{generate_dag}()}
 }
-\concept{utilities}
+\concept{ci utilities}

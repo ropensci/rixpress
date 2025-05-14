@@ -34,7 +34,7 @@ add_import("import numpy as np", "default.nix")
 }
 }
 \seealso{
-Other utililies: 
+Other python import: 
 \code{\link{adjust_import}()}
 }
-\concept{utililies}
+\concept{python import}

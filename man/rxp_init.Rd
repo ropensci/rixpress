@@ -38,7 +38,9 @@ Creates (overwriting if they already exist):
 \seealso{
 Other utilities: 
 \code{\link{print.derivation}()},
-\code{\link{rxp_ga}()},
-\code{\link{rxp_list_logs}()}
+\code{\link{rxp_copy}()},
+\code{\link{rxp_list_logs}()},
+\code{\link{rxp_load}()},
+\code{\link{rxp_read}()}
 }
 \concept{utilities}

@@ -71,4 +71,8 @@ rixpress(derivs = list_derivs, project_path = ".", build = TRUE)
 
 }
 }
-\concept{pipeline}
+\seealso{
+Other pipeline functions: 
+\code{\link{rxp_make}()}
+}
+\concept{pipeline functions}

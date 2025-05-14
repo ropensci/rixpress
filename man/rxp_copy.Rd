@@ -35,8 +35,11 @@ input, as is the case for \code{html} output.
 }
 }
 \seealso{
-Other storage functions: 
+Other utilities: 
+\code{\link{print.derivation}()},
+\code{\link{rxp_init}()},
+\code{\link{rxp_list_logs}()},
 \code{\link{rxp_load}()},
 \code{\link{rxp_read}()}
 }
-\concept{storage functions}
+\concept{utilities}

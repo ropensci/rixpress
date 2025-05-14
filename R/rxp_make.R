@@ -146,7 +146,7 @@ rxp_make <- function(verbose = FALSE, max_jobs = 1, cores = 1) {
 #' This archive can be transferred to another machine and imported into
 #'   its Nix store.
 #'
-#' @family pipeline functions
+#' @family archive caching functions
 #' @param archive_file Character, path to the archive, defaults to
 #'   "_rixpress/pipeline-outputs.nar"
 #' @param which_log Character or NULL, regex pattern to match a specific log file.
@@ -210,7 +210,7 @@ export_nix_archive <- function(
 #' Imports the store paths contained in an archive file into the local Nix store.
 #' Useful for transferring built outputs between machines.
 #'
-#' @family pipeline functions
+#' @family archive caching functions
 #' @param archive_file Character, path to the archive, defaults to
 #'   "_rixpress/pipeline-outputs.nar"
 #' @return Nothing, imports the archive contents into the local Nix store.

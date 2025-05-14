@@ -29,13 +29,4 @@ using \code{reticulate::py_save_object()}.
   rxp_r2py(my_obj, my_r_object)
 }
 }
-\seealso{
-Other derivations: 
-\code{\link{rxp_file_common}()},
-\code{\link{rxp_py2r}()},
-\code{\link{rxp_py_file}()},
-\code{\link{rxp_qmd}()},
-\code{\link{rxp_r}()},
-\code{\link{rxp_rmd}()}
-}
-\concept{derivations}
+\concept{interop functions}

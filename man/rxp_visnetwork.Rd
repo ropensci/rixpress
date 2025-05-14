@@ -24,4 +24,8 @@ function.
   rxp_visnetwork()
 }
 }
-\concept{visualisation}
+\seealso{
+Other visualisation functions: 
+\code{\link{rxp_ggdag}()}
+}
+\concept{visualisation functions}

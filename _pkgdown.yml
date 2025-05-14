@@ -6,65 +6,39 @@ reference:
 - title: Declaring derivations
   desc: >
     Functions that define or execute Nix derivations from R or Python code, or files like Quarto or R Markdown.
-  contents:
-  - rxp_py
-  - rxp_py_file
-  - rxp_r
-  - rxp_r_file
-  - rxp_qmd
-  - rxp_rmd
+  contents: has_concept("derivations")
 
 - title: Building the pipeline
   desc: >
     Functions to generate and build the Nix pipeline
-  contents:
-  - rixpress
-  - rxp_make
+  contents: has_concept("pipeline functions")
 
 - title: Project utilities
   desc: >
     Functions for initializing projects, copying outputs, reading derivations, and inspecting build artifacts.
-  contents:
-  - rxp_init
-  - rxp_copy
-  - rxp_inspect
-  - rxp_read
-  - rxp_load
-  - rxp_list_logs
-  - print
+  contents: has_concept("utilities")
 
 - title: Archive import/export
   desc: >
     Functions for importing and exporting Nix store paths using archive files.
-  contents:
-  - export_nix_archive
-  - import_nix_archive
+  contents: has_concept("archive caching functions")
 
 - title: DAG and CI tools
   desc: >
     Tools for generating DAGs and preparing pipelines for rendering or deployment in CI environments.
-  contents:
-  - generate_dag
-  - dag_for_ci
-  - rxp_ga
+  contents: has_concept("ci utilities")
 
 - title: R ↔ Python interop
   desc: >
     Functions to move data and objects between R and Python runtimes.
-  contents:
-  - rxp_py2r
-  - rxp_r2py
+  contents: has_concept("interop functions")
 
 - title: Visualization
   desc: >
     Functions for visualizing pipeline DAGs using different backends.
-  contents:
-  - rxp_ggdag
-  - rxp_visnetwork
+  contents: has_concept("visualisation functions")
 
 - title: Python import manipulation
   desc: >
     Utilities to adjust Python import statements to match project or environment conventions.
-  contents:
-  - add_import
-  - adjust_import
+  contents: has_concept("python import")

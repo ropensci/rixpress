@@ -42,8 +42,7 @@ its Nix store.
 }
 }
 \seealso{
-Other pipeline functions: 
-\code{\link{import_nix_archive}()},
-\code{\link{rxp_make}()}
+Other archive caching functions: 
+\code{\link{import_nix_archive}()}
 }
-\concept{pipeline functions}
+\concept{archive caching functions}
