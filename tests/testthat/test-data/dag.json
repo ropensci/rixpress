@@ -34,7 +34,7 @@
       "deriv_name": ["page"],
       "depends": ["mtcars_head", "mtcars_tail", "mtcars_mpg"],
       "unserialize_function": {},
-      "type": ["rxp_quarto"]
+      "type": ["rxp_qmd"]
     }
   ]
 }

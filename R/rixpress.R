@@ -17,7 +17,7 @@
 #'     - `$additional_files`, character vector of paths to files to make
 #'        available to build sandbox
 #'     - `$nix_env`, character, path to Nix environment to build this derivation
-#'   A single deriv is the output of `rxp_r()`, `rxp_quarto()` or `rxp_py()`
+#'   A single deriv is the output of `rxp_r()`, `rxp_qmd()` or `rxp_py()`
 #'   function.
 #'
 #' @param project_path Path to root of project, defaults to ".".
@@ -81,7 +81,7 @@ rixpress <- function(derivs, project_path = ".", build = TRUE, ...) {
   )
   # Drop quarto objects, as these are handled separately
   nix_expressions_and_additional_files <- lapply(derivs, function(d) {
-    if (d$type == "rxp_quarto" || d$type == "rxp_rmd") {
+    if (d$type == "rxp_qmd" || d$type == "rxp_rmd") {
       d$additional_files <- ""
     }
     list(
@@ -246,7 +246,7 @@ parse_nix_envs <- function(derivs) {
 #'     - `$additional_files`, character vector of paths to files to make
 #'        available to build sandbox
 #'     - `$nix_env`, character, path to Nix environment to build this derivation
-#'   A single deriv is the output of `rxp_r()`, `rxp_quarto()` or `rxp_py()`
+#'   A single deriv is the output of `rxp_r()`, `rxp_qmd()` or `rxp_py()`
 #'   function.
 #' @noRd
 gen_flat_pipeline <- function(derivs) {
@@ -345,7 +345,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
   for (d in dag$derivations) {
     if (
       length(d$depends) == 0 ||
-        d$type == "rxp_quarto" ||
+        d$type == "rxp_qmd" ||
         d$type == "rxp_rmd" ||
         d$type == "rxp_py2r" ||
         d$type == "rxp_r2py"
@@ -490,7 +490,7 @@ generate_libraries_from_nix <- function(
 get_need_r <- function(types) {
   any(
     types %in%
-      c("rxp_r", "rxp_r_file", "rxp_rmd", "rxp_quarto", "rxp_py2r", "rxp_r2py")
+      c("rxp_r", "rxp_r_file", "rxp_rmd", "rxp_qmd", "rxp_py2r", "rxp_r2py")
   )
 }
 

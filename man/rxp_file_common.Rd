@@ -59,7 +59,7 @@ Creates a Nix expression with shared logic for R and Python file reading.
 Other derivations: 
 \code{\link{rxp_py2r}()},
 \code{\link{rxp_py_file}()},
-\code{\link{rxp_quarto}()},
+\code{\link{rxp_qmd}()},
 \code{\link{rxp_r}()},
 \code{\link{rxp_r2py}()},
 \code{\link{rxp_rmd}()}

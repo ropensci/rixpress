@@ -164,7 +164,7 @@ list(
     expr = dplyr::select(mtcars_tail, mpg)
   ),
 
-  rxp_quarto(
+  rxp_qmd(
     name = page,
     qmd_file = "my_doc/page.qmd",
     additional_files = c("my_doc/content.qmd", "my_doc/images")
@@ -259,7 +259,7 @@ learning-specific functions for specific models, such as those from `xgboost`.
 ## Building a Quarto or R Markdown document
 
 The last pipeline I want to discuss builds a Quarto document using
-`rxp_quarto()` (use `rxp_rmd()` for an R Markdown document). Here again, the
+`rxp_qmd()` (use `rxp_rmd()` for an R Markdown document). Here again, the
 `additional_files` argument is used to make the derivation aware of required
 files to build the document. Here is what the source of the document looks like:
 
@@ -313,7 +313,7 @@ If you want to add further arguments to the Quarto command line tool, you can
 use the `args` argument:
 
 ```{r, eval = FALSE}
-rxp_quarto(
+rxp_qmd(
   name = page,
   qmd_file = "my_doc/page.qmd",
   additional_files = c("my_doc/content.qmd", "my_doc/images"),

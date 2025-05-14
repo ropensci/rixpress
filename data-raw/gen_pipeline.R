@@ -29,7 +29,7 @@ d3 <- rxp_r(
 
 d4 <- rxp_r(mtcars_mpg, select(mtcars_tail, mpg), nix_env = "default2.nix")
 
-doc <- rxp_quarto(
+doc <- rxp_qmd(
   page,
   "page.qmd",
   additional_files = c("content.qmd", "images"),

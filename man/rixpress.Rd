@@ -15,7 +15,7 @@ five elements:
 - \verb{$additional_files}, character vector of paths to files to make
 available to build sandbox
 - \verb{$nix_env}, character, path to Nix environment to build this derivation
-A single deriv is the output of \code{rxp_r()}, \code{rxp_quarto()} or \code{rxp_py()}
+A single deriv is the output of \code{rxp_r()}, \code{rxp_qmd()} or \code{rxp_py()}
 function.}
 
 \item{project_path}{Path to root of project, defaults to ".".}

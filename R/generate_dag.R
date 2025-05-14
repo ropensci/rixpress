@@ -50,9 +50,9 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
       # Only keep deps
       deps <- Filter(isTRUE, deps)
       deps <- names(deps)
-    } else if (type == "rxp_quarto" || type == "rxp_rmd") {
+    } else if (type == "rxp_qmd" || type == "rxp_rmd") {
       # Determine file path and extension based on type
-      if (type == "rxp_quarto") {
+      if (type == "rxp_qmd") {
         # Try both .qmd and .Qmd extensions
         doc_file <- d$qmd_file
         if (!file.exists(doc_file)) {

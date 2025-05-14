@@ -347,7 +347,7 @@ rxp_py <- function(
 #' \dontrun{
 #'   # Compile a .qmd file to a pdf using typst
 #'   # `images` is a folder containing images to include in the Quarto doc
-#'   rxp_quarto(
+#'   rxp_qmd(
 #'     name = report,
 #'     qmd_file = "report.qmd",
 #'     additional_files = "images",
@@ -355,7 +355,7 @@ rxp_py <- function(
 #'   )
 #' }
 #' @export
-rxp_quarto <- function(
+rxp_qmd <- function(
   name,
   qmd_file,
   additional_files = "",
@@ -441,7 +441,7 @@ rxp_quarto <- function(
   list(
     name = out_name,
     snippet = snippet,
-    type = "rxp_quarto",
+    type = "rxp_qmd",
     qmd_file = qmd_file,
     additional_files = additional_files,
     nix_env = nix_env,
@@ -1048,7 +1048,7 @@ print.derivation <- function(x, ...) {
   if ("unserialize_function" %in% names(x)) {
     cat("Unserialize function:", x$unserialize_function, "\n")
   }
-  if (x$type == "rxp_quarto") {
+  if (x$type == "rxp_qmd") {
     cat("QMD file:", x$qmd_file, "\n")
   }
   if (x$type == "rxp_rmd") {

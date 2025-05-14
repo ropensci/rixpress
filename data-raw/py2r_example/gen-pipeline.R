@@ -47,7 +47,7 @@ d5 <- rxp_r(
   expr = dplyr::select(mtcars_tail, mpg)
 )
 
-doc <- rxp_quarto(
+doc <- rxp_qmd(
   name = page,
   qmd_file = "page.qmd",
   additional_files = c("content.qmd", "images"),

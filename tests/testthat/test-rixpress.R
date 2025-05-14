@@ -1,9 +1,9 @@
 test_that("rixpress: helper functions get_need_r/py work", {
   types_r_only <- c("rxp_r", "rxp_r_file")
   types_py_only <- c("rxp_py", "rxp_py_file")
-  types_quarto <- c("rxp_quarto")
+  types_quarto <- c("rxp_qmd")
   types_transfer <- c("rxp_py2r", "rxp_r2py")
-  types_mixed <- c("rxp_r", "rxp_py", "rxp_quarto", "rxp_py2r")
+  types_mixed <- c("rxp_r", "rxp_py", "rxp_qmd", "rxp_py2r")
 
   expect_true(get_need_r(types_r_only))
   expect_false(get_need_py(types_r_only))

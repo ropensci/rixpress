@@ -58,7 +58,7 @@ list(
     select(mtcars_tail, mpg)
   ),
 
-  rxp_quarto(
+  rxp_qmd(
     page,
     "page.qmd"
   )

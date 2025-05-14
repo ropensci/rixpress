@@ -21,7 +21,7 @@ test_that("get_nodes_edges processes dag.json correctly", {
         "mtcars_mpg",
         "page"
       ),
-      group = c("rxp_r", "rxp_r", "rxp_r", "rxp_r", "rxp_r", "rxp_quarto"),
+      group = c("rxp_r", "rxp_r", "rxp_r", "rxp_r", "rxp_r", "rxp_qmd"),
       stringsAsFactors = FALSE
     ),
     edges = data.frame(

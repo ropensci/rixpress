@@ -45,12 +45,12 @@ digraph {
     type=rxp_r
   ];
   3 -> 6 [
-    type=rxp_quarto
+    type=rxp_qmd
   ];
   4 -> 6 [
-    type=rxp_quarto
+    type=rxp_qmd
   ];
   5 -> 6 [
-    type=rxp_quarto
+    type=rxp_qmd
   ];
 }

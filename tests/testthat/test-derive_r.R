@@ -65,7 +65,7 @@ test_that("rxp_py: custom serialization functions work", {
   )
 })
 
-test_that("rxp_quarto: generates correct list", {
+test_that("rxp_qmd: generates correct list", {
   # Create a temporary qmd file for testing
   qmd_file <- tempfile(fileext = ".qmd")
   writeLines(
@@ -73,7 +73,7 @@ test_that("rxp_quarto: generates correct list", {
     qmd_file
   )
 
-  d1 <- rxp_quarto(
+  d1 <- rxp_qmd(
     report,
     qmd_file,
     additional_files = "images",
@@ -94,7 +94,7 @@ test_that("rxp_quarto: generates correct list", {
           qmd_file,
           ' --to pdf --output-dir $out\n    \'\';\n  };'
         ),
-        "type" = "rxp_quarto",
+        "type" = "rxp_qmd",
         "qmd_file" = qmd_file,
         "additional_files" = "images",
         "nix_env" = "default.nix",
@@ -444,7 +444,7 @@ test_that("rxp_py: with env_var parameter", {
   )
 })
 
-test_that("rxp_quarto: with env_var parameter", {
+test_that("rxp_qmd: with env_var parameter", {
   # Create a temporary qmd file for testing
   qmd_file <- tempfile(fileext = ".qmd")
   writeLines(
@@ -452,7 +452,7 @@ test_that("rxp_quarto: with env_var parameter", {
     qmd_file
   )
 
-  d1 <- rxp_quarto(
+  d1 <- rxp_qmd(
     report,
     qmd_file,
     additional_files = "images",
@@ -474,7 +474,7 @@ test_that("rxp_quarto: with env_var parameter", {
           qmd_file,
           ' --to pdf --output-dir $out\n    \'\';\n  };'
         ),
-        "type" = "rxp_quarto",
+        "type" = "rxp_qmd",
         "qmd_file" = qmd_file,
         "additional_files" = "images",
         "nix_env" = "default.nix",
