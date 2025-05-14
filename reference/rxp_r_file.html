@@ -110,6 +110,15 @@ use a function that recursively reads in all data. For example
 <code>rxp_r_file(many_csvs, path = "data", read_function = \(x)(readr::read_csv( list.files(x, full.names = TRUE, pattern = ".csv$"))))</code> the provided
 anonymous function will read all the <code>.csv</code> files in the <code>data/</code> folder.</p>
     </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p>Other derivations:
+<code><a href="rxp_py.html">rxp_py</a>()</code>,
+<code><a href="rxp_py_file.html">rxp_py_file</a>()</code>,
+<code><a href="rxp_qmd.html">rxp_qmd</a>()</code>,
+<code><a href="rxp_r.html">rxp_r</a>()</code>,
+<code><a href="rxp_rmd.html">rxp_rmd</a>()</code></p></div>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>

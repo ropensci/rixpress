@@ -42,9 +42,9 @@
     </div>
 
     <div class="section level2">
-      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
+      <h2 id="declaring-derivations">Declaring derivations<a class="anchor" aria-label="anchor" href="#declaring-derivations"></a></h2>
 
-
+      <div class="section-desc"><p>Functions that define or execute Nix derivations from R or Python code, or files like Quarto or R Markdown.</p></div>
 
 
     </div><div class="section level2">
@@ -54,47 +54,52 @@
 
       <dl><dt>
 
-          <code><a href="add_import.html">add_import()</a></code>
+          <code><a href="rxp_py.html">rxp_py()</a></code>
 
         </dt>
-        <dd>Add an import statement to Python files in the _rixpress folder matching a Nix environment name</dd>
+        <dd>Create a Nix expression running a Python function</dd>
       </dl><dl><dt>
 
-          <code><a href="adjust_import.html">adjust_import()</a></code>
+          <code><a href="rxp_py_file.html">rxp_py_file()</a></code>
 
         </dt>
-        <dd>Adjust Python import statements</dd>
+        <dd>rxp_py_file</dd>
       </dl><dl><dt>
 
-          <code><a href="dag_for_ci.html">dag_for_ci()</a></code>
+          <code><a href="rxp_qmd.html">rxp_qmd()</a></code>
 
         </dt>
-        <dd>Export DAG of pipeline and prepare it for rendering on CI</dd>
+        <dd>Render a Quarto document as a Nix derivation</dd>
       </dl><dl><dt>
 
-          <code><a href="export_nix_archive.html">export_nix_archive()</a></code>
+          <code><a href="rxp_r.html">rxp_r()</a></code>
 
         </dt>
-        <dd>Export Nix store paths to an archive</dd>
+        <dd>Create a Nix expression running an R function</dd>
       </dl><dl><dt>
 
-          <code><a href="generate_dag.html">generate_dag()</a></code>
+          <code><a href="rxp_r_file.html">rxp_r_file()</a></code>
 
         </dt>
-        <dd>Generate a DAG from a list of derivations</dd>
+        <dd>rxp_r_file</dd>
       </dl><dl><dt>
 
-          <code><a href="import_nix_archive.html">import_nix_archive()</a></code>
+          <code><a href="rxp_rmd.html">rxp_rmd()</a></code>
 
         </dt>
-        <dd>Import Nix store paths from an archive</dd>
-      </dl><dl><dt>
+        <dd>Render an R Markdown document as a Nix derivation</dd>
+      </dl></div><div class="section level2">
+      <h2 id="building-the-pipeline">Building the pipeline<a class="anchor" aria-label="anchor" href="#building-the-pipeline"></a></h2>
 
-          <code><a href="print.derivation.html">print(<i>&lt;derivation&gt;</i>)</a></code>
+      <div class="section-desc"><p>Functions to generate and build the Nix pipeline</p></div>
 
-        </dt>
-        <dd>Print method for derivation objects</dd>
-      </dl><dl><dt>
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="rixpress.html">rixpress()</a></code>
 
@@ -102,34 +107,33 @@
         <dd>Generate Nix Pipeline Code with a Generic Default Target</dd>
       </dl><dl><dt>
 
-          <code><a href="rxp_common_setup.html">rxp_common_setup()</a></code>
+          <code><a href="rxp_make.html">rxp_make()</a></code>
 
         </dt>
-        <dd>Generate the Nix derivation snippet for Python-R object transfer.</dd>
+        <dd>Build pipeline using Nix</dd>
+      </dl></div><div class="section level2">
+      <h2 id="project-utilities">Project utilities<a class="anchor" aria-label="anchor" href="#project-utilities"></a></h2>
+
+      <div class="section-desc"><p>Functions for initializing projects, copying outputs, reading derivations, and inspecting build artifacts.</p></div>
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="print.derivation.html">print(<i>&lt;derivation&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print method for derivation objects</dd>
       </dl><dl><dt>
 
           <code><a href="rxp_copy.html">rxp_copy()</a></code>
 
         </dt>
         <dd>Copy derivations from the Nix store to current working directory</dd>
-      </dl><dl><dt>
-
-          <code><a href="rxp_file_common.html">rxp_file_common()</a></code>
-
-        </dt>
-        <dd>rxp_file_common</dd>
-      </dl><dl><dt>
-
-          <code><a href="rxp_ga.html">rxp_ga()</a></code>
-
-        </dt>
-        <dd>Run a pipeline on GitHub Actions</dd>
-      </dl><dl><dt>
-
-          <code><a href="rxp_ggdag.html">rxp_ggdag()</a></code>
-
-        </dt>
-        <dd>Create a Directed Acyclic Graph (DAG) representing the pipeline using <a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></dd>
       </dl><dl><dt>
 
           <code><a href="rxp_init.html">rxp_init()</a></code>
@@ -156,17 +160,74 @@
         <dd>Load output of a derivation</dd>
       </dl><dl><dt>
 
-          <code><a href="rxp_make.html">rxp_make()</a></code>
+          <code><a href="rxp_read.html">rxp_read()</a></code>
 
         </dt>
-        <dd>Build pipeline using Nix</dd>
-      </dl><dl><dt>
+        <dd>Read output of a derivation</dd>
+      </dl></div><div class="section level2">
+      <h2 id="archive-import-export">Archive import/export<a class="anchor" aria-label="anchor" href="#archive-import-export"></a></h2>
 
-          <code><a href="rxp_py.html">rxp_py()</a></code>
+      <div class="section-desc"><p>Functions for importing and exporting Nix store paths using archive files.</p></div>
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="export_nix_archive.html">export_nix_archive()</a></code>
 
         </dt>
-        <dd>Create a Nix expression running a Python function</dd>
+        <dd>Export Nix store paths to an archive</dd>
       </dl><dl><dt>
+
+          <code><a href="import_nix_archive.html">import_nix_archive()</a></code>
+
+        </dt>
+        <dd>Import Nix store paths from an archive</dd>
+      </dl></div><div class="section level2">
+      <h2 id="dag-and-ci-tools">DAG and CI tools<a class="anchor" aria-label="anchor" href="#dag-and-ci-tools"></a></h2>
+
+      <div class="section-desc"><p>Tools for generating DAGs and preparing pipelines for rendering or deployment in CI environments.</p></div>
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="dag_for_ci.html">dag_for_ci()</a></code>
+
+        </dt>
+        <dd>Export DAG of pipeline and prepare it for rendering on CI</dd>
+      </dl><dl><dt>
+
+          <code><a href="generate_dag.html">generate_dag()</a></code>
+
+        </dt>
+        <dd>Generate a DAG from a list of derivations</dd>
+      </dl><dl><dt>
+
+          <code><a href="rxp_ga.html">rxp_ga()</a></code>
+
+        </dt>
+        <dd>Run a pipeline on GitHub Actions</dd>
+      </dl></div><div class="section level2">
+      <h2 id="r-python-interop">R ↔︎ Python interop<a class="anchor" aria-label="anchor" href="#r-python-interop"></a></h2>
+
+      <div class="section-desc"><p>Functions to move data and objects between R and Python runtimes.</p></div>
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
 
           <code><a href="rxp_py2r.html">rxp_py2r()</a></code>
 
@@ -174,54 +235,59 @@
         <dd>Transfer Python object into an R session.</dd>
       </dl><dl><dt>
 
-          <code><a href="rxp_py_file.html">rxp_py_file()</a></code>
-
-        </dt>
-        <dd>rxp_py_file</dd>
-      </dl><dl><dt>
-
-          <code><a href="rxp_qmd.html">rxp_qmd()</a></code>
-
-        </dt>
-        <dd>Render a Quarto document as a Nix derivation</dd>
-      </dl><dl><dt>
-
-          <code><a href="rxp_r.html">rxp_r()</a></code>
-
-        </dt>
-        <dd>Create a Nix expression running an R function</dd>
-      </dl><dl><dt>
-
           <code><a href="rxp_r2py.html">rxp_r2py()</a></code>
 
         </dt>
         <dd>Transfer R object into a Python session.</dd>
-      </dl><dl><dt>
+      </dl></div><div class="section level2">
+      <h2 id="visualization">Visualization<a class="anchor" aria-label="anchor" href="#visualization"></a></h2>
 
-          <code><a href="rxp_r_file.html">rxp_r_file()</a></code>
+      <div class="section-desc"><p>Functions for visualizing pipeline DAGs using different backends.</p></div>
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="rxp_ggdag.html">rxp_ggdag()</a></code>
 
         </dt>
-        <dd>rxp_r_file</dd>
-      </dl><dl><dt>
-
-          <code><a href="rxp_read.html">rxp_read()</a></code>
-
-        </dt>
-        <dd>Read output of a derivation</dd>
-      </dl><dl><dt>
-
-          <code><a href="rxp_rmd.html">rxp_rmd()</a></code>
-
-        </dt>
-        <dd>Render an R Markdown document as a Nix derivation</dd>
+        <dd>Create a Directed Acyclic Graph (DAG) representing the pipeline using <a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></dd>
       </dl><dl><dt>
 
           <code><a href="rxp_visnetwork.html">rxp_visnetwork()</a></code>
 
         </dt>
         <dd>Create a Directed Acyclic Graph (DAG) representing the pipeline using <a href="https://datastorm-open.github.io/visNetwork/" class="external-link">visNetwork</a></dd>
+      </dl></div><div class="section level2">
+      <h2 id="python-import-manipulation">Python import manipulation<a class="anchor" aria-label="anchor" href="#python-import-manipulation"></a></h2>
+
+      <div class="section-desc"><p>Utilities to adjust Python import statements to match project or environment conventions.</p></div>
+
+
+    </div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="add_import.html">add_import()</a></code>
+
+        </dt>
+        <dd>Add an import statement to Python files in the _rixpress folder matching a Nix environment name</dd>
+      </dl><dl><dt>
+
+          <code><a href="adjust_import.html">adjust_import()</a></code>
+
+        </dt>
+        <dd>Adjust Python import statements</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
