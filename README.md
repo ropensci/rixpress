@@ -161,3 +161,10 @@ if (!require("remotes")) install.packages("remotes")
 # Install the package from GitHub
 remotes::install_github("b-rodrigues/rixpress")
 ```
+
+## Contributing
+
+Pull requests are welcome, but if you’re unsure wether you should open
+one, feel free to open an issue first to discuss your idea. For detailed
+instructions, refer to `CONTRIBUTING.md` for instructions on how to
+contribute.

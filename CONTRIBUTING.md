@@ -9,10 +9,21 @@ work on `{rixpress}`. This development environment is pinned to a specific `nixp
 commit, so it does not reflect the current status on CRAN. This is why it's also
 important to make sure that contributions work on `rhub`.
 
+## Unit and end-to-end tests
+
+This package has many unit tests, but some functionality cannot be reliably
+tested using unit tests. To solve this issue, we set up another repository
+called [b-rodrigues/rixpress_demos](https://github.com/b-rodrigues/rixpress_demos/tree/master)
+which has many examples that run on GitHub Actions each time a commit is pushed
+to `{rixpress}`’s GitHub repository.
+
 ## Submitting PRs
 
-PRs are very welcome, just make sure unit tests pass if you open one. If you
-still want feedback but tests don’t pass, then set the PR to draft.
+PRs are very welcome, just make sure unit tests pass if you open one. Ideally,
+you should also clone
+[b-rodrigues/rixpress_demos](https://github.com/b-rodrigues/rixpress_demos/tree/master)
+and try to run some examples using your changes. If you still want feedback but
+tests don’t pass, then set the PR to draft.
 
 If you’ve added a feature, make sure to document it and add a corresponding unit
 test as well.
