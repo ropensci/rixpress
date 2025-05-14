@@ -46,3 +46,9 @@ loading fails, the path to the object is returned instead.
   rxp_load("mtcars", which_log = "2025-05-10")
 }
 }
+\seealso{
+Other storage: 
+\code{\link{rxp_copy}()},
+\code{\link{rxp_read}()}
+}
+\concept{storage}

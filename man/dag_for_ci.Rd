@@ -32,3 +32,10 @@ is called by \code{rxp_ga()}.
 
 }
 }
+\seealso{
+Other visualisation: 
+\code{\link{generate_dag}()},
+\code{\link{rxp_ggdag}()},
+\code{\link{rxp_visnetwork}()}
+}
+\concept{visualisation}

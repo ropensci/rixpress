@@ -71,3 +71,10 @@ rixpress(derivs = list_derivs, project_path = ".", build = TRUE)
 
 }
 }
+\seealso{
+Other pipeline: 
+\code{\link{export_nix_archive}()},
+\code{\link{import_nix_archive}()},
+\code{\link{rxp_make}()}
+}
+\concept{pipeline}

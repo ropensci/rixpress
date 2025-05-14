@@ -24,3 +24,10 @@ function.
   rxp_visnetwork()
 }
 }
+\seealso{
+Other visualisation: 
+\code{\link{dag_for_ci}()},
+\code{\link{generate_dag}()},
+\code{\link{rxp_ggdag}()}
+}
+\concept{visualisation}

@@ -34,3 +34,9 @@ input, as is the case for \code{html} output.
   rxp_copy("my_quarto_doc")
 }
 }
+\seealso{
+Other storage: 
+\code{\link{rxp_load}()},
+\code{\link{rxp_read}()}
+}
+\concept{storage}

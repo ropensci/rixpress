@@ -45,3 +45,8 @@ adjust_import("import pillow", "from PIL import Image")
 # adjust_import("import pillow", "from PIL import Image", project_path = "path/to/project")
 }
 }
+\seealso{
+Other utililies: 
+\code{\link{add_import}()}
+}
+\concept{utililies}

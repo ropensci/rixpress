@@ -25,3 +25,10 @@ by \code{rixpress()}.
   generate_dag(rxp_list)
 }
 }
+\seealso{
+Other visualisation: 
+\code{\link{dag_for_ci}()},
+\code{\link{rxp_ggdag}()},
+\code{\link{rxp_visnetwork}()}
+}
+\concept{visualisation}

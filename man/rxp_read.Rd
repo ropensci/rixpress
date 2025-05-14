@@ -42,3 +42,9 @@ returned instead.
   mtcars <- rxp_read("mtcars", which_log = "2025-05-10")
 }
 }
+\seealso{
+Other storage: 
+\code{\link{rxp_copy}()},
+\code{\link{rxp_load}()}
+}
+\concept{storage}

@@ -26,3 +26,10 @@ Useful for transferring built outputs between machines.
   import_nix_archive("path/to/my_archive.nar")
 }
 }
+\seealso{
+Other pipeline: 
+\code{\link{export_nix_archive}()},
+\code{\link{rixpress}()},
+\code{\link{rxp_make}()}
+}
+\concept{pipeline}

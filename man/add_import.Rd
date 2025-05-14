@@ -33,3 +33,8 @@ add_import("import numpy as np", "default.nix")
 # add_import("import numpy as np", "default.nix", project_path = "path/to/project")
 }
 }
+\seealso{
+Other utililies: 
+\code{\link{adjust_import}()}
+}
+\concept{utililies}
