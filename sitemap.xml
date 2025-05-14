@@ -18,7 +18,6 @@
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/dag_for_ci.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/export_nix_archive.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/generate_dag.html</loc></url>
-<url><loc>https://b-rodrigues.github.io/rixpress/reference/get_nodes_edges.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/import_nix_archive.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/index.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/print.derivation.html</loc></url>
@@ -36,7 +35,7 @@
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_py.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_py2r.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_py_file.html</loc></url>
-<url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_quarto.html</loc></url>
+<url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_qmd.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_r.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_r2py.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_r_file.html</loc></url>
