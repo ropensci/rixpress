@@ -2,3 +2,69 @@ url: https://b-rodrigues.github.io/rixpress/
 template:
   bootstrap: 5
 
+reference:
+- title: Declaring derivations
+  desc: >
+    Functions that define or execute Nix derivations from R or Python code, or files like Quarto or R Markdown.
+  contents:
+  - rxp_py
+  - rxp_py_file
+  - rxp_r
+  - rxp_r_file
+  - rxp_qmd
+  - rxp_rmd
+
+- title: Building the pipeline
+  desc: >
+    Functions to generate and build the Nix pipeline
+  contents:
+  - rixpress
+  - rxp_make
+
+- title: Project utilities
+  desc: >
+    Functions for initializing projects, copying outputs, reading derivations, and inspecting build artifacts.
+  contents:
+  - rxp_init
+  - rxp_copy
+  - rxp_inspect
+  - rxp_read
+  - rxp_load
+  - rxp_list_logs
+  - print
+
+- title: Archive import/export
+  desc: >
+    Functions for importing and exporting Nix store paths using archive files.
+  contents:
+  - export_nix_archive
+  - import_nix_archive
+
+- title: DAG and CI tools
+  desc: >
+    Tools for generating DAGs and preparing pipelines for rendering or deployment in CI environments.
+  contents:
+  - generate_dag
+  - dag_for_ci
+  - rxp_ga
+
+- title: R ↔ Python interop
+  desc: >
+    Functions to move data and objects between R and Python runtimes.
+  contents:
+  - rxp_py2r
+  - rxp_r2py
+
+- title: Visualization
+  desc: >
+    Functions for visualizing pipeline DAGs using different backends.
+  contents:
+  - rxp_ggdag
+  - rxp_visnetwork
+
+- title: Python import manipulation
+  desc: >
+    Utilities to adjust Python import statements to match project or environment conventions.
+  contents:
+  - add_import
+  - adjust_import
