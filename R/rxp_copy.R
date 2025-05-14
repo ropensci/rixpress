@@ -1,4 +1,5 @@
 #' @title Copy derivations from the Nix store to current working directory
+#' @family storage
 #' @description When Nix builds a derivation, its output is saved in the
 #'   Nix store located under `/nix/store/`. Even though you can import the
 #'   derivations into the current R session using `rxp_read()` or `rxp_load()`,

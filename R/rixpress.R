@@ -8,6 +8,7 @@
 #' but the build process can be postponed by setting `build` to FALSE. In this case,
 #' the pipeline can then be built using `rxp_make()`.
 #'
+#' @family pipeline
 #' @param derivs A list of derivation objects, where each object is a list of
 #'   five elements:
 #'     - `$name`, character, name of the derivation

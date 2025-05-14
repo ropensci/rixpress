@@ -334,6 +334,7 @@ generate_py_libraries_from_nix <- function(
 #' function allows you to search and replace import statements programmatically.
 #' It reads each file in the `_rixpress` folder, performs the replacement, and
 #' writes the modified content back to the file.
+#' @family utililies
 #' @param old_import A character string representing the import statement to be
 #'   replaced. For example, `"import pillow"`.
 #' @param new_import A character string representing the new import statement to
@@ -376,6 +377,7 @@ adjust_import <- function(old_import, new_import, project_path = ".") {
 #' file within the `_rixpress` folder and its subdirectories, but only for files
 #' whose base name matches the provided Nix environment.
 #'
+#' @family utililies
 #' @param import_statement A character string representing the import statement
 #'   to be added. For example, `"import numpy as np"`.
 #' @param nix_env A character string naming the Nix environment file (e.g.

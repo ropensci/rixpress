@@ -4,6 +4,7 @@
 #' based on dependencies between derivations. Is automatically called
 #' by `rixpress()`.
 #'
+#' @family visualisation
 #' @param rxp_list A list of derivations.
 #' @param output_file Path to the output JSON file.
 #'   Defaults to "_rixpress/dag.json".

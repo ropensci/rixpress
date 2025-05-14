@@ -1,4 +1,5 @@
 #' Create a Nix expression running an R function
+#' @family derivations
 #' @param name Symbol, name of the derivation.
 #' @param expr R code to generate the expression.
 #' @param additional_files Character vector, additional files to include. Custom
@@ -326,6 +327,7 @@ rxp_py <- function(
 
 #' Render a Quarto document as a Nix derivation
 #'
+#' @family derivations
 #' @param name Symbol, derivation name.
 #' @param qmd_file Character, path to .qmd file.
 #' @param additional_files Character vector, additional files to include, for
@@ -454,6 +456,7 @@ rxp_quarto <- function(
 #'
 #' Creates a Nix expression with shared logic for R and Python file reading.
 #'
+#' @family derivations
 #' @param out_name Character, the name of the derivation as a string.
 #' @param path Character, the file path (URL or local) or folder path.
 #' @param nix_env Character, path to the Nix environment file.
@@ -662,6 +665,7 @@ rxp_r_file <- function(
 #' Creates a Nix expression that reads in a file (or folder of data) using
 #' Python.
 #'
+#' @family derivations
 #' @param name Symbol, the name of the derivation.
 #' @param path Character, the file path to include (e.g., "data/mtcars.shp") or
 #'   a folder path (e.g., "data"). See details.
@@ -842,6 +846,7 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
 
 #' Transfer Python object into an R session.
 #'
+#' @family derivations
 #' @param name Symbol, name of the derivation.
 #' @param expr Symbol, Python object to be loaded into R.
 #' @param nix_env Character, path to the Nix environment file, default is
@@ -862,6 +867,7 @@ rxp_py2r <- function(name, expr, nix_env = "default.nix") {
 
 #' Transfer R object into a Python session.
 #'
+#' @family derivations
 #' @param name Symbol, name of the derivation.
 #' @param expr Symbol, R object to be saved into a Python pickle.
 #' @param nix_env Character, path to the Nix environment file, default is
@@ -882,6 +888,7 @@ rxp_r2py <- function(name, expr, nix_env = "default.nix") {
 
 #' Render an R Markdown document as a Nix derivation
 #'
+#' @family derivations
 #' @param name Symbol, derivation name.
 #' @param rmd_file Character, path to .Rmd file.
 #' @param additional_files Character vector, additional files to include, for

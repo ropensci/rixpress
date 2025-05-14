@@ -1,4 +1,5 @@
 #' Core setup function for rxp_read() and rxp_load()
+#' @family storage
 #' @param derivation_name The name of the derivation.
 #' @param which_log Character, defaults to NULL. If NULL the most recent
 #'   build log is used. If a string is provided, it's used as a
@@ -57,6 +58,7 @@ rxp_read_load_setup <- function(
 }
 
 #' Read output of a derivation
+#' @family storage
 #' @description Reads the output of derivations in the current session,
 #'   returns a path if reading directly is not possible.
 #' @details When `derivation_name` points to a single R object,
@@ -91,7 +93,7 @@ rxp_read <- function(derivation_name, which_log = NULL, project_path = ".") {
 
   path <- files
 
-  # Try RDS, then pickle (checking for reticulate), else return the path
+                                        # Try RDS, then pickle (checking for reticulate), else return the path
   tryCatch(
     readRDS(path),
     error = function(e1) {
@@ -111,6 +113,7 @@ rxp_read <- function(derivation_name, which_log = NULL, project_path = ".") {
 
 #' Load output of a derivation
 
+#' @family storage
 #' @description Loads the output of derivations in the parent frame of the
 #'   current session, returns a path if reading directly is not possible.
 #' @details When `derivation_name` points to a single R object, it gets loaded
