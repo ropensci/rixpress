@@ -5,7 +5,7 @@ template:
 reference:
 - title: Declaring derivations
   desc: >
-    Functions that define or execute Nix derivations from R or Python code, or files like Quarto or R Markdown.
+    Functions that define Nix derivations that run R or Python code, or compile Quarto or R Markdown documents.
   contents: has_concept("derivations")
 
 - title: Building the pipeline
