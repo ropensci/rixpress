@@ -491,13 +491,14 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
   pipeline
 }
 
+
 #' Generate an R or Py script with library calls from a default.nix file
 #'
 #' @param nix_env Nix environment where the derivation runs
 #' @param additional_files Character vector, additional files to include. These
 #'   are the files that contain custom functions required for this derivation.
-#' @param project_path Path to root of project, typically "."
-#' @return An script to load the libraries inside of derivations.
+#' @param project_path	Path to root of project, typically "."
+#' @return A script to load the libraries inside of derivations.
 #' @noRd
 generate_libraries_from_nix <- function(
   nix_env,
@@ -510,6 +511,11 @@ generate_libraries_from_nix <- function(
     project_path
   )
   generate_py_libraries_from_nix(
+    nix_env,
+    additional_files,
+    project_path
+  )
+  generate_jl_libraries_from_nix(
     nix_env,
     additional_files,
     project_path

@@ -193,12 +193,25 @@ import_formatter_py <- function(package) {
   paste0("import ", package)
 }
 
+#' @noRd
+transform_jl <- function(packages) {
+  packages # No transformation by default
+}
+
+#' @noRd
+adjust_jl_packages <- identity # No additional adjustments for Julia
+
+#' @noRd
+import_formatter_jl <- function(package) {
+  paste0("using ", package)
+}
+
 #' Generate a script with import statements from a default.nix file
 #'
 #' @param nix_file Defaults to "default.nix", path to the default.nix file
 #' @param additional_files Character vector of additional files to include
 #' @param project_path Path to root of project, typically "."
-#' @param language Language to generate the script for ("R" or "Python")
+#' @param language Language to generate the script for ("R", "Python", or "Julia")
 #' @return A script file for the specified language,
 #'   or NULL if no packages are found
 #' @noRd
@@ -247,6 +260,24 @@ generate_r_or_py_libraries_from_nix <- function(
     extension <- "py"
 
     # Python packages are only in the main block
+    packages_from_block <- parse_packages(
+      nix_file = nix_file,
+      project_path = project_path,
+      block_name = block_name,
+      transform = transform_func
+    )
+    if (!is.null(packages_from_block)) {
+      all_parsed_packages <- c(all_parsed_packages, packages_from_block)
+    }
+  } else if (language == "Julia") {
+    block_name <- "jlpkgs"
+    transform_func <- transform_jl
+    adjust <- adjust_jl_packages
+    import_formatter <- import_formatter_jl
+    additional_file_pattern <- "functions\\.jl"
+    extension <- "jl"
+
+    # Julia packages are only in the jlpkgs block
     packages_from_block <- parse_packages(
       nix_file = nix_file,
       project_path = project_path,
@@ -314,6 +345,20 @@ generate_py_libraries_from_nix <- function(
     additional_files,
     project_path,
     "Python"
+  )
+}
+
+#' @noRd
+generate_jl_libraries_from_nix <- function(
+  nix_file,
+  additional_files = "",
+  project_path
+) {
+  generate_r_or_py_libraries_from_nix(
+    nix_file,
+    additional_files,
+    project_path,
+    "Julia"
   )
 }
 
