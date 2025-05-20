@@ -1074,3 +1074,175 @@ print.derivation <- function(x, ...) {
     )
   }
 }
+
+#' Create a Nix expression running a Julia function
+#'
+#' @family derivations
+#' @param name Symbol, name of the derivation.
+#' @param jl_expr Character, Julia code to generate the expression.
+#' @param additional_files Character vector, additional files to include. Custom
+#'   functions must go into a script called "functions.jl", and additional files
+#'   that need to be accessible during the build process can be named anything.
+#' @param nix_env Character, path to the Nix environment file, default is
+#'   "default.nix".
+#' @param serialize_function Character, defaults to NULL. The name of the Julia
+#'   function used to serialize the object. It must accept two arguments: the
+#'   object to serialize (first), and the target file path (second). If NULL,
+#'   the default behavior uses the built‐in `Serialization.serialize` API. Define
+#'   any custom serializer in `functions.jl`.
+#' @param unserialize_function Character, defaults to NULL. The name of the Julia
+#'   function used to unserialize the object. It must accept one argument: the
+#'   file path. If NULL, the default is assumed to be `Serialization.deserialize`.
+#' @param env_var Character vector, defaults to NULL. A named vector of
+#'   environment variables to set before running the Julia script, e.g.,
+#'   `c("JULIA_DEPOT_PATH" = "/path/to/depot")`. Each entry will be added as
+#'   an `export` statement in the build phase.
+#' @details At a basic level,
+#'   `rxp_jl(filtered_data, "filter(df, :col .> 10)")` is equivalent to
+#'   `filtered_data = filter(df, :col .> 10)` in Julia. `rxp_jl()` generates the
+#'   required Nix boilerplate to output a so‐called "derivation" in Nix jargon.
+#'   A Nix derivation is a recipe that defines how to create an output (in this
+#'   case `filtered_data`) including its dependencies, build steps, and output
+#'   paths.
+#' @return An object of class derivation which inherits from lists.
+#' @examples
+#' \dontrun{
+#'   # Basic usage, no custom serializer
+#'   rxp_jl(
+#'     name = filtered_df,
+#'     jl_expr = "filter(df, :col .> 10)"
+#'   )
+#'
+#'   # Custom serialization: assume `save_my_obj(obj, path)` is defined in functions.jl
+#'   rxp_jl(
+#'     name = model_output,
+#'     jl_expr = "train_model(data)",
+#'     serialize_function = "save_my_obj",
+#'     additional_files = "functions.jl"
+#'   )
+#' }
+#' @export
+rxp_jl <- function(
+  name,
+  jl_expr,
+  additional_files = "",
+  nix_env = "default.nix",
+  serialize_function = NULL,
+  unserialize_function = NULL,
+  env_var = NULL
+) {
+  out_name <- deparse1(substitute(name))
+  # Escape double quotes for Julia one‐liner
+  jl_expr_escaped <- gsub("\"", "\\\\\"", jl_expr)
+
+  # Determine which serialize function to call
+  if (is.null(serialize_function)) {
+    # Default: use built‐in Serialization.serialize
+    serialize_str <- paste0(
+      "using Serialization; ",
+      "io = open(\"", out_name, "\", \"w\"); ",
+      "serialize(io, ", out_name, "); ",
+      "close(io)"
+    )
+  } else {
+    if (!is.character(serialize_function) || length(serialize_function) != 1) {
+      stop("serialize_function must be a single character string or NULL")
+    }
+    serialize_str <- sprintf(
+      "%s(%s, \"%s\")",
+      serialize_function,
+      out_name,
+      out_name
+    )
+  }
+
+  # Determine unserialize string (passed through metadata; user can choose)
+  if (is.null(unserialize_function)) {
+    unserialize_str <- "Serialization.deserialize"
+  } else {
+    if (!is.character(unserialize_function) || length(unserialize_function) != 1) {
+      stop("unserialize_function must be a single character string or NULL")
+    }
+    unserialize_str <- unserialize_function
+  }
+
+  # Generate environment variable export statements if env_var is provided
+  env_exports <- ""
+  if (!is.null(env_var)) {
+    env_exports <- paste(
+      vapply(
+        names(env_var),
+        function(var) sprintf("export %s=%s", var, env_var[[var]]),
+        character(1)
+      ),
+      collapse = "\n      "
+    )
+    if (nzchar(env_exports)) {
+      env_exports <- paste0(env_exports, "\n      ")
+    }
+  }
+
+  # Prepare the fileset for src (exclude functions.jl, handled separately)
+  fileset_parts <- setdiff(additional_files, "functions.jl")
+  fileset_parts <- fileset_parts[nzchar(fileset_parts)]
+
+  # Build copy command for additional files
+  copy_cmd <- ""
+  if (length(fileset_parts) > 0) {
+    copy_lines <- vapply(
+      fileset_parts,
+      function(f) sprintf("cp -r ${./%s} %s", f, f),
+      character(1)
+    )
+    copy_cmd <- paste0(paste(copy_lines, collapse = "\n      "), "\n      ")
+  }
+
+  # Construct the Julia build phase: include libraries.jl if present, run expression, then serialize
+  build_phase <- paste0(
+    env_exports,
+    copy_cmd,
+    "julia -e \"",
+    "if isfile(\"libraries.jl\"); include(\"libraries.jl\"); end; ",
+    out_name, " = ", jl_expr_escaped, "; ",
+    serialize_str,
+    "\""
+  )
+
+  # Derive base variable from nix_env
+  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
+  base <- sub("_nix$", "", base)
+
+  # Prepare src snippet if there are additional files besides functions.jl
+  if (length(fileset_parts) > 0) {
+    fileset_nix <- paste0("./", fileset_parts, collapse = " ")
+    src_snippet <- sprintf(
+      "   src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ",
+      fileset_nix
+    )
+  } else {
+    src_snippet <- ""
+  }
+
+  # Assemble the Nix‐derivation snippet
+  snippet <- sprintf(
+    "  %s = makeJlDerivation {\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
+    out_name,
+    out_name,
+    src_snippet,
+    base,
+    base,
+    build_phase
+  )
+
+  list(
+    name = out_name,
+    snippet = snippet,
+    type = "rxp_jl",
+    additional_files = additional_files,
+    nix_env = nix_env,
+    serialize_function = if (is.null(serialize_function)) "Serialization.serialize" else serialize_function,
+    unserialize_function = unserialize_str,
+    env_var = env_var
+  ) |>
+    structure(class = "derivation")
+}
