@@ -2,9 +2,9 @@
 #'
 #' @param nix_file Defaults to "default.nix", path to the default.nix file
 #' @param project_path Path to root of project, typically "."
-#' @param block_name Name of the block to parse (e.g., "rpkgs" or "pyconf")
-#' @param transform Function to transform package names (default: identity)
-#' @return List of package names, or NULL if the block is not found
+#' @param block_name Name of the block to parse (e.g., "rpkgs", "pyconf", "jlconf").
+#' @param transform Function to transform package names (default: identity).
+#' @return List of package names, or NULL if the block is not found.
 #' @noRd
 parse_packages <- function(
   nix_file,
@@ -14,16 +14,19 @@ parse_packages <- function(
 ) {
   lines <- readLines(file.path(project_path, nix_file))
 
-  # Find the start of the block
-  # (e.g., "rpkgs = builtins.attrValues {" or "pyconf = ...")
+  # Regex to find the start of the specified package block.
+  # It handles two main patterns:
+  # 1.  `<block_name> = builtins.attrValues { ... }` (common for R, Python).
+  # 2.  `<block_name> = pkgs.julia<...>.withPackages [ ... ]` (common for Julia).
+  # The `(?: ... )` creates a non-capturing group for the OR condition.
   start_pattern <- paste0(
     "^\\s*",
     block_name,
-    "\\s*=\\s*(?:",
-    "builtins\\.attrValues\\s*\\{", # matches rpkgs (or pyconf) = builtins.attrValues {
-    "|",                            # or, matches Julia blocks
-    "pkgs\\.julia(?:[-_\\.][A-Za-z0-9]+)*\\.withPackages\\s*\\[",
-    ")"
+    "\\s*=\\s*(?:", # Start of non-capturing group for OR
+    "builtins\\.attrValues\\s*\\{", # Pattern 1: R/Python style
+    "|",                            # OR
+    "pkgs\\.julia(?:[-_\\.][A-Za-z0-9]+)*\\.withPackages\\s*\\[", # Pattern 2: Julia style
+    ")"                             # End of non-capturing group
   )
 
   start_idx <- grep(start_pattern, lines)
@@ -43,14 +46,16 @@ parse_packages <- function(
   block_lines <- lines[(start_idx + 1):(end_idx - 1)]
   block_lines <- gsub("#.*", "", block_lines)
   block_lines <- trimws(block_lines)
-  block_lines <- block_lines[block_lines != ""]
+  block_lines <- block_lines[block_lines != ""] # Remove empty lines
 
-  # Remove inherit statements
-  # (e.g., "inherit (pkgs.rPackages)" or "inherit (pkgs.python312Packages)")
-  inherit_pattern <- "inherit \\(pkgs\\.[a-zA-Z0-9]+\\)"
+  # Remove `inherit (...)` statements as they don't list actual package names
+  # directly but rather groups of packages from Nixpkgs.
+  # e.g., "inherit (pkgs.rPackages);" or "inherit (pkgs.python312Packages);".
+  # The actual package names are expected to be listed individually if used.
+  inherit_pattern <- "inherit\\s*\\(pkgs\\.[a-zA-Z0-9]+\\)(?:\\s*;)?|inherit\\s*pkgs\\s*;"
   block_lines <- gsub(inherit_pattern, "", block_lines)
 
-  block_lines <- gsub(";", "", block_lines)
+  block_lines <- gsub(";", "", block_lines) # Remove any remaining semicolons
 
   # Split into package names and apply transformation
   packages <- unlist(strsplit(paste(block_lines, collapse = " "), "\\s+"))
@@ -75,10 +80,12 @@ parse_rpkgs_git <- function(
 
   git_packages <- c()
 
-  # Pattern to find the start of a buildRPackage definition
-  # e.g., my_pkg = (pkgs.rPackages.buildRPackage {
-  # We capture the variable name for context if needed,
-  # but don't use it for the package name itself
+  # Pattern to find the start of a `pkgs.rPackages.buildRPackage` definition.
+  # e.g., `myPkg = (pkgs.rPackages.buildRPackage { ... });`
+  # This captures the assigned variable name (e.g., `myPkg`), which isn't directly
+  # used for the R package name but helps identify the block.
+  # The actual R package name is typically specified by a `name = "ActualRPackageName";`
+  # attribute inside this block if it's a git source.
   build_r_pkg_start_pattern <- "^\\s*([a-zA-Z0-9_.-]+)\\s*=\\s*\\(pkgs\\.rPackages\\.buildRPackage\\s*\\{"
   start_indices <- grep(build_r_pkg_start_pattern, lines)
 
@@ -105,16 +112,18 @@ parse_rpkgs_git <- function(
 
     block_lines <- lines[(start_idx + 1):(end_idx - 1)]
 
-    # Check if this block contains a src = pkgs.fetchgit (or similar)
-    # Covers fetchgit, fetchFromGitHub, fetchFromGitLab
-    fetch_pattern <- "^\\s*src\\s*=\\s*pkgs\\.(fetchgit|fetchFromGitHub|fetchFromGitLab)\\s*\\{"
+    # Check if this block contains a 'src' attribute pointing to a git fetch operation
+    # (e.g., pkgs.fetchgit, pkgs.fetchFromGitHub, pkgs.fetchFromGitLab).
+    fetch_pattern <- "^\\s*src\\s*=\\s*pkgs\\.(fetchgit|fetchFromGitHub|fetchFromGitLab|fetchGit)\\s*\\{"
     if (any(grepl(fetch_pattern, block_lines))) {
-      # If it's a git source, look for the 'name' attribute
-      name_pattern <- "^\\s*name\\s*=\\s*\"([a-zA-Z0-9_.-]+)\"\\s*;"
+      # If it's identified as a git source, look for the 'name' attribute
+      # which specifies the actual R package name.
+      # e.g., `name = "myPackageName";`
+      name_pattern <- "^\\s*name\\s*=\\s*\"([a-zA-Z0-9_.-]+)\"\\s*(?:;)?\\s*$"
       name_lines_match <- grep(name_pattern, block_lines, value = TRUE)
 
       if (length(name_lines_match) > 0) {
-        # Extract the package name (the part in quotes)
+        # Extract the R package name (captured group 1 from name_pattern).
         pkg_name <- sub(name_pattern, "\\1", name_lines_match[1])
         git_packages <- c(git_packages, pkg_name)
       }
@@ -219,87 +228,49 @@ import_formatter_jl <- function(package) {
 
 #' Generate a script with import statements from a default.nix file
 #'
-#' @param nix_file Defaults to "default.nix", path to the default.nix file
-#' @param additional_files Character vector of additional files to include
-#' @param project_path Path to root of project, typically "."
-#' @param language Language to generate the script for ("R", "Python", or "Julia")
-#' @return A script file for the specified language,
-#'   or NULL if no packages are found
+#' @param nix_file Defaults to "default.nix", path to the default.nix file.
+#' @param additional_files Character vector of additional files to include (e.g., "functions.R").
+#' @param project_path Path to root of project, typically ".".
+#' @param lang_config A list containing language-specific configurations. Expected fields:
+#'   - `language_name`: Character (e.g., "R", "Python", "Julia").
+#'   - `block_name`: Character, name of the package block in Nix file (e.g., "rpkgs", "pyconf").
+#'   - `transform_func`: Function to transform package names from Nix to language-native.
+#'   - `adjust_func`: Function to adjust the list of packages (e.g., add/remove specific ones).
+#'   - `import_formatter`: Function to format package names into import statements.
+#'   - `additional_file_pattern`: Regex to identify language-specific function files.
+#'   - `extension`: Character, file extension for the generated library script (e.g., "R", "py").
+#'   - `parse_git_pkgs_func`: Optional function to parse packages from Git sources (e.g., `parse_rpkgs_git` for R, `NULL` otherwise).
+#' @return Path to the generated script file, or `NULL` if no packages are found or script generation is skipped.
 #' @noRd
 generate_r_or_py_libraries_from_nix <- function(
   nix_file,
   additional_files = "",
   project_path,
-  language
+  lang_config  # Expects a list with all configurations
 ) {
   all_parsed_packages <- c()
 
-  if (language == "R") {
-    block_name <- "rpkgs"
-    transform_func <- transform_r
-    adjust <- adjust_r_packages
-    import_formatter <- import_formatter_r
-    additional_file_pattern <- "functions\\.[Rr]"
-    extension <- "R"
+  # Parse packages from the main block (e.g., rpkgs, pyconf, jlconf)
+  packages_from_block <- parse_packages(
+    nix_file = nix_file,
+    project_path = project_path,
+    block_name = lang_config$block_name,
+    transform = lang_config$transform_func
+  )
+  if (!is.null(packages_from_block)) {
+    all_parsed_packages <- c(all_parsed_packages, packages_from_block)
+  }
 
-                                        # Parse packages from the 'rpkgs' block
-    packages_from_block <- parse_packages(
+  # Special handling for R packages from Git (or other similar future cases)
+  if (!is.null(lang_config$parse_git_pkgs_func)) {
+    packages_from_git <- lang_config$parse_git_pkgs_func(
       nix_file = nix_file,
       project_path = project_path,
-      block_name = block_name,
-      transform = transform_func
-    )
-    if (!is.null(packages_from_block)) {
-      all_parsed_packages <- c(all_parsed_packages, packages_from_block)
-    }
-
-                                        # Parse R packages from git definitions
-    packages_from_git <- parse_rpkgs_git(
-      nix_file = nix_file,
-      project_path = project_path,
-      transform = transform_func
+      transform = lang_config$transform_func # Git pkgs also use the main transform
     )
     if (!is.null(packages_from_git)) {
       all_parsed_packages <- c(all_parsed_packages, packages_from_git)
     }
-  } else if (language == "Python") {
-    block_name <- "pyconf"
-    transform_func <- identity
-    adjust <- adjust_py_packages
-    import_formatter <- import_formatter_py
-    additional_file_pattern <- "functions\\.py"
-    extension <- "py"
-
-    # Python packages are only in the main block
-    packages_from_block <- parse_packages(
-      nix_file = nix_file,
-      project_path = project_path,
-      block_name = block_name,
-      transform = transform_func
-    )
-    if (!is.null(packages_from_block)) {
-      all_parsed_packages <- c(all_parsed_packages, packages_from_block)
-    }
-  } else if (language == "Julia") {
-    block_name <- "jlconf"
-    transform_func <- transform_jl
-    adjust <- adjust_jl_packages
-    import_formatter <- import_formatter_jl
-    additional_file_pattern <- "functions\\.jl"
-    extension <- "jl"
-
-    # Julia packages are only in the jlconf block
-    packages_from_block <- parse_packages(
-      nix_file = nix_file,
-      project_path = project_path,
-      block_name = block_name,
-      transform = transform_func
-    )
-    if (!is.null(packages_from_block)) {
-      all_parsed_packages <- c(all_parsed_packages, packages_from_block)
-    }
-  } else {
-    stop("Unsupported language")
   }
 
   if (length(all_parsed_packages) == 0) {
@@ -307,7 +278,7 @@ generate_r_or_py_libraries_from_nix <- function(
   }
 
   packages <- unique(all_parsed_packages)
-  packages <- adjust(packages)
+  packages <- lang_config$adjust_func(packages)
   packages <- sort(packages)
 
   nix_file_name <- gsub("[^a-zA-Z0-9]", "_", nix_file)
@@ -317,15 +288,15 @@ generate_r_or_py_libraries_from_nix <- function(
 
   outfile <- file.path(
     outfile_dir,
-    paste0(nix_file_name, "_libraries.", extension)
+    paste0(nix_file_name, "_libraries.", lang_config$extension)
   )
 
   generate_libraries_script(
     packages,
     additional_files,
     outfile,
-    import_formatter,
-    additional_file_pattern
+    lang_config$import_formatter,
+    lang_config$additional_file_pattern
   )
 
   return(outfile)
@@ -337,11 +308,21 @@ generate_r_libraries_from_nix <- function(
   additional_files = "",
   project_path
 ) {
+  r_config <- list(
+    language_name = "R",
+    block_name = "rpkgs",
+    transform_func = transform_r,
+    adjust_func = adjust_r_packages,
+    import_formatter = import_formatter_r,
+    additional_file_pattern = "functions\\.[Rr]",
+    extension = "R",
+    parse_git_pkgs_func = parse_rpkgs_git
+  )
   generate_r_or_py_libraries_from_nix(
     nix_file,
     additional_files,
     project_path,
-    language = "R"
+    lang_config = r_config
   )
 }
 
@@ -351,11 +332,21 @@ generate_py_libraries_from_nix <- function(
   additional_files = "",
   project_path
 ) {
+  py_config <- list(
+    language_name = "Python",
+    block_name = "pyconf",
+    transform_func = identity,
+    adjust_func = adjust_py_packages,
+    import_formatter = import_formatter_py,
+    additional_file_pattern = "functions\\.py",
+    extension = "py",
+    parse_git_pkgs_func = NULL
+  )
   generate_r_or_py_libraries_from_nix(
     nix_file,
     additional_files,
     project_path,
-    "Python"
+    lang_config = py_config
   )
 }
 
@@ -365,11 +356,21 @@ generate_jl_libraries_from_nix <- function(
   additional_files = "",
   project_path
 ) {
+  jl_config <- list(
+    language_name = "Julia",
+    block_name = "jlconf",
+    transform_func = transform_jl,
+    adjust_func = adjust_jl_packages,
+    import_formatter = import_formatter_jl,
+    additional_file_pattern = "functions\\.jl",
+    extension = "jl",
+    parse_git_pkgs_func = NULL
+  )
   generate_r_or_py_libraries_from_nix(
     nix_file,
     additional_files,
     project_path,
-    "Julia"
+    lang_config = jl_config
   )
 }
 

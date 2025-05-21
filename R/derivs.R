@@ -135,8 +135,9 @@ rxp_r <- function(
     src_snippet <- ""
   }
 
+  # Uses the generic makeDerivation Nix function with type = "R".
   snippet <- sprintf(
-    "  %s = makeRDerivation {\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
+    "  %s = makeDerivation {\n    type = \"R\";\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
     out_name,
     out_name,
     src_snippet,
@@ -302,9 +303,9 @@ rxp_py <- function(
     src_snippet <- ""
   }
 
-  # Generate the Nix snippet
+  # Generate the Nix snippet using the generic makeDerivation with type = "Py".
   snippet <- sprintf(
-    "  %s = makePyDerivation {\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
+    "  %s = makeDerivation {\n    type = \"Py\";\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
     out_name,
     out_name,
     src_snippet,
@@ -462,8 +463,7 @@ rxp_qmd <- function(
 #' @param nix_env Character, path to the Nix environment file.
 #' @param build_phase Character, the language-specific build phase script.
 #' @param type Character, the type of derivation ("rxp_r" or "rxp_py").
-#' @param derivation_func Character, the Nix derivation function
-#'   ("makeRDerivation" or "makePyDerivation").
+#' @param derivation_func Character, should now always be "makeDerivation".
 #' @param library_ext Character, the library file extension ("R" or "py").
 #' @param env_var List, defaults to NULL. A named list of environment variables
 #'   to set before running the script, e.g., c(DATA_PATH = "/path/to/data").
@@ -536,11 +536,15 @@ rxp_file_common <- function(
     build_phase <- paste0(env_exports, build_phase)
   }
 
-  # Build the Nix derivation snippet
+  # Determine Nix type parameter ("R" or "Py")
+  nix_type_param <- if (type == "rxp_r") "R" else if (type == "rxp_py") "Py" else stop("Unsupported type for rxp_file_common")
+
+  # Build the Nix derivation snippet using the generic makeDerivation.
+  # nix_type_param will be "R" or "Py" based on the calling function (rxp_r_file or rxp_py_file).
   snippet <- sprintf(
-    "  %s = %s {\n    name = \"%s\";\n    src = %s;\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
+    "  %s = makeDerivation {\n    type = \"%s\";\n    name = \"%s\";\n    src = %s;\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
     out_name,
-    derivation_func,
+    nix_type_param,
     out_name,
     src_part,
     base,
@@ -551,7 +555,7 @@ rxp_file_common <- function(
   list(
     name = out_name,
     snippet = snippet,
-    type = type,
+    type = type, # This is the internal R type, e.g. "rxp_r_file"
     additional_files = "",
     nix_env = nix_env,
     env_var = env_var
@@ -655,8 +659,8 @@ rxp_r_file <- function(
     path = actual_path,
     nix_env = nix_env,
     build_phase = build_phase,
-    type = "rxp_r",
-    derivation_func = "makeRDerivation",
+    type = "rxp_r", # This is the R-level type name
+    derivation_func = "makeDerivation", # Nix function to call
     library_ext = "R",
     env_var = env_var
   )
@@ -763,8 +767,8 @@ rxp_py_file <- function(
     path = actual_path,
     nix_env = nix_env,
     build_phase = build_phase,
-    type = "rxp_py",
-    derivation_func = "makePyDerivation",
+    type = "rxp_py", # This is the R-level type name
+    derivation_func = "makeDerivation", # Nix function to call
     library_ext = "py",
     env_var = env_var
   )
@@ -827,8 +831,10 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
     r_command
   )
 
+  # Uses the generic makeDerivation Nix function with type = "R",
+  # as reticulate operations run within an Rscript environment.
   snippet <- sprintf(
-    "  %s = makeRDerivation {\n    name = \"%s\";\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
+    "  %s = makeDerivation {\n    type = \"R\";\n    name = \"%s\";\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
     out_name,
     out_name,
     base,
@@ -1224,9 +1230,9 @@ rxp_jl <- function(
     src_snippet <- ""
   }
 
-  # Assemble the Nix‐derivation snippet
+  # Assemble the Nix‐derivation snippet using generic makeDerivation with type = "Jl".
   snippet <- sprintf(
-    "  %s = makeJlDerivation {\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
+    "  %s = makeDerivation {\n    type = \"Jl\";\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
     out_name,
     out_name,
     src_snippet,

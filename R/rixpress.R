@@ -60,96 +60,103 @@
 #' rixpress(derivs = list_derivs, project_path = ".", build = TRUE)
 #'
 #' }
+# Internal helper function to process Nix environments and additional files.
+# This function aggregates Nix environment paths (`nix_env`) and their corresponding
+# `additional_files` from all derivations. It handles the special case for
+# QMD/RMD files (which don't contribute `additional_files` in this context)
+# and returns a list of unique Nix environments and their combined, unique additional files.
+.process_nix_configs <- function(derivs) {
+  nix_configs <- lapply(derivs, function(d) {
+    files_to_consider <- if (d$type == "rxp_qmd" || d$type == "rxp_rmd") {
+      "" # QMD/RMD additional files are not relevant for this global library generation
+    } else {
+      d$additional_files
+    }
+    list(
+      nix_env = d$nix_env,
+      additional_files = files_to_consider
+    )
+  })
+
+  all_nix_envs <- vapply(nix_configs, `[[`, "nix_env", FUN.VALUE = character(1))
+  # Use lapply for additional_files as it can be a vector
+  all_add_files <- lapply(nix_configs, `[[`, "additional_files")
+
+  unique_nix_envs <- unique(all_nix_envs)
+
+  combined_additional_files <- lapply(unique_nix_envs, function(env) {
+    files_for_this_env <- unlist(all_add_files[all_nix_envs == env])
+    unique_files <- unique(files_for_this_env[!is.na(files_for_this_env) & nzchar(files_for_this_env)])
+    if (length(unique_files) == 0) {
+      return("")
+    }
+    return(unique_files)
+  })
+
+  return(list(
+    unique_env = unique_nix_envs,
+    additional_files_combined = combined_additional_files
+  ))
+}
+
+# Internal helper function to orchestrate library file generation.
+# It iterates over the unique Nix environment configurations provided by
+# `.process_nix_configs` and calls `generate_libraries_from_nix` for each,
+# which creates the `libraries.[R|py|jl]` scripts in the `_rixpress` directory.
+.orchestrate_library_generation <- function(processed_nix_configs, project_path) {
+  suppressWarnings({ # Warnings are suppressed as generate_libraries_from_nix might warn if no packages are found.
+    for (i in seq_along(processed_nix_configs$unique_env)) {
+      current_env <- processed_nix_configs$unique_env[i]
+      current_files_list <- processed_nix_configs$additional_files_combined[[i]]
+
+      # Ensure current_files is a character vector, not a list containing a single empty string
+      actual_files_param <- if (length(current_files_list) == 1 && current_files_list == "") {
+        ""
+      } else {
+        current_files_list
+      }
+
+      generate_libraries_from_nix(
+        nix_env = current_env,
+        additional_files = actual_files_param,
+        project_path = project_path
+      )
+    }
+  })
+  # No explicit return value
+}
+
 #' @export
 rixpress <- function(derivs, project_path = ".", build = TRUE, ...) {
+  # 1. Generate DAG
   generate_dag(
     derivs,
     output_file = file.path(project_path, "_rixpress", "dag.json")
   )
 
-  # Need to combine nix envs and additional files into a
-  # list of two elements, "nix_env" and "additional_files"
-  # which list all the unique combinations
-  nix_expressions_and_additional_files <- lapply(
-    derivs,
-    function(d)
-      list(
-        "nix_env" = d$nix_env,
-        "additional_files" = d$additional_files,
-        "type" = d$type
-      )
-  )
-  # Drop quarto objects, as these are handled separately
-  nix_expressions_and_additional_files <- lapply(derivs, function(d) {
-    if (d$type == "rxp_qmd" || d$type == "rxp_rmd") {
-      d$additional_files <- ""
-    }
-    list(
-      nix_env = d$nix_env,
-      additional_files = d$additional_files,
-      type = d$type
-    )
-  })
+  # 2. Process Nix environments and additional files
+  processed_nix_configs <- .process_nix_configs(derivs)
 
-  flat_list <- list(
-    nix_env = sapply(
-      X = nix_expressions_and_additional_files,
-      FUN = `[[`,
-      "nix_env",
-      USE.NAMES = FALSE
-    ),
-    additional_files = sapply(
-      X = nix_expressions_and_additional_files,
-      FUN = `[[`,
-      "additional_files",
-      USE.NAMES = FALSE
-    )
-  )
+  # 3. Generate library files for each unique environment configuration
+  .orchestrate_library_generation(processed_nix_configs, project_path)
 
-  nix_env_all <- flat_list$nix_env
-  add_files_all <- flat_list$additional_files
-
-  unique_env <- unique(nix_env_all)
-
-  additional_files_combined <- lapply(
-    unique_env,
-    function(env) {
-      idx <- which(nix_env_all == env)
-      files <- unlist(add_files_all[idx])
-      files <- files[!is.na(files) & files != ""]
-      if (length(files) == 0) return("")
-      unique(files)
-    }
-  )
-
-  result <- list(
-    nix_env = unique_env,
-    additional_files = additional_files_combined
-  )
-
-  suppressWarnings(
-    for (i in seq_along(result$nix_env)) {
-      generate_libraries_from_nix(
-        result$nix_env[i],
-        result$additional_files[[i]],
-        project_path = project_path
-      )
-    }
-  )
-
-  # Finalize pipeline
+  # 4. Generate the flat Nix pipeline code (string list)
   flat_pipeline <- gen_flat_pipeline(derivs)
 
+  # 5. Finalize the pipeline using the DAG
   pipeline <- gen_pipeline(
-    dag_file = file.path(paste0(project_path, "/_rixpress/dag.json")),
+    dag_file = file.path(project_path, "_rixpress", "dag.json"), # Ensure path concatenation is robust
     flat_pipeline = flat_pipeline
   )
 
+  # 6. Write the pipeline.nix file
   writeLines(pipeline, file.path(project_path, "pipeline.nix"))
 
+  # 7. Optionally build the pipeline
   if (build) {
     rxp_make(...)
   }
+  # No explicit return value, function primarily has side effects
 }
 
 
@@ -182,32 +189,62 @@ parse_nix_envs <- function(derivs) {
   derivs <- lapply(
     derivs,
     function(d) {
-      d$library <- list.files("_rixpress", pattern = d$base_name)
-      d$library_in_sandbox <- gsub(paste0(d$base_name, "_"), "", d$library)
+      host_scripts <- list.files("_rixpress", pattern = d$base_name, full.names = FALSE) # Get just filenames
+      if (length(host_scripts) == 0) {
+        warning(paste0(
+          "No library script found in '_rixpress' for Nix env base '", d$base_name,
+          "' (derived from '", d$nix_env, "'). ",
+          "This might be an issue if this environment is expected to provide libraries."
+        ))
+        # Allow to proceed but sandbox target name will be based on an empty string if no script.
+        # Or, could set d$host_library_script_name to NA or a special value.
+        # For now, let it result in empty strings for cp command which might be harmless or caught by Nix.
+        d$host_library_script_name <- ""
+      } else {
+        if (length(host_scripts) > 1) {
+          warning(paste0(
+            "Multiple library scripts found for Nix env base '", d$base_name,
+            "': ", paste(host_scripts, collapse = ", "), ". Using the first one: ", host_scripts[1]
+          ))
+        }
+        d$host_library_script_name <- host_scripts[1]
+      }
+      # The target name in the sandbox is derived from the host script name.
+      d$sandbox_library_target_name <- gsub(paste0(d$base_name, "_"), "", d$host_library_script_name)
+
       list(
         "nix_env" = d$nix_env,
         "base_name" = d$base_name,
-        "library" = d$library,
-        "library_in_sandbox" = d$library_in_sandbox
+        "host_library_script_name" = d$host_library_script_name,
+        "sandbox_library_target_name" = d$sandbox_library_target_name
       )
     }
   )
 
-  derivs <- unique(derivs)
+  derivs <- unique(derivs) # Remove duplicate configurations
 
   generate_configurePhase <- function(d) {
+    # Only attempt to copy if a host library script actually exists
+    copy_command_part <- ""
+    if (nzchar(d$host_library_script_name) && nzchar(d$sandbox_library_target_name)) {
+      copy_command_part <- paste0(
+        "cp ${./_rixpress/",
+        d$host_library_script_name, # Use the (potentially single) host script name
+        "} ",
+        d$sandbox_library_target_name, # Use the derived sandbox target name
+        "\n    "
+      )
+    } else {
+      # If no library script, provide a comment or ensure this part of configurePhase is empty
+      copy_command_part <- "# No library script to copy for this environment\n    "
+    }
+
     # Compute the configure_phases_str
     configure_phases_str <- paste0(
       d$base_name,
       "ConfigurePhase = ''\n    ",
-      paste0(
-        "cp ${./_rixpress/",
-        unlist(d$library),
-        "} ",
-        unlist(d$library_in_sandbox),
-        collapse = "\n    "
-      ),
-      "\n    mkdir -p $out  ",
+      copy_command_part, # Use the conditional copy command
+      "mkdir -p $out  ",
       "\n    mkdir -p .julia_depot  ",
       "\n    export JULIA_DEPOT_PATH=$PWD/.julia_depot  ",
       "\n    export HOME_PATH=$PWD\n  ",
@@ -247,8 +284,15 @@ parse_nix_envs <- function(derivs) {
 #'     - `$nix_env`, character, path to Nix environment to build this derivation
 #'   A single deriv is the output of `rxp_r()`, `rxp_qmd()` or `rxp_py()`
 #'   function.
+#' @details This function constructs the main Nix expression as a list of strings.
+#' It includes:
+#'   - Nix environment imports and setup (via `parse_nix_envs`).
+#'   - The generic `makeDerivation` Nix function definition if needed.
+#'   - Individual Nix derivation snippets for each element in `derivs`.
+#'   - A final `allDerivations` target symlinking all defined derivations.
 #' @noRd
 gen_flat_pipeline <- function(derivs) {
+  # Consolidate all derivation snippets into one block
   derivation_texts <- vapply(
     derivs,
     function(d) d$snippet,
@@ -261,63 +305,35 @@ gen_flat_pipeline <- function(derivs) {
 
   nix_envs <- parse_nix_envs(derivs)
 
-  # Determine required functions
+  # Determine required functions and generate Nix function definitions
   types <- vapply(derivs, function(d) d$type, character(1))
-  need_r <- get_need_r(types)
-  need_py <- get_need_py(types)
-  need_jl <- get_need_jl(types)
+  # The generic `makeDerivation` Nix function is included if any derivations
+  # of type R, Python, or Julia (including their _file variants) are present,
+  # as these are the types that utilize this generic maker.
+  need_generic_maker <- any(types %in% c("rxp_r", "rxp_r_file", "rxp_py", "rxp_py_file", "rxp_jl"))
 
-  # Build function definitions
   function_defs <- ""
-  if (need_r) {
-    function_defs <- paste0(
-      function_defs,
-      "\n  # Function to create R derivations
-  makeRDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
-    defaultPkgs.stdenv.mkDerivation {
-      inherit name src;
-      dontUnpack = true;
-      inherit buildInputs configurePhase buildPhase;
-      installPhase = ''
-        cp ${name} $out/
-      '';
-    };"
-    )
-  }
-  if (need_py) {
-    function_defs <- paste0(
-      function_defs,
-      "\n  # Function to create Python derivations
-  makePyDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
+  if (need_generic_maker) {
+    # Define the generic Nix function 'makeDerivation' used by rxp_r, rxp_py, rxp_jl.
+    # This function handles type-specific logic like installPhase commands.
+    function_defs <- "
+  # Generic function to create derivations
+  makeDerivation = { name, type, buildInputs, configurePhase, buildPhase, src ? null }:
     let
-      pickleFile = \"${name}\";
+      pickleFile = \"${name}\"; # Only used if type is \"Py\"
+      installCmd =
+        if type == \"Py\" then \"cp ${pickleFile} $out\"
+        else \"cp ${name} $out/\";
     in
       defaultPkgs.stdenv.mkDerivation {
         inherit name src;
         dontUnpack = true;
-        buildInputs = buildInputs;
+        buildInputs = buildInputs; # Use explicit assignment
         inherit configurePhase buildPhase;
         installPhase = ''
-          cp ${pickleFile} $out
+          ${installCmd}
         '';
       };"
-    )
-  }
-  if (need_jl) {
-    function_defs <- paste0(
-      function_defs,
-      "\n  # Function to create Julia derivations
-  makeJlDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
-    defaultPkgs.stdenv.mkDerivation {
-      inherit name src;
-      dontUnpack = true;
-      buildInputs = buildInputs;
-      inherit configurePhase buildPhase;
-      installPhase = ''
-        cp ${name} $out/
-      '';
-    };"
-    )
   }
 
   # Generate Nix code
@@ -350,6 +366,71 @@ in
   strsplit(pipeline_nix, split = "\n")[[1]]
 }
 
+# Language configurations for gen_pipeline
+# This list stores configurations for script command and dependency loading for each language.
+# It's defined once here to be accessible by gen_pipeline.
+.PIPELINE_LANG_CONFIGS <- list(
+  rxp_r = list(
+    script_cmd = "Rscript -e \"",
+    load_line_func = function(dep, indent, unserialize_function) {
+      paste0(
+        indent, # Indentation is applied here for R lines
+        dep,
+        " <- ",
+        unserialize_function,
+        "('${",
+        dep,
+        "}/",
+        dep,
+        "')"
+      )
+    }
+  ),
+  rxp_py = list(
+    script_cmd = "python -c \"",
+    load_line_func = function(dep, indent, unserialize_function) {
+      path <- paste0("${", dep, "}/", dep)
+      # Python lines are typically not indented by this logic, indent usually ""
+      if (unserialize_function == "pickle.load") {
+        paste0(
+          indent,
+          "with open('",
+          path,
+          "', 'rb') as f: ",
+          dep,
+          " = pickle.load(f)"
+        )
+      } else {
+        paste0(
+          indent,
+          dep,
+          " = ",
+          unserialize_function,
+          "('",
+          path,
+          "')"
+        )
+      }
+    }
+  ),
+  rxp_jl = list(
+    script_cmd = "julia -e \"",
+    load_line_func = function(dep, indent, unserialize_function) {
+      path <- paste0("${", dep, "}/", dep)
+      # Julia lines are typically not indented by this logic, indent usually ""
+      paste0(
+        indent,
+        dep,
+        " = ",
+        unserialize_function,
+        "(\\\"", # Path needs to be quoted within Julia string
+        path,
+        "\\\")"
+      )
+    }
+  )
+)
+
 #' gen_pipeline Internal function used to finalize a flat pipeline
 #' @param dag_file A json file giving the names and relationships between derivations.
 #' @param flat_pipeline A flat pipeline, output of `gen_flat_elements()`.
@@ -359,132 +440,102 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
   pipeline <- flat_pipeline
 
   for (d in dag$derivations) {
-    if (
-      length(d$depends) == 0 ||
-        d$type == "rxp_qmd" ||
-        d$type == "rxp_rmd" ||
-        d$type == "rxp_py2r" ||
-        d$type == "rxp_r2py"
-    )
+    # Skip derivations that don't need this type of dependency injection
+    if (length(d$depends) == 0 ||
+        d$type %in% c("rxp_qmd", "rxp_rmd", "rxp_py2r", "rxp_r2py")) {
       next
+    }
 
     deriv_name <- as.character(d$deriv_name[1])
     deps <- d$depends
-    type <- d$type[1]
-    unserialize_function <- d$unserialize_function
+    type <- d$type[1] # This is the type of the current derivation, e.g., "rxp_r"
+    unserialize_function <- d$unserialize_function # For this derivation's output
 
-    # Set parameters based on derivation type
-    if (type == "rxp_r") {
-      maker <- "makeRDerivation"
-      script_cmd <- "Rscript -e \""
-      load_line <- function(dep, indent, unserialize_function) {
-        paste0(
-          indent,
-          dep,
-          " <- ",
-          unserialize_function,
-          "('${",
-          dep,
-          "}/",
-          dep,
-          "')"
-        )
-      }
-    } else if (type == "rxp_py") {
-      maker <- "makePyDerivation"
-      script_cmd <- "python -c \""
-      load_line <- function(dep, indent, unserialize_function) {
-        path <- paste0("${", dep, "}/", dep)
-        if (unserialize_function == "pickle.load") {
-          paste0(
-            "with open('",
-            path,
-            "', 'rb') as f: ",
-            dep,
-            " = pickle.load(f)"
-          )
-        } else {
-          paste0(
-            dep,
-            " = ",
-            unserialize_function,
-            "('",
-            path,
-            "')"
-          )
-        }
-      }
-    } else if (type == "rxp_jl") {
-      maker <- "makeJlDerivation"
-      script_cmd <- "julia -e \""
-      load_line <- function(dep, indent, unserialize_function) {
-        path <- paste0("${", dep, "}/", dep)
-        paste0(
-          dep,
-          " = ",
-          unserialize_function,
-          "(\\\"",
-          path,
-          "\\\")"
-        )
-      }
-    } else {
-      warning("Unsupported type for derivation ", deriv_name)
+    # Retrieve language-specific configuration
+    lang_conf <- .PIPELINE_LANG_CONFIGS[[type]]
+
+    if (is.null(lang_conf)) {
+      warning("Unsupported type for dependency injection in derivation '", deriv_name, "': ", type)
       next
     }
 
-    # Locate the derivation block
-    pattern <- paste0("^\\s*", deriv_name, " = ", maker, " \\{")
+    script_cmd <- lang_conf$script_cmd
+    load_line_func <- lang_conf$load_line_func
+    maker <- "makeDerivation" # This is now standard
+
+    # Locate the derivation block in the pipeline string list
+    # The pattern ensures we find the correct 'makeDerivation' call with its type.
+    pattern <- paste0("^\\s*", deriv_name, " = ", maker, " \\{.*type = \"(R|Py|Jl)\";")
     start_idx <- grep(pattern, pipeline)
     if (!length(start_idx)) {
-      warning("Derivation ", deriv_name, " not found")
+      warning(paste0(
+        "Derivation '", deriv_name, "' not found in pipeline string. ",
+        "Ensure its snippet uses 'makeDerivation { type = \"...\"; ... }'."
+      ))
       next
     }
-    start_idx <- start_idx[1]
+    start_idx <- start_idx[1] # Take the first match if multiple (should not happen for unique names)
 
-    # Find the end of the block
+    # Find the end of this derivation block (line with "};")
     end_candidates <- grep("^\\s*};", pipeline)
-    block_end_idx <- end_candidates[end_candidates > start_idx][1]
+    block_end_idx <- end_candidates[end_candidates > start_idx][1] # First end-marker after the start
     if (is.na(block_end_idx)) {
-      warning("Block end for ", deriv_name, " not found")
+      warning("Block end for derivation '", deriv_name, "' not found.")
       next
     }
 
+    # Extract the lines constituting the current derivation's definition
     block <- pipeline[start_idx:block_end_idx]
-    bp_idx <- grep("buildPhase = ''", block)
+
+    # Find the start of the buildPhase within this block
+    bp_idx <- grep("buildPhase = ''", block, fixed = TRUE) # Search for exact match
     if (!length(bp_idx)) {
-      warning("buildPhase not found for ", deriv_name)
+      warning("buildPhase not found for derivation '", deriv_name, "'.")
       next
     }
-    build_phase_idx <- start_idx + bp_idx[1] - 1
+    build_phase_idx <- start_idx + bp_idx[1] - 1 # Adjust index to be relative to the full 'pipeline'
 
+    # Narrow down to the buildPhase content to find the script command
+    # This sub_block is from the start of `buildPhase = ''` to the end of the derivation block
     sub_block <- block[bp_idx[1]:length(block)]
-    script_idx <- grep(script_cmd, sub_block, fixed = TRUE)
-    if (!length(script_idx)) {
-      warning("Script command not found in buildPhase for ", deriv_name)
+    # Find the line containing the actual script invocation (Rscript -e, python -c, etc.)
+    script_line_in_sub_block_idx <- grep(script_cmd, sub_block, fixed = TRUE)
+    if (!length(script_line_in_sub_block_idx)) {
+      warning("Script command '", script_cmd, "' not found in buildPhase for derivation '", deriv_name, "'.")
       next
     }
-    script_idx <- build_phase_idx + script_idx[1]
+    # Adjust index to be relative to the full 'pipeline'
+    script_idx <- build_phase_idx + script_line_in_sub_block_idx[1] -1 # -1 because bp_idx[1] is 1-based index in 'block'
 
-    # Determine indentation for R scripts, none for Python or Julia
-    indent <- if (type == "rxp_r") {
+    # Determine indentation: only for R scripts, based on the line after script_cmd
+    indent <- ""
+    if (type == "rxp_r") {
+      # Ensure there's a line after the script command line to check for indentation
       if (script_idx + 1 <= length(pipeline)) {
-        sub("^([[:space:]]*).*", "\\1", pipeline[script_idx + 1])
+        # Extract leading whitespace from the next line
+        indent <- sub("^([[:space:]]*).*", "\\1", pipeline[script_idx + 1])
       } else {
-        "      "
+        # Default indentation if no next line (e.g., script is the last line)
+        indent <- "      " # A common default, adjust if necessary
       }
-    } else {
-      ""
     }
 
+    # Generate dependency loading lines using the configured function
     load_lines <- vapply(
       deps,
-      load_line,
-      indent,
-      unserialize_function,
+      load_line_func, # Use the function from the configuration
+      indent = indent,
+      unserialize_function = unserialize_function, # Pass the derivation's specific unserialize_function
       FUN.VALUE = character(1)
     )
-    pipeline <- append(pipeline, load_lines, after = build_phase_idx + 2)
+
+    # Insert the load_lines into the pipeline.
+    # The offset `+ 2` (from script_idx, which is the line with e.g. `Rscript -e "`)
+    # is chosen to place these lines:
+    # 1. After the script command itself (e.g., `Rscript -e "`).
+    # 2. Typically after an initial setup line within the script string (e.g., `source('libraries.R')` or `exec(open('libraries.py').read())`).
+    # This aims to inject dependency loading before the main user expression.
+    pipeline <- append(pipeline, load_lines, after = script_idx + 2)
   }
 
   pipeline

@@ -30,26 +30,56 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
     type <- d$type
     unserialize_function <- d$unserialize_function
 
-    if (type == "rxp_r" || type == "rxp_py2r" || type == "rxp_r2py") {
-      snippet <- d$snippet
-      # Extract the content inside the Rscript -e quotes
-      # (allowing for multiple lines)
-      m <- regexec('Rscript -e \\"([\\s\\S]*?)\\"', snippet, perl = TRUE)
-      match <- regmatches(snippet, m)
+    # Helper function to extract dependencies from script-based derivations.
+    # Searches for derivation names within the script content extracted by script_regex.
+    # - snippet_content: The Nix snippet string for the derivation.
+    # - script_regex: PCRE regex to extract the executable script portion.
+    #   Must contain one capturing group for the script content.
+    # - all_deriv_names: Character vector of all derivation names in the pipeline.
+    # - current_deriv_name: Name of the derivation currently being processed.
+    # Returns a character vector of dependency names.
+    extract_script_dependencies <- function(snippet_content, script_regex, all_deriv_names, current_deriv_name) {
+      m <- regexec(script_regex, snippet_content, perl = TRUE) # PCRE for features like (?s)
+      match_list <- regmatches(snippet_content, m)
 
+      script_text <- ""
+      # Expecting the captured script text to be the second element of the first list item
+      if (length(match_list) > 0 && length(match_list[[1]]) >= 2) {
+        script_text <- match_list[[1]][2] # The first captured group
+      }
+
+      if (identical(script_text, "") || is.na(script_text)) { # is.na if regex doesn't match
+        return(character(0)) # No script content found or regex failed
+      }
+
+      # Consider only other derivations as potential dependencies
       derivs_to_consider <- Filter(
-        function(x) `!=`(x, name),
-        all_derivs_names
+        function(x) `!=`(x, current_deriv_name),
+        all_deriv_names
       )
 
-      deps <- sapply(
+      if (length(derivs_to_consider) == 0) {
+        return(character(0))
+      }
+
+      # Check for presence of each potential dependency name as a whole word
+      dep_flags <- sapply(
         derivs_to_consider,
-        function(name) any(grepl(paste0("\\b", name, "\\b"), unlist(match)))
+        function(dep_name) any(grepl(paste0("\\b", dep_name, "\\b"), script_text, perl = TRUE))
       )
 
-      # Only keep deps
-      deps <- Filter(isTRUE, deps)
-      deps <- names(deps)
+      deps <- Filter(isTRUE, dep_flags)
+      return(names(deps))
+    }
+
+    if (type == "rxp_r" || type == "rxp_py2r" || type == "rxp_r2py") {
+      # For R scripts: extracts content from Rscript -e "..."
+      deps <- extract_script_dependencies(
+        snippet_content = d$snippet,
+        script_regex = 'Rscript -e \\"([\\s\\S]*?)\\"', # Matches multi-line content in Rscript -e "..."
+        all_deriv_names = all_derivs_names,
+        current_deriv_name = name
+      )
     } else if (type == "rxp_qmd" || type == "rxp_rmd") {
       # Determine file path and extension based on type
       if (type == "rxp_qmd") {
@@ -91,72 +121,54 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
         code <- sub("```\\{r\\}\\s*", "", chunk)
         code <- sub("```\\s*$", "", code)
 
-        # Match rxp_read("name") or rxp_load("name"), with or without rixpress::
-        pattern <- "(rixpress::)?rxp_(read|load)\\s*\\(\\s*['\"](\\w+)['\"]\\s*\\)"
-        matches <- regmatches(code, gregexpr(pattern, code, perl = TRUE))[[1]]
+        # Regex to match `rxp_read("name")` or `rxp_load("name")`,
+        # optionally prefixed with `rixpress::`. Captures "name".
+        # `(\\w+)` captures the derivation name (alphanumeric and underscore).
+        dep_pattern_qmd <- "(rixpress::)?rxp_(read|load)\\s*\\(\\s*['\"](\\w+)['\"]\\s*\\)"
+        matches <- regmatches(code, gregexpr(dep_pattern_qmd, code, perl = TRUE))[[1]]
 
-        # Extract the dependency names (group 3 in the pattern)
+        # Extract the dependency names (captured group 3 from dep_pattern_qmd)
         if (length(matches) > 0) {
           dep_names <- vapply(
             matches,
             function(m) {
-              regmatches(m, regexec(pattern, m, perl = TRUE))[[1]][4]
+              regmatches(m, regexec(dep_pattern_qmd, m, perl = TRUE))[[1]][4]
             },
             character(1)
           )
           deps <- union(deps, dep_names)
         }
       }
-      # Filter dependencies to only those previously defined
+      # Filter dependencies to only those previously defined in the rxp_list order
+      # This is specific to QMD/RMD to ensure they only depend on objects already available.
       deps <- intersect(deps, defined[1:(i - 1)])
-    } else if (type == "rxp_py" || type == "rxp_r2py") {
-      snippet <- d$snippet
-      # Extract the content inside the python -c quotes (allowing for multiple lines)
-      m <- regexec('python -c \\"([\\s\\S]*?)\\"', snippet, perl = TRUE)
-      match <- regmatches(snippet, m)
-
-      derivs_to_consider <- Filter(
-        function(x) `!=`(x, name),
-        all_derivs_names
+    } else if (type == "rxp_py") { # NB: rxp_r2py is R-based, handled by the Rscript block
+      # For Python scripts: extracts content from python -c "..."
+      deps <- extract_script_dependencies(
+        snippet_content = d$snippet,
+        script_regex = 'python -c \\"([\\s\\S]*?)\\"', # Matches multi-line content in python -c "..."
+        all_deriv_names = all_derivs_names,
+        current_deriv_name = name
       )
-
-      deps <- sapply(
-        derivs_to_consider,
-        function(name) any(grepl(paste0("\\b", name, "\\b"), unlist(match)))
+    } else if (type == "rxp_jl") {
+      # For Julia scripts: extracts content from julia -e "..."
+      # The regex `(?s)julia\\s+-e\\s+"(.+?)"` uses `(?s)` for dot-all to match multi-line
+      # content within the quotes, and captures the content. It expects the script part to
+      # be followed by a quote and then `''` (as per `rxp_jl` snippet construction),
+      # but this regex focuses on just capturing the content inside `julia -e "..."`.
+      deps <- extract_script_dependencies(
+        snippet_content = d$snippet,
+        script_regex = '(?s)julia\\s+-e\\s+"(.+?)"',
+        all_deriv_names = all_derivs_names,
+        current_deriv_name = name
       )
-
-      # Only keep deps
-      deps <- Filter(isTRUE, deps)
-      deps <- names(deps)
-
-} else if (type == "rxp_jl") {
-  snippet <- d$snippet
-  # Extract everything between `julia -e "` and the following `'';` (dot‐all mode)
-  pat <- '(?s)julia\\s+-e\\s+"(.+?)"\\s*\'\';'
-  m <- regexec(pat, snippet, perl = TRUE)
-  captures <- regmatches(snippet, m)
-  if (length(captures) > 0 && length(captures[[1]]) >= 2) {
-    match <- captures[[1]][2]
-  } else {
-    match <- ""
-  }
-
-  derivs_to_consider <- Filter(
-    function(x) `!=`(x, name),
-    all_derivs_names
-  )
-
-  deps <- sapply(
-    derivs_to_consider,
-    function(name) any(grepl(paste0("\\b", name, "\\b"), match))
-  )
-
-  # Only keep deps
-  deps <- Filter(isTRUE, deps)
-  deps <- names(deps)
-} else {
-  stop("Unknown derivation type: ", type)
-}
+    } else if (type %in% c("rxp_copy", "rxp_r_file", "rxp_py_file")) { # Types with no script dependencies
+        deps <- character(0)
+    } else {
+      # This will catch unhandled types including potentially rxp_r2py if it wasn't meant for Rscript block
+      warning("Unknown or unhandled derivation type for dependency extraction: ", type, " in derivation ", name)
+      deps <- character(0) # Default to no dependencies for unknown types
+    }
     dag[[i]] <- list(
       deriv_name = name,
       depends = deps,
