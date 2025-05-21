@@ -19,17 +19,22 @@ parse_packages <- function(
   start_pattern <- paste0(
     "^\\s*",
     block_name,
-    "\\s*=\\s*builtins\\.attrValues\\s*\\{"
+    "\\s*=\\s*(?:",
+    "builtins\\.attrValues\\s*\\{", # matches rpkgs (or pyconf) = builtins.attrValues {
+    "|",                            # or, matches Julia blocks
+    "pkgs\\.julia(?:[-_\\.][A-Za-z0-9]+)*\\.withPackages\\s*\\[",
+    ")"
   )
+
   start_idx <- grep(start_pattern, lines)
   if (length(start_idx) == 0) {
     return(NULL)
   }
   start_idx <- start_idx[1]
 
-  # Find the end of the block ("};")
-  end_idx <- grep("^\\s*\\};", lines)
-  end_idx <- end_idx[end_idx > start_idx][1]
+  # Find the end of the block ("};" or "];")
+  end_idxs <- grep("^\\s*(\\};|\\];)", lines, perl = TRUE)
+  end_idx  <- end_idxs[end_idxs > start_idx][1]
   if (is.na(end_idx)) {
     stop(paste("Could not find the end of the", block_name, "block"))
   }
@@ -270,14 +275,14 @@ generate_r_or_py_libraries_from_nix <- function(
       all_parsed_packages <- c(all_parsed_packages, packages_from_block)
     }
   } else if (language == "Julia") {
-    block_name <- "jlpkgs"
+    block_name <- "jlconf"
     transform_func <- transform_jl
     adjust <- adjust_jl_packages
     import_formatter <- import_formatter_jl
     additional_file_pattern <- "functions\\.jl"
     extension <- "jl"
 
-    # Julia packages are only in the jlpkgs block
+    # Julia packages are only in the jlconf block
     packages_from_block <- parse_packages(
       nix_file = nix_file,
       project_path = project_path,
@@ -286,6 +291,8 @@ generate_r_or_py_libraries_from_nix <- function(
     )
     if (!is.null(packages_from_block)) {
       all_parsed_packages <- c(all_parsed_packages, packages_from_block)
+      # Julia Packages are passed as strings in the nix expression
+      all_parsed_packages <- gsub("\"", "", all_parsed_packages)
     }
   } else {
     stop("Unsupported language")

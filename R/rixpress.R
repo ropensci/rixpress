@@ -424,9 +424,9 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
           dep,
           " = ",
           unserialize_function,
-          "(\"",
+          "(\\\"",
           path,
-          "\")"
+          "\\\")"
         )
       }
     } else {

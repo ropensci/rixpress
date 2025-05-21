@@ -1201,10 +1201,11 @@ rxp_jl <- function(
   build_phase <- paste0(
     env_exports,
     copy_cmd,
-    "julia -e \"",
-    "if isfile(\"libraries.jl\"); include(\"libraries.jl\"); end; ",
-    out_name, " = ", jl_expr_escaped, "; ",
+    "julia -e \"\n",
+    "if isfile(\\\"libraries.jl\\\"); include(\\\"libraries.jl\\\"); end; \n",
+    out_name, " = ", jl_expr_escaped, "; \n",
     serialize_str,
+    "\n",
     "\""
   )
 
