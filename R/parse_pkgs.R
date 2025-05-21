@@ -204,7 +204,13 @@ transform_jl <- function(packages) {
 }
 
 #' @noRd
-adjust_jl_packages <- identity # No additional adjustments for Julia
+adjust_jl_packages <- function(packages) {
+  # Serialization is needed to import pickle’d objects
+  packages <- sort(c("Serialization", packages))
+  # Julia Packages are passed as strings in the nix expression
+  packages <- gsub("\"", "", packages)
+  packages
+}
 
 #' @noRd
 import_formatter_jl <- function(package) {
@@ -236,7 +242,7 @@ generate_r_or_py_libraries_from_nix <- function(
     additional_file_pattern <- "functions\\.[Rr]"
     extension <- "R"
 
-    # Parse packages from the 'rpkgs' block
+                                        # Parse packages from the 'rpkgs' block
     packages_from_block <- parse_packages(
       nix_file = nix_file,
       project_path = project_path,
@@ -247,7 +253,7 @@ generate_r_or_py_libraries_from_nix <- function(
       all_parsed_packages <- c(all_parsed_packages, packages_from_block)
     }
 
-    # Parse R packages from git definitions
+                                        # Parse R packages from git definitions
     packages_from_git <- parse_rpkgs_git(
       nix_file = nix_file,
       project_path = project_path,
@@ -291,8 +297,6 @@ generate_r_or_py_libraries_from_nix <- function(
     )
     if (!is.null(packages_from_block)) {
       all_parsed_packages <- c(all_parsed_packages, packages_from_block)
-      # Julia Packages are passed as strings in the nix expression
-      all_parsed_packages <- gsub("\"", "", all_parsed_packages)
     }
   } else {
     stop("Unsupported language")

@@ -1140,7 +1140,7 @@ rxp_jl <- function(
     # Default: use built‐in Serialization.serialize
     serialize_str <- paste0(
       "using Serialization; ",
-      "io = open(\"", out_name, "\", \"w\"); ",
+      "io = open(\\\"", out_name, "\\\", \\\"w\\\"); ",
       "serialize(io, ", out_name, "); ",
       "close(io)"
     )
@@ -1149,7 +1149,7 @@ rxp_jl <- function(
       stop("serialize_function must be a single character string or NULL")
     }
     serialize_str <- sprintf(
-      "%s(%s, \"%s\")",
+      "%s(%s, \\\"%s\\\")",
       serialize_function,
       out_name,
       out_name

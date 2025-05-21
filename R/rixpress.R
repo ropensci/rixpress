@@ -211,7 +211,10 @@ parse_nix_envs <- function(derivs) {
         unlist(d$library_in_sandbox),
         collapse = "\n    "
       ),
-      "\n    mkdir -p $out\n  ",
+      "\n    mkdir -p $out  ",
+      "\n    mkdir -p .julia_depot  ",
+      "\n    export JULIA_DEPOT_PATH=$PWD/.julia_depot  ",
+      "\n    export HOME_PATH=$PWD\n  ",
       "'';\n  "
     )
 

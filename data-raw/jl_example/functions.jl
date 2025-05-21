@@ -59,3 +59,4 @@ end
 
 function arrow_write(df, path)
     Arrow.write(path, df)
+end

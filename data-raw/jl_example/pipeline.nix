@@ -6,7 +6,10 @@ let
   defaultConfigurePhase = ''
     cp ${./_rixpress/default_libraries.jl} libraries.jl
     cp ${./_rixpress/default_libraries.R} libraries.R
-    mkdir -p $out
+    mkdir -p $out  
+    mkdir -p .julia_depot  
+    export JULIA_DEPOT_PATH=$PWD/.julia_depot  
+    export HOME_PATH=$PWD
   '';
   
   # Function to create Julia derivations
@@ -30,7 +33,7 @@ let
       julia -e "
 if isfile(\"libraries.jl\"); include(\"libraries.jl\"); end; 
 d_size = 150; 
-using Serialization; io = open("d_size", "w"); serialize(io, d_size); close(io)
+using Serialization; io = open(\"d_size\", \"w\"); serialize(io, d_size); close(io)
 "
     '';
   };
@@ -43,8 +46,12 @@ using Serialization; io = open("d_size", "w"); serialize(io, d_size); close(io)
       julia -e "
 if isfile(\"libraries.jl\"); include(\"libraries.jl\"); end; 
 d_size = Serialization.deserialize(\"${d_size}/d_size\")
-data = 0.1randn(d_size,d_size) + reshape(cholesky(gridlaplacian(d_size,d_size) + 0.003I)  randn(d_size*d_size), d_size, d_size); 
-using Serialization; io = open("data", "w"); serialize(io, data); close(io)
+data = 0.1randn(d_size,d_size) + reshape( 
+     cholesky(gridlaplacian(d_size,d_size) + 0.003I) \ randn(d_size*d_size), 
+     d_size, 
+     d_size 
+   ); 
+using Serialization; io = open(\"data\", \"w\"); serialize(io, data); close(io)
 "
     '';
   };
@@ -58,7 +65,7 @@ using Serialization; io = open("data", "w"); serialize(io, data); close(io)
 if isfile(\"libraries.jl\"); include(\"libraries.jl\"); end; 
 data = Serialization.deserialize(\"${data}/data\")
 laplace_df = DataFrame(data, :auto); 
-arrow_write(laplace_df, "laplace_df")
+arrow_write(laplace_df, \"laplace_df\")
 "
     '';
   };
