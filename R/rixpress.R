@@ -207,7 +207,10 @@ parse_nix_envs <- function(derivs) {
         unlist(d$library_in_sandbox),
         collapse = "\n    "
       ),
-      "\n    mkdir -p $out\n  ",
+      "\n    mkdir -p $out  ",
+      "\n    mkdir -p .julia_depot  ",
+      "\n    export JULIA_DEPOT_PATH=$PWD/.julia_depot  ",
+      "\n    export HOME_PATH=$PWD\n  ",
       "'';\n  "
     )
 
@@ -262,6 +265,7 @@ gen_flat_pipeline <- function(derivs) {
   types <- vapply(derivs, function(d) d$type, character(1))
   need_r <- get_need_r(types)
   need_py <- get_need_py(types)
+  need_jl <- get_need_jl(types)
 
   # Build function definitions
   function_defs <- ""
@@ -297,6 +301,22 @@ gen_flat_pipeline <- function(derivs) {
           cp ${pickleFile} $out
         '';
       };"
+    )
+  }
+  if (need_jl) {
+    function_defs <- paste0(
+      function_defs,
+      "\n  # Function to create Julia derivations
+  makeJlDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
+    defaultPkgs.stdenv.mkDerivation {
+      inherit name src;
+      dontUnpack = true;
+      buildInputs = buildInputs;
+      inherit configurePhase buildPhase;
+      installPhase = ''
+        cp ${name} $out/
+      '';
+    };"
     )
   }
 
@@ -394,6 +414,20 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
           )
         }
       }
+    } else if (type == "rxp_jl") {
+      maker <- "makeJlDerivation"
+      script_cmd <- "julia -e \""
+      load_line <- function(dep, indent, unserialize_function) {
+        path <- paste0("${", dep, "}/", dep)
+        paste0(
+          dep,
+          " = ",
+          unserialize_function,
+          "(\\\"",
+          path,
+          "\\\")"
+        )
+      }
     } else {
       warning("Unsupported type for derivation ", deriv_name)
       next
@@ -432,7 +466,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     }
     script_idx <- build_phase_idx + script_idx[1]
 
-    # Determine indentation for R scripts, none for Python
+    # Determine indentation for R scripts, none for Python or Julia
     indent <- if (type == "rxp_r") {
       if (script_idx + 1 <= length(pipeline)) {
         sub("^([[:space:]]*).*", "\\1", pipeline[script_idx + 1])
@@ -456,13 +490,14 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
   pipeline
 }
 
+
 #' Generate an R or Py script with library calls from a default.nix file
 #'
 #' @param nix_env Nix environment where the derivation runs
 #' @param additional_files Character vector, additional files to include. These
 #'   are the files that contain custom functions required for this derivation.
-#' @param project_path Path to root of project, typically "."
-#' @return An script to load the libraries inside of derivations.
+#' @param project_path	Path to root of project, typically "."
+#' @return A script to load the libraries inside of derivations.
 #' @noRd
 generate_libraries_from_nix <- function(
   nix_env,
@@ -479,8 +514,12 @@ generate_libraries_from_nix <- function(
     additional_files,
     project_path
   )
+  generate_jl_libraries_from_nix(
+    nix_env,
+    additional_files,
+    project_path
+  )
 }
-
 
 #' @noRd
 get_need_r <- function(types) {
@@ -493,4 +532,9 @@ get_need_r <- function(types) {
 #' @noRd
 get_need_py <- function(types) {
   any(types %in% c("rxp_py", "rxp_py_file"))
+}
+
+#' @noRd
+get_need_jl <- function(types) {
+  any(types %in% c("rxp_jl"))
 }

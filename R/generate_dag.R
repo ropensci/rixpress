@@ -128,10 +128,35 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
       # Only keep deps
       deps <- Filter(isTRUE, deps)
       deps <- names(deps)
-    } else {
-      stop("Unknown derivation type: ", type)
-    }
 
+} else if (type == "rxp_jl") {
+  snippet <- d$snippet
+  # Extract everything between `julia -e "` and the following `'';` (dot‐all mode)
+  pat <- '(?s)julia\\s+-e\\s+"(.+?)"\\s*\'\';'
+  m <- regexec(pat, snippet, perl = TRUE)
+  captures <- regmatches(snippet, m)
+  if (length(captures) > 0 && length(captures[[1]]) >= 2) {
+    match <- captures[[1]][2]
+  } else {
+    match <- ""
+  }
+
+  derivs_to_consider <- Filter(
+    function(x) `!=`(x, name),
+    all_derivs_names
+  )
+
+  deps <- sapply(
+    derivs_to_consider,
+    function(name) any(grepl(paste0("\\b", name, "\\b"), match))
+  )
+
+  # Only keep deps
+  deps <- Filter(isTRUE, deps)
+  deps <- names(deps)
+} else {
+  stop("Unknown derivation type: ", type)
+}
     dag[[i]] <- list(
       deriv_name = name,
       depends = deps,
