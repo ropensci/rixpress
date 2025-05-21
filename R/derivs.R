@@ -537,7 +537,8 @@ rxp_file_common <- function(
   }
 
   # Determine Nix type parameter ("R" or "Py")
-  nix_type_param <- if (type == "rxp_r") "R" else if (type == "rxp_py") "Py" else stop("Unsupported type for rxp_file_common")
+  nix_type_param <- if (type == "rxp_r") "R" else if (type == "rxp_py")
+    "Py" else stop("Unsupported type for rxp_file_common")
 
   # Build the Nix derivation snippet using the generic makeDerivation.
   # nix_type_param will be "R" or "Py" based on the calling function (rxp_r_file or rxp_py_file).
@@ -1146,8 +1147,12 @@ rxp_jl <- function(
     # Default: use built‐in Serialization.serialize
     serialize_str <- paste0(
       "using Serialization; ",
-      "io = open(\\\"", out_name, "\\\", \\\"w\\\"); ",
-      "serialize(io, ", out_name, "); ",
+      "io = open(\\\"",
+      out_name,
+      "\\\", \\\"w\\\"); ",
+      "serialize(io, ",
+      out_name,
+      "); ",
       "close(io)"
     )
   } else {
@@ -1166,7 +1171,9 @@ rxp_jl <- function(
   if (is.null(unserialize_function)) {
     unserialize_str <- "Serialization.deserialize"
   } else {
-    if (!is.character(unserialize_function) || length(unserialize_function) != 1) {
+    if (
+      !is.character(unserialize_function) || length(unserialize_function) != 1
+    ) {
       stop("unserialize_function must be a single character string or NULL")
     }
     unserialize_str <- unserialize_function
@@ -1209,7 +1216,10 @@ rxp_jl <- function(
     copy_cmd,
     "julia -e \"\n",
     "if isfile(\\\"libraries.jl\\\"); include(\\\"libraries.jl\\\"); end; \n",
-    out_name, " = ", jl_expr_escaped, "; \n",
+    out_name,
+    " = ",
+    jl_expr_escaped,
+    "; \n",
     serialize_str,
     "\n",
     "\""
@@ -1247,7 +1257,8 @@ rxp_jl <- function(
     type = "rxp_jl",
     additional_files = additional_files,
     nix_env = nix_env,
-    serialize_function = if (is.null(serialize_function)) "Serialization.serialize" else serialize_function,
+    serialize_function = if (is.null(serialize_function))
+      "Serialization.serialize" else serialize_function,
     unserialize_function = unserialize_str,
     env_var = env_var
   ) |>

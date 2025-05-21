@@ -86,7 +86,9 @@
 
   combined_additional_files <- lapply(unique_nix_envs, function(env) {
     files_for_this_env <- unlist(all_add_files[all_nix_envs == env])
-    unique_files <- unique(files_for_this_env[!is.na(files_for_this_env) & nzchar(files_for_this_env)])
+    unique_files <- unique(files_for_this_env[
+      !is.na(files_for_this_env) & nzchar(files_for_this_env)
+    ])
     if (length(unique_files) == 0) {
       return("")
     }
@@ -103,14 +105,20 @@
 # It iterates over the unique Nix environment configurations provided by
 # `.process_nix_configs` and calls `generate_libraries_from_nix` for each,
 # which creates the `libraries.[R|py|jl]` scripts in the `_rixpress` directory.
-.orchestrate_library_generation <- function(processed_nix_configs, project_path) {
-  suppressWarnings({ # Warnings are suppressed as generate_libraries_from_nix might warn if no packages are found.
+.orchestrate_library_generation <- function(
+  processed_nix_configs,
+  project_path
+) {
+  suppressWarnings({
+    # Warnings are suppressed as generate_libraries_from_nix might warn if no packages are found.
     for (i in seq_along(processed_nix_configs$unique_env)) {
       current_env <- processed_nix_configs$unique_env[i]
       current_files_list <- processed_nix_configs$additional_files_combined[[i]]
 
       # Ensure current_files is a character vector, not a list containing a single empty string
-      actual_files_param <- if (length(current_files_list) == 1 && current_files_list == "") {
+      actual_files_param <- if (
+        length(current_files_list) == 1 && current_files_list == ""
+      ) {
         ""
       } else {
         current_files_list
@@ -189,11 +197,18 @@ parse_nix_envs <- function(derivs) {
   derivs <- lapply(
     derivs,
     function(d) {
-      host_scripts <- list.files("_rixpress", pattern = d$base_name, full.names = FALSE) # Get just filenames
+      host_scripts <- list.files(
+        "_rixpress",
+        pattern = d$base_name,
+        full.names = FALSE
+      ) # Get just filenames
       if (length(host_scripts) == 0) {
         warning(paste0(
-          "No library script found in '_rixpress' for Nix env base '", d$base_name,
-          "' (derived from '", d$nix_env, "'). ",
+          "No library script found in '_rixpress' for Nix env base '",
+          d$base_name,
+          "' (derived from '",
+          d$nix_env,
+          "'). ",
           "This might be an issue if this environment is expected to provide libraries."
         ))
         # Allow to proceed but sandbox target name will be based on an empty string if no script.
@@ -203,14 +218,22 @@ parse_nix_envs <- function(derivs) {
       } else {
         if (length(host_scripts) > 1) {
           warning(paste0(
-            "Multiple library scripts found for Nix env base '", d$base_name,
-            "': ", paste(host_scripts, collapse = ", "), ". Using the first one: ", host_scripts[1]
+            "Multiple library scripts found for Nix env base '",
+            d$base_name,
+            "': ",
+            paste(host_scripts, collapse = ", "),
+            ". Using the first one: ",
+            host_scripts[1]
           ))
         }
         d$host_library_script_name <- host_scripts[1]
       }
       # The target name in the sandbox is derived from the host script name.
-      d$sandbox_library_target_name <- gsub(paste0(d$base_name, "_"), "", d$host_library_script_name)
+      d$sandbox_library_target_name <- gsub(
+        paste0(d$base_name, "_"),
+        "",
+        d$host_library_script_name
+      )
 
       list(
         "nix_env" = d$nix_env,
@@ -226,7 +249,10 @@ parse_nix_envs <- function(derivs) {
   generate_configurePhase <- function(d) {
     # Only attempt to copy if a host library script actually exists
     copy_command_part <- ""
-    if (nzchar(d$host_library_script_name) && nzchar(d$sandbox_library_target_name)) {
+    if (
+      nzchar(d$host_library_script_name) &&
+        nzchar(d$sandbox_library_target_name)
+    ) {
       copy_command_part <- paste0(
         "cp ${./_rixpress/",
         d$host_library_script_name, # Use the (potentially single) host script name
@@ -310,7 +336,9 @@ gen_flat_pipeline <- function(derivs) {
   # The generic `makeDerivation` Nix function is included if any derivations
   # of type R, Python, or Julia (including their _file variants) are present,
   # as these are the types that utilize this generic maker.
-  need_generic_maker <- any(types %in% c("rxp_r", "rxp_r_file", "rxp_py", "rxp_py_file", "rxp_jl"))
+  need_generic_maker <- any(
+    types %in% c("rxp_r", "rxp_r_file", "rxp_py", "rxp_py_file", "rxp_jl")
+  )
 
   function_defs <- ""
   if (need_generic_maker) {
@@ -441,8 +469,10 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
 
   for (d in dag$derivations) {
     # Skip derivations that don't need this type of dependency injection
-    if (length(d$depends) == 0 ||
-        d$type %in% c("rxp_qmd", "rxp_rmd", "rxp_py2r", "rxp_r2py")) {
+    if (
+      length(d$depends) == 0 ||
+        d$type %in% c("rxp_qmd", "rxp_rmd", "rxp_py2r", "rxp_r2py")
+    ) {
       next
     }
 
@@ -455,7 +485,12 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     lang_conf <- .PIPELINE_LANG_CONFIGS[[type]]
 
     if (is.null(lang_conf)) {
-      warning("Unsupported type for dependency injection in derivation '", deriv_name, "': ", type)
+      warning(
+        "Unsupported type for dependency injection in derivation '",
+        deriv_name,
+        "': ",
+        type
+      )
       next
     }
 
@@ -465,11 +500,19 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
 
     # Locate the derivation block in the pipeline string list
     # The pattern ensures we find the correct 'makeDerivation' call with its type.
-    pattern <- paste0("^\\s*", deriv_name, " = ", maker, " \\{.*type = \"(R|Py|Jl)\";")
+    pattern <- paste0(
+      "^\\s*",
+      deriv_name,
+      " = ",
+      maker,
+      " \\{.*type = \"(R|Py|Jl)\";"
+    )
     start_idx <- grep(pattern, pipeline)
     if (!length(start_idx)) {
       warning(paste0(
-        "Derivation '", deriv_name, "' not found in pipeline string. ",
+        "Derivation '",
+        deriv_name,
+        "' not found in pipeline string. ",
         "Ensure its snippet uses 'makeDerivation { type = \"...\"; ... }'."
       ))
       next
@@ -501,11 +544,17 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     # Find the line containing the actual script invocation (Rscript -e, python -c, etc.)
     script_line_in_sub_block_idx <- grep(script_cmd, sub_block, fixed = TRUE)
     if (!length(script_line_in_sub_block_idx)) {
-      warning("Script command '", script_cmd, "' not found in buildPhase for derivation '", deriv_name, "'.")
+      warning(
+        "Script command '",
+        script_cmd,
+        "' not found in buildPhase for derivation '",
+        deriv_name,
+        "'."
+      )
       next
     }
     # Adjust index to be relative to the full 'pipeline'
-    script_idx <- build_phase_idx + script_line_in_sub_block_idx[1] -1 # -1 because bp_idx[1] is 1-based index in 'block'
+    script_idx <- build_phase_idx + script_line_in_sub_block_idx[1] - 1 # -1 because bp_idx[1] is 1-based index in 'block'
 
     # Determine indentation: only for R scripts, based on the line after script_cmd
     indent <- ""

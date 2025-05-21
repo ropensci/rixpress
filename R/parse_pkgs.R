@@ -24,9 +24,9 @@ parse_packages <- function(
     block_name,
     "\\s*=\\s*(?:", # Start of non-capturing group for OR
     "builtins\\.attrValues\\s*\\{", # Pattern 1: R/Python style
-    "|",                            # OR
+    "|", # OR
     "pkgs\\.julia(?:[-_\\.][A-Za-z0-9]+)*\\.withPackages\\s*\\[", # Pattern 2: Julia style
-    ")"                             # End of non-capturing group
+    ")" # End of non-capturing group
   )
 
   start_idx <- grep(start_pattern, lines)
@@ -37,7 +37,7 @@ parse_packages <- function(
 
   # Find the end of the block ("};" or "];")
   end_idxs <- grep("^\\s*(\\};|\\];)", lines, perl = TRUE)
-  end_idx  <- end_idxs[end_idxs > start_idx][1]
+  end_idx <- end_idxs[end_idxs > start_idx][1]
   if (is.na(end_idx)) {
     stop(paste("Could not find the end of the", block_name, "block"))
   }
@@ -246,7 +246,7 @@ generate_r_or_py_libraries_from_nix <- function(
   nix_file,
   additional_files = "",
   project_path,
-  lang_config  # Expects a list with all configurations
+  lang_config # Expects a list with all configurations
 ) {
   all_parsed_packages <- c()
 
