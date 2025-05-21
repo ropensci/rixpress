@@ -73,6 +73,7 @@ and output paths.
 }
 \seealso{
 Other derivations: 
+\code{\link{rxp_jl}()},
 \code{\link{rxp_py_file}()},
 \code{\link{rxp_qmd}()},
 \code{\link{rxp_r}()},
