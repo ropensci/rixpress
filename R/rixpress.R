@@ -195,10 +195,6 @@ parse_nix_envs <- function(derivs) {
 
   derivs <- unique(derivs)
 
-  types <- sapply(derivs, function(d) d$type, USE.NAMES = FALSE)
-  need_r <- get_need_r(types)
-  need_py <- get_need_py(types)
-
   generate_configurePhase <- function(d) {
     # Compute the configure_phases_str
     configure_phases_str <- paste0(
