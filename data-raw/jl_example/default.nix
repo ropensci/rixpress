@@ -4,9 +4,13 @@ let
  
   rpkgs = builtins.attrValues {
     inherit (pkgs.rPackages) 
+      arrow
       dplyr
-      janitor
-      reticulate;
+      tidyr
+      ggplot2
+      hexbin
+      rayshader
+      ;
   };
   
   jlconf = pkgs.julia_110.withPackages [ 

@@ -60,3 +60,7 @@ end
 function arrow_write(df, path)
     Arrow.write(path, df)
 end
+
+#function csv_write(df::DataFrame, path::AbstractString)
+#    CSV.write(path, df)
+#end

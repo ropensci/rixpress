@@ -18,9 +18,19 @@ rxp_jl(
     'DataFrame(data, :auto)',
     serialize_function = 'arrow_write',
     additional_files = "functions.jl"
-  )
+  ),
+rxp_r(
+  laplace_long_df,
+  prepare_data(laplace_df),
+  unserialize_function = 'read_ipc_file',
+  additional_files = "functions.R"
+),
+rxp_r(
+  gg,
+  make_gg(laplace_long_df)
+)
 ) |>
-  rixpress(build = FALSE)
+  rixpress(build = TRUE)
 
 #plot_dag()
 
