@@ -10,7 +10,6 @@ prepare_data <- function(laplace){
     )
 }
 
-
 make_gg <- function(laplace_long_df){
   laplace_long_df |>
     ggplot(aes(x = x_id, y = y_id, z = z)) +
@@ -19,4 +18,8 @@ make_gg <- function(laplace_long_df){
     theme_void() +
     theme(legend.position = "none") +
     labs(subtitle = "hexagonal 2-d heatmap of laplacian matrix")
+}
+
+save_gg <- function(path, gg){
+  ggsave("gg.png", gg)
 }
