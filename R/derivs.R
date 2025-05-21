@@ -1,3 +1,49 @@
+#' Helper function to generate a Nix derivation snippet
+#' 
+#' @param out_name Character, name of the derivation
+#' @param src_snippet Character, the src part of the derivation
+#' @param base Character, base name for buildInputs and configurePhase
+#' @param build_phase Character, the build phase commands
+#' @param derivation_type Character, one of "R", "Py", "Jl", "Qmd", "Rmd"
+#' @return Character string with the formatted Nix derivation
+#' @keywords internal
+make_derivation_snippet <- function(
+  out_name,
+  src_snippet,
+  base,
+  build_phase,
+  derivation_type
+) {
+  # Determine the derivation function based on type
+  derivation_func <- switch(derivation_type,
+    "R" = "makeRDerivation",
+    "Py" = "makePyDerivation",
+    "Jl" = "makeJlDerivation",
+    "Qmd" = "defaultPkgs.stdenv.mkDerivation",
+    "Rmd" = "defaultPkgs.stdenv.mkDerivation",
+    stop("Unknown derivation type: ", derivation_type)
+  )
+  
+  # Format the build phase with appropriate indentation
+  formatted_build_phase <- if(derivation_type %in% c("Qmd", "Rmd")) {
+    paste0("\n", build_phase, "\n    ")
+  } else {
+    paste0("\n      ", build_phase, "\n    ")
+  }
+  
+  # Generate the snippet
+  sprintf(
+    "  %s = %s {\n    name = \"%s\";\n    %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''%s'';\n  };",
+    out_name,
+    derivation_func,
+    out_name,
+    src_snippet,
+    base,
+    base,
+    formatted_build_phase
+  )
+}
+
 #' Create a Nix expression running an R function
 #' @family derivations
 #' @param name Symbol, name of the derivation.
@@ -128,21 +174,19 @@ rxp_r <- function(
   if (length(fileset_parts) > 0) {
     fileset_nix <- paste0("./", fileset_parts, collapse = " ")
     src_snippet <- sprintf(
-      "   src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ",
+      "src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n",
       fileset_nix
     )
   } else {
     src_snippet <- ""
   }
 
-  snippet <- sprintf(
-    "  %s = makeRDerivation {\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
-    out_name,
-    out_name,
-    src_snippet,
-    base,
-    base,
-    build_phase
+  snippet <- make_derivation_snippet(
+    out_name = out_name,
+    src_snippet = src_snippet,
+    base = base,
+    build_phase = build_phase,
+    derivation_type = "R"
   )
 
   list(
@@ -295,7 +339,7 @@ rxp_py <- function(
   if (length(fileset_parts) > 0) {
     fileset_nix <- paste0("./", fileset_parts, collapse = " ")
     src_snippet <- sprintf(
-      "   src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ",
+      "src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n",
       fileset_nix
     )
   } else {
@@ -303,14 +347,12 @@ rxp_py <- function(
   }
 
   # Generate the Nix snippet
-  snippet <- sprintf(
-    "  %s = makePyDerivation {\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
-    out_name,
-    out_name,
-    src_snippet,
-    base,
-    base,
-    build_phase
+  snippet <- make_derivation_snippet(
+    out_name = out_name,
+    src_snippet = src_snippet,
+    base = base,
+    build_phase = build_phase,
+    derivation_type = "Py"
   )
 
   list(
@@ -429,14 +471,12 @@ rxp_qmd <- function(
   base <- sub("_nix$", "", base)
 
   # Generate the Nix derivation snippet with updated buildInputs and configurePhase
-  snippet <- sprintf(
-    "  %s = defaultPkgs.stdenv.mkDerivation {\n    name = \"%s\";\n    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n%s\n    '';\n  };",
-    out_name,
-    out_name,
-    fileset_nix,
-    base,
-    base,
-    build_phase
+  snippet <- make_derivation_snippet(
+    out_name = out_name,
+    src_snippet = sprintf("src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ", fileset_nix),
+    base = base,
+    build_phase = build_phase,
+    derivation_type = "Qmd"
   )
 
   list(
@@ -537,15 +577,12 @@ rxp_file_common <- function(
   }
 
   # Build the Nix derivation snippet
-  snippet <- sprintf(
-    "  %s = %s {\n    name = \"%s\";\n    src = %s;\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
-    out_name,
-    derivation_func,
-    out_name,
-    src_part,
-    base,
-    base,
-    build_phase
+  snippet <- make_derivation_snippet(
+    out_name = out_name,
+    src_snippet = sprintf("src = %s;\n ", src_part),
+    base = base,
+    build_phase = build_phase,
+    derivation_type = if(derivation_func == "makeRDerivation") "R" else "Py"
   )
 
   list(
@@ -827,13 +864,12 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
     r_command
   )
 
-  snippet <- sprintf(
-    "  %s = makeRDerivation {\n    name = \"%s\";\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
-    out_name,
-    out_name,
-    base,
-    base,
-    build_phase
+  snippet <- make_derivation_snippet(
+    out_name = out_name,
+    src_snippet = "",
+    base = base,
+    build_phase = build_phase,
+    derivation_type = "R"
   )
 
   list(
@@ -1009,14 +1045,12 @@ rxp_rmd <- function(
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
 
-  snippet <- sprintf(
-    "  %s = defaultPkgs.stdenv.mkDerivation {\n    name = \"%s\";\n    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n%s\n    '';\n  };",
-    out_name,
-    out_name,
-    fileset_nix,
-    base,
-    base,
-    build_phase
+  snippet <- make_derivation_snippet(
+    out_name = out_name,
+    src_snippet = sprintf("src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ", fileset_nix),
+    base = base,
+    build_phase = build_phase,
+    derivation_type = "Rmd"
   )
 
   list(
@@ -1225,14 +1259,12 @@ rxp_jl <- function(
   }
 
   # Assemble the Nix‐derivation snippet
-  snippet <- sprintf(
-    "  %s = makeJlDerivation {\n    name = \"%s\";\n  %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''\n      %s\n    '';\n  };",
-    out_name,
-    out_name,
-    src_snippet,
-    base,
-    base,
-    build_phase
+  snippet <- make_derivation_snippet(
+    out_name = out_name,
+    src_snippet = src_snippet,
+    base = base,
+    build_phase = build_phase,
+    derivation_type = "Jl"
   )
 
   list(
