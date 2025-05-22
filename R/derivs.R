@@ -1119,7 +1119,6 @@ print.derivation <- function(x, ...) {
 
 #' Create a Nix expression running a Julia function
 #'
-#' @family derivations
 #' @param name Symbol, name of the derivation.
 #' @param jl_expr Character, Julia code to generate the expression.
 #' @param additional_files Character vector, additional files to include. Custom
