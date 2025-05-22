@@ -126,7 +126,7 @@ rxp_ggdag <- function(nodes_and_edges = get_nodes_edges()) {
       "rxp_r2py" = "#FFD343",
       "rxp_py" = "#FFD343",
       "rxp_py2r" = "#246ABF",
-	  "rxp_jl" = "#9558b2",
+      "rxp_jl" = "#9558b2",
       "rxp_qmd" = "#4F789E"
     )
   )
@@ -137,7 +137,7 @@ rxp_ggdag <- function(nodes_and_edges = get_nodes_edges()) {
       "rxp_r2py" = 23,
       "rxp_py" = 23,
       "rxp_py2r" = 23,
-	  "rxp_jl" = 23,
+      "rxp_jl" = 23,
       "rxp_qmd" = 22
     )
   )
@@ -187,7 +187,7 @@ rxp_visnetwork <- function(nodes_and_edges = get_nodes_edges()) {
       font = list(align = "top", size = 14),
       size = 20
     ) |>
-	visNetwork::visGroups(
+    visNetwork::visGroups(
       groupname = "rxp_jl",
       shape = "diamond",
       color = "#9558b2",

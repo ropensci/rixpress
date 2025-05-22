@@ -184,7 +184,7 @@ generate_libraries_script <- function(
 }
 
 #' Transform R package names from Nix format to CRAN format
-#' 
+#'
 #' @param packages Character vector of package names
 #' @return Character vector of transformed package names
 #' @export
@@ -196,7 +196,7 @@ transform_r <- function(packages) {
 adjust_r_packages <- identity # No additional adjustments for R
 
 #' Format R import statements
-#' 
+#'
 #' @param package Character, name of the package
 #' @return Character string with import statement
 #' @export
@@ -205,7 +205,7 @@ import_formatter_r <- function(package) {
 }
 
 #' Adjust Python package names for import statements
-#' 
+#'
 #' @param packages Character vector of package names
 #' @return Character vector of adjusted package names
 #' @export
@@ -226,7 +226,7 @@ transform_py <- function(packages) {
 }
 
 #' Format Python import statements
-#' 
+#'
 #' @param package Character, name of the package
 #' @return Character string with import statement
 #' @export
@@ -249,7 +249,7 @@ adjust_jl_packages <- function(packages) {
 }
 
 #' Format Julia import statements
-#' 
+#'
 #' @param package Character, name of the package
 #' @return Character string with import statement
 #' @export
