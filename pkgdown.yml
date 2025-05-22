@@ -6,10 +6,11 @@ articles:
   b-core-functions: b-core-functions.html
   c-tutorial: c-tutorial.html
   d-polyglot: d-polyglot.html
+  d2-polyglot-julia: d2-polyglot-julia.html
   e-ci: e-ci.html
   f-cmdstanr: f-cmdstanr.html
   g-logs: g-logs.html
-last_built: 2025-05-22T12:59Z
+last_built: 2025-05-22T15:16Z
 urls:
   reference: https://b-rodrigues.github.io/rixpress/reference
   article: https://b-rodrigues.github.io/rixpress/articles
