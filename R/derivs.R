@@ -1,5 +1,5 @@
 #' Helper function to generate a Nix derivation snippet
-#' 
+#'
 #' @param out_name Character, name of the derivation
 #' @param src_snippet Character, the src part of the derivation
 #' @param base Character, base name for buildInputs and configurePhase
@@ -15,7 +15,8 @@ make_derivation_snippet <- function(
   derivation_type
 ) {
   # Determine the derivation function based on type
-  derivation_func <- switch(derivation_type,
+  derivation_func <- switch(
+    derivation_type,
     "R" = "makeRDerivation",
     "Py" = "makePyDerivation",
     "Jl" = "makeJlDerivation",
@@ -23,14 +24,14 @@ make_derivation_snippet <- function(
     "Rmd" = "defaultPkgs.stdenv.mkDerivation",
     stop("Unknown derivation type: ", derivation_type)
   )
-  
+
   # Format the build phase with appropriate indentation
-  formatted_build_phase <- if(derivation_type %in% c("Qmd", "Rmd")) {
+  formatted_build_phase <- if (derivation_type %in% c("Qmd", "Rmd")) {
     paste0("\n", build_phase, "\n    ")
   } else {
     paste0("\n      ", build_phase, "\n    ")
   }
-  
+
   # Generate the snippet
   sprintf(
     "  %s = %s {\n    name = \"%s\";\n%s    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''%s'';\n  };",
@@ -174,7 +175,7 @@ rxp_r <- function(
   if (length(fileset_parts) > 0) {
     fileset_nix <- paste0("./", fileset_parts, collapse = " ")
     src_snippet <- sprintf(
-      "     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n   ",
+      "     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n",
       fileset_nix
     )
   } else {
@@ -339,7 +340,7 @@ rxp_py <- function(
   if (length(fileset_parts) > 0) {
     fileset_nix <- paste0("./", fileset_parts, collapse = " ")
     src_snippet <- sprintf(
-      "     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n   ",
+      "     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n",
       fileset_nix
     )
   } else {
@@ -473,7 +474,10 @@ rxp_qmd <- function(
   # Generate the Nix derivation snippet with updated buildInputs and configurePhase
   snippet <- make_derivation_snippet(
     out_name = out_name,
-    src_snippet = sprintf("    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n", fileset_nix),
+    src_snippet = sprintf(
+      "    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n",
+      fileset_nix
+    ),
     base = base,
     build_phase = build_phase,
     derivation_type = "Qmd"
@@ -582,7 +586,7 @@ rxp_file_common <- function(
     src_snippet = sprintf("    src = %s;\n", src_part),
     base = base,
     build_phase = build_phase,
-    derivation_type = if(derivation_func == "makeRDerivation") "R" else "Py"
+    derivation_type = if (derivation_func == "makeRDerivation") "R" else "Py"
   )
 
   list(
@@ -1047,7 +1051,10 @@ rxp_rmd <- function(
 
   snippet <- make_derivation_snippet(
     out_name = out_name,
-    src_snippet = sprintf("    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n", fileset_nix),
+    src_snippet = sprintf(
+      "    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n",
+      fileset_nix
+    ),
     base = base,
     build_phase = build_phase,
     derivation_type = "Rmd"
@@ -1174,8 +1181,12 @@ rxp_jl <- function(
     # Default: use built‐in Serialization.serialize
     serialize_str <- paste0(
       "using Serialization; ",
-      "io = open(\\\"", out_name, "\\\", \\\"w\\\"); ",
-      "serialize(io, ", out_name, "); ",
+      "io = open(\\\"",
+      out_name,
+      "\\\", \\\"w\\\"); ",
+      "serialize(io, ",
+      out_name,
+      "); ",
       "close(io)"
     )
   } else {
@@ -1194,7 +1205,9 @@ rxp_jl <- function(
   if (is.null(unserialize_function)) {
     unserialize_str <- "Serialization.deserialize"
   } else {
-    if (!is.character(unserialize_function) || length(unserialize_function) != 1) {
+    if (
+      !is.character(unserialize_function) || length(unserialize_function) != 1
+    ) {
       stop("unserialize_function must be a single character string or NULL")
     }
     unserialize_str <- unserialize_function
@@ -1237,7 +1250,10 @@ rxp_jl <- function(
     copy_cmd,
     "julia -e \"\n",
     "if isfile(\\\"libraries.jl\\\"); include(\\\"libraries.jl\\\"); end; \n",
-    out_name, " = ", jl_expr_escaped, "; \n",
+    out_name,
+    " = ",
+    jl_expr_escaped,
+    "; \n",
     serialize_str,
     "\n",
     "\""
@@ -1251,7 +1267,7 @@ rxp_jl <- function(
   if (length(fileset_parts) > 0) {
     fileset_nix <- paste0("./", fileset_parts, collapse = " ")
     src_snippet <- sprintf(
-      "     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n   ",
+      "    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n",
       fileset_nix
     )
   } else {
@@ -1273,7 +1289,8 @@ rxp_jl <- function(
     type = "rxp_jl",
     additional_files = additional_files,
     nix_env = nix_env,
-    serialize_function = if (is.null(serialize_function)) "Serialization.serialize" else serialize_function,
+    serialize_function = if (is.null(serialize_function))
+      "Serialization.serialize" else serialize_function,
     unserialize_function = unserialize_str,
     env_var = env_var
   ) |>
