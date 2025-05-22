@@ -19,3 +19,4 @@ A character vector of dependency names
 \description{
 Extract dependencies from Julia script derivations
 }
+\keyword{internal}

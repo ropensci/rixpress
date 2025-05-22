@@ -525,16 +525,16 @@ generate_libraries_from_nix <- function(
 get_need_r <- function(types) {
   any(
     types %in%
-      c("rxp_r", "rxp_r_file", "rxp_rmd", "rxp_qmd", "rxp_py2r", "rxp_r2py")
+      c("rxp_r", "rxp_r_file", "rxp_rmd", "rxp_qmd", "rxp_py2r", "rxp_r2py", "rxp_jl2r")
   )
 }
 
 #' @noRd
 get_need_py <- function(types) {
-  any(types %in% c("rxp_py", "rxp_py_file"))
+  any(types %in% c("rxp_py", "rxp_py_file", "rxp_r2py", "rxp_py2r"))
 }
 
 #' @noRd
 get_need_jl <- function(types) {
-  any(types %in% c("rxp_jl"))
+  any(types %in% c("rxp_jl", "rxp_jl2r", "rxp_r2jl"))
 }

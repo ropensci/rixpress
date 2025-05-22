@@ -21,3 +21,4 @@ A character vector of dependency names
 \description{
 Extract dependencies from markdown (Quarto/RMarkdown) derivations
 }
+\keyword{internal}

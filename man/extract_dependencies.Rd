@@ -23,3 +23,4 @@ A character vector of dependency names
 \description{
 Extract dependencies for a derivation
 }
+\keyword{internal}

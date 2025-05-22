@@ -45,7 +45,7 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
       type,
       name,
       all_derivs_names,
-      defined[1:(i-1)]  # Pass previously defined derivations for filtering
+      defined[1:(i - 1)] # Pass previously defined derivations for filtering
     )
     # Add the derivation to the DAG
     dag[[i]] <- list(
@@ -74,6 +74,7 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
 #' @param all_derivs_names All derivation names
 #' @param defined_derivs Previously defined derivations
 #' @return A character vector of dependency names
+#' @keywords internal
 extract_dependencies <- function(
   deriv,
   type,
@@ -93,7 +94,7 @@ extract_dependencies <- function(
   } else {
     stop("Unknown derivation type: ", type)
   }
-  
+
   # Filter to only include dependencies that have been defined previously
   # This ensures the DAG remains acyclic
   if (length(defined_derivs) > 0) {
@@ -110,6 +111,7 @@ extract_dependencies <- function(
 #' @param name The name of the derivation
 #' @param all_derivs_names All derivation names
 #' @return A character vector of dependency names
+#' @keywords internal
 extract_r_dependencies <- function(deriv, name, all_derivs_names) {
   snippet <- deriv$snippet
 
@@ -141,6 +143,7 @@ extract_r_dependencies <- function(deriv, name, all_derivs_names) {
 #' @param name The name of the derivation
 #' @param all_derivs_names All derivation names
 #' @return A character vector of dependency names
+#' @keywords internal
 extract_markdown_dependencies <- function(deriv, type, name, all_derivs_names) {
   # Determine file path and extension based on type
   if (type == "rxp_qmd") {
@@ -209,6 +212,7 @@ extract_markdown_dependencies <- function(deriv, type, name, all_derivs_names) {
 #' @param name The name of the derivation
 #' @param all_derivs_names All derivation names
 #' @return A character vector of dependency names
+#' @keywords internal
 extract_python_dependencies <- function(deriv, name, all_derivs_names) {
   snippet <- deriv$snippet
 
@@ -239,6 +243,7 @@ extract_python_dependencies <- function(deriv, name, all_derivs_names) {
 #' @param name The name of the derivation
 #' @param all_derivs_names All derivation names
 #' @return A character vector of dependency names
+#' @keywords internal
 extract_julia_dependencies <- function(deriv, name, all_derivs_names) {
   snippet <- deriv$snippet
 
