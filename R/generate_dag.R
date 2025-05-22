@@ -39,12 +39,13 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
     unserialize_function <- deriv$unserialize_function
 
     # Extract dependencies based on derivation type
+    # Consider all potential dependencies first, then filter as needed
     deps <- extract_dependencies(
       deriv,
       type,
       name,
       all_derivs_names,
-      defined[1:(i - 1)]
+      defined[1:(i-1)]  # Pass previously defined derivations for filtering
     )
     # Add the derivation to the DAG
     dag[[i]] <- list(
@@ -80,16 +81,26 @@ extract_dependencies <- function(
   all_derivs_names,
   defined_derivs
 ) {
-  if (type %in% c("rxp_r", "rxp_py2r", "rxp_r2py")) {
+  # Extract all potential dependencies based on type
+  all_deps <- if (type %in% c("rxp_r", "rxp_py2r", "rxp_r2py")) {
     extract_r_dependencies(deriv, name, all_derivs_names)
   } else if (type %in% c("rxp_qmd", "rxp_rmd")) {
-    extract_markdown_dependencies(deriv, type, name, defined_derivs)
+    extract_markdown_dependencies(deriv, type, name, all_derivs_names)
   } else if (type %in% c("rxp_py", "rxp_r2py")) {
     extract_python_dependencies(deriv, name, all_derivs_names)
   } else if (type == "rxp_jl") {
     extract_julia_dependencies(deriv, name, all_derivs_names)
   } else {
     stop("Unknown derivation type: ", type)
+  }
+  
+  # Filter to only include dependencies that have been defined previously
+  # This ensures the DAG remains acyclic
+  if (length(defined_derivs) > 0) {
+    intersect(all_deps, defined_derivs)
+  } else {
+    # For the first derivation, no dependencies can be satisfied yet
+    character(0)
   }
 }
 
@@ -128,9 +139,9 @@ extract_r_dependencies <- function(deriv, name, all_derivs_names) {
 #' @param deriv The derivation object
 #' @param type The type of derivation ("rxp_qmd" or "rxp_rmd")
 #' @param name The name of the derivation
-#' @param defined_derivs Previously defined derivations
+#' @param all_derivs_names All derivation names
 #' @return A character vector of dependency names
-extract_markdown_dependencies <- function(deriv, type, name, defined_derivs) {
+extract_markdown_dependencies <- function(deriv, type, name, all_derivs_names) {
   # Determine file path and extension based on type
   if (type == "rxp_qmd") {
     # Try both .qmd and .Qmd extensions
@@ -188,8 +199,8 @@ extract_markdown_dependencies <- function(deriv, type, name, defined_derivs) {
     }
   }
 
-  # Filter dependencies to only those previously defined
-  intersect(deps, defined_derivs)
+  # Return all potential dependencies (filtering happens in extract_dependencies)
+  deps
 }
 
 #' Extract dependencies from Python script derivations
