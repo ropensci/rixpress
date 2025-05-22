@@ -222,7 +222,7 @@ we can use `arrow::read_ipc_file()` to read the file back.
 ## Conclusion
 
 `{rixpress}` makes it easy to combine the strengths of R and Julia in a single
-pipeline. By using Nix to manage the environments and JSON (or other formats)
+pipeline. By using Nix to manage the environments and Arrow (or other formats)
 for data transfer, you can create reproducible polyglot pipelines that leverage
 the best of both languages.
 
