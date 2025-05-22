@@ -359,8 +359,6 @@ generate_r_or_py_libraries_from_nix <- function(
 #'
 #' These are convenience wrappers around generate_r_or_py_libraries_from_nix
 #' for specific languages.
-#' @noRd
-
 #' Generate R library script from a Nix file
 #' @param nix_file Path to the default.nix file
 #' @param additional_files Character vector of additional files to include

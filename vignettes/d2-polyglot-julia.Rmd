@@ -1,0 +1,229 @@
+---
+title: "Polyglot pipelines with Julia and R"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{d2-polyglot-julia}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette demonstrates how to build a polyglot pipeline using R and Julia.
+It assumes you've read `vignette("b-core-functions")` and are familiar with the
+basic concepts of `{rixpress}`.
+
+For various examples of polyglot pipelines, check out the [rixpress_demos
+repository](https://github.com/b-rodrigues/rixpress_demos/).
+
+## Generating *waveshaders* data using Julia and plotting it using R
+
+This example was provided by Moritz Schauer (@mschauer).
+example adapted from: https://github.com/frankiethull/waveshaders/tree/main/experiments/simple_example
+
+`{rixpress}` makes it easy to write polyglot (multilingual) data science
+pipelines with derivations that run R or Julia code. This vignette explains how
+you can easily set up such a pipeline.
+
+### Setting up the environment
+
+Start your project by calling `rixpress::rxp_init()` and edit `gen-env.R`.
+You can open `gen-env.R` in your favourite text editor and define the execution
+environment there. For a Julia and R polyglot pipeline, you'll need to add Julia
+configuration:
+
+```{r, eval = FALSE}
+library(rix)
+
+rix(
+  date = "2025-05-19",
+  r_pkgs = c(
+    "arrow",
+    "dplyr",
+    "tidyr",
+    "ggplot2",
+    "hexbin"
+  ),
+  git_pkgs = list(
+    list(
+      package_name = "rix",
+      repo_url = "https://github.com/ropensci/rix/",
+      commit = "HEAD"
+    ),
+    list(
+      package_name = "rixpress",
+      repo_url = "https://github.com/b-rodrigues/rixpress",
+      commit = "HEAD"
+    )
+  ),
+  jl_conf = list(
+    jl_version = "1.10",
+    jl_pkgs = c(
+      "Arrow",
+      "DataFrames",
+      "SparseArrays",
+      "LinearAlgebra"
+    )
+  ),
+  ide = "none",
+  project_path = ".",
+  overwrite = TRUE
+)
+```
+
+Notice the `jl_conf` argument to `rix()`: this will install Julia and the listed
+Julia packages in that environment.
+
+Now that you've defined the execution environment of the pipeline, you can run
+the `gen-env.R` script, still from the temporary `Nix` shell by running
+`source("gen-env.R")`. This will generate the required `default.nix`. Then, quit
+R and the temporary shell (CTRL-D or `quit()` in R, `exit` in the terminal) and
+then build the environment defined by the freshly generated `default.nix` by
+typing `nix-build`. This will now build the execution environment of the
+pipeline. You can use this environment to work on your project interactively as
+usual. To learn more, check out [`{rix}`](https://docs.ropensci.org/rix/).
+
+### Creating the pipeline
+
+You can now edit the pipeline script in `gen-pipeline.R`. Here's an example of a
+pipeline that uses both R and Julia:
+
+```{r, eval = FALSE}
+library(rixpress)
+library(igraph)
+
+list(
+  rxp_jl(d_size, '150'),
+
+  rxp_jl(
+    data,
+    "0.1randn(d_size,d_size) + reshape( \
+    cholesky(gridlaplacian(d_size,d_size) + 0.003I) \\ randn(d_size*d_size), \
+    d_size, \
+    d_size \
+    )",
+    additional_files = "functions.jl"
+  ),
+
+  rxp_jl(
+    laplace_df,
+    'DataFrame(data, :auto)',
+    serialize_function = 'arrow_write',
+    additional_files = "functions.jl"
+  ),
+
+  rxp_r(
+    laplace_long_df,
+    prepare_data(laplace_df),
+    unserialize_function = 'read_ipc_file',
+    additional_files = "functions.R"
+  ),
+
+  rxp_r(
+    gg,
+    make_gg(laplace_long_df)
+  )
+
+) |>
+  rixpress(build = TRUE)
+```
+
+Let's break down what's happening in this pipeline:
+
+- First, we define a simple variable called `d_size`, which equals `150`.
+- Second, define a variable called `data`, which uses a function we define
+  ourselves called `gridlaplacian` (described below).
+- Then, we convert that data to a data frame and save it using Arrow. This step
+  and the previous one are all executed in Julia.
+- We import that data into R and prepare it for plotting.
+- Finally, we plot the data using `{ggplot2}`.
+
+### Helper functions
+
+For this pipeline to work, we need to define some helper functions in both R and
+Julia. Let's look at the Julia functions first:
+
+```julia
+# Define the precision matrix (inverse covariance matrix)
+# for the Gaussian noise matrix. It approximately coincides
+# with the Laplacian of the 2d grid or the graph representing
+# the neighborhood relation of pixels in the picture,
+# https://en.wikipedia.org/wiki/Laplacian_matrix
+
+function gridlaplacian(m, n)
+    S = sparse(0.0I, n*m, n*m)
+    linear = LinearIndices((1:m, 1:n))
+    for i in 1:m
+        for j in 1:n
+            for (i2, j2) in ((i + 1, j), (i, j + 1))
+                if i2 <= m && j2 <= n
+                    S[linear[i, j], linear[i2, j2]] -= 1
+                    S[linear[i2, j2], linear[i, j]] -= 1
+                    S[linear[i, j], linear[i, j]] += 1
+                    S[linear[i2, j2], linear[i2, j2]] += 1
+                end
+            end
+        end
+    end
+    return S
+end
+
+function arrow_write(df, path)
+    Arrow.write(path, df)
+end
+```
+
+And here are the R functions:
+
+```{r, eval = FALSE}
+prepare_data <- function(laplace){
+  laplace_df |>
+    mutate(
+      x_id = row_number()
+    ) |>
+    tidyr::pivot_longer(-x_id, names_to = "y_id", values_to = "z") |>
+    mutate(
+      y_id = gsub("x", "", y_id),
+      y_id = as.numeric(y_id)
+    )
+}
+
+make_gg <- function(laplace_long_df){
+  laplace_long_df |>
+    ggplot(aes(x = x_id, y = y_id, z = z)) +
+    stat_summary_hex(fun = function(x) mean(x), bins = 45)  +
+    scale_fill_viridis_c(option = 12) +
+    theme_void() +
+    theme(legend.position = "none") +
+    labs(subtitle = "hexagonal 2-d heatmap of laplacian matrix")
+}
+
+save_gg <- function(path, gg){
+  ggsave("gg.png", gg)
+}
+```
+
+These functions are used in the appropriate derivations using the
+`additional_files` argument.
+
+### Data transfer between R and Julia
+
+When working with both R and Julia (or Python, for that matter), it's important
+to understand how data is transferred between the two languages. In our example,
+we're using Arrow to save the file in an interchangeable format. From Julia, we
+save using `arrow_write()` a wrapper around `Arrow.write(path, df)`. Then, in R,
+we can use `arrow::read_ipc_file()` to read the file back.
+
+## Conclusion
+
+`{rixpress}` makes it easy to combine the strengths of R and Julia in a single
+pipeline. By using Nix to manage the environments and JSON (or other formats)
+for data transfer, you can create reproducible polyglot pipelines that leverage
+the best of both languages.
+
+For more examples and advanced usage, check out the [rixpress_demos repository](https://github.com/b-rodrigues/rixpress_demos).
