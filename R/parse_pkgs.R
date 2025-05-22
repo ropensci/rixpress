@@ -1,6 +1,6 @@
 #' Extract packages from a specified block in a default.nix file
 #'
-#' @param nix_file Defaults to "default.nix", path to the default.nix file
+#' @param nix_file Path to the default.nix file
 #' @param project_path Path to root of project, typically "."
 #' @param block_name Name of the block to parse (e.g., "rpkgs" or "pyconf")
 #' @param transform Function to transform package names (default: identity)
@@ -12,7 +12,13 @@ parse_packages <- function(
   block_name,
   transform = identity
 ) {
-  lines <- readLines(file.path(project_path, nix_file))
+  file_path <- file.path(project_path, nix_file)
+  if (!file.exists(file_path)) {
+    warning(paste("File not found:", file_path))
+    return(NULL)
+  }
+
+  lines <- readLines(file_path)
 
   # Find the start of the block
   # (e.g., "rpkgs = builtins.attrValues {" or "pyconf = ...")
@@ -21,7 +27,7 @@ parse_packages <- function(
     block_name,
     "\\s*=\\s*(?:",
     "builtins\\.attrValues\\s*\\{", # matches rpkgs (or pyconf) = builtins.attrValues {
-    "|",                            # or, matches Julia blocks
+    "|", # or, matches Julia blocks
     "pkgs\\.julia(?:[-_\\.][A-Za-z0-9]+)*\\.withPackages\\s*\\[",
     ")"
   )
@@ -34,23 +40,23 @@ parse_packages <- function(
 
   # Find the end of the block ("};" or "];")
   end_idxs <- grep("^\\s*(\\};|\\];)", lines, perl = TRUE)
-  end_idx  <- end_idxs[end_idxs > start_idx][1]
+  end_idx <- end_idxs[end_idxs > start_idx][1]
   if (is.na(end_idx)) {
     stop(paste("Could not find the end of the", block_name, "block"))
   }
 
   # Extract and clean lines within the block
   block_lines <- lines[(start_idx + 1):(end_idx - 1)]
-  block_lines <- gsub("#.*", "", block_lines)
-  block_lines <- trimws(block_lines)
-  block_lines <- block_lines[block_lines != ""]
+  block_lines <- gsub("#.*", "", block_lines) # Remove comments
+  block_lines <- trimws(block_lines) # Remove whitespace
+  block_lines <- block_lines[block_lines != ""] # Remove empty lines
 
   # Remove inherit statements
   # (e.g., "inherit (pkgs.rPackages)" or "inherit (pkgs.python312Packages)")
   inherit_pattern <- "inherit \\(pkgs\\.[a-zA-Z0-9]+\\)"
   block_lines <- gsub(inherit_pattern, "", block_lines)
 
-  block_lines <- gsub(";", "", block_lines)
+  block_lines <- gsub(";", "", block_lines) # Remove semicolons
 
   # Split into package names and apply transformation
   packages <- unlist(strsplit(paste(block_lines, collapse = " "), "\\s+"))
@@ -71,14 +77,17 @@ parse_rpkgs_git <- function(
   project_path,
   transform = identity
 ) {
-  lines <- readLines(file.path(project_path, nix_file))
+  file_path <- file.path(project_path, nix_file)
+  if (!file.exists(file_path)) {
+    warning(paste("File not found:", file_path))
+    return(NULL)
+  }
 
+  lines <- readLines(file_path)
   git_packages <- c()
 
   # Pattern to find the start of a buildRPackage definition
   # e.g., my_pkg = (pkgs.rPackages.buildRPackage {
-  # We capture the variable name for context if needed,
-  # but don't use it for the package name itself
   build_r_pkg_start_pattern <- "^\\s*([a-zA-Z0-9_.-]+)\\s*=\\s*\\(pkgs\\.rPackages\\.buildRPackage\\s*\\{"
   start_indices <- grep(build_r_pkg_start_pattern, lines)
 
@@ -91,7 +100,6 @@ parse_rpkgs_git <- function(
 
   for (start_idx in start_indices) {
     # Find the corresponding end of this specific block
-    # Search for end_block_pattern *after* start_idx
     potential_end_indices <- grep(
       end_block_pattern,
       lines[(start_idx + 1):length(lines)],
@@ -136,7 +144,7 @@ parse_rpkgs_git <- function(
 #' @param outfile Path to the output file
 #' @param import_formatter Function to format import statements
 #' @param additional_file_pattern Regex pattern to identify additional files
-#' @return Writes a script to the specified outfile
+#' @return Writes a script to the specified outfile and returns the path
 #' @noRd
 generate_libraries_script <- function(
   packages,
@@ -145,13 +153,16 @@ generate_libraries_script <- function(
   import_formatter,
   additional_file_pattern
 ) {
+  # Generate import statements for each package
   import_lines <- sapply(packages, import_formatter)
 
+  # Filter additional files based on pattern
   additional_scripts <- Filter(
     function(x) grepl(additional_file_pattern, x),
     additional_files
   )
 
+  # Combine import statements with additional content
   if (length(additional_scripts) > 0) {
     list_additional_content <- lapply(additional_scripts, readLines)
     additional_content <- Reduce(append, list_additional_content)
@@ -160,12 +171,16 @@ generate_libraries_script <- function(
     output <- import_lines
   }
 
+  # Create output directory if it doesn't exist
   output_dir <- dirname(outfile)
   if (!dir.exists(output_dir)) {
     dir.create(output_dir, recursive = TRUE)
   }
 
+  # Write the output to file
   writeLines(output, outfile)
+
+  return(outfile)
 }
 
 #' @noRd
@@ -194,6 +209,11 @@ adjust_py_packages <- function(packages) {
 }
 
 #' @noRd
+transform_py <- function(packages) {
+  packages # No transformation by default
+}
+
+#' @noRd
 import_formatter_py <- function(package) {
   paste0("import ", package)
 }
@@ -217,13 +237,48 @@ import_formatter_jl <- function(package) {
   paste0("using ", package)
 }
 
+#' Configuration for supported languages
+#'
+#' This list defines the configuration for each supported language,
+#' including block names, file patterns, and function references.
+#' @noRd
+language_configs <- list(
+  "R" = list(
+    block_name = "rpkgs",
+    transform_func = transform_r,
+    adjust_func = adjust_r_packages,
+    import_formatter = import_formatter_r,
+    additional_file_pattern = "functions\\.[Rr]",
+    extension = "R",
+    parse_git = TRUE
+  ),
+  "Python" = list(
+    block_name = "pyconf",
+    transform_func = transform_py,
+    adjust_func = adjust_py_packages,
+    import_formatter = import_formatter_py,
+    additional_file_pattern = "functions\\.py",
+    extension = "py",
+    parse_git = FALSE
+  ),
+  "Julia" = list(
+    block_name = "jlconf",
+    transform_func = transform_jl,
+    adjust_func = adjust_jl_packages,
+    import_formatter = import_formatter_jl,
+    additional_file_pattern = "functions\\.jl",
+    extension = "jl",
+    parse_git = FALSE
+  )
+)
+
 #' Generate a script with import statements from a default.nix file
 #'
-#' @param nix_file Defaults to "default.nix", path to the default.nix file
+#' @param nix_file Path to the default.nix file
 #' @param additional_files Character vector of additional files to include
 #' @param project_path Path to root of project, typically "."
 #' @param language Language to generate the script for ("R", "Python", or "Julia")
-#' @return A script file for the specified language,
+#' @return A script file path for the specified language,
 #'   or NULL if no packages are found
 #' @noRd
 generate_r_or_py_libraries_from_nix <- function(
@@ -232,110 +287,90 @@ generate_r_or_py_libraries_from_nix <- function(
   project_path,
   language
 ) {
+  # Validate language parameter
+  if (!language %in% names(language_configs)) {
+    stop(paste(
+      "Unsupported language:",
+      language,
+      "- Must be one of:",
+      paste(names(language_configs), collapse = ", ")
+    ))
+  }
+
+  # Get language configuration
+  config <- language_configs[[language]]
   all_parsed_packages <- c()
 
-  if (language == "R") {
-    block_name <- "rpkgs"
-    transform_func <- transform_r
-    adjust <- adjust_r_packages
-    import_formatter <- import_formatter_r
-    additional_file_pattern <- "functions\\.[Rr]"
-    extension <- "R"
+  # Parse packages from the main block
+  packages_from_block <- parse_packages(
+    nix_file = nix_file,
+    project_path = project_path,
+    block_name = config$block_name,
+    transform = config$transform_func
+  )
+  if (!is.null(packages_from_block)) {
+    all_parsed_packages <- c(all_parsed_packages, packages_from_block)
+  }
 
-                                        # Parse packages from the 'rpkgs' block
-    packages_from_block <- parse_packages(
-      nix_file = nix_file,
-      project_path = project_path,
-      block_name = block_name,
-      transform = transform_func
-    )
-    if (!is.null(packages_from_block)) {
-      all_parsed_packages <- c(all_parsed_packages, packages_from_block)
-    }
-
-                                        # Parse R packages from git definitions
+  # Parse packages from git sources (R only)
+  if (config$parse_git && language == "R") {
     packages_from_git <- parse_rpkgs_git(
       nix_file = nix_file,
       project_path = project_path,
-      transform = transform_func
+      transform = config$transform_func
     )
     if (!is.null(packages_from_git)) {
       all_parsed_packages <- c(all_parsed_packages, packages_from_git)
     }
-  } else if (language == "Python") {
-    block_name <- "pyconf"
-    transform_func <- identity
-    adjust <- adjust_py_packages
-    import_formatter <- import_formatter_py
-    additional_file_pattern <- "functions\\.py"
-    extension <- "py"
-
-    # Python packages are only in the main block
-    packages_from_block <- parse_packages(
-      nix_file = nix_file,
-      project_path = project_path,
-      block_name = block_name,
-      transform = transform_func
-    )
-    if (!is.null(packages_from_block)) {
-      all_parsed_packages <- c(all_parsed_packages, packages_from_block)
-    }
-  } else if (language == "Julia") {
-    block_name <- "jlconf"
-    transform_func <- transform_jl
-    adjust <- adjust_jl_packages
-    import_formatter <- import_formatter_jl
-    additional_file_pattern <- "functions\\.jl"
-    extension <- "jl"
-
-    # Julia packages are only in the jlconf block
-    packages_from_block <- parse_packages(
-      nix_file = nix_file,
-      project_path = project_path,
-      block_name = block_name,
-      transform = transform_func
-    )
-    if (!is.null(packages_from_block)) {
-      all_parsed_packages <- c(all_parsed_packages, packages_from_block)
-    }
-  } else {
-    stop("Unsupported language")
   }
 
+  # If no packages found, return NULL
   if (length(all_parsed_packages) == 0) {
     return(NULL)
   }
 
+  # Process packages
   packages <- unique(all_parsed_packages)
-  packages <- adjust(packages)
+  packages <- config$adjust_func(packages)
   packages <- sort(packages)
 
+  # Create output filename
   nix_file_name <- gsub("[^a-zA-Z0-9]", "_", nix_file)
   nix_file_name <- sub("_nix$", "", nix_file_name)
-
   outfile_dir <- file.path(project_path, "_rixpress")
-
   outfile <- file.path(
     outfile_dir,
-    paste0(nix_file_name, "_libraries.", extension)
+    paste0(nix_file_name, "_libraries.", config$extension)
   )
 
+  # Generate the script
   generate_libraries_script(
     packages,
     additional_files,
     outfile,
-    import_formatter,
-    additional_file_pattern
+    config$import_formatter,
+    config$additional_file_pattern
   )
 
   return(outfile)
 }
 
+#' Generate language-specific library scripts from a Nix file
+#'
+#' These are convenience wrappers around generate_r_or_py_libraries_from_nix
+#' for specific languages.
+#' @noRd
+
+#' Generate R library script from a Nix file
+#' @param nix_file Path to the default.nix file
+#' @param additional_files Character vector of additional files to include
+#' @param project_path Path to root of project, typically "."
+#' @return Path to the generated script, or NULL if no packages found
 #' @noRd
 generate_r_libraries_from_nix <- function(
   nix_file,
   additional_files = "",
-  project_path
+  project_path = "."
 ) {
   generate_r_or_py_libraries_from_nix(
     nix_file,
@@ -345,31 +380,41 @@ generate_r_libraries_from_nix <- function(
   )
 }
 
+#' Generate Python library script from a Nix file
+#' @param nix_file Path to the default.nix file
+#' @param additional_files Character vector of additional files to include
+#' @param project_path Path to root of project, typically "."
+#' @return Path to the generated script, or NULL if no packages found
 #' @noRd
 generate_py_libraries_from_nix <- function(
   nix_file,
   additional_files = "",
-  project_path
+  project_path = "."
 ) {
   generate_r_or_py_libraries_from_nix(
     nix_file,
     additional_files,
     project_path,
-    "Python"
+    language = "Python"
   )
 }
 
+#' Generate Julia library script from a Nix file
+#' @param nix_file Path to the default.nix file
+#' @param additional_files Character vector of additional files to include
+#' @param project_path Path to root of project, typically "."
+#' @return Path to the generated script, or NULL if no packages found
 #' @noRd
 generate_jl_libraries_from_nix <- function(
   nix_file,
   additional_files = "",
-  project_path
+  project_path = "."
 ) {
   generate_r_or_py_libraries_from_nix(
     nix_file,
     additional_files,
     project_path,
-    "Julia"
+    language = "Julia"
   )
 }
 
@@ -409,21 +454,40 @@ generate_jl_libraries_from_nix <- function(
 #' }
 #' @export
 adjust_import <- function(old_import, new_import, project_path = ".") {
+  # Validate inputs
+  if (!is.character(old_import) || length(old_import) != 1) {
+    stop("old_import must be a single character string")
+  }
+  if (!is.character(new_import) || length(new_import) != 1) {
+    stop("new_import must be a single character string")
+  }
+
+  # Check if _rixpress folder exists
   rixpress_folder <- file.path(project_path, "_rixpress")
   if (!dir.exists(rixpress_folder)) {
     warning(paste("_rixpress folder not found in", project_path))
     return(invisible(NULL))
   }
+
+  # Get all files in the _rixpress folder
   files <- list.files(
     path = rixpress_folder,
     full.names = TRUE,
     recursive = TRUE
   )
+
+  # Process each file
   for (file in files) {
     content <- readLines(file, warn = FALSE)
     new_content <- gsub(old_import, new_import, content, fixed = TRUE)
-    writeLines(new_content, con = file)
+
+    # Only write if content changed
+    if (!identical(content, new_content)) {
+      writeLines(new_content, con = file)
+    }
   }
+
+  invisible(NULL)
 }
 
 #' Add an import statement to Python files in the _rixpress folder matching a
@@ -452,15 +516,22 @@ adjust_import <- function(old_import, new_import, project_path = ".") {
 #' }
 #' @export
 add_import <- function(import_statement, nix_env, project_path = ".") {
+  # Validate inputs
+  if (!is.character(import_statement) || length(import_statement) != 1) {
+    stop("import_statement must be a single character string")
+  }
+  if (!is.character(nix_env) || length(nix_env) != 1) {
+    stop("nix_env must be a single character string, e.g. 'default.nix'.")
+  }
+
+  # Check if _rixpress folder exists
   rixpress_folder <- file.path(project_path, "_rixpress")
   if (!dir.exists(rixpress_folder)) {
     warning(paste("_rixpress folder not found in", project_path))
     return(invisible(NULL))
   }
-  # Validate and extract base name from nix_env
-  if (!is.character(nix_env) || length(nix_env) != 1) {
-    stop("nix_env must be a single character string, e.g. 'default.nix'.")
-  }
+
+  # Extract base name from nix_env
   base_name <- sub("\\.nix$", "", nix_env)
   if (identical(base_name, nix_env)) {
     warning(
@@ -485,38 +556,27 @@ add_import <- function(import_statement, nix_env, project_path = ".") {
   )
 
   if (length(files) == 0) {
-    message(paste(
-      "No Python library files matching pattern",
-      file_pattern,
-      "found in",
-      rixpress_folder
-    ))
     return(invisible(NULL))
   }
 
   # Loop through each matching Python file
   for (file in files) {
     content <- readLines(file, warn = FALSE)
-    # Avoid adding duplicate import statements
-    if (
-      !any(grepl(
-        paste0(
-          "^",
-          gsub(
-            "([.*+?^${}()|\\[\\]\\\\])",
-            "\\\\\\1",
-            import_statement,
-            perl = TRUE
-          ),
-          "$"
-        ),
-        content
-      ))
-    ) {
+
+    # Escape special regex characters in the import statement
+    escaped_import <- gsub(
+      "([.*+?^${}()|\\[\\]\\\\])",
+      "\\\\\\1",
+      import_statement,
+      perl = TRUE
+    )
+
+    # Check if import statement already exists
+    if (!any(grepl(paste0("^", escaped_import, "$"), content))) {
       new_content <- c(content, import_statement)
       writeLines(new_content, con = file)
-    } else {
-      message(paste("Import statement already present in:", file))
     }
   }
+
+  invisible(NULL)
 }
