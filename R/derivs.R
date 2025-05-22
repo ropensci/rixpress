@@ -6,7 +6,7 @@
 #' @param build_phase Character, the build phase commands
 #' @param derivation_type Character, one of "R", "Py", "Jl", "Qmd", "Rmd"
 #' @return Character string with the formatted Nix derivation
-#' @keywords internal
+#' @export
 make_derivation_snippet <- function(
   out_name,
   src_snippet,
@@ -837,6 +837,14 @@ rxp_py_file <- function(
 #'     direction = "py2r"
 #'   )
 #' }
+#' Common setup for rxp_py2r and rxp_r2py functions
+#'
+#' @param out_name Character, name of the derivation
+#' @param expr_str Character, expression string
+#' @param nix_env Character, path to the Nix environment file
+#' @param direction Character, one of "py2r" or "r2py"
+#' @return List with base and build_phase elements
+#' @export
 rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
   expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)

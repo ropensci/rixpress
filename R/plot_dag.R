@@ -49,7 +49,10 @@ dag_for_ci <- function(
 #'   get_nodes_edges()
 #' }
 #' @importFrom jsonlite fromJSON
-#' @noRd
+#'
+#' @param path_dag Path to the DAG JSON file
+#' @return List with nodes and edges data frames
+#' @export
 get_nodes_edges <- function(path_dag = "_rixpress/dag.json") {
   # Check if the DAG file exists
   if (!file.exists(path_dag)) {
@@ -232,7 +235,11 @@ rxp_visnetwork <- function(nodes_and_edges = get_nodes_edges()) {
     )
 }
 
-#' @noRd
+#' Unnest all columns in a data frame
+#'
+#' @param df Data frame to unnest
+#' @return Unnested data frame
+#' @export
 unnest_all_columns <- function(df) {
   # Identify list-columns
   list_cols <- sapply(df, is.list)

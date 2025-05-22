@@ -163,7 +163,11 @@ rixpress <- function(derivs, project_path = ".", build = TRUE, ...) {
 #'        available to build sandbox
 #'     - `$nix_env`, character, path to Nix environment to build this derivation
 #'   Typically, these objects are created by a function like `rxp_r`.
-#' @noRd
+#' Parse Nix environments from derivations
+#'
+#' @param derivs List of derivation objects
+#' @return List of unique Nix environments
+#' @export
 parse_nix_envs <- function(derivs) {
   # Add required elements
   # base name of libraries file
@@ -247,7 +251,11 @@ parse_nix_envs <- function(derivs) {
 #'     - `$nix_env`, character, path to Nix environment to build this derivation
 #'   A single deriv is the output of `rxp_r()`, `rxp_qmd()` or `rxp_py()`
 #'   function.
-#' @noRd
+#' Generate a flat pipeline from derivations
+#'
+#' @param derivs List of derivation objects
+#' @return Character string with the pipeline
+#' @export
 gen_flat_pipeline <- function(derivs) {
   derivation_texts <- vapply(
     derivs,
@@ -521,7 +529,11 @@ generate_libraries_from_nix <- function(
   )
 }
 
-#' @noRd
+#' Check if R is needed based on derivation types
+#'
+#' @param types Character vector of derivation types
+#' @return Logical indicating if R is needed
+#' @export
 get_need_r <- function(types) {
   any(
     types %in%
@@ -529,12 +541,20 @@ get_need_r <- function(types) {
   )
 }
 
-#' @noRd
+#' Check if Python is needed based on derivation types
+#'
+#' @param types Character vector of derivation types
+#' @return Logical indicating if Python is needed
+#' @export
 get_need_py <- function(types) {
   any(types %in% c("rxp_py", "rxp_py_file"))
 }
 
-#' @noRd
+#' Check if Julia is needed based on derivation types
+#'
+#' @param types Character vector of derivation types
+#' @return Logical indicating if Julia is needed
+#' @export
 get_need_jl <- function(types) {
   any(types %in% c("rxp_jl"))
 }

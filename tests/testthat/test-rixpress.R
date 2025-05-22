@@ -60,6 +60,7 @@ test_that("rixpress: gen_flat_pipeline", {
 })
 
 test_that("rixpress: several environments", {
+  skip_if_not_installed("rix")
   path_tmpdir <- "tempdir"
   dir.create(path_tmpdir)
   on.exit(unlink(path_tmpdir, recursive = TRUE), add = TRUE, after = TRUE)

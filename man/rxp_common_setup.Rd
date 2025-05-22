@@ -7,18 +7,19 @@
 rxp_common_setup(out_name, expr_str, nix_env, direction)
 }
 \arguments{
-\item{out_name}{Character, name of the derivation.}
+\item{out_name}{Character, name of the derivation}
 
-\item{expr_str}{Character, name of the object being transferred.}
+\item{expr_str}{Character, expression string}
 
-\item{nix_env}{Character, path to the Nix environment file.}
+\item{nix_env}{Character, path to the Nix environment file}
 
-\item{direction}{Character, either "py2r" (Python to R) or "r2py" (R to
-Python).}
+\item{direction}{Character, one of "py2r" or "r2py"}
 }
 \value{
 A list with elements: \code{name}, \code{snippet}, \code{type}, \code{additional_files},
 \code{nix_env}.
+
+List with base and build_phase elements
 }
 \description{
 This function constructs the \code{build_phase} and Nix derivation snippet
@@ -35,5 +36,7 @@ based on the given parameters.
     direction = "py2r"
   )
 }
+Common setup for rxp_py2r and rxp_r2py functions
+
 }
 \keyword{internal}

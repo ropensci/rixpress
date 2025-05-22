@@ -29,4 +29,3 @@ Character string with the formatted Nix derivation
 \description{
 Helper function to generate a Nix derivation snippet
 }
-\keyword{internal}

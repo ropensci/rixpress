@@ -5,7 +5,7 @@
 #' @param block_name Name of the block to parse (e.g., "rpkgs" or "pyconf")
 #' @param transform Function to transform package names (default: identity)
 #' @return List of package names, or NULL if the block is not found
-#' @noRd
+#' @export
 parse_packages <- function(
   nix_file,
   project_path,
@@ -145,7 +145,7 @@ parse_rpkgs_git <- function(
 #' @param import_formatter Function to format import statements
 #' @param additional_file_pattern Regex pattern to identify additional files
 #' @return Writes a script to the specified outfile and returns the path
-#' @noRd
+#' @export
 generate_libraries_script <- function(
   packages,
   additional_files,
@@ -183,7 +183,11 @@ generate_libraries_script <- function(
   return(outfile)
 }
 
-#' @noRd
+#' Transform R package names from Nix format to CRAN format
+#' 
+#' @param packages Character vector of package names
+#' @return Character vector of transformed package names
+#' @export
 transform_r <- function(packages) {
   gsub("_", ".", packages) # in nixpkgs: data_table, but in CRAN data.table
 }
@@ -191,12 +195,20 @@ transform_r <- function(packages) {
 #' @noRd
 adjust_r_packages <- identity # No additional adjustments for R
 
-#' @noRd
+#' Format R import statements
+#' 
+#' @param package Character, name of the package
+#' @return Character string with import statement
+#' @export
 import_formatter_r <- function(package) {
   paste0("library(", package, ")") # R import format
 }
 
-#' @noRd
+#' Adjust Python package names for import statements
+#' 
+#' @param packages Character vector of package names
+#' @return Character vector of adjusted package names
+#' @export
 adjust_py_packages <- function(packages) {
   # Only needed for interactive work
   packages <- packages[!(packages %in% c("pip", "ipykernel"))]
@@ -213,7 +225,11 @@ transform_py <- function(packages) {
   packages # No transformation by default
 }
 
-#' @noRd
+#' Format Python import statements
+#' 
+#' @param package Character, name of the package
+#' @return Character string with import statement
+#' @export
 import_formatter_py <- function(package) {
   paste0("import ", package)
 }
@@ -232,7 +248,11 @@ adjust_jl_packages <- function(packages) {
   packages
 }
 
-#' @noRd
+#' Format Julia import statements
+#' 
+#' @param package Character, name of the package
+#' @return Character string with import statement
+#' @export
 import_formatter_jl <- function(package) {
   paste0("using ", package)
 }
@@ -359,8 +379,6 @@ generate_r_or_py_libraries_from_nix <- function(
 #'
 #' These are convenience wrappers around generate_r_or_py_libraries_from_nix
 #' for specific languages.
-#' @noRd
-
 #' Generate R library script from a Nix file
 #' @param nix_file Path to the default.nix file
 #' @param additional_files Character vector of additional files to include
