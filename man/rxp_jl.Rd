@@ -58,22 +58,30 @@ paths.
 }
 \examples{
 \dontrun{
-  # Basic usage, no custom serializer
-  rxp_jl(
-    name = filtered_df,
-    jl_expr = "filter(df, :col .> 10)"
-  )
+# Basic usage, no custom serializer
+rxp_jl(
+  name = filtered_df,
+  jl_expr = "filter(df, :col .> 10)"
+)
 
-  # Custom serialization: assume `save_my_obj(obj, path)` is defined in functions.jl
-  rxp_jl(
-    name = model_output,
-    jl_expr = "train_model(data)",
-    serialize_function = "save_my_obj",
-    additional_files = "functions.jl"
-  )
+# Custom serialization: assume `save_my_obj(obj, path)` is defined in functions.jl
+rxp_jl(
+  name = model_output,
+  jl_expr = "train_model(data)",
+  serialize_function = "save_my_obj",
+  additional_files = "functions.jl"
+)
 }
 }
 \seealso{
+Other derivations: 
+\code{\link{rxp_py}()},
+\code{\link{rxp_py_file}()},
+\code{\link{rxp_qmd}()},
+\code{\link{rxp_r}()},
+\code{\link{rxp_r_file}()},
+\code{\link{rxp_rmd}()}
+
 Other derivations: 
 \code{\link{rxp_py}()},
 \code{\link{rxp_py_file}()},
