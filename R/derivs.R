@@ -222,7 +222,8 @@ rxp_r <- function(
 #' @param unserialize_function Character, defaults to NULL. The name of the
 #'   Python function used to unserialize the object. It must accept one
 #'   argument: the file path.
-#' @param env_var Character vector, defaults to NULL. A named vector of environment variables
+#' @param env_var Character vector, defaults to NULL. A named vector of
+#'   environment variables
 #'   before running the Python script, e.g., c(PYTHONPATH = "/path/to/modules").
 #'   Each entry will be added as an export statement in the build phase.
 #' @details At a basic level,
