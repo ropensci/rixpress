@@ -33,7 +33,7 @@ make_derivation_snippet <- function(
   
   # Generate the snippet
   sprintf(
-    "  %s = %s {\n    name = \"%s\";\n    %s  buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''%s'';\n  };",
+    "  %s = %s {\n    name = \"%s\";\n%s    buildInputs = %sBuildInputs;\n    configurePhase = %sConfigurePhase;\n    buildPhase = ''%s'';\n  };",
     out_name,
     derivation_func,
     out_name,
@@ -174,7 +174,7 @@ rxp_r <- function(
   if (length(fileset_parts) > 0) {
     fileset_nix <- paste0("./", fileset_parts, collapse = " ")
     src_snippet <- sprintf(
-      "src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n",
+      "     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n   ",
       fileset_nix
     )
   } else {
@@ -339,7 +339,7 @@ rxp_py <- function(
   if (length(fileset_parts) > 0) {
     fileset_nix <- paste0("./", fileset_parts, collapse = " ")
     src_snippet <- sprintf(
-      "src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n",
+      "     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n   ",
       fileset_nix
     )
   } else {
@@ -473,7 +473,7 @@ rxp_qmd <- function(
   # Generate the Nix derivation snippet with updated buildInputs and configurePhase
   snippet <- make_derivation_snippet(
     out_name = out_name,
-    src_snippet = sprintf("src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ", fileset_nix),
+    src_snippet = sprintf("    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n", fileset_nix),
     base = base,
     build_phase = build_phase,
     derivation_type = "Qmd"
@@ -579,7 +579,7 @@ rxp_file_common <- function(
   # Build the Nix derivation snippet
   snippet <- make_derivation_snippet(
     out_name = out_name,
-    src_snippet = sprintf("src = %s;\n ", src_part),
+    src_snippet = sprintf("    src = %s;\n", src_part),
     base = base,
     build_phase = build_phase,
     derivation_type = if(derivation_func == "makeRDerivation") "R" else "Py"
@@ -1047,7 +1047,7 @@ rxp_rmd <- function(
 
   snippet <- make_derivation_snippet(
     out_name = out_name,
-    src_snippet = sprintf("src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ", fileset_nix),
+    src_snippet = sprintf("    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n", fileset_nix),
     base = base,
     build_phase = build_phase,
     derivation_type = "Rmd"
@@ -1251,7 +1251,7 @@ rxp_jl <- function(
   if (length(fileset_parts) > 0) {
     fileset_nix <- paste0("./", fileset_parts, collapse = " ")
     src_snippet <- sprintf(
-      "   src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n ",
+      "     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n   ",
       fileset_nix
     )
   } else {
