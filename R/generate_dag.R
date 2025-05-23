@@ -29,7 +29,6 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
 
   n <- length(rxp_list)
   dag <- vector("list", n)
-  defined <- character(n)
 
   # Process each derivation
   for (i in seq_along(rxp_list)) {
@@ -39,13 +38,11 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
     unserialize_function <- deriv$unserialize_function
 
     # Extract dependencies based on derivation type
-    # Consider all potential dependencies first, then filter as needed
     deps <- extract_dependencies(
       deriv,
       type,
       name,
-      all_derivs_names,
-      defined[1:(i - 1)] # Pass previously defined derivations for filtering
+      all_derivs_names
     )
     # Add the derivation to the DAG
     dag[[i]] <- list(
@@ -54,7 +51,6 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
       unserialize_function = unserialize_function,
       type = type
     )
-    defined[i] <- name
   }
 
   # Write the DAG to a JSON file
@@ -72,15 +68,13 @@ generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
 #' @param type The type of derivation
 #' @param name The name of the derivation
 #' @param all_derivs_names All derivation names
-#' @param defined_derivs Previously defined derivations
 #' @return A character vector of dependency names
 #' @keywords internal
 extract_dependencies <- function(
   deriv,
   type,
   name,
-  all_derivs_names,
-  defined_derivs
+  all_derivs_names
 ) {
   # Extract all potential dependencies based on type
   all_deps <- if (type %in% c("rxp_r", "rxp_py2r", "rxp_r2py")) {
@@ -95,14 +89,8 @@ extract_dependencies <- function(
     stop("Unknown derivation type: ", type)
   }
 
-  # Filter to only include dependencies that have been defined previously
-  # This ensures the DAG remains acyclic
-  if (length(defined_derivs) > 0) {
-    intersect(all_deps, defined_derivs)
-  } else {
-    # For the first derivation, no dependencies can be satisfied yet
-    character(0)
-  }
+  # Return all dependencies except the current derivation itself
+  setdiff(all_deps, name)
 }
 
 #' Extract dependencies from R script derivations

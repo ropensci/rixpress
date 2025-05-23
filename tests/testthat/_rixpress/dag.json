@@ -1,16 +1,16 @@
 {
   "derivations": [
     {
-      "deriv_name": ["mtcars_am"],
-      "depends": [],
-      "unserialize_function": ["pickle.load"],
-      "type": ["rxp_py"]
-    },
-    {
       "deriv_name": ["mtcars_head"],
       "depends": ["mtcars_am"],
-      "unserialize_function": ["pickle.load"],
-      "type": ["rxp_py"]
+      "unserialize_function": ["readRDS"],
+      "type": ["rxp_r"]
+    },
+    {
+      "deriv_name": ["mtcars_am"],
+      "depends": [],
+      "unserialize_function": ["readRDS"],
+      "type": ["rxp_r"]
     }
   ]
 }
