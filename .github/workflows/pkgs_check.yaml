@@ -11,7 +11,7 @@ on:
   # Run on every push to main
   push:
     branches:
-      - main
+      - main-not
 
 jobs:
   pkgcheck:
