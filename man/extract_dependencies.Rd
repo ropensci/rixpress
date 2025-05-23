@@ -15,7 +15,6 @@ extract_dependencies(deriv, type, name, all_derivs_names, defined_derivs)
 
 \item{all_derivs_names}{All derivation names}
 
-\item{defined_derivs}{Previously defined derivations}
 }
 \value{
 A character vector of dependency names
