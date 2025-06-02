@@ -4,7 +4,7 @@
 \alias{extract_dependencies}
 \title{Extract dependencies for a derivation}
 \usage{
-extract_dependencies(deriv, type, name, all_derivs_names, defined_derivs)
+extract_dependencies(deriv, type, name, all_derivs_names)
 }
 \arguments{
 \item{deriv}{The derivation object}
@@ -14,7 +14,6 @@ extract_dependencies(deriv, type, name, all_derivs_names, defined_derivs)
 \item{name}{The name of the derivation}
 
 \item{all_derivs_names}{All derivation names}
-
 }
 \value{
 A character vector of dependency names
