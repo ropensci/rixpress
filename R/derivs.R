@@ -415,20 +415,22 @@ rxp_qmd <- function(
 
   # Helper function to extract references for a given function name and quote type
   extract_refs <- function(func_name, quote_char) {
-    if (quote_char == '"') {
-      pattern <- sprintf('%s\\("([^"]+)"\\)', func_name)
-      replacement <- sprintf('%s\\("([^"]+)"\\)', func_name)
-    } else {
-      pattern <- sprintf("%s\\('([^']+)'\\)", func_name)
-      replacement <- sprintf("%s\\('([^']+)'\\)", func_name)
-    }
+    # Handle both bare function and namespaced function
+    patterns <- c(
+      sprintf('%s\\(%s([^%s]+)%s\\)', func_name, quote_char, quote_char, quote_char),
+      sprintf('rixpress::%s\\(%s([^%s]+)%s\\)', func_name, quote_char, quote_char, quote_char)
+    )
     
-    matches <- gregexpr(pattern, content_str)
-    refs <- regmatches(content_str, matches)[[1]]
-    if (length(refs) > 0) {
-      refs <- sub(replacement, '\\1', refs)
+    all_refs <- character(0)
+    for (pattern in patterns) {
+      matches <- gregexpr(pattern, content_str)
+      refs <- regmatches(content_str, matches)[[1]]
+      if (length(refs) > 0) {
+        refs <- sub(pattern, '\\1', refs)
+        all_refs <- c(all_refs, refs)
+      }
     }
-    refs
+    all_refs
   }
 
   # Extract all references
@@ -444,28 +446,43 @@ rxp_qmd <- function(
   create_sub_cmd <- function(refs, func_name, quote_char, is_load = FALSE) {
     if (length(refs) == 0) return(character(0))
     
-    vapply(refs, function(ref) {
+    # Create commands for both bare and namespaced versions
+    all_cmds <- character(0)
+    
+    for (ref in refs) {
+      # Define search patterns for both versions
       if (quote_char == '"') {
-        search_pattern <- sprintf('%s("%s")', func_name, ref)
-        quote_escape <- '"%s"'
+        search_patterns <- c(
+          sprintf('%s("%s")', func_name, ref),
+          sprintf('rixpress::%s("%s")', func_name, ref)
+        )
       } else {
-        search_pattern <- sprintf("%s('%s')", func_name, ref)
-        quote_escape <- '\\047%s\\047'
+        search_patterns <- c(
+          sprintf("%s('%s')", func_name, ref),
+          sprintf("rixpress::%s('%s')", func_name, ref)
+        )
       }
       
+      # Define replacement
       if (is_load) {
-        replacement <- sprintf('%s <- rixpress::rxp_read("${%s}")', ref, ref)
+        replacement <- sprintf('%s <- rxp_read("${%s}")', ref, ref)
       } else {
         replacement <- sprintf('rxp_read("${%s}")', ref)
       }
       
-      sprintf(
-        "substituteInPlace %s --replace-fail '%s' '%s'",
-        qmd_file,
-        search_pattern,
-        replacement
-      )
-    }, character(1))
+      # Create substitution commands for each pattern
+      for (search_pattern in search_patterns) {
+        cmd <- sprintf(
+          "substituteInPlace %s --replace-fail '%s' '%s'",
+          qmd_file,
+          search_pattern,
+          replacement
+        )
+        all_cmds <- c(all_cmds, cmd)
+      }
+    }
+    
+    all_cmds
   }
 
   # Generate all substitution commands
