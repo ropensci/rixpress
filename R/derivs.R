@@ -475,7 +475,7 @@ rxp_qmd <- function(
     for (i in 1:nrow(all_matches)) {
       match <- all_matches[i, ]
       
-      # Build the search pattern (minimal escaping for substituteInPlace)
+      # Build the search pattern
       if (match$quote_char == '"') {
         search_pattern <- sprintf('%s("%s")', match$func_call, match$path)
       } else {
@@ -484,10 +484,19 @@ rxp_qmd <- function(
       
       # Build replacement based on function type
       is_load <- grepl("rxp_load", match$func_call)
-      if (is_load) {
-        replacement <- sprintf('%s <- rxp_read("${%s}")', match$path, match$path)
+      
+      # Determine the correct function name to use in replacement
+      # If original had namespace, preserve it for rxp_read
+      if (grepl("rixpress::", match$func_call)) {
+        rxp_read_func <- "rixpress::rxp_read"
       } else {
-        replacement <- sprintf('rxp_read("${%s}")', match$path)
+        rxp_read_func <- "rxp_read"
+      }
+      
+      if (is_load) {
+        replacement <- sprintf('%s <- %s("${%s}")', match$path, rxp_read_func, match$path)
+      } else {
+        replacement <- sprintf('%s("${%s}")', rxp_read_func, match$path)
       }
       
       cmd <- sprintf(
