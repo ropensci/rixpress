@@ -427,9 +427,6 @@ rxp_qmd <- function(
     
     if (length(full_matches) == 0) return(data.frame())
     
-    # Extract the function call and the path
-    match_data <- regmatches(content_str, matches, invert = FALSE)[[1]]
-    
     results <- data.frame(
       full_match = character(0),
       func_call = character(0),
@@ -478,17 +475,12 @@ rxp_qmd <- function(
     for (i in 1:nrow(all_matches)) {
       match <- all_matches[i, ]
       
-      # Build the search pattern (escape special characters for shell)
+      # Build the search pattern (minimal escaping for substituteInPlace)
       if (match$quote_char == '"') {
         search_pattern <- sprintf('%s("%s")', match$func_call, match$path)
       } else {
         search_pattern <- sprintf("%s('%s')", match$func_call, match$path)
       }
-      
-      # Escape for shell
-      escaped_pattern <- gsub("::", "\\\\:\\\\:", search_pattern)
-      escaped_pattern <- gsub("\\(", "\\\\(", escaped_pattern)
-      escaped_pattern <- gsub("\\)", "\\\\)", escaped_pattern)
       
       # Build replacement based on function type
       is_load <- grepl("rxp_load", match$func_call)
@@ -501,7 +493,7 @@ rxp_qmd <- function(
       cmd <- sprintf(
         "substituteInPlace %s --replace-fail '%s' '%s'",
         qmd_file,
-        escaped_pattern,
+        search_pattern,
         replacement
       )
       
