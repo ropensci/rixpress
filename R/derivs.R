@@ -450,7 +450,7 @@ rxp_qmd <- function(
     all_cmds <- character(0)
     
     for (ref in refs) {
-      # Define search patterns for both versions
+      # Define search patterns for both versions (properly escaped for shell)
       if (quote_char == '"') {
         search_patterns <- c(
           sprintf('%s("%s")', func_name, ref),
@@ -472,10 +472,15 @@ rxp_qmd <- function(
       
       # Create substitution commands for each pattern
       for (search_pattern in search_patterns) {
+        # Escape the search pattern for shell (escape colons for namespace)
+        escaped_pattern <- gsub("::", "\\\\:\\\\:", search_pattern)
+        escaped_pattern <- gsub("\\(", "\\\\(", escaped_pattern)
+        escaped_pattern <- gsub("\\)", "\\\\)", escaped_pattern)
+        
         cmd <- sprintf(
           "substituteInPlace %s --replace-fail '%s' '%s'",
           qmd_file,
-          search_pattern,
+          escaped_pattern,
           replacement
         )
         all_cmds <- c(all_cmds, cmd)
