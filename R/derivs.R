@@ -454,9 +454,9 @@ rxp_qmd <- function(
       }
       
       if (is_load) {
-        replacement <- sprintf('%s <- rxp_read("${%s}")', ref, ref)
+        replacement <- sprintf('%s <- rixpress::rxp_read("${%s}")', ref, ref)
       } else {
-        replacement <- sprintf('rxp_read("${%s}")', ref)
+        replacement <- sprintf('rixpress::rxp_read("${%s}")', ref)
       }
       
       sprintf(
