@@ -413,24 +413,67 @@ rxp_qmd <- function(
   content <- readLines(qmd_file, warn = FALSE)
   content_str <- paste(content, collapse = "\n")
 
-  # Extract unique rxp_read references
-  matches <- gregexpr('rxp_read\\("([^"]+)"\\)', content_str)
-  refs <- regmatches(content_str, matches)[[1]]
-  refs <- sub('rxp_read\\("([^"]+)"\\)', '\\1', refs)
-  refs <- unique(refs)
+  # Helper function to extract references for a given function name and quote type
+  extract_refs <- function(func_name, quote_char) {
+    if (quote_char == '"') {
+      pattern <- sprintf('%s\\("([^"]+)"\\)', func_name)
+      replacement <- sprintf('%s\\("([^"]+)"\\)', func_name)
+    } else {
+      pattern <- sprintf("%s\\('([^']+)'\\)", func_name)
+      replacement <- sprintf("%s\\('([^']+)'\\)", func_name)
+    }
+    
+    matches <- gregexpr(pattern, content_str)
+    refs <- regmatches(content_str, matches)[[1]]
+    if (length(refs) > 0) {
+      refs <- sub(replacement, '\\1', refs)
+    }
+    refs
+  }
 
-  # Generate substitution commands for each reference
-  sub_cmds <- vapply(
-    refs,
-    function(ref) {
+  # Extract all references
+  read_refs_double <- extract_refs('rxp_read', '"')
+  read_refs_single <- extract_refs('rxp_read', "'")
+  load_refs_double <- extract_refs('rxp_load', '"')
+  load_refs_single <- extract_refs('rxp_load', "'")
+
+  # Combine all references for environment variable generation
+  all_refs <- unique(c(read_refs_double, read_refs_single, load_refs_double, load_refs_single))
+
+  # Helper function to create substitution commands
+  create_sub_cmd <- function(refs, func_name, quote_char, is_load = FALSE) {
+    if (length(refs) == 0) return(character(0))
+    
+    vapply(refs, function(ref) {
+      if (quote_char == '"') {
+        search_pattern <- sprintf('%s("%s")', func_name, ref)
+        quote_escape <- '"%s"'
+      } else {
+        search_pattern <- sprintf("%s('%s')", func_name, ref)
+        quote_escape <- '\\047%s\\047'
+      }
+      
+      if (is_load) {
+        replacement <- sprintf('%s <- rxp_read("${%s}")', ref, ref)
+      } else {
+        replacement <- sprintf('rxp_read("${%s}")', ref)
+      }
+      
       sprintf(
-        "substituteInPlace %s --replace-fail 'rxp_read(\"%s\")' 'rxp_read(\"${%s}\")'",
+        "substituteInPlace %s --replace-fail '%s' '%s'",
         qmd_file,
-        ref,
-        ref
+        search_pattern,
+        replacement
       )
-    },
-    character(1)
+    }, character(1))
+  }
+
+  # Generate all substitution commands
+  sub_cmds <- c(
+    create_sub_cmd(read_refs_double, 'rxp_read', '"', is_load = FALSE),
+    create_sub_cmd(read_refs_single, 'rxp_read', "'", is_load = FALSE),
+    create_sub_cmd(load_refs_double, 'rxp_load', '"', is_load = TRUE),
+    create_sub_cmd(load_refs_single, 'rxp_load', "'", is_load = TRUE)
   )
 
   # Generate environment variable export statements if env_var is provided
