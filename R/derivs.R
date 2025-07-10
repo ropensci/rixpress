@@ -413,90 +413,101 @@ rxp_qmd <- function(
   content <- readLines(qmd_file, warn = FALSE)
   content_str <- paste(content, collapse = "\n")
 
-  # Helper function to extract references for a given function name and quote type
-  extract_refs <- function(func_name, quote_char) {
-    # Handle both bare function and namespaced function
-    patterns <- c(
-      sprintf('%s\\(%s([^%s]+)%s\\)', func_name, quote_char, quote_char, quote_char),
-      sprintf('rixpress::%s\\(%s([^%s]+)%s\\)', func_name, quote_char, quote_char, quote_char)
+  # Helper function to extract actual matches (including namespace info)
+  extract_actual_matches <- function(func_name, quote_char) {
+    # Pattern that matches both bare and namespaced versions
+    if (quote_char == '"') {
+      pattern <- sprintf('((?:rixpress::)?%s)\\("([^"]+)"\\)', func_name)
+    } else {
+      pattern <- sprintf("((?:rixpress::)?%s)\\('([^']+)'\\)", func_name)
+    }
+    
+    matches <- gregexpr(pattern, content_str)
+    full_matches <- regmatches(content_str, matches)[[1]]
+    
+    if (length(full_matches) == 0) return(data.frame())
+    
+    # Extract the function call and the path
+    match_data <- regmatches(content_str, matches, invert = FALSE)[[1]]
+    
+    results <- data.frame(
+      full_match = character(0),
+      func_call = character(0),
+      path = character(0),
+      quote_char = character(0),
+      stringsAsFactors = FALSE
     )
     
-    all_refs <- character(0)
-    for (pattern in patterns) {
-      matches <- gregexpr(pattern, content_str)
-      refs <- regmatches(content_str, matches)[[1]]
-      if (length(refs) > 0) {
-        refs <- sub(pattern, '\\1', refs)
-        all_refs <- c(all_refs, refs)
-      }
-    }
-    all_refs
-  }
-
-  # Extract all references
-  read_refs_double <- extract_refs('rxp_read', '"')
-  read_refs_single <- extract_refs('rxp_read', "'")
-  load_refs_double <- extract_refs('rxp_load', '"')
-  load_refs_single <- extract_refs('rxp_load', "'")
-
-  # Combine all references for environment variable generation
-  all_refs <- unique(c(read_refs_double, read_refs_single, load_refs_double, load_refs_single))
-
-  # Helper function to create substitution commands
-  create_sub_cmd <- function(refs, func_name, quote_char, is_load = FALSE) {
-    if (length(refs) == 0) return(character(0))
-    
-    # Create commands for both bare and namespaced versions
-    all_cmds <- character(0)
-    
-    for (ref in refs) {
-      # Define search patterns for both versions (properly escaped for shell)
+    for (match in full_matches) {
       if (quote_char == '"') {
-        search_patterns <- c(
-          sprintf('%s("%s")', func_name, ref),
-          sprintf('rixpress::%s("%s")', func_name, ref)
-        )
+        parts <- regmatches(match, regexec(sprintf('((?:rixpress::)?%s)\\("([^"]+)"\\)', func_name), match))[[1]]
       } else {
-        search_patterns <- c(
-          sprintf("%s('%s')", func_name, ref),
-          sprintf("rixpress::%s('%s')", func_name, ref)
-        )
+        parts <- regmatches(match, regexec(sprintf("((?:rixpress::)?%s)\\('([^']+)'\\)", func_name), match))[[1]]
       }
       
-      # Define replacement
-      if (is_load) {
-        replacement <- sprintf('%s <- rxp_read("${%s}")', ref, ref)
-      } else {
-        replacement <- sprintf('rxp_read("${%s}")', ref)
-      }
-      
-      # Create substitution commands for each pattern
-      for (search_pattern in search_patterns) {
-        # Escape the search pattern for shell (escape colons for namespace)
-        escaped_pattern <- gsub("::", "\\\\:\\\\:", search_pattern)
-        escaped_pattern <- gsub("\\(", "\\\\(", escaped_pattern)
-        escaped_pattern <- gsub("\\)", "\\\\)", escaped_pattern)
-        
-        cmd <- sprintf(
-          "substituteInPlace %s --replace-fail '%s' '%s'",
-          qmd_file,
-          escaped_pattern,
-          replacement
-        )
-        all_cmds <- c(all_cmds, cmd)
+      if (length(parts) == 3) {
+        results <- rbind(results, data.frame(
+          full_match = parts[1],
+          func_call = parts[2],
+          path = parts[3],
+          quote_char = quote_char,
+          stringsAsFactors = FALSE
+        ))
       }
     }
     
-    all_cmds
+    results
   }
 
-  # Generate all substitution commands
-  sub_cmds <- c(
-    create_sub_cmd(read_refs_double, 'rxp_read', '"', is_load = FALSE),
-    create_sub_cmd(read_refs_single, 'rxp_read', "'", is_load = FALSE),
-    create_sub_cmd(load_refs_double, 'rxp_load', '"', is_load = TRUE),
-    create_sub_cmd(load_refs_single, 'rxp_load', "'", is_load = TRUE)
-  )
+  # Extract all actual matches
+  read_matches_double <- extract_actual_matches('rxp_read', '"')
+  read_matches_single <- extract_actual_matches('rxp_read', "'")
+  load_matches_double <- extract_actual_matches('rxp_load', '"')
+  load_matches_single <- extract_actual_matches('rxp_load', "'")
+
+  # Combine all matches
+  all_matches <- rbind(read_matches_double, read_matches_single, load_matches_double, load_matches_single)
+  
+  # Get unique paths for environment variables
+  all_refs <- unique(all_matches$path)
+
+  # Generate substitution commands based on actual matches
+  sub_cmds <- character(0)
+  
+  if (nrow(all_matches) > 0) {
+    for (i in 1:nrow(all_matches)) {
+      match <- all_matches[i, ]
+      
+      # Build the search pattern (escape special characters for shell)
+      if (match$quote_char == '"') {
+        search_pattern <- sprintf('%s("%s")', match$func_call, match$path)
+      } else {
+        search_pattern <- sprintf("%s('%s')", match$func_call, match$path)
+      }
+      
+      # Escape for shell
+      escaped_pattern <- gsub("::", "\\\\:\\\\:", search_pattern)
+      escaped_pattern <- gsub("\\(", "\\\\(", escaped_pattern)
+      escaped_pattern <- gsub("\\)", "\\\\)", escaped_pattern)
+      
+      # Build replacement based on function type
+      is_load <- grepl("rxp_load", match$func_call)
+      if (is_load) {
+        replacement <- sprintf('%s <- rxp_read("${%s}")', match$path, match$path)
+      } else {
+        replacement <- sprintf('rxp_read("${%s}")', match$path)
+      }
+      
+      cmd <- sprintf(
+        "substituteInPlace %s --replace-fail '%s' '%s'",
+        qmd_file,
+        escaped_pattern,
+        replacement
+      )
+      
+      sub_cmds <- c(sub_cmds, cmd)
+    }
+  }
 
   # Generate environment variable export statements if env_var is provided
   env_exports <- ""
