@@ -105,7 +105,8 @@ rxp_r <- function(
   nix_env = "default.nix",
   serialize_function = NULL,
   unserialize_function = NULL,
-  env_var = NULL
+  env_var = NULL,
+  user_functions = NULL
 ) {
   out_name <- deparse1(substitute(name))
   expr_str <- deparse1(substitute(expr))
@@ -143,25 +144,46 @@ rxp_r <- function(
   }
 
   # Prepare the fileset for src
-  # Remove functions.R as this is handled separately
-  fileset_parts <- setdiff(additional_files, "functions.R")
-  fileset_parts <- fileset_parts[nzchar(fileset_parts)]
+  # Combine additional_files and user_functions, but exclude user_functions from copy commands
+  all_files <- c(additional_files, user_functions)
+  fileset_parts <- all_files[nzchar(all_files)]
 
-  # build copy command for additional files
+  # build copy command for additional files only (not user_functions)
   copy_cmd <- ""
-  if (length(fileset_parts) > 0) {
-    copy_lines <- vapply(
-      fileset_parts,
-      function(f) sprintf("cp -r ${./%s} %s", f, f),
-      character(1)
-    )
-    copy_cmd <- paste0(paste(copy_lines, collapse = "\n      "), "\n      ")
+  if (length(additional_files) > 0) {
+    additional_files_clean <- additional_files[nzchar(additional_files)]
+    if (length(additional_files_clean) > 0) {
+      copy_lines <- vapply(
+        additional_files_clean,
+        function(f) sprintf("cp -r ${./%s} %s", f, f),
+        character(1)
+      )
+      copy_cmd <- paste0(paste(copy_lines, collapse = "\n      "), "\n      ")
+    }
+  }
+
+  # Generate source commands for user_functions
+  source_cmd <- ""
+  if (!is.null(user_functions) && length(user_functions) > 0) {
+    user_functions_clean <- user_functions[nzchar(user_functions)]
+    if (length(user_functions_clean) > 0) {
+      source_lines <- vapply(
+        user_functions_clean,
+        function(f) sprintf("source('%s')", f),
+        character(1)
+      )
+      source_cmd <- paste0(
+        paste(source_lines, collapse = "\n        "),
+        "\n        "
+      )
+    }
   }
 
   build_phase <- sprintf(
-    "%s%sRscript -e \"\n        source('libraries.R')\n        %s <- %s\n        %s(%s, '%s')\"",
+    "%s%sRscript -e \"\n        source('libraries.R')\n        %s%s <- %s\n        %s(%s, '%s')\"",
     env_exports,
     copy_cmd,
+    source_cmd,
     out_name,
     expr_str,
     serialize_str,
@@ -199,11 +221,11 @@ rxp_r <- function(
     nix_env = nix_env,
     serialize_function = serialize_str,
     unserialize_function = unserialize_str,
-    env_var = env_var
+    env_var = env_var,
+    user_functions = user_functions
   ) |>
     structure(class = "derivation")
 }
-
 
 #' Create a Nix expression running a Python function
 #'
@@ -1214,13 +1236,32 @@ print.derivation <- function(x, ...) {
   }
   cat(
     "Additional files:",
-    if (length(x$additional_files) == 0 || x$additional_files == "") {
+    if (
+      is.null(x$additional_files) ||
+        length(x$additional_files) == 0 ||
+        all(x$additional_files == "")
+    ) {
       "None"
     } else {
       paste(x$additional_files, collapse = ", ")
     },
     "\n"
   )
+  if ("user_functions" %in% names(x)) {
+    cat(
+      "User functions:",
+      if (
+        is.null(x$user_functions) ||
+          length(x$user_functions) == 0 ||
+          all(x$user_functions == "")
+      ) {
+        "None"
+      } else {
+        paste(x$user_functions, collapse = ", ")
+      },
+      "\n"
+    )
+  }
   cat("Nix env:", x$nix_env, "\n")
   if ("env_var" %in% names(x)) {
     cat(
