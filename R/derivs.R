@@ -144,7 +144,7 @@ rxp_r <- function(
   }
 
   # Prepare the fileset for src
-  # Combine additional_files and user_functions, but exclude user_functions from copy commands
+  # Combine additional_files and user_functions
   all_files <- c(additional_files, user_functions)
   fileset_parts <- all_files[nzchar(all_files)]
 
@@ -159,6 +159,23 @@ rxp_r <- function(
         character(1)
       )
       copy_cmd <- paste0(paste(copy_lines, collapse = "\n      "), "\n      ")
+    }
+  }
+
+  # build copy command for user_functions
+  user_functions_copy_cmd <- ""
+  if (!is.null(user_functions) && length(user_functions) > 0) {
+    user_functions_clean <- user_functions[nzchar(user_functions)]
+    if (length(user_functions_clean) > 0) {
+      user_copy_lines <- vapply(
+        user_functions_clean,
+        function(f) sprintf("cp ${./%s} %s", f, f),
+        character(1)
+      )
+      user_functions_copy_cmd <- paste0(
+        paste(user_copy_lines, collapse = "\n      "),
+        "\n      "
+      )
     }
   }
 
@@ -180,9 +197,10 @@ rxp_r <- function(
   }
 
   build_phase <- sprintf(
-    "%s%sRscript -e \"\n        source('libraries.R')\n        %s%s <- %s\n        %s(%s, '%s')\"",
+    "%s%s%sRscript -e \"\n        source('libraries.R')\n        %s%s <- %s\n        %s(%s, '%s')\"",
     env_exports,
     copy_cmd,
+    user_functions_copy_cmd,
     source_cmd,
     out_name,
     expr_str,
