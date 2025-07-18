@@ -298,7 +298,8 @@ rxp_py <- function(
   nix_env = "default.nix",
   serialize_function = NULL,
   unserialize_function = NULL,
-  env_var = NULL
+  env_var = NULL,
+  user_functions = NULL # <-- NEW ARGUMENT
 ) {
   out_name <- deparse1(substitute(name))
   py_expr <- gsub("'", "\\'", py_expr, fixed = TRUE)
@@ -346,26 +347,66 @@ rxp_py <- function(
     if (env_exports != "") env_exports <- paste0(env_exports, "\n      ")
   }
 
-  fileset_parts <- setdiff(additional_files, "functions.py")
-  fileset_parts <- fileset_parts[nzchar(fileset_parts)]
-
-  # build copy command for additional files
-  copy_cmd <- ""
-  if (length(fileset_parts) > 0) {
-    copy_lines <- vapply(
+  # Prepare the fileset for src
+  # Combine additional_files and user_functions for the fileset
+  fileset_parts <- c()
+  if (!is.null(additional_files) && any(nzchar(additional_files))) {
+    fileset_parts <- c(
       fileset_parts,
+      additional_files[nzchar(additional_files)]
+    )
+  }
+  if (!is.null(user_functions) && any(nzchar(user_functions))) {
+    fileset_parts <- c(fileset_parts, user_functions[nzchar(user_functions)])
+  }
+
+  # build copy command for additional files (excluding user_functions)
+  copy_cmd <- ""
+  if (!is.null(additional_files) && any(nzchar(additional_files))) {
+    additional_files_clean <- additional_files[nzchar(additional_files)]
+    copy_lines <- vapply(
+      additional_files_clean,
       function(f) sprintf("cp -r ${./%s} %s", f, f),
       character(1)
     )
     copy_cmd <- paste0(paste(copy_lines, collapse = "\n      "), "\n      ")
   }
 
+  # build copy command for user_functions (explicit copy, not -r)
+  user_functions_copy_cmd <- ""
+  if (!is.null(user_functions) && any(nzchar(user_functions))) {
+    user_functions_clean <- user_functions[nzchar(user_functions)]
+    user_copy_lines <- vapply(
+      user_functions_clean,
+      function(f) sprintf("cp ${./%s} %s", f, f),
+      character(1)
+    )
+    user_functions_copy_cmd <- paste0(
+      paste(user_copy_lines, collapse = "\n      "),
+      "\n      "
+    )
+  }
+
+  # Generate import commands for user_functions
+  user_import_cmd <- ""
+  if (!is.null(user_functions) && any(nzchar(user_functions))) {
+    user_functions_clean <- user_functions[nzchar(user_functions)]
+    import_lines <- vapply(
+      user_functions_clean,
+      function(f) sprintf("exec(open('%s').read())", f),
+      character(1)
+    )
+    user_import_cmd <- paste0(paste(import_lines, collapse = "\n"), "\n")
+  }
+
   # Construct build_phase including cp commands then python execution
   build_phase <- paste0(
     env_exports,
     copy_cmd,
+    user_functions_copy_cmd,
     "python -c \"\n",
     "exec(open('libraries.py').read())\n",
+    user_import_cmd,
     "exec('",
     out_name,
     " = ",
@@ -380,7 +421,7 @@ rxp_py <- function(
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
 
-  # Prepare the src snippet only once using the same fileset_parts
+  # Prepare the src snippet with all files
   if (length(fileset_parts) > 0) {
     fileset_nix <- paste0("./", fileset_parts, collapse = " ")
     src_snippet <- sprintf(
@@ -408,7 +449,8 @@ rxp_py <- function(
     nix_env = nix_env,
     serialize_function = serialize_str,
     unserialize_function = unserialize_str,
-    env_var = env_var
+    env_var = env_var,
+    user_functions = user_functions
   ) |>
     structure(class = "derivation")
 }
@@ -1348,15 +1390,16 @@ rxp_jl <- function(
   nix_env = "default.nix",
   serialize_function = NULL,
   unserialize_function = NULL,
-  env_var = NULL
+  env_var = NULL,
+  user_functions = NULL # <-- NEW ARGUMENT
 ) {
   out_name <- deparse1(substitute(name))
-  # Escape double quotes for Julia one‐liner
+  # Escape double quotes for Julia one-liner
   jl_expr_escaped <- gsub("\"", "\\\\\"", jl_expr)
 
   # Determine which serialize function to call
   if (is.null(serialize_function)) {
-    # Default: use built‐in Serialization.serialize
+    # Default: use built-in Serialization.serialize
     serialize_str <- paste0(
       "using Serialization; ",
       "io = open(\\\"",
@@ -1407,31 +1450,70 @@ rxp_jl <- function(
     }
   }
 
-  # Prepare the fileset for src (exclude functions.jl, handled separately)
-  fileset_parts <- setdiff(additional_files, "functions.jl")
-  fileset_parts <- fileset_parts[nzchar(fileset_parts)]
-
-  # Build copy command for additional files
-  copy_cmd <- ""
-  if (length(fileset_parts) > 0) {
-    copy_lines <- vapply(
+  # Prepare the fileset for src, INCLUDE user_functions as well
+  fileset_parts <- c()
+  if (!is.null(additional_files) && any(nzchar(additional_files))) {
+    fileset_parts <- c(
       fileset_parts,
+      additional_files[nzchar(additional_files)]
+    )
+  }
+  if (!is.null(user_functions) && any(nzchar(user_functions))) {
+    fileset_parts <- c(fileset_parts, user_functions[nzchar(user_functions)])
+  }
+
+  # Build copy command for additional files (not user_functions)
+  additional_files_clean <- additional_files[nzchar(additional_files)]
+  copy_cmd <- ""
+  if (length(additional_files_clean) > 0) {
+    copy_lines <- vapply(
+      additional_files_clean,
       function(f) sprintf("cp -r ${./%s} %s", f, f),
       character(1)
     )
     copy_cmd <- paste0(paste(copy_lines, collapse = "\n      "), "\n      ")
   }
 
-  # Construct the Julia build phase: include libraries.jl if present, run expression, then serialize
+  # Build copy command for user_functions (explicit copy, not -r)
+  user_functions_copy_cmd <- ""
+  if (!is.null(user_functions) && any(nzchar(user_functions))) {
+    user_functions_clean <- user_functions[nzchar(user_functions)]
+    user_copy_lines <- vapply(
+      user_functions_clean,
+      function(f) sprintf("cp ${./%s} %s", f, f),
+      character(1)
+    )
+    user_functions_copy_cmd <- paste0(
+      paste(user_copy_lines, collapse = "\n      "),
+      "\n      "
+    )
+  }
+
+  # Generate include commands for user_functions
+  user_include_cmd <- ""
+  if (!is.null(user_functions) && any(nzchar(user_functions))) {
+    user_functions_clean <- user_functions[nzchar(user_functions)]
+    include_lines <- vapply(
+      user_functions_clean,
+      function(f) sprintf("include(\\\"%s\\\")", f),
+      character(1)
+    )
+    user_include_cmd <- paste0(paste(include_lines, collapse = "; "), "; ")
+  }
+
+  # Construct the Julia build phase: include libraries.jl if present,
+  # include user_functions, run expression, then serialize
   build_phase <- paste0(
     env_exports,
     copy_cmd,
+    user_functions_copy_cmd,
     "julia -e \"\n",
-    "if isfile(\\\"libraries.jl\\\"); include(\\\"libraries.jl\\\"); end; \n",
+    "if isfile(\\\"libraries.jl\\\"); include(\\\"libraries.jl\\\"); end; ",
+    user_include_cmd,
     out_name,
     " = ",
     jl_expr_escaped,
-    "; \n",
+    "; ",
     serialize_str,
     "\n",
     "\""
@@ -1441,7 +1523,7 @@ rxp_jl <- function(
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   base <- sub("_nix$", "", base)
 
-  # Prepare src snippet if there are additional files besides functions.jl
+  # Prepare src snippet with all relevant files
   if (length(fileset_parts) > 0) {
     fileset_nix <- paste0("./", fileset_parts, collapse = " ")
     src_snippet <- sprintf(
@@ -1452,7 +1534,7 @@ rxp_jl <- function(
     src_snippet <- ""
   }
 
-  # Assemble the Nix‐derivation snippet
+  # Assemble the Nix-derivation snippet
   snippet <- make_derivation_snippet(
     out_name = out_name,
     src_snippet = src_snippet,
@@ -1473,7 +1555,8 @@ rxp_jl <- function(
       serialize_function
     },
     unserialize_function = unserialize_str,
-    env_var = env_var
+    env_var = env_var,
+    user_functions = user_functions
   ) |>
     structure(class = "derivation")
 }

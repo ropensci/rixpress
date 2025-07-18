@@ -261,7 +261,7 @@ language_configs <- list(
     transform_func = transform_py,
     adjust_func = adjust_py_packages,
     import_formatter = import_formatter_py,
-    additional_file_pattern = "functions\\.py",
+    additional_file_pattern = NULL, # Changed from "functions\\.[py]"
     extension = "py",
     parse_git = FALSE
   ),
@@ -270,7 +270,7 @@ language_configs <- list(
     transform_func = transform_jl,
     adjust_func = adjust_jl_packages,
     import_formatter = import_formatter_jl,
-    additional_file_pattern = "functions\\.jl",
+    additional_file_pattern = NULL, # Changed from "functions\\.[jl]"
     extension = "jl",
     parse_git = FALSE
   )
