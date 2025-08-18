@@ -2,15 +2,16 @@ pandoc: '3.6'
 pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
-  a-intro-concepts: a-intro-concepts.html
-  b-core-functions: b-core-functions.html
-  c-tutorial: c-tutorial.html
-  d-polyglot: d-polyglot.html
-  d2-polyglot-julia: d2-polyglot-julia.html
-  e-ci: e-ci.html
-  f-cmdstanr: f-cmdstanr.html
-  g-logs: g-logs.html
-last_built: 2025-07-13T18:42Z
+  ci: ci.html
+  cmdstanr: cmdstanr.html
+  core-functions: core-functions.html
+  intro-concepts: intro-concepts.html
+  logs: logs.html
+  polyglot-julia: polyglot-julia.html
+  polyglot: polyglot.html
+  scope: scope.html
+  tutorial: tutorial.html
+last_built: 2025-08-18T13:41Z
 urls:
   reference: https://b-rodrigues.github.io/rixpress/reference
   article: https://b-rodrigues.github.io/rixpress/articles
