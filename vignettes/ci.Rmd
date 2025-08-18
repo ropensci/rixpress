@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 This vignette demonstrates how to build a polyglot pipeline and assumes you've
-read `vignette("d-polyglot")`.
+read `vignette("polyglot")`.
 
 ## Running pipelines on GitHub Actions
 

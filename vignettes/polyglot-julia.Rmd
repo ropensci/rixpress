@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 This vignette demonstrates how to build a polyglot pipeline using R and Julia.
-It assumes you've read `vignette("b-core-functions")` and are familiar with the
+It assumes you've read `vignette("core-functions")` and are familiar with the
 basic concepts of `{rixpress}`.
 
 For various examples of polyglot pipelines, check out the [rixpress_demos

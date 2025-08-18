@@ -20,7 +20,7 @@ This vignette introduces key terminology and walks you through setting up a
 simple pipeline using `{rixpress}`. Understanding the concepts presented here is
 helpful but not mandatory. I recommend reading through this vignette, but don't
 worry if you don't grasp everything immediately. You can try building a simple
-pipeline by following the next vignette, `vignette("b-core-functions")`, and
+pipeline by following the next vignette, `vignette("core-functions")`, and
 then return to this one; things should become clearer after some hands-on
 experience!
 
@@ -246,4 +246,5 @@ without having to learn all its complexities.
 
 Now that you're familiar with the basic `Nix` concepts, let's move on to the next
 vignette where you'll set up your first basic pipeline:
-`vignette("b-core-functions")`.
+`vignette("core-functions")` (if you wish to learn more about the scope and roadmap
+of the package, you can also take a look at `vignette("scope")` first).

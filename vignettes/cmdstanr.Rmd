@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 This vignette details how to effectively use the `{cmdstanr}` package within a
 `{rixpress}` pipeline for Bayesian statistical modeling with Stan. For a general
 introduction to `{rixpress}` and its core concepts, please refer to
-`vignette("a-intro-concepts")` and `vignette("b-core-functions")`.
+`vignette("intro-concepts")` and `vignette("core-functions")`.
 
 `{cmdstanr}` provides a user-friendly R interface to `cmdstan`, Stan's
 command-line interface. While powerful, its reliance on external processes and

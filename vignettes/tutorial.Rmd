@@ -9,7 +9,7 @@ vignette: >
 
 This vignette demonstrates how to build a `{rixpress}` pipeline that only uses R
 derivations. For multilingual pipelines, read the next vignette
-`vignette("d-polyglot")`.
+`vignette("polyglot")`.
 
 If you are more of a visual learner, you can also watch [this video](https://www.youtube.com/watch?v=IXKd5ySzzSU) which
 will walk you through the contents of this vignette.
@@ -251,6 +251,6 @@ define derivation -> build pipeline* loop again for the next derivation.
 
 You now know the basics of using `{rixpress}` to build a simple pipeline.
 
-The next vignette `vignette("d-polyglot")` explains how to build a pipeline
+The next vignette `vignette("polyglot")` explains how to build a pipeline
 with both R and Python derivations, as well as compiling a Quarto document.
 

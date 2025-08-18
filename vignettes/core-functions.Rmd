@@ -16,8 +16,8 @@ knitr::opts_chunk$set(
 
 This vignette introduces the core functions required to build a `{rixpress}`
 pipeline, but doesn't cover everything yet. It also
-assumes that you've read `vignette("a-intro-concepts")`. In the next vignette
-`vignette("c-tutorial")`, you'll learn how to set up a complete pipeline from
+assumes that you've read `vignette("intro-concepts")`. In the next vignette
+`vignette("tutorial")`, you'll learn how to set up a complete pipeline from
 start to finish.
 
 ## Getting data into the pipeline
@@ -51,7 +51,7 @@ URL.
 ## Declaring build steps
 
 Once the data is imported, we can start manipulating it. To generate a
-derivation similar to the one described in `vignette("a-intro-concepts")`, but
+derivation similar to the one described in `vignette("intro-concepts")`, but
 using R and `{dplyr}` instead of `awk`, we would write:
 
 ```{r, eval = FALSE}
@@ -312,7 +312,7 @@ instead of modifying your original `rixpress()` call.
 There are some caveats that you need to be aware of when using `{rixpress}`.
 Due to how `Nix` works, certain things are simply not possible:
 
-- as mentioned in `vignette("a-intro-concepts")`, functions are executed in
+- as mentioned in `vignette("intro-concepts")`, functions are executed in
   a hermetic sandbox. If they need access to an external resource, the build
   will fail. For example, if you use a function to get data from an
   API, you must first retrieve the data in a standard interactive R session, save it
@@ -329,6 +329,6 @@ Due to how `Nix` works, certain things are simply not possible:
 ## Conclusion
 
 Now that you understand the basic, high-level concepts, let's move on to the
-next vignette, `vignette("c-tutorial")`, where we'll learn how to set up a
+next vignette, `vignette("tutorial")`, where we'll learn how to set up a
 pipeline from start to finish.
 
