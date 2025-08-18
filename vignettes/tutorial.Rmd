@@ -2,7 +2,7 @@
 title: "Setting up a pipeline from scratch: a tutorial"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{c-tutorial}
+  %\VignetteIndexEntry{tutorial}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

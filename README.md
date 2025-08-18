@@ -7,6 +7,7 @@ v2](https://github.com/b-rodrigues/rixpress/actions/workflows/rhub.yaml/badge.sv
 Review](https://badges.ropensci.org/706_status.svg)](https://github.com/ropensci/software-review/issues/706)
 
 <p>
+
 If you want to watch a 2-Minute video introduction, click the image
 below:
 </p>
@@ -24,6 +25,9 @@ function to define reproducible development environments as code using
 `Nix`, ensuring the pipeline runs in a fully reproducible `Nix`-managed
 environment. `{rixpress}` only requires users to write the pipeline
 using familiar R code.
+
+`rixpress` focuses on “micropipelines”: pipelines executed on a single
+machine for small-to-medium projects.
 
 For example, this R script defines a list of *derivations* defined by
 functions prefixed with `rxp_*()`, which is then passed to `rixpress()`:
@@ -75,7 +79,9 @@ such as JSON. By default, calling `rixpress()` also builds the pipeline,
 but it’s possible to only generate the `pipeline.nix` file and then
 build the pipeline at a later stage using:
 
-    rxp_make()
+``` r
+rxp_make()
+```
 
 The build process assumes the presence of a `default.nix` file which
 defines the computational environment the pipeline runs in; this
@@ -103,10 +109,13 @@ rxp_ggdag()
 ```
 
 <figure>
+
 <img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/main/dag.png" alt="DAG" />
 <figcaption aria-hidden="true">
+
 DAG
 </figcaption>
+
 </figure>
 
 Because the pipeline is built using `Nix`, the outputs all get stored in
@@ -169,3 +178,8 @@ Pull requests are welcome, but if you’re unsure wether you should open
 one, feel free to open an issue first to discuss your idea. For detailed
 instructions, refer to `CONTRIBUTING.md` for instructions on how to
 contribute.
+
+## Scope
+
+Please refer to the vignette titled “Scope and Roadmap” to learn more
+about what `{rixpress}` will and will not support.

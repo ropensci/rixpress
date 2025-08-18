@@ -28,8 +28,11 @@ the design goals of `{rixpress}` is to mimic the user experience of the
 `{targets}` package, and is thus heavily inspired by it. It builds upon the
 `{rix}` package, which provides helper function to define reproducible
 development environments as code using `Nix`, ensuring the pipeline runs in a
-fully reproducible `Nix`-managed environment. `{rixpress}` only requires users to
-write the pipeline using familiar R code.
+fully reproducible `Nix`-managed environment. `{rixpress}` only requires users
+to write the pipeline using familiar R code.
+
+`rixpress` focuses on “micropipelines”: pipelines executed on a single machine
+for small-to-medium projects.
 
 For example, this R script defines a list of *derivations* defined by functions
 prefixed with `rxp_*()`, which is then passed to `rixpress()`:
@@ -81,7 +84,9 @@ default, calling `rixpress()` also builds the pipeline, but it's possible to
 only generate the `pipeline.nix` file and then build the pipeline at a later
 stage using:
 
-    rxp_make()
+```r
+rxp_make()
+```
 
 The build process assumes the presence of a `default.nix` file which defines the
 computational environment the pipeline runs in; this `default.nix` file can be
@@ -102,7 +107,7 @@ When you run `rixpress()`, a folder called `_rixpress/` gets also generated
 which contains a file with a JSON representation of the pipeline’s DAG (Directed
 Acyclic Graph). You can visualize the pipeline using `rxp_ggdag()`:
 
-``` r
+```r
 rxp_ggdag()
 ```
 
@@ -168,3 +173,8 @@ remotes::install_github("b-rodrigues/rixpress")
 Pull requests are welcome, but if you’re unsure wether you should open one, feel
 free to open an issue first to discuss your idea. For detailed instructions,
 refer to `CONTRIBUTING.md` for instructions on how to contribute.
+
+## Scope
+
+Please refer to the vignette titled "Scope and Roadmap" to learn more about what
+`{rixpress}` will and will not support.

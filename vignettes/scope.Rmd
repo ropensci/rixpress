@@ -4,7 +4,7 @@ output:
   rmarkdown::html_vignette:
     df_print: paged
 vignette: >
-  %\VignetteIndexEntry{Scope and Roadmap}
+  %\VignetteIndexEntry{scope}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

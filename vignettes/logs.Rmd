@@ -2,7 +2,7 @@
 title: "Retrieving cached artifacts of previous runs"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Working with Build Logs}
+  %\VignetteIndexEntry{logs}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

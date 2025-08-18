@@ -2,6 +2,20 @@ url: https://b-rodrigues.github.io/rixpress/
 template:
   bootstrap: 5
 
+articles:
+- title: Articles
+  navbar: Articles
+  contents:
+  - intro-concepts
+  - scope
+  - core-functions
+  - tutorial
+  - polyglot
+  - polyglot-julia
+  - ci
+  - cmdstanr
+  - logs
+
 reference:
 - title: Declaring derivations
   desc: >

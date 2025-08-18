@@ -2,7 +2,7 @@
 title: "Introductory concepts"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{a-introductory-concepts}
+  %\VignetteIndexEntry{introductory-concepts}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
