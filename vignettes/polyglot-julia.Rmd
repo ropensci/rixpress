@@ -2,7 +2,7 @@
 title: "Polyglot pipelines with Julia and R"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{d2-polyglot-julia}
+  %\VignetteIndexEntry{polyglot-julia}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
