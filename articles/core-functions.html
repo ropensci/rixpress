@@ -77,9 +77,9 @@
     
 <p>This vignette introduces the core functions required to build a
 <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> pipeline, but doesn’t cover everything yet. It
-also assumes that you’ve read <code>vignette("a-intro-concepts")</code>.
-In the next vignette <code>vignette("c-tutorial")</code>, you’ll learn
-how to set up a complete pipeline from start to finish.</p>
+also assumes that you’ve read <code><a href="../articles/intro-concepts.html">vignette("intro-concepts")</a></code>.
+In the next vignette <code><a href="../articles/tutorial.html">vignette("tutorial")</a></code>, you’ll learn how
+to set up a complete pipeline from start to finish.</p>
 <div class="section level2">
 <h2 id="getting-data-into-the-pipeline">Getting data into the pipeline<a class="anchor" aria-label="anchor" href="#getting-data-into-the-pipeline"></a>
 </h2>
@@ -112,7 +112,7 @@ the file can also be a URL.</p>
 </h2>
 <p>Once the data is imported, we can start manipulating it. To generate
 a derivation similar to the one described in
-<code>vignette("a-intro-concepts")</code>, but using R and
+<code><a href="../articles/intro-concepts.html">vignette("intro-concepts")</a></code>, but using R and
 <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> instead of <code>awk</code>, we would write:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
@@ -344,7 +344,7 @@ the DAG using other tools:</p>
 <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>. Due to how <code>Nix</code> works, certain
 things are simply not possible:</p>
 <ul>
-<li>as mentioned in <code>vignette("a-intro-concepts")</code>, functions
+<li>as mentioned in <code><a href="../articles/intro-concepts.html">vignette("intro-concepts")</a></code>, functions
 are executed in a hermetic sandbox. If they need access to an external
 resource, the build will fail. For example, if you use a function to get
 data from an API, you must first retrieve the data in a standard
@@ -365,7 +365,7 @@ the <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> GitHu
 <h2 id="conclusion">Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>
 </h2>
 <p>Now that you understand the basic, high-level concepts, let’s move on
-to the next vignette, <code>vignette("c-tutorial")</code>, where we’ll
+to the next vignette, <code><a href="../articles/tutorial.html">vignette("tutorial")</a></code>, where we’ll
 learn how to set up a pipeline from start to finish.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
