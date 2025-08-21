@@ -130,8 +130,9 @@ rxp_r <- function(
     env_exports <- paste(
       vapply(
         names(env_var),
-        function(var_name)
-          sprintf("export %s=%s", var_name, env_var[[var_name]]),
+        function(var_name) {
+          sprintf("export %s=%s", var_name, env_var[[var_name]])
+        },
         character(1)
       ),
       collapse = "\n      "
@@ -270,8 +271,9 @@ rxp_py <- function(
       out_name
     )
   } else {
-    if (!is.character(serialize_function))
+    if (!is.character(serialize_function)) {
       stop("serialize_function must be a character string or NULL")
+    }
     serialize_str <- sprintf(
       "%s(globals()['%s'], '%s')",
       serialize_function,
@@ -284,8 +286,9 @@ rxp_py <- function(
   if (is.null(unserialize_function)) {
     unserialize_str <- "pickle.load"
   } else {
-    if (!is.character(unserialize_function))
+    if (!is.character(unserialize_function)) {
       stop("unserialize_function must be a character string or NULL")
+    }
     unserialize_str <- unserialize_function
   }
 
@@ -425,7 +428,9 @@ rxp_qmd <- function(
     matches <- gregexpr(pattern, content_str)
     full_matches <- regmatches(content_str, matches)[[1]]
 
-    if (length(full_matches) == 0) return(data.frame())
+    if (length(full_matches) == 0) {
+      return(data.frame())
+    }
 
     results <- data.frame(
       full_match = character(0),
@@ -541,8 +546,9 @@ rxp_qmd <- function(
     env_exports <- paste(
       vapply(
         names(env_var),
-        function(var_name)
-          sprintf("      export %s=%s", var_name, env_var[[var_name]]),
+        function(var_name) {
+          sprintf("      export %s=%s", var_name, env_var[[var_name]])
+        },
         character(1)
       ),
       collapse = "\n"
@@ -557,8 +563,11 @@ rxp_qmd <- function(
     "      export HOME=$PWD/home",
     "      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python",
     env_exports,
-    if (length(sub_cmds) > 0)
-      paste("      ", sub_cmds, sep = "", collapse = "\n") else "",
+    if (length(sub_cmds) > 0) {
+      paste("      ", sub_cmds, sep = "", collapse = "\n")
+    } else {
+      ""
+    },
     sprintf("      quarto render %s %s --output-dir $out", qmd_file, args),
     sep = "\n"
   )
@@ -667,8 +676,9 @@ rxp_file_common <- function(
     env_exports <- paste(
       vapply(
         names(env_var),
-        function(var_name)
-          sprintf("export %s=%s", var_name, env_var[[var_name]]),
+        function(var_name) {
+          sprintf("export %s=%s", var_name, env_var[[var_name]])
+        },
         character(1)
       ),
       collapse = "\n      "
@@ -703,8 +713,6 @@ rxp_file_common <- function(
     structure(class = "derivation")
 }
 
-#' rxp_r_file
-#'
 #' Creates a Nix expression that reads in a file (or folder of data) using R.
 #'
 #' @family derivations
@@ -806,8 +814,6 @@ rxp_r_file <- function(
   )
 }
 
-#' rxp_py_file
-#'
 #' Creates a Nix expression that reads in a file (or folder of data) using
 #' Python.
 #'
@@ -1122,8 +1128,9 @@ rxp_rmd <- function(
     env_exports <- paste(
       vapply(
         names(env_var),
-        function(var_name)
-          sprintf("      export %s=%s", var_name, env_var[[var_name]]),
+        function(var_name) {
+          sprintf("      export %s=%s", var_name, env_var[[var_name]])
+        },
         character(1)
       ),
       collapse = "\n"
@@ -1138,8 +1145,11 @@ rxp_rmd <- function(
     "      export HOME=$PWD/home",
     "      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python",
     env_exports,
-    if (length(sub_cmds) > 0)
-      paste("      ", sub_cmds, sep = "", collapse = "\n") else "",
+    if (length(sub_cmds) > 0) {
+      paste("      ", sub_cmds, sep = "", collapse = "\n")
+    } else {
+      ""
+    },
     sprintf("      Rscript -e \"rmd_file <- '%s'; %s\"", rmd_file, render_args),
     sep = "\n"
   )
@@ -1204,16 +1214,22 @@ print.derivation <- function(x, ...) {
   }
   cat(
     "Additional files:",
-    if (length(x$additional_files) == 0 || x$additional_files == "") "None" else
-      paste(x$additional_files, collapse = ", "),
+    if (length(x$additional_files) == 0 || x$additional_files == "") {
+      "None"
+    } else {
+      paste(x$additional_files, collapse = ", ")
+    },
     "\n"
   )
   cat("Nix env:", x$nix_env, "\n")
   if ("env_var" %in% names(x)) {
     cat(
       "Env variables:",
-      if (is.null(x$env_var)) "None" else
-        paste(names(x$env_var), x$env_var, sep = "=", collapse = ", "),
+      if (is.null(x$env_var)) {
+        "None"
+      } else {
+        paste(names(x$env_var), x$env_var, sep = "=", collapse = ", ")
+      },
       "\n"
     )
   }
@@ -1392,8 +1408,11 @@ rxp_jl <- function(
     type = "rxp_jl",
     additional_files = additional_files,
     nix_env = nix_env,
-    serialize_function = if (is.null(serialize_function))
-      "Serialization.serialize" else serialize_function,
+    serialize_function = if (is.null(serialize_function)) {
+      "Serialization.serialize"
+    } else {
+      serialize_function
+    },
     unserialize_function = unserialize_str,
     env_var = env_var
   ) |>

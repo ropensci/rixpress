@@ -2,7 +2,7 @@
 % Please edit documentation in R/derivs.R
 \name{rxp_r_file}
 \alias{rxp_r_file}
-\title{rxp_r_file}
+\title{Creates a Nix expression that reads in a file (or folder of data) using R.}
 \usage{
 rxp_r_file(
   name,

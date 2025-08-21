@@ -2,7 +2,8 @@
 % Please edit documentation in R/derivs.R
 \name{rxp_py_file}
 \alias{rxp_py_file}
-\title{rxp_py_file}
+\title{Creates a Nix expression that reads in a file (or folder of data) using
+Python.}
 \usage{
 rxp_py_file(
   name,
