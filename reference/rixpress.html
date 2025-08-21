@@ -3,15 +3,17 @@
 objects. Each derivation defines a build step, and rixpress() chains these
 steps and handles the serialization and conversion of Python objects into R
 objects (or vice-versa). Derivations are created with rxp_r(), rxp_py()
-and so on. By default, the pipeline is also immediately after being generated,
-but the build process can be postponed by setting build to FALSE. In this case,
-the pipeline can then be built using rxp_make()."><meta property="og:description" content="This function generates a pipeline.nix file based on a list of derivation
+and so on. By default, the pipeline is also immediately built after being
+generated, but the build process can be postponed by setting build to
+FALSE. In this case, the pipeline can then be built using rxp_make() at
+a later stage."><meta property="og:description" content="This function generates a pipeline.nix file based on a list of derivation
 objects. Each derivation defines a build step, and rixpress() chains these
 steps and handles the serialization and conversion of Python objects into R
 objects (or vice-versa). Derivations are created with rxp_r(), rxp_py()
-and so on. By default, the pipeline is also immediately after being generated,
-but the build process can be postponed by setting build to FALSE. In this case,
-the pipeline can then be built using rxp_make()."></head><body>
+and so on. By default, the pipeline is also immediately built after being
+generated, but the build process can be postponed by setting build to
+FALSE. In this case, the pipeline can then be built using rxp_make() at
+a later stage."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -64,14 +66,15 @@ the pipeline can then be built using rxp_make()."></head><body>
 objects. Each derivation defines a build step, and <code>rixpress()</code> chains these
 steps and handles the serialization and conversion of Python objects into R
 objects (or vice-versa). Derivations are created with <code><a href="rxp_r.html">rxp_r()</a></code>, <code><a href="rxp_py.html">rxp_py()</a></code>
-and so on. By default, the pipeline is also immediately after being generated,
-but the build process can be postponed by setting <code>build</code> to FALSE. In this case,
-the pipeline can then be built using <code><a href="rxp_make.html">rxp_make()</a></code>.</p>
+and so on. By default, the pipeline is also immediately built after being
+generated, but the build process can be postponed by setting <code>build</code> to
+FALSE. In this case, the pipeline can then be built using <code><a href="rxp_make.html">rxp_make()</a></code> at
+a later stage.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rixpress</span><span class="op">(</span><span class="va">derivs</span>, project_path <span class="op">=</span> <span class="st">"."</span>, build <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rixpress</span><span class="op">(</span><span class="va">derivs</span>, project_path <span class="op">=</span> <span class="st">"."</span>, build <span class="op">=</span> <span class="cn">TRUE</span>, py_imports <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -98,7 +101,16 @@ function.</p></dd>
 <dt id="arg-build">build<a class="anchor" aria-label="anchor" href="#arg-build"></a></dt>
 <dd><p>Logical, defaults to TRUE. Should the pipeline get built right
 after being generated? If FALSE, you can build the pipeline later using
-<code>rixpress()</code>.</p></dd>
+<code><a href="rxp_make.html">rxp_make()</a></code>.</p></dd>
+
+
+<dt id="arg-py-imports">py_imports<a class="anchor" aria-label="anchor" href="#arg-py-imports"></a></dt>
+<dd><p>Named character vector of Python import rewrites. Names are
+the base modules that rixpress auto-imports as "import <name>", and values
+are the desired import lines. For example: c(numpy = "import numpy as np",
+xgboost = "from xgboost import XGBClassifier"). Each entry is applied by
+replacing "import <name>" with the provided string across generated
+_rixpress Python library files.</name></name></p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -121,16 +133,18 @@ the <code>rix</code> package;</p></li>
 between them when objects are passed from one language to another;</p></li>
 <li><p>correct loading of R and Python packages, or extra functions needed to build
 specific targets</p></li>
-</ul><p>In some cases, due to the automatic handling of Python packages, users might
+</ul><p>Inline Python import adjustments
+In some cases, due to the automatic handling of Python packages, users might
 want to change import statements. By default if, say, <code>pandas</code> is needed to
 build a derivation, it will be imported with <code>import pandas</code>. However, Python
-programmers typically use <code>import pandas as pd</code>. To change the automatic
-import statements, please refer to <code><a href="adjust_import.html">adjust_import()</a></code>.</p>
-    </div>
+programmers typically use <code>import pandas as pd</code>. You can either:</p><ul><li><p>use <code>py_imports</code> to rewrite these automatically during population, or</p></li>
+<li><p>use <code><a href="adjust_import.html">adjust_import()</a></code> for advanced/manual control.</p></li>
+</ul></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other pipeline functions:
-<code><a href="rxp_make.html">rxp_make</a>()</code></p></div>
+<code><a href="rxp_make.html">rxp_make</a>()</code>,
+<code><a href="rxp_populate.html">rxp_populate</a>()</code></p></div>
     </div>
 
     <div class="section level2">
@@ -141,9 +155,18 @@ import statements, please refer to <code><a href="adjust_import.html">adjust_imp
 <span class="r-in"><span><span class="va">d2</span> <span class="op">&lt;-</span> <span class="fu"><a href="rxp_r.html">rxp_r</a></span><span class="op">(</span><span class="va">mtcars_head</span>, <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mtcars_am</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">list_derivs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">d1</span>, <span class="va">d2</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Generate the pipeline code</span></span></span>
+<span class="r-in"><span><span class="co"># Generate and build in one go</span></span></span>
 <span class="r-in"><span><span class="fu">rixpress</span><span class="op">(</span>derivs <span class="op">=</span> <span class="va">list_derivs</span>, project_path <span class="op">=</span> <span class="st">"."</span>, build <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Or only populate, with inline Python import adjustments</span></span></span>
+<span class="r-in"><span><span class="fu">rixpress</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  derivs <span class="op">=</span> <span class="va">list_derivs</span>,</span></span>
+<span class="r-in"><span>  project_path <span class="op">=</span> <span class="st">"."</span>,</span></span>
+<span class="r-in"><span>  build <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>  py_imports <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>pandas <span class="op">=</span> <span class="st">"import pandas as pd"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Then later:</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="rxp_make.html">rxp_make</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
