@@ -4,9 +4,10 @@
 #' objects. Each derivation defines a build step, and `rixpress()` chains these
 #' steps and handles the serialization and conversion of Python objects into R
 #' objects (or vice-versa). Derivations are created with `rxp_r()`, `rxp_py()`
-#' and so on. By default, the pipeline is also immediately after being generated,
-#' but the build process can be postponed by setting `build` to FALSE. In this case,
-#' the pipeline can then be built using `rxp_make()`.
+#' and so on. By default, the pipeline is also immediately built after being
+#' generated, but the build process can be postponed by setting `build` to
+#' FALSE. In this case, the pipeline can then be built using `rxp_make()` at
+#' a later stage.
 #'
 #' @family pipeline functions
 #' @param derivs A list of derivation objects, where each object is a list of
@@ -24,7 +25,14 @@
 #'
 #' @param build Logical, defaults to TRUE. Should the pipeline get built right
 #'   after being generated? If FALSE, you can build the pipeline later using
-#'   `rixpress()`.
+#'   `rxp_make()`.
+#'
+#' @param py_imports Named character vector of Python import rewrites. Names are
+#'   the base modules that rixpress auto-imports as "import <name>", and values
+#'   are the desired import lines. For example: c(numpy = "import numpy as np",
+#'   xgboost = "from xgboost import XGBClassifier"). Each entry is applied by
+#'   replacing "import <name>" with the provided string across generated
+#'   _rixpress Python library files.
 #'
 #' @param ... Further arguments passed down to methods. Use `max-jobs` and
 #'   `cores` to set parallelism during build. See the documentation of
@@ -43,11 +51,13 @@
 #' - correct loading of R and Python packages, or extra functions needed to build
 #'   specific targets
 #'
+#' Inline Python import adjustments
 #' In some cases, due to the automatic handling of Python packages, users might
 #' want to change import statements. By default if, say, `pandas` is needed to
 #' build a derivation, it will be imported with `import pandas`. However, Python
-#' programmers typically use `import pandas as pd`. To change the automatic
-#' import statements, please refer to `adjust_import()`.
+#' programmers typically use `import pandas as pd`. You can either:
+#' - use `py_imports` to rewrite these automatically during population, or
+#' - use `adjust_import()` for advanced/manual control.
 #'
 #' @examples
 #' \dontrun{
@@ -56,12 +66,27 @@
 #' d2 <- rxp_r(mtcars_head, head(mtcars_am))
 #' list_derivs <- list(d1, d2)
 #'
-#' # Generate the pipeline code
+#' # Generate and build in one go
 #' rixpress(derivs = list_derivs, project_path = ".", build = TRUE)
 #'
+#' # Or only populate, with inline Python import adjustments
+#' rixpress(
+#'   derivs = list_derivs,
+#'   project_path = ".",
+#'   build = FALSE,
+#'   py_imports = c(pandas = "import pandas as pd")
+#' )
+#' # Then later:
+#' rxp_make()
 #' }
 #' @export
-rixpress <- function(derivs, project_path = ".", build = TRUE, ...) {
+rixpress <- function(
+  derivs,
+  project_path = ".",
+  build = TRUE,
+  py_imports = NULL,
+  ...
+) {
   generate_dag(
     derivs,
     output_file = file.path(project_path, "_rixpress", "dag.json")
@@ -72,12 +97,13 @@ rixpress <- function(derivs, project_path = ".", build = TRUE, ...) {
   # which list all the unique combinations
   nix_expressions_and_additional_files <- lapply(
     derivs,
-    function(d)
+    function(d) {
       list(
         "nix_env" = d$nix_env,
         "additional_files" = d$additional_files,
         "type" = d$type
       )
+    }
   )
   # Drop quarto objects, as these are handled separately
   nix_expressions_and_additional_files <- lapply(derivs, function(d) {
@@ -117,7 +143,9 @@ rixpress <- function(derivs, project_path = ".", build = TRUE, ...) {
       idx <- which(nix_env_all == env)
       files <- unlist(add_files_all[idx])
       files <- files[!is.na(files) & files != ""]
-      if (length(files) == 0) return("")
+      if (length(files) == 0) {
+        return("")
+      }
       unique(files)
     }
   )
@@ -136,6 +164,24 @@ rixpress <- function(derivs, project_path = ".", build = TRUE, ...) {
       )
     }
   )
+
+  # Apply inline Python import adjustments, if provided.
+  if (!is.null(py_imports)) {
+    if (!is.character(py_imports) || is.null(names(py_imports))) {
+      stop(
+        "py_imports must be a named character vector, e.g. c(numpy = 'import numpy as np')."
+      )
+    }
+    for (mod in names(py_imports)) {
+      desired <- unname(py_imports[[mod]])
+      old <- paste0("import ", mod)
+      adjust_import(
+        old_import = old,
+        new_import = desired,
+        project_path = project_path
+      )
+    }
+  }
 
   # Finalize pipeline
   flat_pipeline <- gen_flat_pipeline(derivs)
@@ -365,8 +411,9 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
         d$type == "rxp_rmd" ||
         d$type == "rxp_py2r" ||
         d$type == "rxp_r2py"
-    )
+    ) {
       next
+    }
 
     deriv_name <- as.character(d$deriv_name[1])
     deps <- d$depends
@@ -489,7 +536,6 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
 
   pipeline
 }
-
 
 #' Generate an R or Py script with library calls from a default.nix file
 #'

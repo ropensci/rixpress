@@ -1,75 +1,54 @@
-test_that("rxp_populate basic functionality", {
-  d1 <- rxp_r(mtcars_am, dplyr::filter(mtcars, am == 1))
-  d2 <- rxp_r(mtcars_head, head(mtcars_am))
-  derivs <- list(d1, d2)
-
-  # Create temporary directory for test
-  temp_dir <- tempfile()
-  dir.create(temp_dir)
-  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
-
-  # Test that rxp_populate creates pipeline.nix without building
-  expect_silent(rxp_populate(derivs, project_path = temp_dir))
-  expect_true(file.exists(file.path(temp_dir, "pipeline.nix")))
-})
-
-test_that("rxp_populate with py_imports", {
-  skip_if_not_installed("rix")
+test_that("rxp_populate generates expected assets", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not_installed("rix")
 
   # Create temporary directory
   temp_dir <- tempfile()
   dir.create(temp_dir)
   on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
 
-  setwd(temp_dir)
-
-  # Create a basic nix environment
   rix::rix(
     date = "2025-04-11",
     r_pkgs = "dplyr",
-    py_pkgs = c("pandas", "pillow"),
-    project_path = ".",
+    py_conf = list(
+      py_version = "3.13",
+      py_pkgs = "xgboost"
+    ),
+    git_pkgs = list(
+      package_name = "rixpress",
+      repo_url = "https://github.com/b-rodrigues/rixpress",
+      commit = "HEAD"
+    ),
+    ide = "rstudio",
+    project_path = temp_dir,
     overwrite = TRUE
   )
 
-  # Create Python derivations
-  d1 <- rxp_py(data_proc, "df = pandas.DataFrame({'a': [1, 2, 3]})")
-  d2 <- rxp_py(
-    img_proc,
-    "from PIL import Image; img = Image.new('RGB', (100, 100))"
-  )
-  derivs <- list(d1, d2)
-
-  # Test py_imports parameter
-  py_imports <- list(
-    "import pandas" = "import pandas as pd",
-    "import pillow" = "from PIL import Image"
+  derivs <- list(
+    rxp_py(
+      name = "mdl",
+      py_expr = "XGBClassifier()"
+    )
   )
 
-  expect_silent(rxp_populate(
+  rxp_populate(
     derivs,
     project_path = temp_dir,
-    py_imports = py_imports
-  ))
-  expect_true(file.exists(file.path(temp_dir, "pipeline.nix")))
-
-  # Check that _rixpress directory was created with library files
-  expect_true(dir.exists(file.path(temp_dir, "_rixpress")))
-})
-
-test_that("rxp_populate validates py_imports parameter", {
-  d1 <- rxp_r(test_data, mtcars)
-  derivs <- list(d1)
-
-  # Test invalid py_imports (not a named list)
-  expect_error(
-    rxp_populate(derivs, py_imports = c("import pandas", "import numpy")),
-    "py_imports must be a named list"
+    py_imports = c(
+      xgboost = "from xgboost import XGBClassifier"
+    )
   )
 
-  # Test invalid py_imports (unnamed list)
-  expect_error(
-    rxp_populate(derivs, py_imports = list("import pandas", "import numpy")),
-    "py_imports must be a named list"
+  result <- readLines(paste0(temp_dir, "/_rixpress/default_libraries.py"))
+
+  snapshot_gen_population_pipeline <- function(result) {
+    tfile <- tempfile(pattern = "default_libraries", fileext = ".py")
+    writeLines(result, tfile)
+    tfile
+  }
+
+  testthat::expect_snapshot_file(
+    path = snapshot_gen_population_pipeline(result),
+    name = "default_libraries.py"
   )
 })
