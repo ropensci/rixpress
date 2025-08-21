@@ -253,7 +253,7 @@ def serialize_to_json(pl_df, path):
 ```
 
 The `serialize_function` and `unserialize_function` arguments can be used to
-serialize objects using any function, for example `qs::save()` or machine
+serialise objects using any function, for example `qs::save()` or machine
 learning-specific functions for specific models, such as those from `xgboost`.
 
 ## Building a Quarto or R Markdown document
@@ -338,7 +338,7 @@ For more examples, check out [rixpress_demos
 repository](https://github.com/b-rodrigues/rixpress_demos). These examples
 demonstrate additional features of `{rixpress}`, including:
 
-- [Using the Python 'xgboost' library and transfering data to R](https://github.com/b-rodrigues/rixpress_demos/tree/master/r_py_xgboost)
+- [Using the Python 'xgboost' library and transferring data to R](https://github.com/b-rodrigues/rixpress_demos/tree/master/r_py_xgboost)
 - [Importing multiple files at once](https://github.com/b-rodrigues/rixpress_demos/tree/master/many_inputs_example)
 - [Using multiple environments instead of a single `default.nix` file](https://github.com/b-rodrigues/rixpress_demos/tree/master/r_multi_envs)
 

@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 This vignette details how to effectively use the `{cmdstanr}` package within a
-`{rixpress}` pipeline for Bayesian statistical modeling with Stan. For a general
+`{rixpress}` pipeline for Bayesian statistical modelling with Stan. For a general
 introduction to `{rixpress}` and its core concepts, please refer to
 `vignette("intro-concepts")` and `vignette("core-functions")`.
 
@@ -192,7 +192,7 @@ Now, we use this wrapper in our pipeline:
     `cmdstan` were named differently, for example `cmdstan-env.nix`, then you would
     need to use `${cmdstan_envPkgs.cmdstan}`.
 
-### Custom Serialization
+### Custom Serialisation
 
 `{cmdstanr}` provides a specific method for saving fitted model objects to
 ensure all necessary components are preserved. We define a simple wrapper for

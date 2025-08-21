@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-When building a pipeline, all the build artifacts are store in the Nix store of
+When building a pipeline, all the build artifacts are stored in the Nix store of
 your computer. If you update the pipeline, new artifacts will be built, but the
 old ones are still in the store, as long as you don't empty it (by calling
 `nix-store --gc` in your terminal). We can take advantage of this feature to

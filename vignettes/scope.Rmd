@@ -35,7 +35,7 @@ Key goals:
   - store artifacts in the Nix store, and
   - read/load/copy outputs back into R (or interoperate with Python/Julia).
 
-- A “just enough” visualization layer to inspect the DAG and understand
+- A “just enough” visualisation layer to inspect the DAG and understand
   dependencies, geared toward small-to-medium graphs.
 
 # What `rixpress` is not
@@ -66,7 +66,7 @@ Key goals:
 
 - Define R/Python/Julia/Quarto steps as derivations (`rxp_*()`).
 - Generate and build a Nix pipeline (`rixpress()`, `rxp_make()`).
-- Serialize/deserialize and basic interop (R↔Python/Julia) via common
+- Serialise/deserialise and basic interop (R↔Python/Julia) via common
   formats/APIs.
 - Read/load/copy outputs from the Nix store (`rxp_read()`, `rxp_load()`,
   `rxp_copy()`).
@@ -91,7 +91,7 @@ clarify priorities. Timelines are indicative and may change.
 
 ## Near-term (next minor releases)
 
-- Visualization: Mermaid-first DAG output (portable, text-first), with simple CI rendering. Keep a minimal interactive option for large DAGs.
+- Visualisation: Mermaid-first DAG output (portable, text-first), with simple CI rendering. Keep a minimal interactive option for large DAGs.
 - Workflow ergonomics:
   - `rxp_populate()` = generate but do not build; `rixpress()` = populate + build.
   - Inline Python import adjustments via `rxp_populate(..., py_imports = ...)`.
@@ -101,7 +101,7 @@ clarify priorities. Timelines are indicative and may change.
 
 ## Maybe later
 
-- Store helpers: summarize store size for latest run and a conservative GC helper with explicit confirmation.
+- Store helpers: summarise store size for latest run and a conservative GC helper with explicit confirmation.
 - Lightweight progress summaries: per-derivation timestamps in build logs and simple summaries.
 - Optional: a separate low-level Nix client package if deeper integrations are needed across `rix` and `rixpress`.
 
