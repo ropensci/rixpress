@@ -421,12 +421,12 @@ rxp_qmd <- function(
     } else {
       pattern <- sprintf("((?:rixpress::)?%s)\\('([^']+)'\\)", func_name)
     }
-    
+
     matches <- gregexpr(pattern, content_str)
     full_matches <- regmatches(content_str, matches)[[1]]
-    
+
     if (length(full_matches) == 0) return(data.frame())
-    
+
     results <- data.frame(
       full_match = character(0),
       func_call = character(0),
@@ -434,25 +434,40 @@ rxp_qmd <- function(
       quote_char = character(0),
       stringsAsFactors = FALSE
     )
-    
+
     for (match in full_matches) {
       if (quote_char == '"') {
-        parts <- regmatches(match, regexec(sprintf('((?:rixpress::)?%s)\\("([^"]+)"\\)', func_name), match))[[1]]
+        parts <- regmatches(
+          match,
+          regexec(
+            sprintf('((?:rixpress::)?%s)\\("([^"]+)"\\)', func_name),
+            match
+          )
+        )[[1]]
       } else {
-        parts <- regmatches(match, regexec(sprintf("((?:rixpress::)?%s)\\('([^']+)'\\)", func_name), match))[[1]]
+        parts <- regmatches(
+          match,
+          regexec(
+            sprintf("((?:rixpress::)?%s)\\('([^']+)'\\)", func_name),
+            match
+          )
+        )[[1]]
       }
-      
+
       if (length(parts) == 3) {
-        results <- rbind(results, data.frame(
-          full_match = parts[1],
-          func_call = parts[2],
-          path = parts[3],
-          quote_char = quote_char,
-          stringsAsFactors = FALSE
-        ))
+        results <- rbind(
+          results,
+          data.frame(
+            full_match = parts[1],
+            func_call = parts[2],
+            path = parts[3],
+            quote_char = quote_char,
+            stringsAsFactors = FALSE
+          )
+        )
       }
     }
-    
+
     results
   }
 
@@ -463,28 +478,33 @@ rxp_qmd <- function(
   load_matches_single <- extract_actual_matches('rxp_load', "'")
 
   # Combine all matches
-  all_matches <- rbind(read_matches_double, read_matches_single, load_matches_double, load_matches_single)
-  
+  all_matches <- rbind(
+    read_matches_double,
+    read_matches_single,
+    load_matches_double,
+    load_matches_single
+  )
+
   # Get unique paths for environment variables
   all_refs <- unique(all_matches$path)
 
   # Generate substitution commands based on actual matches
   sub_cmds <- character(0)
-  
+
   if (nrow(all_matches) > 0) {
     for (i in 1:nrow(all_matches)) {
       match <- all_matches[i, ]
-      
+
       # Build the search pattern
       if (match$quote_char == '"') {
         search_pattern <- sprintf('%s("%s")', match$func_call, match$path)
       } else {
         search_pattern <- sprintf("%s('%s')", match$func_call, match$path)
       }
-      
+
       # Build replacement based on function type
       is_load <- grepl("rxp_load", match$func_call)
-      
+
       # Determine the correct function name to use in replacement
       # If original had namespace, preserve it for rxp_read
       if (grepl("rixpress::", match$func_call)) {
@@ -492,20 +512,25 @@ rxp_qmd <- function(
       } else {
         rxp_read_func <- "rxp_read"
       }
-      
+
       if (is_load) {
-        replacement <- sprintf('%s <- %s("${%s}")', match$path, rxp_read_func, match$path)
+        replacement <- sprintf(
+          '%s <- %s("${%s}")',
+          match$path,
+          rxp_read_func,
+          match$path
+        )
       } else {
         replacement <- sprintf('%s("${%s}")', rxp_read_func, match$path)
       }
-      
+
       cmd <- sprintf(
         "substituteInPlace %s --replace-fail '%s' '%s'",
         qmd_file,
         search_pattern,
         replacement
       )
-      
+
       sub_cmds <- c(sub_cmds, cmd)
     }
   }

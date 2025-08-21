@@ -2,7 +2,7 @@
 #'
 #' This function generates a `pipeline.nix` file based on a list of derivation
 #' objects but does not build the pipeline. It is equivalent to calling
-#' `rixpress(build = FALSE)` but with additional support for inline Python 
+#' `rixpress(build = FALSE)` but with additional support for inline Python
 #' import adjustments. After generating the pipeline, you can build it using
 #' `rxp_make()`.
 #'
@@ -46,7 +46,7 @@
 #' d1 <- rxp_r(mtcars_am, filter(mtcars, am == 1))
 #' d2 <- rxp_r(mtcars_head, head(mtcars_am))
 #' list_derivs <- list(d1, d2)
-#' 
+#'
 #' rxp_populate(derivs = list_derivs)
 #' rxp_make()
 #'
@@ -69,13 +69,15 @@
 rxp_populate <- function(derivs, project_path = ".", py_imports = NULL) {
   # Generate the pipeline without building
   rixpress(derivs = derivs, project_path = project_path, build = FALSE)
-  
+
   # Apply Python import adjustments if provided
   if (!is.null(py_imports)) {
     if (!is.list(py_imports) || is.null(names(py_imports))) {
-      stop("py_imports must be a named list where names are old imports and values are new imports")
+      stop(
+        "py_imports must be a named list where names are old imports and values are new imports"
+      )
     }
-    
+
     for (old_import in names(py_imports)) {
       new_import <- py_imports[[old_import]]
       adjust_import(
@@ -85,6 +87,6 @@ rxp_populate <- function(derivs, project_path = ".", py_imports = NULL) {
       )
     }
   }
-  
+
   invisible(NULL)
 }
