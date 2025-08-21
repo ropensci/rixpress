@@ -4,7 +4,7 @@
 \alias{rixpress}
 \title{Generate Nix Pipeline Code with a Generic Default Target}
 \usage{
-rixpress(derivs, project_path = ".", build = TRUE, ...)
+rixpress(derivs, project_path = ".", build = TRUE, py_imports = NULL, ...)
 }
 \arguments{
 \item{derivs}{A list of derivation objects, where each object is a list of
@@ -22,7 +22,14 @@ function.}
 
 \item{build}{Logical, defaults to TRUE. Should the pipeline get built right
 after being generated? If FALSE, you can build the pipeline later using
-\code{rixpress()}.}
+\code{rxp_make()}.}
+
+\item{py_imports}{Named character vector of Python import rewrites. Names are
+the base modules that rixpress auto-imports as "import \if{html}{\out{<name>}}", and values
+are the desired import lines. For example: c(numpy = "import numpy as np",
+xgboost = "from xgboost import XGBClassifier"). Each entry is applied by
+replacing "import \if{html}{\out{<name>}}" with the provided string across generated
+_rixpress Python library files.}
 
 \item{...}{Further arguments passed down to methods. Use \code{max-jobs} and
 \code{cores} to set parallelism during build. See the documentation of
@@ -37,9 +44,10 @@ This function generates a \code{pipeline.nix} file based on a list of derivation
 objects. Each derivation defines a build step, and \code{rixpress()} chains these
 steps and handles the serialization and conversion of Python objects into R
 objects (or vice-versa). Derivations are created with \code{rxp_r()}, \code{rxp_py()}
-and so on. By default, the pipeline is also immediately after being generated,
-but the build process can be postponed by setting \code{build} to FALSE. In this case,
-the pipeline can then be built using \code{rxp_make()}.
+and so on. By default, the pipeline is also immediately built after being
+generated, but the build process can be postponed by setting \code{build} to
+FALSE. In this case, the pipeline can then be built using \code{rxp_make()} at
+a later stage.
 }
 \details{
 The generated \code{pipeline.nix} expression includes:
@@ -53,11 +61,15 @@ between them when objects are passed from one language to another;
 specific targets
 }
 
+Inline Python import adjustments
 In some cases, due to the automatic handling of Python packages, users might
 want to change import statements. By default if, say, \code{pandas} is needed to
 build a derivation, it will be imported with \verb{import pandas}. However, Python
-programmers typically use \verb{import pandas as pd}. To change the automatic
-import statements, please refer to \code{adjust_import()}.
+programmers typically use \verb{import pandas as pd}. You can either:
+\itemize{
+\item use \code{py_imports} to rewrite these automatically during population, or
+\item use \code{adjust_import()} for advanced/manual control.
+}
 }
 \examples{
 \dontrun{
@@ -66,13 +78,23 @@ d1 <- rxp_r(mtcars_am, filter(mtcars, am == 1))
 d2 <- rxp_r(mtcars_head, head(mtcars_am))
 list_derivs <- list(d1, d2)
 
-# Generate the pipeline code
+# Generate and build in one go
 rixpress(derivs = list_derivs, project_path = ".", build = TRUE)
 
+# Or only populate, with inline Python import adjustments
+rixpress(
+  derivs = list_derivs,
+  project_path = ".",
+  build = FALSE,
+  py_imports = c(pandas = "import pandas as pd")
+)
+# Then later:
+rxp_make()
 }
 }
 \seealso{
 Other pipeline functions: 
-\code{\link{rxp_make}()}
+\code{\link{rxp_make}()},
+\code{\link{rxp_populate}()}
 }
 \concept{pipeline functions}

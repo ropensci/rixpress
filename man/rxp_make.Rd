@@ -32,6 +32,7 @@ Runs \code{nix-build} with a quiet flag, outputting to \verb{_rixpress/result}.
 }
 \seealso{
 Other pipeline functions: 
-\code{\link{rixpress}()}
+\code{\link{rixpress}()},
+\code{\link{rxp_populate}()}
 }
 \concept{pipeline functions}
