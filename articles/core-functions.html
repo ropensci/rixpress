@@ -241,7 +241,7 @@ effectively to provide a reproducible execution environment for our
 pipelines. For now, let’s assume that we’ve used the code above to
 generate our environment, which we can also use for interactive data
 analysis.</p>
-<p>We can go back to our pipeline to finalize it:</p>
+<p>We can go back to our pipeline to finalise it:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span><span class="co"># Define pipeline</span></span>
@@ -308,8 +308,8 @@ copied to this folder.</li>
 <div class="section level2">
 <h2 id="dag-representation-of-the-pipeline">DAG Representation of the Pipeline<a class="anchor" aria-label="anchor" href="#dag-representation-of-the-pipeline"></a>
 </h2>
-<p>It’s often helpful to visualize your pipeline as a DAG (directed
-acyclic graph). You can generate and inspect this visualization before
+<p>It’s often helpful to visualise your pipeline as a DAG (directed
+acyclic graph). You can generate and inspect this visualisation before
 building the pipeline by adding the <code>build = FALSE</code> argument
 to <code><a href="../reference/rixpress.html">rixpress()</a></code>:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
@@ -317,7 +317,7 @@ to <code><a href="../reference/rixpress.html">rixpress()</a></code>:</p>
 <p>This won’t build the pipeline but will generate useful files,
 including a JSON representation of the pipeline at
 <code>_rixpress/dag.json</code>. This process is quick and allows you to
-visualize the graph using <code><a href="../reference/rxp_visnetwork.html">rxp_visnetwork()</a></code>, which opens a
+visualise the graph using <code><a href="../reference/rxp_visnetwork.html">rxp_visnetwork()</a></code>, which opens a
 new tab in your web browser displaying the pipeline’s DAG, generated
 using the <a href="https://datastorm-open.github.io/visNetwork/" class="external-link">visNetwork</a> package:</p>
 <video id="rixpress-video" controls autoplay loop muted style="max-width: 100%; height: auto; display: block;"><source src="https://github.com/b-rodrigues/rixpress/raw/refs/heads/main/rxp_visnetwork.mp4" type="video/mp4" srcset="NA"></source><!-- Fallback message -->
