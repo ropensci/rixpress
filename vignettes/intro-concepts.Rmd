@@ -28,8 +28,8 @@ Also, this package makes heavy use of its sister package `{rix}`, and I highly
 recommend that you first get familiar with `Nix` by using `{rix}`. With `{rix}`,
 you'll learn how to set up reproducible development environments for data
 science, which you can use for interactive data analysis work. Then, if you want
-to go one step further in the [reproducibility
-spectrum/continuum](https://www.researchgate.net/figure/Reproducibility-spectrum-as-Peng-2011-stated_fig1_354765302),
+to go one step further in the reproducibility
+spectrum/continuum^[https://doi.org/10.1126/science.1213847],
 this is where `{rixpress}` comes in.
 
 ## Definitions
