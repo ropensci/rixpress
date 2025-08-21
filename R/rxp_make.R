@@ -1,10 +1,70 @@
+#' Validate verbose parameter and handle backward compatibility
+#'
+#' @param verbose The verbose parameter value to validate
+#' @return A single non-negative integer
+#' @keywords internal
+.rxp_validate_verbose <- function(verbose) {
+  if (is.logical(verbose)) {
+    warning(
+      "logical values for 'verbose' are deprecated. ",
+      "Use integer values instead: verbose = 0 (FALSE) or verbose = 1 (TRUE).",
+      call. = FALSE
+    )
+    return(as.integer(verbose))
+  }
+
+  if (!is.numeric(verbose) || length(verbose) != 1) {
+    stop("verbose must be a single numeric or integer value", call. = FALSE)
+  }
+
+  verbose <- as.integer(verbose)
+
+  if (verbose < 0) {
+    stop("rxp_make(): verbose must be a non-negative integer", call. = FALSE)
+  }
+
+  verbose
+}
+
+#' Prepare nix-store command arguments
+#'
+#' @param max_jobs Integer, number of derivations to be built in parallel
+#' @param cores Integer, number of cores a derivation can use during build
+#' @param drv_paths Character vector of derivation paths
+#' @param verbose Integer, verbosity level (0 = silent, >=1 = verbose)
+#' @return Character vector of command arguments
+#' @keywords internal
+.rxp_prepare_nix_store_args <- function(max_jobs, cores, drv_paths, verbose) {
+  args <- c(
+    "--realise",
+    "--keep-going",
+    "--max-jobs",
+    max_jobs,
+    "--cores",
+    cores
+  )
+
+  # Add --verbose flags based on verbosity level
+  if (verbose > 0) {
+    verbose_flags <- rep("--verbose", verbose)
+    args <- c(args[1], verbose_flags, args[-1])
+  }
+
+  # Add derivation paths at the end
+  c(args, drv_paths)
+}
+
 #' Build pipeline using Nix
 #'
 #' Runs `nix-build` with a quiet flag, outputting to `_rixpress/result`.
 #' @family pipeline functions
-#' @param verbose Logical, defaults to FALSE. Set to TRUE to see nix's
-#'   standard output, can be useful to check what is happening if the
-#'   build process takes long.
+#' @param verbose Integer, defaults to 0L. Verbosity level: 0 = silent build
+#'   (no live output), 1+ = show nix output with increasing verbosity. 0:
+#'   "Errors only", 1: "Informational", 2: "Talkative", 3: "Chatty", 4: "Debug",
+#'   5: "Vomit". Values higher than 5 are capped to 5
+#'   Each level adds one --verbose flag to nix-store command.
+#'   For backward compatibility, logical TRUE/FALSE are accepted with a
+#'   deprecation warning (TRUE → 1, FALSE → 0).
 #' @param max_jobs Integer, number of derivations to be built in parallel.
 #' @param cores Integer, number of cores a derivation can use during build.
 #' @importFrom processx run
@@ -12,14 +72,20 @@
 #' @return A character vector of paths to the built outputs.
 #' @examples
 #' \dontrun{
-#'   # Build the pipeline with default settings
+#'   # Build the pipeline with default settings (silent)
 #'   rxp_make()
 #'
 #'   # Build with verbose output and parallel execution
-#'   rxp_make(verbose = TRUE, max_jobs = 4, cores = 2)
+#'   rxp_make(verbose = 2, max_jobs = 4, cores = 2)
+#'
+#'   # Maximum verbosity
+#'   rxp_make(verbose = 3)
 #' }
 #' @export
-rxp_make <- function(verbose = FALSE, max_jobs = 1, cores = 1) {
+rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
+  # Validate and normalize verbose parameter
+  verbose <- .rxp_validate_verbose(verbose)
+
   message("Build process started...\n", "\n")
 
   instantiate <- processx::run(
@@ -38,24 +104,35 @@ rxp_make <- function(verbose = FALSE, max_jobs = 1, cores = 1) {
   # Extract derivation paths from stdout (split into lines)
   drv_paths <- strsplit(instantiate$stdout, "\n")[[1]]
 
-  if (verbose) {
+  # Set up callbacks based on verbosity level
+  if (verbose >= 1) {
     cb <- function(line, proc) cat(line, "\n")
   } else {
     cb <- NULL
   }
 
+  if (verbose > 5L) {
+    warning(
+      sprintf(
+        "Argument 'verbose' (%d) exceeds the maximum of 5; using 5.",
+        verbose
+      ),
+      call. = FALSE
+    )
+    verbose <- 5L
+  }
+
+  # Prepare nix-store arguments using helper function
+  nix_store_args <- .rxp_prepare_nix_store_args(
+    max_jobs,
+    cores,
+    drv_paths,
+    verbose
+  )
+
   build_process <- processx::run(
     command = "nix-store",
-    args = c(
-      "--realise",
-      "--verbose",
-      "--keep-going",
-      "--max-jobs",
-      max_jobs,
-      "--cores",
-      cores,
-      drv_paths
-    ),
+    args = nix_store_args,
     stdout_line_callback = cb,
     stderr_line_callback = cb,
     error_on_status = FALSE,

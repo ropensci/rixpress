@@ -9,7 +9,7 @@ d0 <- rxp_r_file(
 )
 d1 <- rxp_r(
   mtcars_am,
-  filter(mtcars, am == 1),
+  filter(mtcars, mpg = 100),
   nix_env = "default2.nix"
 )
 
@@ -40,13 +40,13 @@ derivs <- list(d0, d1, d2, d3, d4, doc)
 
 rixpress(derivs, project_path = ".", build = FALSE)
 
-#rxp_make()
+rxp_make(verbose = 5)
 
-dag_obj <- plot_dag(return_igraph = TRUE)
+#dag_obj <- plot_dag(return_igraph = TRUE)
 
-dag_obj <- set_vertex_attr(dag_obj, "label", value = V(dag_obj)$name)
+#dag_obj <- set_vertex_attr(dag_obj, "label", value = V(dag_obj)$name)
 
 # Step 2: Delete the "name" attribute
-dag_obj <- delete_vertex_attr(dag_obj, "name")
+#dag_obj <- delete_vertex_attr(dag_obj, "name")
 
-igraph::write_graph(dag_obj, file = "dag.dot", format = "dot")
+#igraph::write_graph(dag_obj, file = "dag.dot", format = "dot")
