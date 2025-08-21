@@ -4,12 +4,16 @@
 \alias{rxp_make}
 \title{Build pipeline using Nix}
 \usage{
-rxp_make(verbose = FALSE, max_jobs = 1, cores = 1)
+rxp_make(verbose = 0L, max_jobs = 1, cores = 1)
 }
 \arguments{
-\item{verbose}{Logical, defaults to FALSE. Set to TRUE to see nix's
-standard output, can be useful to check what is happening if the
-build process takes long.}
+\item{verbose}{Integer, defaults to 0L. Verbosity level: 0 = silent build
+(no live output), 1+ = show nix output with increasing verbosity. 0:
+"Errors only", 1: "Informational", 2: "Talkative", 3: "Chatty", 4: "Debug",
+5: "Vomit". Values higher than 5 are capped to 5
+Each level adds one --verbose flag to nix-store command.
+For backward compatibility, logical TRUE/FALSE are accepted with a
+deprecation warning (TRUE → 1, FALSE → 0).}
 
 \item{max_jobs}{Integer, number of derivations to be built in parallel.}
 
@@ -23,11 +27,14 @@ Runs \code{nix-build} with a quiet flag, outputting to \verb{_rixpress/result}.
 }
 \examples{
 \dontrun{
-  # Build the pipeline with default settings
+  # Build the pipeline with default settings (silent)
   rxp_make()
 
   # Build with verbose output and parallel execution
-  rxp_make(verbose = TRUE, max_jobs = 4, cores = 2)
+  rxp_make(verbose = 2, max_jobs = 4, cores = 2)
+
+  # Maximum verbosity
+  rxp_make(verbose = 3)
 }
 }
 \seealso{

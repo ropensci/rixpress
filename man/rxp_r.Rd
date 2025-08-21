@@ -33,7 +33,7 @@ arguments: the object to serialize (first), and the target file path
 interface. By default, \code{saveRDS()} is used, but this may yield unexpected
 results, especially for complex objects like machine learning models. For
 instance, for \code{{keras}} models, use \code{keras::save_model_hdf5()} to capture
-the full model (architecture, weights, training config, optimizer state,
+the full model (architecture, weights, training config, optimiser state,
 etc.).}
 
 \item{unserialize_function}{Function, defaults to NULL. A function used to

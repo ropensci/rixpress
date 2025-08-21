@@ -29,7 +29,7 @@ that need to be accessible during the build process can be named anything.}
 \item{serialize_function}{Character, defaults to NULL. The name of the Python
 function used to serialize the object. It must accept two arguments: the
 object to serialize (first), and the target file path (second). If NULL,
-the default behavior uses \code{pickle.dump}. Define this function in
+the default behaviour uses \code{pickle.dump}. Define this function in
 \code{functions.py}.}
 
 \item{unserialize_function}{Character, defaults to NULL. The name of the

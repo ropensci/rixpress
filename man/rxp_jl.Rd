@@ -29,7 +29,7 @@ that need to be accessible during the build process can be named anything.}
 \item{serialize_function}{Character, defaults to NULL. The name of the Julia
 function used to serialize the object. It must accept two arguments: the
 object to serialize (first), and the target file path (second). If NULL,
-the default behavior uses the built‐in \code{Serialization.serialize} API. Define
+the default behaviour uses the built‐in \code{Serialization.serialize} API. Define
 any custom serializer in \code{functions.jl}.}
 
 \item{unserialize_function}{Character, defaults to NULL. The name of the Julia

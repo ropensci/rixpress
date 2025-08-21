@@ -3,6 +3,7 @@
 #' @param verbose The verbose parameter value to validate
 #' @return A single non-negative integer
 #' @keywords internal
+#' @noRd
 .rxp_validate_verbose <- function(verbose) {
   if (is.logical(verbose)) {
     warning(
@@ -34,6 +35,7 @@
 #' @param verbose Integer, verbosity level (0 = silent, >=1 = verbose)
 #' @return Character vector of command arguments
 #' @keywords internal
+#' @noRd
 .rxp_prepare_nix_store_args <- function(max_jobs, cores, drv_paths, verbose) {
   args <- c(
     "--realise",
