@@ -59,13 +59,13 @@ let
   
   system_packages = builtins.attrValues {
     inherit (pkgs) 
-      aider-chat
       pyright
+      ispell
       glibcLocales
       glibcLocalesUtf8
       nix
       pandoc
-      python312
+      python313
       R;
   };
   
@@ -79,7 +79,7 @@ pkgs.mkShell {
    LC_MONETARY = "en_US.UTF-8";
    LC_PAPER = "en_US.UTF-8";
    LC_MEASUREMENT = "en_US.UTF-8";
-   RETICULATE_PYTHON = "${pkgs.python312}/bin/python";
+   RETICULATE_PYTHON = "${pkgs.python313}/bin/python";
 
   buildInputs = [ rix pypkgs rpkgs tex system_packages ];
   

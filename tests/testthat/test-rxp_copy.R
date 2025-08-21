@@ -1,4 +1,5 @@
 test_that("rxp_copy: test for failure with non-existent derivation", {
+  testthat::skip_if_not_installed("mockery")
   # Create a temporary mock of build_log.rds
   mock_build_log <- data.frame(
     derivation = c("existing_derivation1", "existing_derivation2"),
