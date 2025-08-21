@@ -12,17 +12,17 @@
     )
     return(as.integer(verbose))
   }
-  
+
   if (!is.numeric(verbose) || length(verbose) != 1) {
     stop("verbose must be a single numeric or integer value", call. = FALSE)
   }
-  
+
   verbose <- as.integer(verbose)
-  
+
   if (verbose < 0) {
-    stop("verbose must be a non-negative integer", call. = FALSE)
+    stop("rxp_make(): verbose must be a non-negative integer", call. = FALSE)
   }
-  
+
   verbose
 }
 
@@ -43,13 +43,13 @@
     "--cores",
     cores
   )
-  
+
   # Add --verbose flags based on verbosity level
   if (verbose > 0) {
     verbose_flags <- rep("--verbose", verbose)
     args <- c(args[1], verbose_flags, args[-1])
   }
-  
+
   # Add derivation paths at the end
   c(args, drv_paths)
 }
@@ -58,10 +58,12 @@
 #'
 #' Runs `nix-build` with a quiet flag, outputting to `_rixpress/result`.
 #' @family pipeline functions
-#' @param verbose Integer, defaults to 0L. Verbosity level: 0 = silent build 
-#'   (no live output), 1+ = show nix output with increasing verbosity. 
+#' @param verbose Integer, defaults to 0L. Verbosity level: 0 = silent build
+#'   (no live output), 1+ = show nix output with increasing verbosity. 0:
+#'   "Errors only", 1: "Informational", 2: "Talkative", 3: "Chatty", 4: "Debug",
+#'   5: "Vomit". Values higher than 5 are capped to 5
 #'   Each level adds one --verbose flag to nix-store command.
-#'   For backward compatibility, logical TRUE/FALSE are accepted with a 
+#'   For backward compatibility, logical TRUE/FALSE are accepted with a
 #'   deprecation warning (TRUE → 1, FALSE → 0).
 #' @param max_jobs Integer, number of derivations to be built in parallel.
 #' @param cores Integer, number of cores a derivation can use during build.
@@ -75,7 +77,7 @@
 #'
 #'   # Build with verbose output and parallel execution
 #'   rxp_make(verbose = 2, max_jobs = 4, cores = 2)
-#'   
+#'
 #'   # Maximum verbosity
 #'   rxp_make(verbose = 3)
 #' }
@@ -83,7 +85,7 @@
 rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
   # Validate and normalize verbose parameter
   verbose <- .rxp_validate_verbose(verbose)
-  
+
   message("Build process started...\n", "\n")
 
   instantiate <- processx::run(
@@ -109,8 +111,24 @@ rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
     cb <- NULL
   }
 
+  if (verbose > 5L) {
+    warning(
+      sprintf(
+        "Argument 'verbose' (%d) exceeds the maximum of 5; using 5.",
+        verbose
+      ),
+      call. = FALSE
+    )
+    verbose <- 5L
+  }
+
   # Prepare nix-store arguments using helper function
-  nix_store_args <- .rxp_prepare_nix_store_args(max_jobs, cores, drv_paths, verbose)
+  nix_store_args <- .rxp_prepare_nix_store_args(
+    max_jobs,
+    cores,
+    drv_paths,
+    verbose
+  )
 
   build_process <- processx::run(
     command = "nix-store",
