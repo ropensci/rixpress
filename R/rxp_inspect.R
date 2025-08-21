@@ -20,7 +20,7 @@ rxp_list_logs <- function(project_path = ".") {
   rixpress_dir <- file.path(project_path, "_rixpress")
 
   if (!dir.exists(rixpress_dir)) {
-    stop("_rixpress directory not found. Did you initialize the project?")
+    stop("_rixpress directory not found. Did you initialise the project?")
   }
 
   # Find all build log files

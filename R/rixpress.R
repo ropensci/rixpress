@@ -396,7 +396,7 @@ in
   strsplit(pipeline_nix, split = "\n")[[1]]
 }
 
-#' gen_pipeline Internal function used to finalize a flat pipeline
+#' gen_pipeline Internal function used to finalise a flat pipeline
 #' @param dag_file A json file giving the names and relationships between derivations.
 #' @param flat_pipeline A flat pipeline, output of `gen_flat_elements()`.
 #' @noRd
