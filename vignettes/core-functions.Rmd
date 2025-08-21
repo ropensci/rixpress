@@ -191,7 +191,7 @@ reproducible execution environment for our pipelines. For now, let's assume
 that we've used the code above to generate our environment, which we can
 also use for interactive data analysis.
 
-We can go back to our pipeline to finalize it:
+We can go back to our pipeline to finalise it:
 
 ```{r, eval = FALSE}
 library(rixpress)
@@ -255,8 +255,8 @@ Now you can follow these instructions:
 
 ## DAG Representation of the Pipeline
 
-It's often helpful to visualize your pipeline as a DAG (directed acyclic graph).
-You can generate and inspect this visualization before building the pipeline by
+It's often helpful to visualise your pipeline as a DAG (directed acyclic graph).
+You can generate and inspect this visualisation before building the pipeline by
 adding the `build = FALSE` argument to `rixpress()`:
 
 ```r
@@ -265,7 +265,7 @@ rixpress(derivs, build = FALSE)
 
 This won't build the pipeline but will generate useful files, including a JSON
 representation of the pipeline at `_rixpress/dag.json`. This process is quick
-and allows you to visualize the graph using `rxp_visnetwork()`, which opens
+and allows you to visualise the graph using `rxp_visnetwork()`, which opens
 a new tab in your web browser displaying the pipeline's DAG, generated using the
 `{visNetwork}` package:
 
