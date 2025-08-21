@@ -102,7 +102,7 @@ rxp_init <- function(project_path = ".", skip_prompt = FALSE) {
     return(invisible(TRUE))
   }
 
-  if (confirm("Would you like to initialize a Git repository here?")) {
+  if (confirm("Would you like to initialise a Git repository here?")) {
     if (!requireNamespace("usethis", quietly = TRUE)) {
       message(
         "The 'usethis' package is not installed. ",

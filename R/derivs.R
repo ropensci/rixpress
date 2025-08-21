@@ -61,7 +61,7 @@ make_derivation_snippet <- function(
 #'   interface. By default, `saveRDS()` is used, but this may yield unexpected
 #'   results, especially for complex objects like machine learning models. For
 #'   instance, for `{keras}` models, use `keras::save_model_hdf5()` to capture
-#'   the full model (architecture, weights, training config, optimizer state,
+#'   the full model (architecture, weights, training config, optimiser state,
 #'   etc.).
 #' @param unserialize_function Function, defaults to NULL. A function used to
 #'   unserialize objects transferred between derivations. By default,
@@ -217,7 +217,7 @@ rxp_r <- function(
 #' @param serialize_function Character, defaults to NULL. The name of the Python
 #'   function used to serialize the object. It must accept two arguments: the
 #'   object to serialize (first), and the target file path (second). If NULL,
-#'   the default behavior uses `pickle.dump`. Define this function in
+#'   the default behaviour uses `pickle.dump`. Define this function in
 #'   `functions.py`.
 #' @param unserialize_function Character, defaults to NULL. The name of the
 #'   Python function used to unserialize the object. It must accept one
@@ -1231,7 +1231,7 @@ print.derivation <- function(x, ...) {
 #' @param serialize_function Character, defaults to NULL. The name of the Julia
 #'   function used to serialize the object. It must accept two arguments: the
 #'   object to serialize (first), and the target file path (second). If NULL,
-#'   the default behavior uses the built‐in `Serialization.serialize` API. Define
+#'   the default behaviour uses the built‐in `Serialization.serialize` API. Define
 #'   any custom serializer in `functions.jl`.
 #' @param unserialize_function Character, defaults to NULL. The name of the Julia
 #'   function used to unserialize the object. It must accept one argument: the
