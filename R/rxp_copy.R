@@ -8,6 +8,11 @@
 #'   input, as is the case for `html` output.
 #' @param derivation_name The name of the derivation to copy. If empty, then all
 #'   the derivations are copied.
+#' @param dir_mode Character, default "0755". POSIX permission mode to apply to
+#'   directories under the copied output (including the top-level output
+#'   directory).
+#' @param file_mode Character, default "0644". POSIX permission mode to apply to
+#'   files under the copied output.
 #' @return Nothing, the contents of the Nix store are copied to the current
 #'   working directory.
 #' @examples
@@ -18,11 +23,31 @@
 #'   # Copy a specific derivation
 #'   rxp_copy("mtcars")
 #'
+#'   # Copy with custom permissions (e.g., make scripts executable)
+#'   rxp_copy("my_deriv", dir_mode = "0755", file_mode = "0644")
+#'
 #'   # Copy a Quarto document output with multiple files
 #'   rxp_copy("my_quarto_doc")
 #' }
 #' @export
-rxp_copy <- function(derivation_name = NULL) {
+rxp_copy <- function(
+  derivation_name = NULL,
+  dir_mode = "0755",
+  file_mode = "0644"
+) {
+  # Validate permission modes: accept 3 or 4 octal digits as characters
+  valid_mode <- function(x) is.character(x) && grepl("^[0-7]{3,4}$", x)
+  if (!valid_mode(dir_mode)) {
+    stop(
+      "Invalid dir_mode: provide a character octal like \"0755\" or \"755\"."
+    )
+  }
+  if (!valid_mode(file_mode)) {
+    stop(
+      "Invalid file_mode: provide a character octal like \"0644\" or \"644\"."
+    )
+  }
+
   build_log <- rxp_inspect()
   output_dir <- file.path(getwd(), "pipeline-output")
 
@@ -40,6 +65,41 @@ rxp_copy <- function(derivation_name = NULL) {
     )
   }
 
+  # Helper to apply permissions safely (POSIX only)
+  apply_permissions <- function(root_dir, dir_mode, file_mode) {
+    if (!dir.exists(root_dir)) {
+      return(invisible(NULL))
+    }
+
+    # Directories (include root_dir itself)
+    dirs <- unique(c(
+      root_dir,
+      list.dirs(root_dir, recursive = TRUE, full.names = TRUE)
+    ))
+    if (length(dirs)) {
+      try(
+        suppressWarnings(Sys.chmod(dirs, mode = dir_mode, use_umask = FALSE)),
+        silent = TRUE
+      )
+    }
+
+    # Files
+    files <- list.files(
+      root_dir,
+      recursive = TRUE,
+      full.names = TRUE,
+      include.dirs = FALSE
+    )
+    if (length(files)) {
+      try(
+        suppressWarnings(Sys.chmod(files, mode = file_mode, use_umask = FALSE)),
+        silent = TRUE
+      )
+    }
+  }
+
+  status <- 0L
+
   if (!is.null(derivation_name)) {
     derivation_path <- subset(
       build_log,
@@ -50,9 +110,8 @@ rxp_copy <- function(derivation_name = NULL) {
       full.names = TRUE
     )
     file.copy(from = path_to_deriv, to = output_dir, recursive = TRUE)
-    all_files <- list.files(output_dir, full.names = TRUE)
-    Sys.chmod(all_files, mode = "777")
-    status <- 1
+    apply_permissions(output_dir, dir_mode = dir_mode, file_mode = file_mode)
+    status <- 1L
   } else {
     derivation_name <- "all-derivations"
     derivation_path <- subset(
@@ -61,12 +120,11 @@ rxp_copy <- function(derivation_name = NULL) {
     )$path
     files <- list.files(derivation_path, full.names = TRUE)
     file.copy(from = files, to = output_dir, recursive = TRUE)
-    all_files <- list.files(output_dir, full.names = TRUE)
-    Sys.chmod(all_files, mode = "777")
-    status <- 1
+    apply_permissions(output_dir, dir_mode = dir_mode, file_mode = file_mode)
+    status <- 1L
   }
 
-  if (status == 1) {
+  if (status == 1L) {
     message("Copy successful, check out ", output_dir)
   } else {
     stop("Copy unsuccessful: did you build the pipeline?")
