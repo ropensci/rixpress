@@ -23,7 +23,6 @@
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/extract_markdown_dependencies.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/extract_python_dependencies.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/extract_r_dependencies.html</loc></url>
-<url><loc>https://b-rodrigues.github.io/rixpress/reference/generate_dag.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/index.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/make_derivation_snippet.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/print.derivation.html</loc></url>
@@ -52,5 +51,6 @@
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_read.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_rmd.html</loc></url>
 <url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_visnetwork.html</loc></url>
+<url><loc>https://b-rodrigues.github.io/rixpress/reference/rxp_write_dag.html</loc></url>
 </urlset>
 
