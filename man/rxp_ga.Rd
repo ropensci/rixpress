@@ -28,6 +28,6 @@ to give read and write permissions to the GitHub Actions bot.
 \seealso{
 Other ci utilities: 
 \code{\link{dag_for_ci}()},
-\code{\link{generate_dag}()}
+\code{\link{rxp_write_dag}()}
 }
 \concept{ci utilities}

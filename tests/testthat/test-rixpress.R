@@ -40,7 +40,7 @@ test_that("rixpress: gen_flat_pipeline", {
   )
 
   dag_out <- tempfile(pattern = "dag", fileext = ".json")
-  generate_dag(derivs, output_file = dag_out)
+  rxp_write_dag(derivs, output_file = dag_out)
 
   snapshot_gen_pipeline <- function(dag_out, flat_pipeline) {
     pipeline <- gen_pipeline(
@@ -91,7 +91,7 @@ test_that("rixpress: several environments", {
   )
 
   dag_out <- tempfile(pattern = "dag", fileext = ".json")
-  generate_dag(derivs, output_file = dag_out)
+  rxp_write_dag(derivs, output_file = dag_out)
 
   snapshot_gen_pipeline <- function(dag_out, flat_pipeline) {
     pipeline <- gen_pipeline(

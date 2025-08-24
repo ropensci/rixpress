@@ -12,10 +12,10 @@
 #' @return Nothing, writes a JSON file representing the DAG.
 #' @examples
 #' \dontrun{
-#'   generate_dag(rxp_list)
+#'   rxp_write_dag(rxp_list)
 #' }
 #' @export
-generate_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
+rxp_write_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
   # Validate inputs
   if (!is.list(rxp_list)) {
     stop("rxp_list must be a list of derivations")

@@ -87,7 +87,7 @@ rixpress <- function(
   py_imports = NULL,
   ...
 ) {
-  generate_dag(
+  rxp_write_dag(
     derivs,
     output_file = file.path(project_path, "_rixpress", "dag.json")
   )

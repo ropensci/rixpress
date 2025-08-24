@@ -34,7 +34,7 @@ is called by \code{rxp_ga()}.
 }
 \seealso{
 Other ci utilities: 
-\code{\link{generate_dag}()},
-\code{\link{rxp_ga}()}
+\code{\link{rxp_ga}()},
+\code{\link{rxp_write_dag}()}
 }
 \concept{ci utilities}
