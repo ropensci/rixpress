@@ -27,7 +27,7 @@ by \code{rixpress()}.
 }
 \seealso{
 Other ci utilities: 
-\code{\link{dag_for_ci}()},
+\code{\link{rxp_dag_for_ci}()},
 \code{\link{rxp_ga}()}
 }
 \concept{ci utilities}

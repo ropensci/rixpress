@@ -51,22 +51,22 @@ test_that("get_nodes_edges processes dag.json correctly", {
   expect_equal(actual_output, expected_output)
 })
 
-test_that("dag_for_ci generates correct .dot file", {
+test_that("rxp_dag_for_ci generates correct .dot file", {
   test_dag_path <- "test-data/dag.json"
 
   nodes_and_edges <- get_nodes_edges(path_dag = test_dag_path)
 
-  snapshot_dag_for_ci <- function(nodes_and_edges) {
+  snapshot_rxp_dag_for_ci <- function(nodes_and_edges) {
     tfile <- tempfile(pattern = "dag_ci", fileext = ".dot")
 
-    dag_for_ci(nodes_and_edges = nodes_and_edges, output_file = tfile)
+    rxp_dag_for_ci(nodes_and_edges = nodes_and_edges, output_file = tfile)
 
     tfile
   }
 
   expect_snapshot_file(
-    path = snapshot_dag_for_ci(nodes_and_edges),
-    name = "dag_for_ci.dot"
+    path = snapshot_rxp_dag_for_ci(nodes_and_edges),
+    name = "rxp_dag_for_ci.dot"
   )
 })
 

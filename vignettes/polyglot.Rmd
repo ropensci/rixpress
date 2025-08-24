@@ -240,7 +240,7 @@ list(
 
 
 # Plot DAG for CI
-dag_for_ci()
+rxp_dag_for_ci()
 ```
 
 The Python `serialize_to_json` function is defined in the `functions.py` script

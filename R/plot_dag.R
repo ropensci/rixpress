@@ -15,11 +15,11 @@
 #' @examples
 #' \dontrun{
 #'   # Generate the default _rixpress/dag.dot
-#'   dag_for_ci()
+#'   rxp_dag_for_ci()
 #'
 #' }
 #' @export
-dag_for_ci <- function(
+rxp_dag_for_ci <- function(
   nodes_and_edges = get_nodes_edges(),
   output_file = "_rixpress/dag.dot"
 ) {

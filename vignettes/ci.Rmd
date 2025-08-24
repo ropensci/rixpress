@@ -61,7 +61,7 @@ does exactly this:
 ```
 
 As you can see, `stacked-dag` processes the file from the `_rixpress/dag.dot`
-folder. When calling `rxp_ga()`, the `dag_for_ci()` function is called
+folder. When calling `rxp_ga()`, the `rxp_dag_for_ci()` function is called
 automatically to generate the `.dot` file and put it in the right spot.
 
 Here is what this looks like:

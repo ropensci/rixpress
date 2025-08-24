@@ -299,7 +299,7 @@ You can also return the underlying `igraph` object to plot the DAG using other
 tools:
 
 ```r
-dag_for_ci()
+rxp_dag_for_ci()
 ```
 
 which saves the `dag.dot` object in the project's `_rixpress/` folder.
