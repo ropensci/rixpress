@@ -27,6 +27,9 @@ Returns a data frame with four columns:
 Empty outputs mean that this derivation was not built
 successfully. Several outputs for a single derivation
 are possible.
+In the \code{derivation} column you will find an object called \code{all-derivations}.
+This object is generated automatically for internal purposes, and you can
+safely ignore it.
 }
 \examples{
 \dontrun{

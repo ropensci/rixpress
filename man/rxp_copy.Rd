@@ -4,11 +4,18 @@
 \alias{rxp_copy}
 \title{Copy derivations from the Nix store to current working directory}
 \usage{
-rxp_copy(derivation_name = NULL)
+rxp_copy(derivation_name = NULL, dir_mode = "0755", file_mode = "0644")
 }
 \arguments{
 \item{derivation_name}{The name of the derivation to copy. If empty, then all
 the derivations are copied.}
+
+\item{dir_mode}{Character, default "0755". POSIX permission mode to apply to
+directories under the copied output (including the top-level output
+directory).}
+
+\item{file_mode}{Character, default "0644". POSIX permission mode to apply to
+files under the copied output.}
 }
 \value{
 Nothing, the contents of the Nix store are copied to the current
@@ -29,6 +36,9 @@ input, as is the case for \code{html} output.
 
   # Copy a specific derivation
   rxp_copy("mtcars")
+
+  # Copy with custom permissions (e.g., make scripts executable)
+  rxp_copy("my_deriv", dir_mode = "0755", file_mode = "0644")
 
   # Copy a Quarto document output with multiple files
   rxp_copy("my_quarto_doc")

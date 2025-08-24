@@ -68,6 +68,9 @@ rxp_list_logs <- function(project_path = ".") {
 #'               Empty outputs mean that this derivation was not built
 #'               successfully. Several outputs for a single derivation
 #'               are possible.
+#'   In the `derivation` column you will find an object called `all-derivations`.
+#'   This object is generated automatically for internal purposes, and you can
+#'   safely ignore it.
 #'
 #' @param project_path Character, defaults to ".".
 #'   Path to the root directory of the project.
