@@ -128,7 +128,7 @@ DAG
 <code>rxp_load("mtcars_mpg")</code> loads them into the global environment.</li>
 </ul>
 <p>For complex outputs such as documents, (for example the Quarto document defined above, called <code>page</code>), <code>rxp_read("page")</code> returns its file path, which you can open with <code>browseURL("path/to/page")</code>, or you can copy the outputs from the <code>/nix/store/</code> into the current worknig directory using <code>rxp_copy("page")</code>, and read it from there.</p>
-<p>You can export the cache into a file and easily import it on another machine (or on CI) to avoid having to rebuild everything from scratch using <code><a href="reference/export_nix_archive.html">export_nix_archive()</a></code> and <code><a href="reference/import_nix_archive.html">import_nix_archive()</a></code> respectively.</p>
+<p>You can export the cache into a file and easily import it on another machine (or on CI) to avoid having to rebuild everything from scratch using <code><a href="reference/rxp_export_artifacts.html">rxp_export_artifacts()</a></code> and <code><a href="reference/rxp_import_artifacts.html">rxp_import_artifacts()</a></code> respectively.</p>
 <p><code><a href="reference/rixpress.html">rixpress()</a></code> is very flexible; please consult <a href="https://github.com/b-rodrigues/rixpress_demos/tree/master" class="external-link">this repository</a> which contains many different examples you can take inspiration from.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>

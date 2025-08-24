@@ -86,7 +86,8 @@ generate a GitHub Actions <code>.yaml</code> file to run the pipeline on
 each push or pull request. Here are the different steps that happen:</p>
 <ul>
 <li>if previous run artifacts exist, those are restored to avoid
-recomputing them using <code><a href="../reference/import_nix_archive.html">rixpress::import_nix_archive()</a></code>;</li>
+recomputing them using
+<code><a href="../reference/rxp_import_artifacts.html">rixpress::rxp_import_artifacts()</a></code>;</li>
 <li>required software is installed;</li>
 <li>the execution environment is generated and built;</li>
 <li>the <code>rstats-on-nix</code> cache is configured to decrease build
@@ -100,8 +101,8 @@ whether you set <code>build</code> to <code>FALSE</code> in the
 <code>TRUE</code> previously, the build process is skipped anyway;</li>
 <li>the build artifacts and their paths are printed;</li>
 <li>the build artifacts are archived for reuse using
-<code><a href="../reference/export_nix_archive.html">rixpress::export_nix_archive()</a></code> for subsequent runs and are
-pushed to the <code>rixpress-runs</code> branch.</li>
+<code><a href="../reference/rxp_export_artifacts.html">rixpress::rxp_export_artifacts()</a></code> for subsequent runs and
+are pushed to the <code>rixpress-runs</code> branch.</li>
 </ul>
 <p>Let me explain how to view the DAG in CI. In an interactive session,
 you only need to call <code>plot_dag()</code> to see a graphical
