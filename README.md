@@ -134,7 +134,7 @@ outputs from the `/nix/store/` into the current worknig directory using
 
 You can export the cache into a file and easily import it on another
 machine (or on CI) to avoid having to rebuild everything from scratch
-using `export_nix_archive()` and `import_nix_archive()` respectively.
+using `rxp_export_artifacts()` and `rxp_import_artifacts()` respectively.
 
 `rixpress()` is very flexible; please consult [this
 repository](https://github.com/b-rodrigues/rixpress_demos/tree/master)

@@ -25,7 +25,7 @@ file to run the pipeline on each push or pull request. Here are the different
 steps that happen:
 
 - if previous run artifacts exist, those are restored to avoid recomputing them
-  using `rixpress::import_nix_archive()`;
+  using `rixpress::rxp_import_artifacts()`;
 - required software is installed;
 - the execution environment is generated and built;
 - the `rstats-on-nix` cache is configured to decrease build times, see this
@@ -38,7 +38,7 @@ steps that happen:
   process is skipped anyway;
 - the build artifacts and their paths are printed;
 - the build artifacts are archived for reuse using
-  `rixpress::export_nix_archive()` for subsequent runs and are pushed to the
+  `rixpress::rxp_export_artifacts()` for subsequent runs and are pushed to the
   `rixpress-runs` branch.
 
 Let me explain how to view the DAG in CI. In an interactive

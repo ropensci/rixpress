@@ -177,8 +177,8 @@ the same value.
 This mechanism is what makes it possible to import and export build artifacts
 between pipelines to avoid having to rebuild everything from scratch on
 different machines or on continuous integration platforms. `{rixpress}` has two
-functions that allow this, called `export_nix_archive()` and
-`import_nix_archive()`.
+functions that allow this, called `rxp_export_artifacts()` and
+`rxp_import_artifacts()`.
 
 To ensure that building derivations always produces exactly the same outputs,
 builds must occur in an isolated environment, often referred to as a sandbox.

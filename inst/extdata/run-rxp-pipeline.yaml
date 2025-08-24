@@ -63,10 +63,10 @@ jobs:
       - name: Checkout default.nix
         run: cat default.nix
 
-      - name: Run import_nix_archive if file exists
+      - name: Run rxp_import_artifacts if file exists
         run: |
           if [ -f _rixpress/pipeline_outputs.nar ]; then
-            nix-shell --quiet --run "Rscript -e 'rixpress::import_nix_archive()'"
+            nix-shell --quiet --run "Rscript -e 'rixpress::rxp_import_artifacts()'"
           else
             echo "pipeline_outputs.nar not found"
           fi
@@ -94,7 +94,7 @@ jobs:
 
       - name: Export outputs to avoid rebuild
         run: |
-          nix-shell --quiet --run "Rscript -e 'rixpress::export_nix_archive(archive_file = \"pipeline_outputs.nar\")'"
+          nix-shell --quiet --run "Rscript -e 'rixpress::rxp_export_artifacts(archive_file = \"pipeline_outputs.nar\")'"
 
       - name: Set git config
         run: |

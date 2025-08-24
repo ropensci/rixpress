@@ -236,16 +236,16 @@ rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
 #' @examples
 #' \dontrun{
 #'   # Export the most recent build to the default location
-#'   export_nix_archive()
+#'   rxp_export_artifacts()
 #'
 #'   # Export a specific build to a custom location
-#'   export_nix_archive(
+#'   rxp_export_artifacts(
 #'     archive_file = "my_archive.nar",
 #'     which_log = "20250510"
 #'   )
 #' }
 #' @export
-export_nix_archive <- function(
+rxp_export_artifacts <- function(
   archive_file = "_rixpress/pipeline_outputs.nar",
   which_log = NULL,
   project_path = "."
@@ -296,13 +296,13 @@ export_nix_archive <- function(
 #' @examples
 #' \dontrun{
 #'   # Import from the default archive location
-#'   import_nix_archive()
+#'   rxp_import_artifacts()
 #'
 #'   # Import from a custom archive file
-#'   import_nix_archive("path/to/my_archive.nar")
+#'   rxp_import_artifacts("path/to/my_archive.nar")
 #' }
 #' @export
-import_nix_archive <- function(
+rxp_import_artifacts <- function(
   archive_file = "_rixpress/pipeline_outputs.nar"
 ) {
   if (!is.character(archive_file) || length(archive_file) != 1) {
