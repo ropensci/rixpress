@@ -157,7 +157,7 @@ adopting a heavyweight orchestration platform.</li>
 <ul>
 <li>Define R/Python/Julia/Quarto steps as derivations
 (<code>rxp_*()</code>).</li>
-<li>Generate and build a Nix pipeline (<code><a href="../reference/rixpress.html">rixpress()</a></code>,
+<li>Generate and build a Nix pipeline (<code><a href="../reference/rxp_populate.html">rxp_populate()</a></code>,
 <code><a href="../reference/rxp_make.html">rxp_make()</a></code>).</li>
 <li>Serialise/deserialise and basic interop (R↔︎Python/Julia) via common
 formats/APIs.</li>
@@ -201,7 +201,7 @@ DAGs.</li>
 <ul>
 <li>
 <code><a href="../reference/rxp_populate.html">rxp_populate()</a></code> = generate but do not build;
-<code><a href="../reference/rixpress.html">rixpress()</a></code> = populate + build.</li>
+<code><a href="../reference/rxp_populate.html">rxp_populate()</a></code> = populate + build.</li>
 <li>Inline Python import adjustments via
 <code>rxp_populate(..., py_imports = ...)</code>.</li>
 </ul>

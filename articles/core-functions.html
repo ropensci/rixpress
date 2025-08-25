@@ -142,11 +142,11 @@ are defined.</p>
 list of derivations:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">derivs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">d0</span>, <span class="va">d1</span>, <span class="va">d2</span><span class="op">)</span></span></code></pre></div>
-<p>and pass it to the <code><a href="../reference/rixpress.html">rixpress()</a></code> function:</p>
+<p>and pass it to the <code><a href="../reference/rxp_populate.html">rxp_populate()</a></code> function:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span><span class="va">derivs</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_populate.html">rxp_populate</a></span><span class="op">(</span><span class="va">derivs</span><span class="op">)</span></span></code></pre></div>
 <p>To make the code more concise, you can directly define the list and
-pass it to <code><a href="../reference/rixpress.html">rixpress()</a></code> using the pipe operator
+pass it to <code><a href="../reference/rxp_populate.html">rxp_populate()</a></code> using the pipe operator
 <code>|&gt;</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
@@ -168,8 +168,8 @@ pass it to <code><a href="../reference/rixpress.html">rixpress()</a></code> usin
 <span>    expr <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">filtered_mtcars</span>, <span class="va">mpg</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>Running <code><a href="../reference/rixpress.html">rixpress()</a></code> performs several actions:</p>
+<span>  <span class="fu"><a href="../reference/rxp_populate.html">rxp_populate</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>Running <code><a href="../reference/rxp_populate.html">rxp_populate()</a></code> performs several actions:</p>
 <ul>
 <li>creates a folder called <code>_rixpress</code> in the project’s root
 directory. This folder contains automatically generated files needed for
@@ -262,7 +262,7 @@ analysis.</p>
 <span>    expr <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">filtered_mtcars</span>, <span class="va">mpg</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span>project_path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="../reference/rxp_populate.html">rxp_populate</a></span><span class="op">(</span>project_path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span></code></pre></div>
 <p>I recommend always using two separate scripts:</p>
 <ul>
 <li>
@@ -311,9 +311,9 @@ copied to this folder.</li>
 <p>It’s often helpful to visualise your pipeline as a DAG (directed
 acyclic graph). You can generate and inspect this visualisation before
 building the pipeline by adding the <code>build = FALSE</code> argument
-to <code><a href="../reference/rixpress.html">rixpress()</a></code>:</p>
+to <code><a href="../reference/rxp_populate.html">rxp_populate()</a></code>:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/rixpress.html">rixpress</a></span><span class="op">(</span><span class="va">derivs</span>, build <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_populate.html">rxp_populate</a></span><span class="op">(</span><span class="va">derivs</span>, build <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p>This won’t build the pipeline but will generate useful files,
 including a JSON representation of the pipeline at
 <code>_rixpress/dag.json</code>. This process is quick and allows you to
@@ -335,7 +335,7 @@ the DAG using other tools:</p>
 <code>_rixpress/</code> folder.</p>
 <p>After reviewing the DAG, you can build the pipeline by running
 <code><a href="../reference/rxp_make.html">rxp_make()</a></code> instead of modifying your original
-<code><a href="../reference/rixpress.html">rixpress()</a></code> call.</p>
+<code><a href="../reference/rxp_populate.html">rxp_populate()</a></code> call.</p>
 </div>
 <div class="section level2">
 <h2 id="caveats">Caveats<a class="anchor" aria-label="anchor" href="#caveats"></a>
