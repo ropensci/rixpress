@@ -176,8 +176,8 @@ directory. This folder contains automatically generated files needed for
 the pipeline to build successfully.</li>
 <li>generates a file called <code>pipeline.nix</code>, which defines the
 entire pipeline in the <code>Nix</code> language.</li>
-<li>calls the function <code><a href="../reference/rxp_make.html">rxp_make()</a></code> to build the
-pipeline.</li>
+<li>if <code>build = TRUE</code>, calls <code><a href="../reference/rxp_make.html">rxp_make()</a></code> to build
+the pipeline.</li>
 </ul>
 <p>However, if you try to run the code above, it will likely fail. This
 is because a crucial piece is missing: the environment in which the
@@ -309,11 +309,11 @@ copied to this folder.</li>
 <h2 id="dag-representation-of-the-pipeline">DAG Representation of the Pipeline<a class="anchor" aria-label="anchor" href="#dag-representation-of-the-pipeline"></a>
 </h2>
 <p>It’s often helpful to visualise your pipeline as a DAG (directed
-acyclic graph). You can generate and inspect this visualisation before
-building the pipeline by adding the <code>build = FALSE</code> argument
-to <code><a href="../reference/rxp_populate.html">rxp_populate()</a></code>:</p>
+acyclic graph). By default, the <code>build</code> argument of
+<code><a href="../reference/rxp_populate.html">rxp_populate()</a></code> is <code>FALSE</code>, so calling this will
+not build the pipeline:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_populate.html">rxp_populate</a></span><span class="op">(</span><span class="va">derivs</span>, build <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_populate.html">rxp_populate</a></span><span class="op">(</span><span class="va">derivs</span><span class="op">)</span></span></code></pre></div>
 <p>This won’t build the pipeline but will generate useful files,
 including a JSON representation of the pipeline at
 <code>_rixpress/dag.json</code>. This process is quick and allows you to
@@ -350,15 +350,17 @@ resource, the build will fail. For example, if you use a function to get
 data from an API, you must first retrieve the data in a standard
 interactive R session, save it to disk, and then include it in the
 pipeline. The only exception to this is <code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code>, which
-can download a file from a URL.</li>
+can download a file from a URL;</li>
 <li>all build artifacts will be saved in the <code>Nix</code> store,
 <code>/nix/store/</code>. If you are working with confidential data,
-make sure no one else can access the <code>/nix/store</code>.</li>
+make sure no one else can access the <code>/nix/store</code>;</li>
 <li>if you have proprietary R packages, you will need to include them in
 the <code>Nix</code> shell. This is primarily a concern for
 <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, as it generates the execution environment. If you
 need help packaging your proprietary packages, please open an issue on
-the <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> GitHub repository.</li>
+the <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> GitHub repository;</li>
+<li>multi-line expressions aren’t supported; write your derivations as
+single calls to pure functions.</li>
 </ul>
 </div>
 <div class="section level2">

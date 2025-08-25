@@ -145,7 +145,13 @@ between R and Python if you’re not using a universal format like JSON.
 Python build steps are executed in a standard Python shell and do not
 require <a href="https://rstudio.github.io/reticulate/" class="external-link">reticulate</a> for Python code execution itself, so
 if you’re only using JSON to transfer data, <a href="https://rstudio.github.io/reticulate/" class="external-link">reticulate</a> is
-not required.</p>
+not required. If you prefer, you can also use <code>uv</code> to manage
+Python and Python packages. While this is not a pure Nix solution, it is
+still useful in cases you need a specific Python package that might not
+be available through Nix, as not all PyPI packages are available through
+Nix. In this case, refer to this <a href="https://docs.ropensci.org/rix/articles/d1-installing-r-packages-in-a-nix-environment.html#installing-python-packages-not-available-via-nixpkgs-impure" class="external-link">section</a>
+of the <em>Installing R and Python packages in a Nix environment</em>
+vignette from <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>.</p>
 <p>Now that you defined the execution environment of the pipeline, you
 can run the <code>gen-env.R</code> script, still from the temporary
 <code>Nix</code> shell by running <code>source("gen-env.R")</code>. This
@@ -166,14 +172,14 @@ interactively as usual. To learn more, check out <a href="https://docs.ropensci.
 <span>  <span class="fu"><a href="../reference/rxp_py_file.html">rxp_py_file</a></span><span class="op">(</span></span>
 <span>    name <span class="op">=</span> <span class="va">mtcars_pl</span>,</span>
 <span>    path <span class="op">=</span> <span class="st">'data/mtcars.csv'</span>,</span>
-<span>    read_function <span class="op">=</span> <span class="st">"lambda x: polars.read_csv(x, separator='|')"</span></span>
+<span>    read_function <span class="op">=</span> <span class="st">"lambda x: pl.read_csv(x, separator='|')"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="fu"><a href="../reference/rxp_py.html">rxp_py</a></span><span class="op">(</span></span>
 <span>    <span class="co"># reticulate doesn't support polars DFs yet, so need to convert</span></span>
 <span>    <span class="co"># first to pandas DF</span></span>
 <span>    name <span class="op">=</span> <span class="va">mtcars_pl_am</span>,</span>
-<span>    py_expr <span class="op">=</span> <span class="st">"mtcars_pl.filter(polars.col('am') == 1).to_pandas()"</span></span>
+<span>    py_expr <span class="op">=</span> <span class="st">"mtcars_pl.filter(pl.col('am') == 1).to_pandas()"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="fu"><a href="../reference/rxp_py2r.html">rxp_py2r</a></span><span class="op">(</span></span>
@@ -213,11 +219,14 @@ interactively as usual. To learn more, check out <a href="https://docs.ropensci.
 <span>    additional_files <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"my_doc/content.qmd"</span>, <span class="st">"my_doc/images"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/rxp_populate.html">rxp_populate</a></span><span class="op">(</span>project_path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="../reference/rxp_populate.html">rxp_populate</a></span><span class="op">(</span></span>
+<span>    project_path <span class="op">=</span> <span class="st">"."</span>,</span>
+<span>    py_imports <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>polars <span class="op">=</span> <span class="st">"import polars as pl"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
 <p>As you can see, it starts by reading in some data using the Python
-polars package, and then converts it to an R data frame for further
-manipulation, converts it back to a Python data frame and back to R.
-You’ll notice that at some point the <em>head</em> of the data is
+<code>polars</code> package, and then converts it to an R data frame for
+further manipulation, converts it back to a Python data frame and back
+to R. You’ll notice that at some point the <em>head</em> of the data is
 computed using a user-defined function called <code>my_head()</code>.
 User-defined functions should all go into a script called
 <code>functions.R</code> or <code>functions.py</code> and derivations
@@ -225,28 +234,24 @@ that use them need to be aware of them by setting the
 <code>additional_files</code> argument (if derivations need further
 files to be available, these can also be specified there. A main
 difference between <code><a href="../reference/rxp_py.html">rxp_py()</a></code> and <code><a href="../reference/rxp_r.html">rxp_r()</a></code> is
-that Python code should be passed as a string, and not as an expression.
-Also, you’ll notice that I had to use <code>polars.read_csv()</code>
-instead of the more common <code>pl.read_csv()</code>. This is because
-by default Python packages get imported using a simple statement
-<code>import polars</code>. If you want to change this to
-<code>import polars as pl</code> (<code>import pandas as pd</code> and
-so on), then you can use the <code><a href="../reference/adjust_import.html">adjust_import()</a></code> function. For
-example:</p>
+that Python code should be passed as a string, and not as an
+expression.</p>
+<p>What’s also import for Python is to define how packages should be
+imported. In this case, I want <code>polars</code> to be imported using
+<code>import polars as pl</code>, so I need to use the
+<code>py_imports</code> argument of <code><a href="../reference/rxp_populate.html">rxp_populate()</a></code>. It is
+possible to skip this, but then you’d need to write the entire package
+name each time: <code>polars.read_csv()</code>. This is sometimes
+mandatory, for example if you want to import a package’s submodule:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/adjust_import.html">adjust_import</a></span><span class="op">(</span><span class="st">"import polars"</span>, <span class="st">"import polars as pl"</span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="../reference/adjust_import.html">adjust_import()</a></code> is sometimes mandatory, for example if
-you want to import a package’s submodule:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/adjust_import.html">adjust_import</a></span><span class="op">(</span><span class="st">"import pillow"</span>, <span class="st">"from PIL import Image"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">py_imports</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>pillow <span class="op">=</span> <span class="st">"from PIL import Image"</span><span class="op">)</span></span></code></pre></div>
 <p>The package is called <code>pillow</code>, so <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>
 will write the statement as <code>import pillow</code>, but this will
-simply not work. So in this case <code><a href="../reference/adjust_import.html">adjust_import()</a></code> must be
-used.</p>
+simply not work.</p>
 <p>If you want to use JSON to transfer data between derivations, you
 should use the <code>serialize_function</code> and
 <code>unserialize_function</code> arguments respectively:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
 <span></span>
@@ -254,12 +259,12 @@ should use the <code>serialize_function</code> and
 <span>  <span class="fu"><a href="../reference/rxp_py_file.html">rxp_py_file</a></span><span class="op">(</span></span>
 <span>    name <span class="op">=</span> <span class="va">mtcars_pl</span>,</span>
 <span>    path <span class="op">=</span> <span class="st">"data/mtcars.csv"</span>,</span>
-<span>    read_function <span class="op">=</span> <span class="st">"lambda x: polars.read_csv(x, separator='|')"</span></span>
+<span>    read_function <span class="op">=</span> <span class="st">"lambda x: pl.read_csv(x, separator='|')"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="fu"><a href="../reference/rxp_py.html">rxp_py</a></span><span class="op">(</span></span>
 <span>    name <span class="op">=</span> <span class="va">mtcars_pl_am</span>,</span>
-<span>    py_expr <span class="op">=</span> <span class="st">"mtcars_pl.filter(polars.col('am') == 1)"</span>,</span>
+<span>    py_expr <span class="op">=</span> <span class="st">"mtcars_pl.filter(pl.col('am') == 1)"</span>,</span>
 <span>    additional_files <span class="op">=</span> <span class="st">"functions.py"</span>,</span>
 <span>    serialize_function <span class="op">=</span> <span class="st">"serialize_to_json"</span>,</span>
 <span>  <span class="op">)</span>,</span>
@@ -276,8 +281,10 @@ should use the <code>serialize_function</code> and
 <span>    expr <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">mtcars_head</span>, <span class="va">mpg</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/rxp_populate.html">rxp_populate</a></span><span class="op">(</span>project_path <span class="op">=</span> <span class="st">"."</span>, build <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span></span>
+<span>  <span class="fu"><a href="../reference/rxp_populate.html">rxp_populate</a></span><span class="op">(</span></span>
+<span>    project_path <span class="op">=</span> <span class="st">"."</span>,</span>
+<span>    py_imports <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>polars <span class="op">=</span> <span class="st">"import polars as pl"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot DAG for CI</span></span>
 <span><span class="fu"><a href="../reference/rxp_dag_for_ci.html">rxp_dag_for_ci</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -345,7 +352,7 @@ document <code>content.qmd</code> and the image
 <code>meme.png</code>.</p>
 <p>If you want to add further arguments to the Quarto command line tool,
 you can use the <code>args</code> argument:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_qmd.html">rxp_qmd</a></span><span class="op">(</span></span>
 <span>  name <span class="op">=</span> <span class="va">page</span>,</span>
 <span>  qmd_file <span class="op">=</span> <span class="st">"my_doc/page.qmd"</span>,</span>
@@ -354,11 +361,11 @@ you can use the <code>args</code> argument:</p>
 <span><span class="op">)</span></span></code></pre></div>
 <p>and don’t forget to add <code>typst</code> to the list of system
 packages in the call to <code><a href="https://docs.ropensci.org/rix/reference/rix.html" class="external-link">rix()</a></code>:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">rix</span>(</span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>  <span class="at">date =</span> <span class="st">"2025-03-31"</span>,</span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>  <span class="at">r_pkgs =</span> <span class="fu">c</span>(<span class="st">"dplyr"</span>, <span class="st">"igraph"</span>, <span class="st">"reticulate"</span>, <span class="st">"quarto"</span>),</span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>  <span class="at">system_pkgs =</span> <span class="st">"typst"</span>,</span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>  <span class="at">git_pkgs =</span> <span class="fu">list</span>(...</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">rix</span>(</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>  <span class="at">date =</span> <span class="st">"2025-03-31"</span>,</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>  <span class="at">r_pkgs =</span> <span class="fu">c</span>(<span class="st">"dplyr"</span>, <span class="st">"igraph"</span>, <span class="st">"reticulate"</span>, <span class="st">"quarto"</span>),</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  <span class="at">system_pkgs =</span> <span class="st">"typst"</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>  <span class="at">git_pkgs =</span> <span class="fu">list</span>(...</span></code></pre></div>
 <p>In the future, other languages could be added to
 <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>, notably Julia.</p>
 <p>For more examples, check out <a href="https://github.com/b-rodrigues/rixpress_demos" class="external-link">rixpress_demos
