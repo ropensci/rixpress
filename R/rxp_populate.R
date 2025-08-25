@@ -403,7 +403,6 @@ in
 gen_pipeline <- function(dag_file, flat_pipeline) {
   dag <- jsonlite::read_json(dag_file)
   pipeline_str <- paste(flat_pipeline, collapse = "\n")
-
   for (d in dag$derivations) {
     if (
       length(d$depends) == 0 ||
@@ -411,7 +410,6 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     ) {
       next
     }
-
     deriv_name <- as.character(d$deriv_name[1])
     deps <- d$depends
     type <- d$type[1]
@@ -419,10 +417,8 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
 
     # Define language-specific helpers
     if (type == "rxp_r") {
-      # Add 'else if' blocks here for Python and Julia if needed
       placeholder <- "# RIXPRESS_LOAD_DEPENDENCIES_HERE"
       load_line_template <- "%s <- %s('${%s}/%s')" # obj <- readRDS('${obj}/obj')
-
       load_lines <- vapply(
         deps,
         function(dep) {
@@ -430,8 +426,34 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
         },
         character(1)
       )
-
       replacement_str <- paste(load_lines, collapse = "\n")
+    } else if (type == "rxp_py") {
+      placeholder <- "# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE"
+      load_line_template <- "with open('${%s}/%s', 'rb') as f: %s = %s(f)" # with open('${obj}/obj', 'rb') as f: obj = pickle.load(f)
+      load_lines <- vapply(
+        deps,
+        function(dep) {
+          sprintf(load_line_template, dep, dep, dep, unserialize_function)
+        },
+        character(1)
+      )
+      replacement_str <- paste(load_lines, collapse = "\n")
+    } else if (type == "rxp_jl") {
+      placeholder <- "# RIXPRESS_JL_LOAD_DEPENDENCIES_HERE"
+      load_line_template <- "%s = open(\\\"%s\\\", \\\"r\\\") do io; %s(io); end" # obj = open("${obj}/obj", "r") do io; Serialization.deserialize(io); end
+      load_lines <- vapply(
+        deps,
+        function(dep) {
+          sprintf(
+            load_line_template,
+            dep,
+            paste0("${", dep, "}/", dep),
+            unserialize_function
+          )
+        },
+        character(1)
+      )
+      replacement_str <- paste(load_lines, collapse = "; ")
     } else {
       next # Skip unsupported types for now
     }
@@ -439,14 +461,22 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     # Use sub() to replace the placeholder in the entire pipeline string
     # We use a regex to uniquely identify the placeholder within its derivation block
     # This is safer than a global substitution.
+    derivation_func <- switch(
+      type,
+      "rxp_r" = "makeRDerivation",
+      "rxp_py" = "makePyDerivation",
+      "rxp_jl" = "makeJlDerivation"
+    )
+
     pattern <- paste0(
       "(",
       deriv_name,
-      "\\s*=\\s*makeRDerivation[\\s\\S]*?", # Match derivation start
+      "\\s*=\\s*",
+      derivation_func,
+      "[\\s\\S]*?", # Match derivation start
       placeholder, # Find the placeholder
       ")" # Capture the whole block
     )
-
     # The replacement function \1 refers to the captured group, ensuring we only
     # modify the placeholder inside the correct derivation block.
     pipeline_str <- sub(
@@ -458,7 +488,6 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     # Now, replace the placeholder itself in the modified block
     pipeline_str <- sub(placeholder, "", pipeline_str, fixed = TRUE)
   }
-
   strsplit(pipeline_str, "\n")[[1]]
 }
 

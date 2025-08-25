@@ -1,7 +1,7 @@
 let
  pkgs = import (fetchTarball "https://github.com/rstats-on-nix/nixpkgs/archive/2025-02-28.tar.gz") {};
  
-  pypkgs = builtins.attrValues {
+  pyconf = builtins.attrValues {
     inherit (pkgs.python312Packages) 
       pandas
       scikit-learn;
@@ -24,7 +24,7 @@ shell = pkgs.mkShell {
    LC_PAPER = "en_US.UTF-8";
    LC_MEASUREMENT = "en_US.UTF-8";
 
-  buildInputs = [ system_packages pypkgs ];
+  buildInputs = [ system_packages pyconf ];
   
 };
 in

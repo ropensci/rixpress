@@ -1,13 +1,15 @@
 let
   default = import ./default.nix;
-defaultPkgs = default.pkgs;
-defaultShell = default.shell;
-defaultBuildInputs = defaultShell.buildInputs;
-defaultConfigurePhase = ''
+  defaultPkgs = default.pkgs;
+  defaultShell = default.shell;
+  defaultBuildInputs = defaultShell.buildInputs;
+  defaultConfigurePhase = ''
     cp ${./_rixpress/default_libraries.py} libraries.py
-    mkdir -p $out
+    mkdir -p $out  
+    mkdir -p .julia_depot  
+    export JULIA_DEPOT_PATH=$PWD/.julia_depot  
+    export HOME_PATH=$PWD
   '';
-  
   
   # Function to create Python derivations
   makePyDerivation = { name, buildInputs, configurePhase, buildPhase, src ? null }:
@@ -32,8 +34,10 @@ defaultConfigurePhase = ''
     buildPhase = ''
       python -c "
 exec(open('libraries.py').read())
+# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE
 exec('diabetes_raw = sklearn.datasets.load_diabetes()')
-with open('diabetes_raw', 'wb') as f: pickle.dump(globals()['diabetes_raw'], f)"
+with open('diabetes_raw', 'wb') as f: pickle.dump(globals()['diabetes_raw'], f)
+"
     '';
   };
 
@@ -44,22 +48,30 @@ with open('diabetes_raw', 'wb') as f: pickle.dump(globals()['diabetes_raw'], f)"
     buildPhase = ''
       python -c "
 exec(open('libraries.py').read())
-with open('${diabetes_raw}/diabetes_raw', 'rb') as f: diabetes_raw = pickle.load(f)
+# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE
 exec('diabetes = pandas.DataFrame(diabetes_raw.data, columns=diabetes_raw.feature_names)')
-with open('diabetes', 'wb') as f: pickle.dump(globals()['diabetes'], f)"
+with open('diabetes', 'wb') as f: pickle.dump(globals()['diabetes'], f)
+"
     '';
   };
 
   diabetes_head = makePyDerivation {
     name = "diabetes_head";
+     src = defaultPkgs.lib.fileset.toSource {
+      root = ./.;
+      fileset = defaultPkgs.lib.fileset.unions [ ./functions.py ];
+    };
     buildInputs = defaultBuildInputs;
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
+      cp ${./functions.py} functions.py
       python -c "
 exec(open('libraries.py').read())
-with open('${diabetes}/diabetes', 'rb') as f: diabetes = pickle.load(f)
+# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE
+exec(open('functions.py').read())
 exec('diabetes_head = my_head(diabetes)')
-with open('diabetes_head', 'wb') as f: pickle.dump(globals()['diabetes_head'], f)"
+with open('diabetes_head', 'wb') as f: pickle.dump(globals()['diabetes_head'], f)
+"
     '';
   };
 
@@ -70,9 +82,10 @@ with open('diabetes_head', 'wb') as f: pickle.dump(globals()['diabetes_head'], f
     buildPhase = ''
       python -c "
 exec(open('libraries.py').read())
-with open('${diabetes}/diabetes', 'rb') as f: diabetes = pickle.load(f)
+# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE
 exec('diabetes_tail = diabetes.tail()')
-with open('diabetes_tail', 'wb') as f: pickle.dump(globals()['diabetes_tail'], f)"
+with open('diabetes_tail', 'wb') as f: pickle.dump(globals()['diabetes_tail'], f)
+"
     '';
   };
 
@@ -83,10 +96,10 @@ with open('diabetes_tail', 'wb') as f: pickle.dump(globals()['diabetes_tail'], f
     buildPhase = ''
       python -c "
 exec(open('libraries.py').read())
-with open('${diabetes_head}/diabetes_head', 'rb') as f: diabetes_head = pickle.load(f)
-with open('${diabetes_tail}/diabetes_tail', 'rb') as f: diabetes_tail = pickle.load(f)
+# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE
 exec('concat_diabetes = pandas.concat([diabetes_head, diabetes_tail], ignore_index=True)')
-with open('concat_diabetes', 'wb') as f: pickle.dump(globals()['concat_diabetes'], f)"
+with open('concat_diabetes', 'wb') as f: pickle.dump(globals()['concat_diabetes'], f)
+"
     '';
   };
 
