@@ -20,7 +20,7 @@ No return value; the function performs in-place
 modifications of the files.
 }
 \description{
-When calling \code{rixpress()}, a file containing Python import statements is
+When calling \code{rxp_populate()}, a file containing Python import statements is
 automatically generated inside the \verb{_rixpress} folder. For example, if the
 \code{numpy} package is needed, the file will include a line like
 \code{"import numpy"}. However, Python programmers often write

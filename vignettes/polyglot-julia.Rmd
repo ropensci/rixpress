@@ -130,7 +130,7 @@ list(
   )
 
 ) |>
-  rixpress(build = TRUE)
+  rxp_populate(build = TRUE)
 ```
 
 Let's break down what's happening in this pipeline:

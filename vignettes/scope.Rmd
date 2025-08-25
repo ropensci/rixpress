@@ -65,7 +65,7 @@ Key goals:
 # In-scope features (current)
 
 - Define R/Python/Julia/Quarto steps as derivations (`rxp_*()`).
-- Generate and build a Nix pipeline (`rixpress()`, `rxp_make()`).
+- Generate and build a Nix pipeline (`rxp_populate()`, `rxp_make()`).
 - Serialise/deserialise and basic interop (R↔Python/Julia) via common
   formats/APIs.
 - Read/load/copy outputs from the Nix store (`rxp_read()`, `rxp_load()`,
@@ -93,7 +93,7 @@ clarify priorities. Timelines are indicative and may change.
 
 - Visualisation: Mermaid-first DAG output (portable, text-first), with simple CI rendering. Keep a minimal interactive option for large DAGs.
 - Workflow ergonomics:
-  - `rxp_populate()` = generate but do not build; `rixpress()` = populate + build.
+  - `rxp_populate()` = generate but do not build; `rxp_populate()` = populate + build.
   - Inline Python import adjustments via `rxp_populate(..., py_imports = ...)`.
 - Build UX: make `rxp_make(verbose = <int>)` map to Nix verbosity levels.
 - Robust expressions: support multi-line/brace R expressions in `rxp_r()` by emitting a small script file for the build phase.

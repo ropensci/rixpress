@@ -30,7 +30,7 @@ using familiar R code.
 machine for small-to-medium projects.
 
 For example, this R script defines a list of *derivations* defined by
-functions prefixed with `rxp_*()`, which is then passed to `rixpress()`:
+functions prefixed with `rxp_*()`, which is then passed to `rxp_populate()`:
 
 ``` r
 library(rixpress)
@@ -67,15 +67,15 @@ list(
     "page.qmd"
   )
 ) |>
-  rixpress()
+  rxp_populate()
 ```
 
-Running `rixpress()` generates a `pipeline.nix` file, which contains all
+Running `rxp_populate()` generates a `pipeline.nix` file, which contains all
 the build instructions of all the derivations and final outputs as `Nix`
 code. It is possible to define derivations that run Python or Julia code
 as well, and objects can be passed to and from R or Python by using
 `rxp_py2r()` and `ryp_r2py()`, or by using a common serialization format
-such as JSON. By default, calling `rixpress()` also builds the pipeline,
+such as JSON. By default, calling `rxp_populate()` also builds the pipeline,
 but it’s possible to only generate the `pipeline.nix` file and then
 build the pipeline at a later stage using:
 
@@ -99,7 +99,7 @@ within the environment defined by the `default.nix` file. Concretely,
 `{rix}` made using `Nix` as a package manager easier for R users,
 `{rixpress}` makes it now easy to use `Nix` as a build automation tool!
 
-When you run `rixpress()`, a folder called `_rixpress/` gets also
+When you run `rxp_populate()`, a folder called `_rixpress/` gets also
 generated which contains a file with a JSON representation of the
 pipeline’s DAG (Directed Acyclic Graph). You can visualize the pipeline
 using `rxp_ggdag()`:
@@ -136,7 +136,7 @@ You can export the cache into a file and easily import it on another
 machine (or on CI) to avoid having to rebuild everything from scratch
 using `rxp_export_artifacts()` and `rxp_import_artifacts()` respectively.
 
-`rixpress()` is very flexible; please consult [this
+`rxp_populate()` is very flexible; please consult [this
 repository](https://github.com/b-rodrigues/rixpress_demos/tree/master)
 which contains many different examples you can take inspiration from.
 

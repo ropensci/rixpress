@@ -38,7 +38,7 @@ doc <- rxp_qmd(
 
 derivs <- list(d0, d1, d2, d3, d4, doc)
 
-rixpress(derivs, project_path = ".", build = FALSE)
+rxp_populate(derivs, project_path = ".", build = FALSE)
 
 rxp_make(verbose = 5)
 

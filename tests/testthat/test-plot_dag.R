@@ -77,7 +77,7 @@ test_that("get_nodes_edges errors if dag.json is missing", {
   # Expect the specific error message
   expect_error(
     get_nodes_edges(path_dag = non_existent_path),
-    regexp = "dag\\.json missing! Did you run 'rixpress\\(\\)'\\?",
+    regexp = "dag\\.json missing! Did you run 'rxp_populate\\(\\)'\\?",
     fixed = FALSE # Use regexp matching because of special characters
   )
 })

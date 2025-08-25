@@ -1,7 +1,7 @@
-#' Generate Nix Pipeline Code with a Generic Default Target
+#' Generate Nix Pipeline Code
 #'
 #' This function generates a `pipeline.nix` file based on a list of derivation
-#' objects. Each derivation defines a build step, and `rixpress()` chains these
+#' objects. Each derivation defines a build step, and `rxp_populate()` chains these
 #' steps and handles the serialization and conversion of Python objects into R
 #' objects (or vice-versa). Derivations are created with `rxp_r()`, `rxp_py()`
 #' and so on. By default, the pipeline is also immediately built after being
@@ -23,9 +23,9 @@
 #'
 #' @param project_path Path to root of project, defaults to ".".
 #'
-#' @param build Logical, defaults to TRUE. Should the pipeline get built right
-#'   after being generated? If FALSE, you can build the pipeline later using
-#'   `rxp_make()`.
+#' @param build Logical, defaults to FALSE. Should the pipeline get built right
+#'   after being generated? When FALSE, use `rxp_make()` to build the pipeline
+#'   at a later stage.
 #'
 #' @param py_imports Named character vector of Python import rewrites. Names are
 #'   the base modules that rixpress auto-imports as "import <name>", and values
@@ -67,10 +67,10 @@
 #' list_derivs <- list(d1, d2)
 #'
 #' # Generate and build in one go
-#' rixpress(derivs = list_derivs, project_path = ".", build = TRUE)
+#' rxp_populate(derivs = list_derivs, project_path = ".", build = TRUE)
 #'
 #' # Or only populate, with inline Python import adjustments
-#' rixpress(
+#' rxp_populate(
 #'   derivs = list_derivs,
 #'   project_path = ".",
 #'   build = FALSE,
@@ -80,10 +80,10 @@
 #' rxp_make()
 #' }
 #' @export
-rixpress <- function(
+rxp_populate <- function(
   derivs,
   project_path = ".",
-  build = TRUE,
+  build = FALSE,
   py_imports = NULL,
   ...
 ) {

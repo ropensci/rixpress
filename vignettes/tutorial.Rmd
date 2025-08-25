@@ -128,12 +128,12 @@ list(
     name = NULL,
     expr = NULL
   )
-) |> rixpress(build = TRUE)
+) |> rxp_populate(build = TRUE)
 ```
 
 This template starts with `rxp_r_file()` to load data, and `rxp_r()` to
 define a step. These two derivations are put into a list and then passed to
-`rixpress()`. Let's start by importing data and filtering it using `{dplyr}`:
+`rxp_populate()`. Let's start by importing data and filtering it using `{dplyr}`:
 
 ```{r, eval = FALSE}
 library(rixpress)
@@ -150,7 +150,7 @@ list(
     name = filtered_mtcars,
     expr = filter(mtcars, am == 1)
   )
-) |> rixpress(build = TRUE)
+) |> rxp_populate(build = TRUE)
 ```
 
 Select the pipeline and run it (I highly recommend you use keyboard shortcuts
@@ -242,7 +242,7 @@ list(
     expr = select(filtered_mtcars, mpg)
   )
 ) |>
-  rixpress(build = TRUE)
+  rxp_populate(build = TRUE)
 ```
 
 Rebuild the pipeline. The first two steps are skipped because they're already

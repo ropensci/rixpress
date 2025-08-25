@@ -2,7 +2,7 @@
 #'
 #' Creates a JSON representation of a directed acyclic graph (DAG)
 #' based on dependencies between derivations. Is automatically called
-#' by `rixpress()`.
+#' by `rxp_populate()`.
 #'
 #' @family ci utilities
 #' @param rxp_list A list of derivations.

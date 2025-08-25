@@ -87,14 +87,14 @@ derivations:
 derivs <- list(d0, d1, d2)
 ```
 
-and pass it to the `rixpress()` function:
+and pass it to the `rxp_populate()` function:
 
 ```{r, eval = FALSE}
-rixpress(derivs)
+rxp_populate(derivs)
 ```
 
 To make the code more concise, you can directly define the list and pass it to
-`rixpress()` using the pipe operator `|>`:
+`rxp_populate()` using the pipe operator `|>`:
 
 ```{r, eval = FALSE}
 library(rixpress)
@@ -116,10 +116,10 @@ list(
     expr = dplyr::select(filtered_mtcars, mpg)
   )
 ) |>
-  rixpress()
+  rxp_populate()
 ```
 
-Running `rixpress()` performs several actions:
+Running `rxp_populate()` performs several actions:
 
 - creates a folder called `_rixpress` in the project's root directory. This
   folder contains automatically generated files needed for the pipeline to build
@@ -213,7 +213,7 @@ list(
     expr = dplyr::select(filtered_mtcars, mpg)
   )
 ) |>
-  rixpress(project_path = ".")
+  rxp_populate(project_path = ".")
 ```
 
 I recommend always using two separate scripts:
@@ -257,10 +257,10 @@ Now you can follow these instructions:
 
 It's often helpful to visualise your pipeline as a DAG (directed acyclic graph).
 You can generate and inspect this visualisation before building the pipeline by
-adding the `build = FALSE` argument to `rixpress()`:
+adding the `build = FALSE` argument to `rxp_populate()`:
 
 ```r
-rixpress(derivs, build = FALSE)
+rxp_populate(derivs, build = FALSE)
 ```
 
 This won't build the pipeline but will generate useful files, including a JSON
@@ -305,7 +305,7 @@ rxp_dag_for_ci()
 which saves the `dag.dot` object in the project's `_rixpress/` folder.
 
 After reviewing the DAG, you can build the pipeline by running `rxp_make()`
-instead of modifying your original `rixpress()` call.
+instead of modifying your original `rxp_populate()` call.
 
 ## Caveats
 

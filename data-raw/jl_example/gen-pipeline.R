@@ -30,7 +30,7 @@ list(
     make_gg(laplace_long_df)
   )
 ) |>
-  rixpress(build = TRUE)
+  rxp_populate(build = TRUE)
 
 #plot_dag()
 

@@ -200,7 +200,7 @@ test_that("rixpress correctly handles dependencies", {
   # Create derivations list
   derivs <- list(d1, d2, d3)
 
-  rixpress(derivs, project_path = ".", build = FALSE)
+  rxp_populate(derivs, project_path = ".", build = FALSE)
 
   result <- readLines("pipeline.nix")
 

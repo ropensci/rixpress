@@ -3,7 +3,6 @@
 S3method(print,derivation)
 export(add_import)
 export(adjust_import)
-export(rixpress)
 export(rxp_copy)
 export(rxp_dag_for_ci)
 export(rxp_export_artifacts)

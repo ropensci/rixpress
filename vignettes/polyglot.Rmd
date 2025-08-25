@@ -170,7 +170,7 @@ list(
     additional_files = c("my_doc/content.qmd", "my_doc/images")
   )
 ) |>
-  rixpress(project_path = ".")
+  rxp_populate(project_path = ".")
 ```
 
 As you can see, it starts by reading in some data using the Python polars
@@ -236,7 +236,7 @@ list(
     expr = dplyr::select(mtcars_head, mpg)
   )
 ) |>
-  rixpress(project_path = ".", build = FALSE)
+  rxp_populate(project_path = ".", build = FALSE)
 
 
 # Plot DAG for CI

@@ -19,7 +19,7 @@ d4 <- rxp_py(
 
 rxp_list <- list(d0, d1, d2, d3, d4)
 
-rixpress(rxp_list, project_path = ".")
+rxp_populate(rxp_list, project_path = ".")
 
 plot_dag()
 

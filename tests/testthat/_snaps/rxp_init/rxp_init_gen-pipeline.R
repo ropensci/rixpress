@@ -12,4 +12,4 @@ list(
     expr = NULL
   )
 ) |>
-  rixpress(build = TRUE)
+  rxp_populate(build = TRUE)

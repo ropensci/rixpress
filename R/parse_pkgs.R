@@ -418,7 +418,7 @@ generate_jl_libraries_from_nix <- function(
 
 #' Adjust Python import statements
 #'
-#' When calling `rixpress()`, a file containing Python import statements is
+#' When calling `rxp_populate()`, a file containing Python import statements is
 #' automatically generated inside the `_rixpress` folder. For example, if the
 #' `numpy` package is needed, the file will include a line like
 #' `"import numpy"`. However, Python programmers often write

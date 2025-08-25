@@ -86,7 +86,7 @@ rxp_init <- function(project_path = ".", skip_prompt = FALSE) {
     "    expr = NULL",
     "  )",
     ") |>",
-    "  rixpress(build = TRUE)"
+    "  rxp_populate(build = TRUE)"
   )
 
   writeLines(gen_env_lines, env_file)
