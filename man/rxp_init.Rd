@@ -37,7 +37,7 @@ Creates (overwriting if they already exist):
 }
 \seealso{
 Other utilities: 
-\code{\link{print.derivation}()},
+\code{\link{print.rxp_derivation}()},
 \code{\link{rxp_copy}()},
 \code{\link{rxp_inspect}()},
 \code{\link{rxp_list_logs}()},

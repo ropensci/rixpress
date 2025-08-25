@@ -49,9 +49,14 @@ make_derivation_snippet <- function(
 #' @family derivations
 #' @param name Symbol, name of the derivation.
 #' @param expr R code to generate the expression.
-#' @param additional_files Character vector, additional files to include. Custom
-#'   functions must go into a script called "functions.R", and additional files
-#'   that need to be accessible during the build process can be named anything.
+#' @param additional_files Character vector, additional files to include
+#'   during the build process. For example, if a function expects a certain
+#'   file to be available, this is where you should include it.
+#' @param user_functions Character vector, user-defined functions to include.
+#'   This should be a script (or scripts) containing user-defined functions
+#'   to include during the build process for this derivation. It is recommended
+#'   to use one script per function, and only include the required script(s) in
+#'   the derivation.
 #' @param nix_env Character, path to the Nix environment file, default is
 #'   "default.nix".
 #' @param serialize_function Function, defaults to NULL. A function used to
@@ -102,11 +107,11 @@ rxp_r <- function(
   name,
   expr,
   additional_files = "",
+  user_functions = "",
   nix_env = "default.nix",
   serialize_function = NULL,
   unserialize_function = NULL,
-  env_var = NULL,
-  user_functions = NULL
+  env_var = NULL
 ) {
   out_name <- deparse1(substitute(name))
   expr_str <- deparse1(substitute(expr))
@@ -236,13 +241,13 @@ rxp_r <- function(
     snippet = snippet,
     type = "rxp_r",
     additional_files = additional_files,
+    user_functions = user_functions,
     nix_env = nix_env,
     serialize_function = serialize_str,
     unserialize_function = unserialize_str,
-    env_var = env_var,
-    user_functions = user_functions
+    env_var = env_var
   ) |>
-    structure(class = "derivation")
+    structure(class = "rxp_derivation")
 }
 
 #' Create a Nix expression running a Python function
@@ -250,9 +255,14 @@ rxp_r <- function(
 #' @family derivations
 #' @param name Symbol, name of the derivation.
 #' @param py_expr Character, Python code to generate the expression.
-#' @param additional_files Character vector, additional files to include. Custom
-#'   functions must go into a script called "functions.py", and additional files
-#'   that need to be accessible during the build process can be named anything.
+#' @param additional_files Character vector, additional files to include
+#'   during the build process. For example, if a function expects a certain
+#'   file to be available, this is where you should include it.
+#' @param user_functions Character vector, user-defined functions to include.
+#'   This should be a script (or scripts) containing user-defined functions
+#'   to include during the build process for this derivation. It is recommended
+#'   to use one script per function, and only include the required script(s) in
+#'   the derivation.
 #' @param nix_env Character, path to the Nix environment file, default is
 #'   "default.nix".
 #' @param serialize_function Character, defaults to NULL. The name of the Python
@@ -295,11 +305,11 @@ rxp_py <- function(
   name,
   py_expr,
   additional_files = "",
+  user_functions = "",
   nix_env = "default.nix",
   serialize_function = NULL,
   unserialize_function = NULL,
-  env_var = NULL,
-  user_functions = NULL # <-- NEW ARGUMENT
+  env_var = NULL
 ) {
   out_name <- deparse1(substitute(name))
   py_expr <- gsub("'", "\\'", py_expr, fixed = TRUE)
@@ -446,13 +456,13 @@ rxp_py <- function(
     snippet = snippet,
     type = "rxp_py",
     additional_files = additional_files,
+    user_functions = user_functions,
     nix_env = nix_env,
     serialize_function = serialize_str,
     unserialize_function = unserialize_str,
-    env_var = env_var,
-    user_functions = user_functions
+    env_var = env_var
   ) |>
-    structure(class = "derivation")
+    structure(class = "rxp_derivation")
 }
 
 #' Render a Quarto document as a Nix derivation
@@ -687,7 +697,7 @@ rxp_qmd <- function(
     args = args,
     env_var = env_var
   ) |>
-    structure(class = "derivation")
+    structure(class = "rxp_derivation")
 }
 
 
@@ -792,7 +802,7 @@ rxp_file_common <- function(
     nix_env = nix_env,
     env_var = env_var
   ) |>
-    structure(class = "derivation")
+    structure(class = "rxp_derivation")
 }
 
 #' Creates a Nix expression that reads in a file (or folder of data) using R.
@@ -1074,7 +1084,7 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
     additional_files = "",
     nix_env = nix_env
   ) |>
-    structure(class = "derivation")
+    structure(class = "rxp_derivation")
 }
 
 
@@ -1265,11 +1275,11 @@ rxp_rmd <- function(
     params = params,
     env_var = env_var
   ) |>
-    structure(class = "derivation")
+    structure(class = "rxp_derivation")
 }
 
 #' Print method for derivation objects
-#' @param x An object of class "derivation"
+#' @param x An object of class "rxp_derivation"
 #' @param ... Additional arguments passed to print methods
 #' @return Nothing, prints a summary of the derivation object to the console.
 #' @examples
@@ -1279,7 +1289,7 @@ rxp_rmd <- function(
 #' }
 #' @family utilities
 #' @export
-print.derivation <- function(x, ...) {
+print.rxp_derivation <- function(x, ...) {
   cat("Name:", x$name, "\n")
   cat("Type:", x$type, "\n")
   if ("serialize_function" %in% names(x)) {
@@ -1340,9 +1350,14 @@ print.derivation <- function(x, ...) {
 #'
 #' @param name Symbol, name of the derivation.
 #' @param jl_expr Character, Julia code to generate the expression.
-#' @param additional_files Character vector, additional files to include. Custom
-#'   functions must go into a script called "functions.jl", and additional files
-#'   that need to be accessible during the build process can be named anything.
+#' @param additional_files Character vector, additional files to include
+#'   during the build process. For example, if a function expects a certain
+#'   file to be available, this is where you should include it.
+#' @param user_functions Character vector, user-defined functions to include.
+#'   This should be a script (or scripts) containing user-defined functions
+#'   to include during the build process for this derivation. It is recommended
+#'   to use one script per function, and only include the required script(s) in
+#'   the derivation.
 #' @param nix_env Character, path to the Nix environment file, default is
 #'   "default.nix".
 #' @param serialize_function Character, defaults to NULL. The name of the Julia
@@ -1387,11 +1402,11 @@ rxp_jl <- function(
   name,
   jl_expr,
   additional_files = "",
+  user_functions = "",
   nix_env = "default.nix",
   serialize_function = NULL,
   unserialize_function = NULL,
-  env_var = NULL,
-  user_functions = NULL # <-- NEW ARGUMENT
+  env_var = NULL
 ) {
   out_name <- deparse1(substitute(name))
   # Escape double quotes for Julia one-liner
@@ -1548,6 +1563,7 @@ rxp_jl <- function(
     snippet = snippet,
     type = "rxp_jl",
     additional_files = additional_files,
+    user_functions = user_functions,
     nix_env = nix_env,
     serialize_function = if (is.null(serialize_function)) {
       "Serialization.serialize"
@@ -1555,8 +1571,7 @@ rxp_jl <- function(
       serialize_function
     },
     unserialize_function = unserialize_str,
-    env_var = env_var,
-    user_functions = user_functions
+    env_var = env_var
   ) |>
-    structure(class = "derivation")
+    structure(class = "rxp_derivation")
 }

@@ -8,12 +8,13 @@ test_that("rxp_r: generates correct list", {
         "snippet" = '  mtcars_am = makeRDerivation {\n    name = \"mtcars_am\";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      Rscript -e \"\n        source(\'libraries.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')\"\n    \'\';\n  };',
         "type" = "rxp_r",
         "additional_files" = "",
+        "user_functions" = "",
         "nix_env" = "default.nix",
         "serialize_function" = "saveRDS",
         "unserialize_function" = "readRDS",
         "env_var" = NULL
       ),
-      class = "derivation"
+      class = "rxp_derivation"
     )
   )
 })
@@ -28,12 +29,13 @@ test_that("rxp_py: generates correct list", {
         "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = \"mtcars_pl_am\";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      python -c "\nexec(open(\'libraries.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
         "type" = "rxp_py",
         "additional_files" = "",
+        "user_functions" = "",
         "nix_env" = "default.nix",
         "serialize_function" = "with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)",
         "unserialize_function" = "pickle.load",
         "env_var" = NULL
       ),
-      class = "derivation"
+      class = "rxp_derivation"
     )
   )
 })
@@ -55,12 +57,13 @@ test_that("rxp_py: custom serialization functions work", {
         "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = \"mtcars_pl_am\";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      python -c "\nexec(open(\'libraries.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\ncustom_save(globals()[\'mtcars_pl_am\'], \'mtcars_pl_am\')\n"\n    \'\';\n  };',
         "type" = "rxp_py",
         "additional_files" = "",
+        "user_functions" = "",
         "nix_env" = "default.nix",
         "serialize_function" = "custom_save(globals()['mtcars_pl_am'], 'mtcars_pl_am')",
         "unserialize_function" = "custom_load",
         "env_var" = NULL
       ),
-      class = "derivation"
+      class = "rxp_derivation"
     )
   )
 })
@@ -101,7 +104,7 @@ test_that("rxp_qmd: generates correct list", {
         "args" = "--to pdf",
         "env_var" = NULL
       ),
-      class = "derivation"
+      class = "rxp_derivation"
     )
   )
 
@@ -125,7 +128,7 @@ test_that("rxp_r_file: single file reading works", {
     "nix_env" = d1$nix_env,
     "copy_data_folder" = FALSE
   )
-  class(d1_subset) <- "derivation"
+  class(d1_subset) <- "rxp_derivation"
 
   testthat::expect_equal(
     d1_subset,
@@ -138,7 +141,7 @@ test_that("rxp_r_file: single file reading works", {
         "nix_env" = "default.nix",
         "copy_data_folder" = FALSE
       ),
-      class = "derivation"
+      class = "rxp_derivation"
     )
   )
 
@@ -166,8 +169,9 @@ test_that("rxp_r_file: folder reading works", {
   d1 <- rxp_r_file(
     all_data,
     path = test_data_dir,
-    read_function = function(x)
-      lapply(list.files(x, full.names = TRUE, pattern = "\\.csv$"), read.csv),
+    read_function = function(x) {
+      lapply(list.files(x, full.names = TRUE, pattern = "\\.csv$"), read.csv)
+    },
     copy_data_folder = TRUE
   )
 
@@ -176,19 +180,21 @@ test_that("rxp_r_file: folder reading works", {
     "name" = d1$name,
     "type" = d1$type,
     "path" = test_data_dir,
-    "read_function" = function(x)
-      lapply(list.files(x, full.names = TRUE, pattern = "\\.csv$"), read.csv),
+    "read_function" = function(x) {
+      lapply(list.files(x, full.names = TRUE, pattern = "\\.csv$"), read.csv)
+    },
     "nix_env" = d1$nix_env,
     "copy_data_folder" = TRUE
   )
-  class(d1_subset) <- "derivation"
+  class(d1_subset) <- "rxp_derivation"
 
   # Compare function bodies instead of the functions themselves
   testthat::expect_equal(
     body(d1_subset$read_function),
     body(
-      function(x)
+      function(x) {
         lapply(list.files(x, full.names = TRUE, pattern = "\\.csv$"), read.csv)
+      }
     )
   )
 
@@ -202,7 +208,7 @@ test_that("rxp_r_file: folder reading works", {
       "nix_env" = "default.nix",
       "copy_data_folder" = TRUE
     ),
-    class = "derivation"
+    class = "rxp_derivation"
   )
 
   testthat::expect_equal(d1_subset, expected)
@@ -231,7 +237,7 @@ test_that("rxp_py_file: basic functionality works", {
     "nix_env" = d1$nix_env,
     "copy_data_folder" = FALSE
   )
-  class(d1_subset) <- "derivation"
+  class(d1_subset) <- "rxp_derivation"
 
   testthat::expect_equal(
     d1_subset,
@@ -244,7 +250,7 @@ test_that("rxp_py_file: basic functionality works", {
         "nix_env" = "default.nix",
         "copy_data_folder" = FALSE
       ),
-      class = "derivation"
+      class = "rxp_derivation"
     )
   )
 
@@ -271,7 +277,7 @@ test_that("rxp_py2r: generates correct list", {
     "type" = d1$type,
     "nix_env" = d1$nix_env
   )
-  class(d1_subset) <- "derivation"
+  class(d1_subset) <- "rxp_derivation"
 
   testthat::expect_equal(
     d1_subset,
@@ -281,7 +287,7 @@ test_that("rxp_py2r: generates correct list", {
         "type" = "rxp_py2r",
         "nix_env" = "default.nix"
       ),
-      class = "derivation"
+      class = "rxp_derivation"
     )
   )
 })
@@ -302,7 +308,7 @@ test_that("rxp_r2py: generates correct list", {
         "additional_files" = "",
         "nix_env" = "default.nix"
       ),
-      class = "derivation"
+      class = "rxp_derivation"
     )
   )
 })
@@ -332,7 +338,8 @@ test_that("rxp_r: with additional files", {
   d1 <- rxp_r(
     mtcars_am,
     dplyr::filter(mtcars, am == 1),
-    additional_files = c("functions.R", "data.csv")
+    additional_files = "data.csv",
+    user_functions = "functions.R"
   )
 
   # Test the entire object
@@ -341,15 +348,16 @@ test_that("rxp_r: with additional files", {
     structure(
       list(
         "name" = "mtcars_am",
-        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r ${./data.csv} data.csv\n      Rscript -e "\n        source(\'libraries.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
+        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ./functions.R ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r ${./data.csv} data.csv\n      cp ${./functions.R} functions.R\n      Rscript -e "\n        source(\'libraries.R\')\n        source(\'functions.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
         "type" = "rxp_r",
-        "additional_files" = c("functions.R", "data.csv"),
+        "additional_files" = "data.csv",
+        "user_functions" = "functions.R",
         "nix_env" = "default.nix",
         "serialize_function" = "saveRDS",
         "unserialize_function" = "readRDS",
         "env_var" = NULL
       ),
-      class = "derivation"
+      class = "rxp_derivation"
     )
   )
 })
@@ -358,7 +366,8 @@ test_that("rxp_py: with additional files", {
   d1 <- rxp_py(
     mtcars_pl_am,
     "mtcars_pl.filter(pl.col('am') == 1)",
-    additional_files = c("functions.py", "data.csv")
+    additional_files = "data.csv",
+    user_functions = "functions.py"
   )
 
   # Test the entire object
@@ -367,15 +376,16 @@ test_that("rxp_py: with additional files", {
     structure(
       list(
         "name" = "mtcars_pl_am",
-        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = "mtcars_pl_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r ${./data.csv} data.csv\n      python -c "\nexec(open(\'libraries.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
+        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = "mtcars_pl_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ./functions.py ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r ${./data.csv} data.csv\n      cp ${./functions.py} functions.py\n      python -c "\nexec(open(\'libraries.py\').read())\nexec(open(\'functions.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
         "type" = "rxp_py",
-        "additional_files" = c("functions.py", "data.csv"),
+        "additional_files" = "data.csv",
+        "user_functions" = "functions.py",
         "nix_env" = "default.nix",
         "serialize_function" = "with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)",
         "unserialize_function" = "pickle.load",
         "env_var" = NULL
       ),
-      class = "derivation"
+      class = "rxp_derivation"
     )
   )
 })
@@ -396,12 +406,13 @@ test_that("rxp_r: with env_var parameter", {
         "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export MY_VAR=test_value\n      export ANOTHER_VAR=123\n      Rscript -e "\n        source(\'libraries.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
         "type" = "rxp_r",
         "additional_files" = "",
+        "user_functions" = "",
         "nix_env" = "default.nix",
         "serialize_function" = "saveRDS",
         "unserialize_function" = "readRDS",
         "env_var" = c(MY_VAR = "test_value", ANOTHER_VAR = "123")
       ),
-      class = "derivation"
+      class = "rxp_derivation"
     )
   )
 })
@@ -434,12 +445,13 @@ test_that("rxp_py: with env_var parameter", {
         "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = "mtcars_pl_am";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export PYTHON_ENV=production\n      export DEBUG=0\n      python -c "\nexec(open(\'libraries.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
         "type" = "rxp_py",
         "additional_files" = "",
+        "user_functions" = "",
         "nix_env" = "default.nix",
         "serialize_function" = "with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)",
         "unserialize_function" = "pickle.load",
         "env_var" = c(PYTHON_ENV = "production", DEBUG = "0")
       ),
-      class = "derivation"
+      class = "rxp_derivation"
     )
   )
 })
@@ -484,7 +496,7 @@ test_that("rxp_qmd: with env_var parameter", {
           QUARTO_RENDER_TOKEN = "abc123"
         )
       ),
-      class = "derivation"
+      class = "rxp_derivation"
     )
   )
 
@@ -520,7 +532,7 @@ test_that("rxp_r_file: with env_var parameter", {
         "nix_env" = "default.nix",
         "env_var" = c(R_DATA_DIR = "/path/to/data", R_DEBUG = "TRUE")
       ),
-      class = "derivation"
+      class = "rxp_derivation"
     )
   )
 
@@ -556,7 +568,7 @@ test_that("rxp_py_file: with env_var parameter", {
         "nix_env" = "default.nix",
         "env_var" = c(PYTHONPATH = "/custom/modules", PYTHON_DEBUG = "1")
       ),
-      class = "derivation"
+      class = "rxp_derivation"
     )
   )
 
@@ -607,7 +619,7 @@ test_that("rxp_rmd: with env_var parameter", {
           R_LIBS_USER = "/custom/r/libs"
         )
       ),
-      class = "derivation"
+      class = "rxp_derivation"
     )
   )
 

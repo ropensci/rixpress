@@ -8,6 +8,7 @@ rxp_py(
   name,
   py_expr,
   additional_files = "",
+  user_functions = "",
   nix_env = "default.nix",
   serialize_function = NULL,
   unserialize_function = NULL,
@@ -19,9 +20,15 @@ rxp_py(
 
 \item{py_expr}{Character, Python code to generate the expression.}
 
-\item{additional_files}{Character vector, additional files to include. Custom
-functions must go into a script called "functions.py", and additional files
-that need to be accessible during the build process can be named anything.}
+\item{additional_files}{Character vector, additional files to include
+during the build process. For example, if a function expects a certain
+file to be available, this is where you should include it.}
+
+\item{user_functions}{Character vector, user-defined functions to include.
+This should be a script (or scripts) containing user-defined functions
+to include during the build process for this derivation. It is recommended
+to use one script per function, and only include the required script(s) in
+the derivation.}
 
 \item{nix_env}{Character, path to the Nix environment file, default is
 "default.nix".}
