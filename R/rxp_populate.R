@@ -402,15 +402,12 @@ in
 #' @noRd
 gen_pipeline <- function(dag_file, flat_pipeline) {
   dag <- jsonlite::read_json(dag_file)
-  pipeline <- flat_pipeline
+  pipeline_str <- paste(flat_pipeline, collapse = "\n")
 
   for (d in dag$derivations) {
     if (
       length(d$depends) == 0 ||
-        d$type == "rxp_qmd" ||
-        d$type == "rxp_rmd" ||
-        d$type == "rxp_py2r" ||
-        d$type == "rxp_r2py"
+        d$type %in% c("rxp_qmd", "rxp_rmd", "rxp_py2r", "rxp_r2py")
     ) {
       next
     }
@@ -420,121 +417,49 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     type <- d$type[1]
     unserialize_function <- d$unserialize_function
 
-    # Set parameters based on derivation type
+    # Define language-specific helpers
     if (type == "rxp_r") {
-      maker <- "makeRDerivation"
-      script_cmd <- "Rscript -e \""
-      load_line <- function(dep, indent, unserialize_function) {
-        paste0(
-          indent,
-          dep,
-          " <- ",
-          unserialize_function,
-          "('${",
-          dep,
-          "}/",
-          dep,
-          "')"
-        )
-      }
-    } else if (type == "rxp_py") {
-      maker <- "makePyDerivation"
-      script_cmd <- "python -c \""
-      load_line <- function(dep, indent, unserialize_function) {
-        path <- paste0("${", dep, "}/", dep)
-        if (unserialize_function == "pickle.load") {
-          paste0(
-            "with open('",
-            path,
-            "', 'rb') as f: ",
-            dep,
-            " = pickle.load(f)"
-          )
-        } else {
-          paste0(
-            dep,
-            " = ",
-            unserialize_function,
-            "('",
-            path,
-            "')"
-          )
-        }
-      }
-    } else if (type == "rxp_jl") {
-      maker <- "makeJlDerivation"
-      script_cmd <- "julia -e \""
-      load_line <- function(dep, indent, unserialize_function) {
-        path <- paste0("${", dep, "}/", dep)
-        paste0(
-          dep,
-          " = ",
-          unserialize_function,
-          "(\\\"",
-          path,
-          "\\\")"
-        )
-      }
+      # Add 'else if' blocks here for Python and Julia if needed
+      placeholder <- "# RIXPRESS_LOAD_DEPENDENCIES_HERE"
+      load_line_template <- "%s <- %s('${%s}/%s')" # obj <- readRDS('${obj}/obj')
+
+      load_lines <- vapply(
+        deps,
+        function(dep) {
+          sprintf(load_line_template, dep, unserialize_function, dep, dep)
+        },
+        character(1)
+      )
+
+      replacement_str <- paste(load_lines, collapse = "\n")
     } else {
-      warning("Unsupported type for derivation ", deriv_name)
-      next
+      next # Skip unsupported types for now
     }
 
-    # Locate the derivation block
-    pattern <- paste0("^\\s*", deriv_name, " = ", maker, " \\{")
-    start_idx <- grep(pattern, pipeline)
-    if (!length(start_idx)) {
-      warning("Derivation ", deriv_name, " not found")
-      next
-    }
-    start_idx <- start_idx[1]
-
-    # Find the end of the block
-    end_candidates <- grep("^\\s*};", pipeline)
-    block_end_idx <- end_candidates[end_candidates > start_idx][1]
-    if (is.na(block_end_idx)) {
-      warning("Block end for ", deriv_name, " not found")
-      next
-    }
-
-    block <- pipeline[start_idx:block_end_idx]
-    bp_idx <- grep("buildPhase = ''", block)
-    if (!length(bp_idx)) {
-      warning("buildPhase not found for ", deriv_name)
-      next
-    }
-    build_phase_idx <- start_idx + bp_idx[1] - 1
-
-    sub_block <- block[bp_idx[1]:length(block)]
-    script_idx <- grep(script_cmd, sub_block, fixed = TRUE)
-    if (!length(script_idx)) {
-      warning("Script command not found in buildPhase for ", deriv_name)
-      next
-    }
-    script_idx <- build_phase_idx + script_idx[1]
-
-    # Determine indentation for R scripts, none for Python or Julia
-    indent <- if (type == "rxp_r") {
-      if (script_idx + 1 <= length(pipeline)) {
-        sub("^([[:space:]]*).*", "\\1", pipeline[script_idx + 1])
-      } else {
-        "      "
-      }
-    } else {
-      ""
-    }
-
-    load_lines <- vapply(
-      deps,
-      load_line,
-      indent,
-      unserialize_function,
-      FUN.VALUE = character(1)
+    # Use sub() to replace the placeholder in the entire pipeline string
+    # We use a regex to uniquely identify the placeholder within its derivation block
+    # This is safer than a global substitution.
+    pattern <- paste0(
+      "(",
+      deriv_name,
+      "\\s*=\\s*makeRDerivation[\\s\\S]*?", # Match derivation start
+      placeholder, # Find the placeholder
+      ")" # Capture the whole block
     )
-    pipeline <- append(pipeline, load_lines, after = build_phase_idx + 2)
+
+    # The replacement function \1 refers to the captured group, ensuring we only
+    # modify the placeholder inside the correct derivation block.
+    pipeline_str <- sub(
+      pattern,
+      paste0("\\1", replacement_str),
+      pipeline_str,
+      perl = TRUE
+    )
+    # Now, replace the placeholder itself in the modified block
+    pipeline_str <- sub(placeholder, "", pipeline_str, fixed = TRUE)
   }
 
-  pipeline
+  strsplit(pipeline_str, "\n")[[1]]
 }
 
 #' Generate an R or Py script with library calls from a default.nix file

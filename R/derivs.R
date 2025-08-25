@@ -202,7 +202,7 @@ rxp_r <- function(
   }
 
   build_phase <- sprintf(
-    "%s%s%sRscript -e \"\n        source('libraries.R')\n        %s%s <- %s\n        %s(%s, '%s')\"",
+    "%s%s%sRscript -e \"\n        source('libraries.R')\n        # RIXPRESS_LOAD_DEPENDENCIES_HERE\n        %s%s <- %s\n        %s(%s, '%s')\"",
     env_exports,
     copy_cmd,
     user_functions_copy_cmd,
