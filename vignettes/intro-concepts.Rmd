@@ -14,23 +14,23 @@ knitr::opts_chunk$set(
 )
 ```
 
-For a video version of this tutorial, [click here](https://youtu.be/bMiNfXJdgXg).
+For a video version of this tutorial,
+[click here](https://youtu.be/bMiNfXJdgXg).
 
 This vignette introduces key terminology and walks you through setting up a
 simple pipeline using `{rixpress}`. Understanding the concepts presented here is
 helpful but not mandatory. I recommend reading through this vignette, but don't
 worry if you don't grasp everything immediately. You can try building a simple
-pipeline by following the next vignette, `vignette("core-functions")`, and
-then return to this one; things should become clearer after some hands-on
-experience!
+pipeline by following the vignette `vignette("core-functions")`, and then
+return to this one; things should become clearer after some hands-on experience!
 
 Also, this package makes heavy use of its sister package `{rix}`, and I highly
 recommend that you first get familiar with `Nix` by using `{rix}`. With `{rix}`,
 you'll learn how to set up reproducible development environments for data
 science, which you can use for interactive data analysis work. Then, if you want
 to go one step further in the reproducibility
-spectrum/continuum^[https://doi.org/10.1126/science.1213847],
-this is where `{rixpress}` comes in.
+spectrum/continuum^[https://doi.org/10.1126/science.1213847], this is where
+`{rixpress}` comes in.
 
 ## Definitions
 
@@ -57,7 +57,7 @@ The next sections of this document explain these three points in more detail.
 
 Here is an example of a *simple* `Nix` expression:
 
-```
+```nix
 let
  pkgs = import (fetchTarball "https://github.com/rstats-on-nix/nixpkgs/archive/2025-04-11.tar.gz") {};
 
@@ -86,10 +86,10 @@ fail (though it's a bit of a stretch to call this a *pipeline*) is if the
 `mtcars.csv` file is not provided to it.
 
 You could then add another step that uses `filtered.csv` as input and continue
-processing it. If you label the above code as `f` and a subsequent chunk of `Nix`
-code as `g`, then adding another step would essentially result in the following
-computation: `mtcars |> f |> g`, where `f` and `g` are pure functions, and the
-pipeline is thus a composition of pure functions.
+processing it. If you label the above code as `f` and a subsequent chunk of
+`Nix` code as `g`, then adding another step would essentially result in the
+following computation: `mtcars |> f |> g`, where `f` and `g` are pure functions,
+and the pipeline is thus a composition of pure functions.
 
 `Nix` builds `filtered.csv` in two steps: it first generates a *derivation* from
 this expression, and only then builds it. For clarity in this document, I'll

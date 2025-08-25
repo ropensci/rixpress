@@ -58,9 +58,9 @@ cachix use rstats-on-nix
 ```
 
 There might be a message telling you to add your user to a configuration file by
-executing another command. If so, follow the instructions; you only need to do this once per machine you
-want to use `{rixpress}` on. Many thanks to [Cachix](https://www.cachix.org/)
-for sponsoring the `rstats-on-nix` cache!
+executing another command. If so, follow the instructions; you only need to do
+this once per machine you want to use `{rixpress}` on. Many thanks to
+[Cachix](https://www.cachix.org/) for sponsoring the `rstats-on-nix` cache!
 
 Now that the cache is configured, it's time to bootstrap your development
 environment. Run this line:
@@ -102,7 +102,14 @@ listed Python packages in that environment. You'll notice that we add
 for converting data between R and Python if you're not using a universal format
 like JSON. Python build steps are executed in a standard Python shell and do not
 require `{reticulate}` for Python code execution itself, so if you're only using
-JSON to transfer data, `{reticulate}` is not required.
+JSON to transfer data, `{reticulate}` is not required. If you prefer, you can
+also use `uv` to manage Python and Python packages. While this is not a pure Nix
+solution, it is still useful in cases you need a specific Python package that
+might not be available through Nix, as not all PyPI packages are available
+through Nix. In this case, refer to this
+[section](https://docs.ropensci.org/rix/articles/d1-installing-r-packages-in-a-nix-environment.html#installing-python-packages-not-available-via-nixpkgs-impure)
+of the *Installing R and Python packages in a Nix environment* vignette from
+`{rix}`.
 
 Now that you defined the execution environment of the pipeline, you can run the
 `gen-env.R` script, still from the temporary `Nix` shell by running
@@ -123,14 +130,14 @@ list(
   rxp_py_file(
     name = mtcars_pl,
     path = 'data/mtcars.csv',
-    read_function = "lambda x: polars.read_csv(x, separator='|')"
+    read_function = "lambda x: pl.read_csv(x, separator='|')"
   ),
 
   rxp_py(
     # reticulate doesn't support polars DFs yet, so need to convert
     # first to pandas DF
     name = mtcars_pl_am,
-    py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()"
+    py_expr = "mtcars_pl.filter(pl.col('am') == 1).to_pandas()"
   ),
 
   rxp_py2r(
@@ -170,38 +177,36 @@ list(
     additional_files = c("my_doc/content.qmd", "my_doc/images")
   )
 ) |>
-  rxp_populate(project_path = ".")
+  rxp_populate(
+    project_path = ".",
+    py_imports = c(polars = "import polars as pl")
+  )
 ```
 
-As you can see, it starts by reading in some data using the Python polars
+As you can see, it starts by reading in some data using the Python `polars`
 package, and then converts it to an R data frame for further manipulation,
 converts it back to a Python data frame and back to R. You'll notice that at
 some point the *head* of the data is computed using a user-defined function
 called `my_head()`. User-defined functions should all go into a script called
-`functions.R` or `functions.py` and derivations that use them need to be aware of
-them by setting the `additional_files` argument (if derivations need further
-files to be available, these can also be specified there. A main difference between
-`rxp_py()` and `rxp_r()` is that Python code should be passed as a string, and
-not as an expression. Also, you'll notice that I had to use `polars.read_csv()`
-instead of the more common `pl.read_csv()`. This is because by default Python
-packages get imported using a simple statement `import polars`. If you want to
-change this to `import polars as pl` (`import pandas as pd` and so on), then you
-can use the `adjust_import()` function. For example:
+`functions.R` or `functions.py` and derivations that use them need to be aware
+of them by setting the `additional_files` argument (if derivations need further
+files to be available, these can also be specified there. A main difference
+between `rxp_py()` and `rxp_r()` is that Python code should be passed as a
+string, and not as an expression.
+
+What's also import for Python is to define how packages should be imported. In
+this case, I want `polars` to be imported using `import polars as pl`, so I need
+to use the `py_imports` argument of `rxp_populate()`. It is possible to skip
+this, but then you'd need to write the entire package name each time:
+`polars.read_csv()`. This is sometimes mandatory, for example if you want to
+import a package's submodule:
 
 ```{r, eval = FALSE}
-adjust_import("import polars", "import polars as pl")
-```
-
-`adjust_import()` is sometimes mandatory, for example if you want to import a
-package's submodule:
-
-```{r, eval = FALSE}
-adjust_import("import pillow", "from PIL import Image")
+py_imports = c(pillow = "from PIL import Image")
 ```
 
 The package is called `pillow`, so `{rixpress}` will write the statement
-as `import pillow`, but this will simply not work. So in this case
-`adjust_import()` must be used.
+as `import pillow`, but this will simply not work.
 
 If you want to use JSON to transfer data between derivations, you should use
 the `serialize_function` and `unserialize_function` arguments respectively:
@@ -214,12 +219,12 @@ list(
   rxp_py_file(
     name = mtcars_pl,
     path = "data/mtcars.csv",
-    read_function = "lambda x: polars.read_csv(x, separator='|')"
+    read_function = "lambda x: pl.read_csv(x, separator='|')"
   ),
 
   rxp_py(
     name = mtcars_pl_am,
-    py_expr = "mtcars_pl.filter(polars.col('am') == 1)",
+    py_expr = "mtcars_pl.filter(pl.col('am') == 1)",
     additional_files = "functions.py",
     serialize_function = "serialize_to_json",
   ),
@@ -236,8 +241,10 @@ list(
     expr = dplyr::select(mtcars_head, mpg)
   )
 ) |>
-  rxp_populate(project_path = ".", build = FALSE)
-
+  rxp_populate(
+    project_path = ".",
+    py_imports = c(polars = "import polars as pl")
+  )
 
 # Plot DAG for CI
 rxp_dag_for_ci()
@@ -258,10 +265,10 @@ learning-specific functions for specific models, such as those from `xgboost`.
 
 ## Building a Quarto or R Markdown document
 
-The last pipeline I want to discuss builds a Quarto document using
-`rxp_qmd()` (use `rxp_rmd()` for an R Markdown document). Here again, the
-`additional_files` argument is used to make the derivation aware of required
-files to build the document. Here is what the source of the document looks like:
+The last pipeline I want to discuss builds a Quarto document using `rxp_qmd()`
+(use `rxp_rmd()` for an R Markdown document). Here again, the `additional_files`
+argument is used to make the derivation aware of required files to build the
+document. Here is what the source of the document looks like:
 
 ````text
 

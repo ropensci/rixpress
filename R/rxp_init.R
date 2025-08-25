@@ -27,7 +27,9 @@
 #' @export
 rxp_init <- function(project_path = ".", skip_prompt = FALSE) {
   confirm <- function(question) {
-    if (skip_prompt) return(TRUE)
+    if (skip_prompt) {
+      return(TRUE)
+    }
     ans <- readline(paste0(question, " [y/n]: "))
     tolower(substr(ans, 1, 1)) == "y" # just pick the first letter and lower it
   }
@@ -86,7 +88,7 @@ rxp_init <- function(project_path = ".", skip_prompt = FALSE) {
     "    expr = NULL",
     "  )",
     ") |>",
-    "  rxp_populate(build = TRUE)"
+    "  rxp_populate(build = FALSE)"
   )
 
   writeLines(gen_env_lines, env_file)

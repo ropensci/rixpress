@@ -80,17 +80,24 @@ build instructions of all the derivations and final outputs as `Nix` code. It is
 possible to define derivations that run Python or Julia code as well, and
 objects can be passed to and from R or Python by using `rxp_py2r()` and
 `ryp_r2py()`, or by using a common serialization format such as JSON. By
-default, calling `rxp_populate()` also builds the pipeline, but it's possible to
-only generate the `pipeline.nix` file and then build the pipeline at a later
-stage using:
+default, calling `rxp_populate()` doesn't not build the pipeline, so you need to
+run:
 
 ```r
 rxp_make()
 ```
 
-## Two-step workflow for Python projects
+to build it. If you prefer, you can set the `build` argument to `TRUE` in
+`rxp_populate()` to build the pipeline as soon as the files are generated, so
+you don't need to call `rxp_make()` separately.
 
-For Python projects or when you need to adjust Python import statements, you can use the two-step workflow with `rxp_populate()`:
+## Adjusting imports for Python projects
+
+For Python projects, you often need to adjust imports. By default, if you need
+`pandas` for example, `pandas` functions will be made available to the builders
+by calling `import pandas`. If you want or need to use `import pandas as pd`,
+you need to use the `py_imports` argument to `rxp_populate()`:
+
 
 ```r
 # Define Python derivations
@@ -109,10 +116,12 @@ rxp_populate(
 )
 
 # Step 2: Build the pipeline
-rxp_make()
+rxp_make(build = TRUE)
 ```
 
-This approach is especially useful for packages like `pillow` (which requires `from PIL import Image` instead of `import pillow`) or when you want to use common aliases like `import numpy as np`.
+This approach is especially useful for packages like `pillow` (which requires
+`from PIL import Image` instead of `import pillow`) or when you want to use
+common aliases like `import numpy as np`.
 
 ## Environment setup
 
@@ -128,8 +137,8 @@ should be a `.psv` file, since the data is separated by pipes –`|`… why? jus
 because–). Each output (e.g., `mtcars`, `mtcars_am`, `mtcars_head`,
 `mtcars_tail`, `mtcars_mpg`, `page`) is built by `Nix` within the environment
 defined by the `default.nix` file. Concretely, `{rix}` made using `Nix` as a
-package manager easier for R users, `{rixpress}` makes it now easy to use `Nix` as
-a build automation tool!
+package manager easier for R users, `{rixpress}` makes it now easy to use `Nix`
+as a build automation tool!
 
 When you run `rxp_populate()`, a folder called `_rixpress/` gets also generated
 which contains a file with a JSON representation of the pipeline’s DAG (Directed
@@ -145,8 +154,8 @@ rxp_ggdag()
 </figure>
 
 Because the pipeline is built using `Nix`, the outputs all get stored in the
-so-called `Nix` store under `/nix/store/`. It can be annoying to retrieve objects
-from the `Nix` store so `{rixpress}` contains several helper functions:
+so-called `Nix` store under `/nix/store/`. It can be annoying to retrieve
+objects from the `Nix` store so `{rixpress}` contains several helper functions:
 
 - `rxp_read("mtcars_mpg")` reads `mtcars_mpg` into memory;
 - `rxp_load("mtcars_mpg")` loads them into the global environment.
@@ -161,7 +170,7 @@ You can export the cache into a file and easily import it on another machine (or
 on CI) to avoid having to rebuild everything from scratch using
 `rxp_export_artifacts()` and `rxp_import_artifacts()` respectively.
 
-`rxp_populate()` is very flexible; please consult [this
+`{rixpress}` is very flexible; please consult [this
 repository](https://github.com/b-rodrigues/rixpress_demos/tree/master) which
 contains many different examples you can take inspiration from.
 
@@ -176,8 +185,8 @@ be ready to use `{rixpress}`!
 
 ### Installing rixpress
 
-Since there's little point in installing `{rixpress}` if you don't use `Nix`, the
-ideal way to install `{rixpress}` is instead to use `{rix}` to set up a
+Since there's little point in installing `{rixpress}` if you don't use `Nix`,
+the ideal way to install `{rixpress}` is instead to use `{rix}` to set up a
 reproducible environment that includes `{rixpress}` and the other required
 dependencies for your project. Take a look at the [introductory concepts
 vignette](https://b-rodrigues.github.io/rixpress/articles/a-intro_concepts.html)

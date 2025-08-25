@@ -11,7 +11,8 @@ This vignette demonstrates how to build a `{rixpress}` pipeline that only uses R
 derivations. For multilingual pipelines, read the next vignette
 `vignette("polyglot")`.
 
-If you are more of a visual learner, you can also watch [this video](https://www.youtube.com/watch?v=IXKd5ySzzSU) which
+If you are more of a visual learner, you can also watch
+[this video](https://www.youtube.com/watch?v=IXKd5ySzzSU) which
 will walk you through the contents of this vignette.
 
 # Installing the required software
@@ -108,10 +109,10 @@ to the versions available on this date from CRAN, and I've added `{dplyr}` and
 temporary `Nix` shell and run `Rscript gen-env.R` (or `source("gen-env.R")`
 inside an R session). This will create a `default.nix` file in my project's
 folder: this is a `Nix` file that defines my environment. I can now leave my
-temporary shell by first quitting R (if applicable), then typing CTRL-D or `exit`.
-Then I can build my development environment using `nix-build`. Let's now enter
-our development shell by typing `nix-shell` and launch RStudio (or whatever
-editor you want to use) and open `gen-pipeline.R`:
+temporary shell by first quitting R (if applicable), then typing CTRL-D or
+`exit`. Then I can build my development environment using `nix-build`. Let's now
+enter our development shell by typing `nix-shell` and launch RStudio (or
+whatever editor you want to use) and open `gen-pipeline.R`:
 
 
 ```{r, eval = FALSE}
