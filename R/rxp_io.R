@@ -128,10 +128,9 @@ build_phase <- function(lang, read_func, copy_cmd, user_code, out_name,
   rel_path <- function(p) sub("^\\./+", "", p)
 
   if (!copy_data_folder) {
-    # single file: copy the file *inside* $src preserving subdirs
-    frel <- rel_path(path)
+    # single file: copy $src directly (for single files, $src IS the file)
     actual_path <- path
-    copy_line <- sprintf("cp \"$src/%s\" input_file", frel)
+    copy_line <- "cp $src input_file"
     arg_R  <- "input_file"
     arg_Py <- "file_path = 'input_file'"
 
