@@ -466,6 +466,239 @@ rxp_py <- function(
     structure(class = "rxp_derivation")
 }
 
+
+#' Create a Nix expression running a Julia function
+#'
+#' @param name Symbol, name of the derivation.
+#' @param jl_expr Character, Julia code to generate the expression.
+#' @param additional_files Character vector, additional files to include
+#'   during the build process. For example, if a function expects a certain
+#'   file to be available, this is where you should include it.
+#' @param user_functions Character vector, user-defined functions to include.
+#'   This should be a script (or scripts) containing user-defined functions
+#'   to include during the build process for this derivation. It is recommended
+#'   to use one script per function, and only include the required script(s) in
+#'   the derivation.
+#' @param nix_env Character, path to the Nix environment file, default is
+#'   "default.nix".
+#' @param serialize_function Character, defaults to NULL. The name of the Julia
+#'   function used to serialize the object. It must accept two arguments: the
+#'   object to serialize (first), and the target file path (second). If NULL,
+#'   the default behaviour uses the built‐in `Serialization.serialize` API. Define
+#'   any custom serializer in `functions.jl`.
+#' @param unserialize_function Character, defaults to NULL. The name of the Julia
+#'   function used to unserialize the object. It must accept one argument: the
+#'   file path. If NULL, the default is assumed to be `Serialization.deserialize`.
+#' @param env_var Character vector, defaults to NULL. A named vector of
+#'   environment variables to set before running the Julia script, e.g.,
+#'   `c("JULIA_DEPOT_PATH" = "/path/to/depot")`. Each entry will be added as
+#'   an `export` statement in the build phase.
+#' @details At a basic level,
+#'   `rxp_jl(filtered_data, "filter(df, :col .> 10)")` is equivalent to
+#'   `filtered_data = filter(df, :col .> 10)` in Julia. `rxp_jl()` generates the
+#'   required Nix boilerplate to output a so‐called "derivation" in Nix jargon.
+#'   A Nix derivation is a recipe that defines how to create an output (in this
+#'   case `filtered_data`) including its dependencies, build steps, and output
+#'   paths.
+#' @return An object of class derivation which inherits from lists.
+#' @examples
+#' \dontrun{
+#' # Basic usage, no custom serializer
+#' rxp_jl(
+#'   name = filtered_df,
+#'   jl_expr = "filter(df, :col .> 10)"
+#' )
+#'
+#' # Custom serialization: assume `save_my_obj(obj, path)` is defined in functions.jl
+#' rxp_jl(
+#'   name = model_output,
+#'   jl_expr = "train_model(data)",
+#'   serialize_function = "save_my_obj",
+#'   additional_files = "functions.jl"
+#' )
+#' }
+#' @family derivations
+#' @export
+rxp_jl <- function(
+  name,
+  jl_expr,
+  additional_files = "",
+  user_functions = "",
+  nix_env = "default.nix",
+  serialize_function = NULL,
+  unserialize_function = NULL,
+  env_var = NULL
+) {
+  out_name <- deparse1(substitute(name))
+  # Escape double quotes for Julia one-liner
+  jl_expr_escaped <- gsub("\"", "\\\\\"", jl_expr)
+
+  # Determine which serialize function to call
+  if (is.null(serialize_function)) {
+    # Default: use built-in Serialization.serialize
+    serialize_str <- paste0(
+      "using Serialization; ",
+      "io = open(\\\"",
+      out_name,
+      "\\\", \\\"w\\\"); ",
+      "serialize(io, ",
+      out_name,
+      "); ",
+      "close(io)"
+    )
+  } else {
+    if (!is.character(serialize_function) || length(serialize_function) != 1) {
+      stop("serialize_function must be a single character string or NULL")
+    }
+    serialize_str <- sprintf(
+      "%s(%s, \\\"%s\\\")",
+      serialize_function,
+      out_name,
+      out_name
+    )
+  }
+
+  # Determine unserialize string (passed through metadata; user can choose)
+  if (is.null(unserialize_function)) {
+    unserialize_str <- "Serialization.deserialize"
+  } else {
+    if (
+      !is.character(unserialize_function) || length(unserialize_function) != 1
+    ) {
+      stop("unserialize_function must be a single character string or NULL")
+    }
+    unserialize_str <- unserialize_function
+  }
+
+  # Generate environment variable export statements if env_var is provided
+  env_exports <- ""
+  if (!is.null(env_var)) {
+    env_exports <- paste(
+      vapply(
+        names(env_var),
+        function(var) sprintf("export %s=%s", var, env_var[[var]]),
+        character(1)
+      ),
+      collapse = "\n      "
+    )
+    if (nzchar(env_exports)) {
+      env_exports <- paste0(env_exports, "\n      ")
+    }
+  }
+
+  # Prepare the fileset for src, INCLUDE user_functions as well
+  fileset_parts <- c()
+  if (!is.null(additional_files) && any(nzchar(additional_files))) {
+    fileset_parts <- c(
+      fileset_parts,
+      additional_files[nzchar(additional_files)]
+    )
+  }
+  if (!is.null(user_functions) && any(nzchar(user_functions))) {
+    fileset_parts <- c(fileset_parts, user_functions[nzchar(user_functions)])
+  }
+
+  # Build copy command for additional files (not user_functions)
+  additional_files_clean <- additional_files[nzchar(additional_files)]
+  copy_cmd <- ""
+  if (length(additional_files_clean) > 0) {
+    copy_lines <- vapply(
+      additional_files_clean,
+      function(f) sprintf("cp -r ${./%s} %s", f, f),
+      character(1)
+    )
+    copy_cmd <- paste0(paste(copy_lines, collapse = "\n      "), "\n      ")
+  }
+
+  # Build copy command for user_functions (explicit copy, not -r)
+  user_functions_copy_cmd <- ""
+  if (!is.null(user_functions) && any(nzchar(user_functions))) {
+    user_functions_clean <- user_functions[nzchar(user_functions)]
+    user_copy_lines <- vapply(
+      user_functions_clean,
+      function(f) sprintf("cp ${./%s} %s", f, f),
+      character(1)
+    )
+    user_functions_copy_cmd <- paste0(
+      paste(user_copy_lines, collapse = "\n      "),
+      "\n      "
+    )
+  }
+
+  # Generate include commands for user_functions
+  user_include_cmd <- ""
+  if (!is.null(user_functions) && any(nzchar(user_functions))) {
+    user_functions_clean <- user_functions[nzchar(user_functions)]
+    include_lines <- vapply(
+      user_functions_clean,
+      function(f) sprintf("include(\\\"%s\\\")", f),
+      character(1)
+    )
+    user_include_cmd <- paste0(paste(include_lines, collapse = "; "), "; ")
+  }
+
+  # Construct the Julia build phase: include libraries.jl if present,
+  # include user_functions, run expression, then serialize
+  build_phase <- paste0(
+    env_exports,
+    copy_cmd,
+    user_functions_copy_cmd,
+    "julia -e \"\n",
+    "if isfile(\\\"libraries.jl\\\"); include(\\\"libraries.jl\\\"); end; ",
+    "# RIXPRESS_JL_LOAD_DEPENDENCIES_HERE; ",
+    user_include_cmd,
+    out_name,
+    " = ",
+    jl_expr_escaped,
+    "; ",
+    serialize_str,
+    "\n",
+    "\""
+  )
+
+  # Derive base variable from nix_env
+  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
+  base <- sub("_nix$", "", base)
+
+  # Prepare src snippet with all relevant files
+  if (length(fileset_parts) > 0) {
+    fileset_nix <- paste0("./", fileset_parts, collapse = " ")
+    src_snippet <- sprintf(
+      "    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n",
+      fileset_nix
+    )
+  } else {
+    src_snippet <- ""
+  }
+
+  # Assemble the Nix-derivation snippet
+  snippet <- make_derivation_snippet(
+    out_name = out_name,
+    src_snippet = src_snippet,
+    base = base,
+    build_phase = build_phase,
+    derivation_type = "Jl"
+  )
+
+  list(
+    name = out_name,
+    snippet = snippet,
+    type = "rxp_jl",
+    additional_files = additional_files,
+    user_functions = user_functions,
+    nix_env = nix_env,
+    serialize_function = if (is.null(serialize_function)) {
+      "Serialization.serialize"
+    } else {
+      serialize_function
+    },
+    unserialize_function = unserialize_str,
+    env_var = env_var
+  ) |>
+    structure(class = "rxp_derivation")
+}
+
+
 #' Render a Quarto document as a Nix derivation
 #'
 #' @family derivations
@@ -701,436 +934,6 @@ rxp_qmd <- function(
     structure(class = "rxp_derivation")
 }
 
-
-#' rxp_file_common
-#'
-#' Creates a Nix expression with shared logic for R and Python file reading.
-#'
-#' @param out_name Character, the name of the derivation as a string.
-#' @param path Character, the file path (URL or local) or folder path.
-#' @param nix_env Character, path to the Nix environment file.
-#' @param build_phase Character, the language-specific build phase script.
-#' @param type Character, the type of derivation ("rxp_r" or "rxp_py").
-#' @param derivation_func Character, the Nix derivation function
-#'   ("makeRDerivation" or "makePyDerivation").
-#' @param library_ext Character, the library file extension ("R" or "py").
-#' @param env_var List, defaults to NULL. A named list of environment variables
-#'   to set before running the script, e.g., c(DATA_PATH = "/path/to/data").
-#'   Each entry will be added as an export statement in the build phase.
-#' @keywords internal
-#' @examples
-#' \dontrun{
-#'   rxp_file_common(
-#'     out_name = out_name,
-#'     path = actual_path,
-#'     nix_env = nix_env,
-#'     build_phase = build_phase,
-#'     type = "rxp_r",
-#'     derivation_func = "makeRDerivation",
-#'     library_ext = "R",
-#'     env_var = env_var
-#'   )
-#' }
-#' @return A list with `name`, `snippet`, `type`, and `nix_env`.
-rxp_file_common <- function(
-  out_name,
-  path,
-  nix_env,
-  build_phase,
-  type,
-  derivation_func,
-  library_ext,
-  env_var = NULL
-) {
-  # Handle source: URL or local path
-  src_part <- if (grepl("^https?://", path)) {
-    hash <- tryCatch(
-      system(paste("nix-prefetch-url", shQuote(path)), intern = TRUE),
-      error = function(e) stop("Failed to run nix-prefetch-url: ", e$message)
-    )
-    if (length(hash) == 0 || hash == "") {
-      stop("nix-prefetch-url did not return a hash for URL: ", path)
-    }
-    sprintf(
-      "defaultPkgs.fetchurl {\n      url = \"%s\";\n      sha256 = \"%s\";\n    }",
-      path,
-      trimws(hash[1])
-    )
-  } else {
-    sprintf("./%s", path)
-  }
-
-  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
-  base <- sub("_nix$", "", base)
-
-  # Generate environment variable export statements if env_var is provided
-  env_exports <- ""
-  if (!is.null(env_var)) {
-    env_exports <- paste(
-      vapply(
-        names(env_var),
-        function(var_name) {
-          sprintf("export %s=%s", var_name, env_var[[var_name]])
-        },
-        character(1)
-      ),
-      collapse = "\n      "
-    )
-    if (env_exports != "") {
-      env_exports <- paste0(env_exports, "\n      ")
-    }
-  }
-
-  # Add env_exports to the build_phase
-  if (env_exports != "") {
-    build_phase <- paste0(env_exports, build_phase)
-  }
-
-  # Build the Nix derivation snippet
-  snippet <- make_derivation_snippet(
-    out_name = out_name,
-    src_snippet = sprintf("    src = %s;\n", src_part),
-    base = base,
-    build_phase = build_phase,
-    derivation_type = if (derivation_func == "makeRDerivation") "R" else "Py"
-  )
-
-  list(
-    name = out_name,
-    snippet = snippet,
-    type = type,
-    additional_files = "",
-    nix_env = nix_env,
-    env_var = env_var
-  ) |>
-    structure(class = "rxp_derivation")
-}
-
-#' Creates a Nix expression that reads in a file (or folder of data) using R.
-#'
-#' @family derivations
-#' @param name Symbol, the name of the derivation.
-#' @param path Character, the file path to include (e.g., "data/mtcars.shp") or
-#'   a folder path (e.g., "data"). See details.
-#' @param read_function Function, an R function to read the data, taking one
-#'   argument (the path).
-#' @param nix_env Character, path to the Nix environment file, default is
-#'   "default.nix".
-#' @param copy_data_folder Logical, if TRUE then the entire folder is copied
-#'   recursively into the build sandbox.
-#' @param env_var List, defaults to NULL. A named list of environment variables
-#'   to set before running the R script, e.g., c(VAR = "hello"). Each entry will
-#'   be added as an export statement in the build phase.
-#' @details There are three ways to read in data in a rixpress pipeline: the
-#'   first is to point directly to a file, for example, `rxp_r_file(mtcars, path
-#'   = "data/mtcars.csv", read_function = read.csv)`. The second way is to point
-#'   to a file but to also include the files in the "data/" folder (the folder
-#'   can be named something else). This is needed when data is split between
-#'   several files, such as a shapefile which typically also needs other files
-#'   such as `.shx` and `.dbf` files. For this, `copy_data_folder` must be set
-#'   to `TRUE`. The last way to read in data, is to only point to a folder, and
-#'   use a function that recursively reads in all data. For example
-#'   `rxp_r_file(many_csvs, path = "data", read_function = \(x)(readr::read_csv(
-#'   list.files(x, full.names = TRUE, pattern = ".csv$"))))` the provided
-#'   anonymous function will read all the `.csv` files in the `data/` folder.
-#' @return An object of class derivation which inherits from lists.
-#' @examples
-#' \dontrun{
-#'   # Read a CSV file
-#'   rxp_r_file(
-#'     name = mtcars,
-#'     path = "data/mtcars.csv",
-#'     read_function = \(x) (read.csv(file = x, sep = "|"))
-#'   )
-#'
-#'   # Read all CSV files in a directory using a lambda function
-#'  rxp_r_file(
-#'    name = mtcars_r,
-#'    path = "data",
-#'    read_function = \(x)
-#'      (readr::read_delim(list.files(x, full.names = TRUE), delim = "|")),
-#'    copy_data_folder = TRUE
-#'  )
-#' }
-#' @export
-rxp_r_file <- function(
-  name,
-  path,
-  read_function,
-  nix_env = "default.nix",
-  copy_data_folder = FALSE,
-  env_var = NULL
-) {
-  out_name <- deparse1(substitute(name))
-  read_func_str <- deparse1(substitute(read_function))
-  read_func_str <- gsub("\"", "'", read_func_str)
-
-  if (!copy_data_folder) {
-    # Use single file copy.
-    build_phase <- sprintf(
-      "cp $src input_file\n      Rscript -e \"\n        source('libraries.R')\n        data <- do.call(%s, list('input_file'))\n        saveRDS(data, '%s')\"",
-      read_func_str,
-      out_name
-    )
-    actual_path <- path
-  } else {
-    if (file.exists(path) && file.info(path)$isdir) {
-      # If the provided path is a folder, use that folder as the source.
-      actual_path <- path
-      build_phase <- sprintf(
-        "cp -r $src input_folder\n      Rscript -e \"\n        source('libraries.R')\n        data <- do.call(%s, list('input_folder/'))\n        saveRDS(data, '%s')\"",
-        read_func_str,
-        out_name
-      )
-    } else {
-      # Otherwise assume path is a file; use its directory as the source.
-      actual_path <- dirname(path)
-      file_name <- basename(path)
-      build_phase <- sprintf(
-        "cp -r $src input_folder\n      Rscript -e \"\n        source('libraries.R')\n        data <- do.call(%s, list('input_folder/%s'))\n        saveRDS(data, '%s')\"",
-        read_func_str,
-        file_name,
-        out_name
-      )
-    }
-  }
-
-  rxp_file_common(
-    out_name = out_name,
-    path = actual_path,
-    nix_env = nix_env,
-    build_phase = build_phase,
-    type = "rxp_r",
-    derivation_func = "makeRDerivation",
-    library_ext = "R",
-    env_var = env_var
-  )
-}
-
-#' Creates a Nix expression that reads in a file (or folder of data) using
-#' Python.
-#'
-#' @family derivations
-#' @param name Symbol, the name of the derivation.
-#' @param path Character, the file path to include (e.g., "data/mtcars.shp") or
-#'   a folder path (e.g., "data"). See details.
-#' @param read_function Character, a Python function to read the data, taking
-#'   one argument (the path).
-#' @param nix_env Character, path to the Nix environment file, default is
-#'   "default.nix".
-#' @param copy_data_folder Logical, if TRUE then the entire folder is copied
-#'   recursively into the build sandbox.
-#' @param env_var List, defaults to NULL. A named list of environment variables
-#'   to set before running the Python script, e.g., c(PYTHONPATH =
-#'   "/path/to/modules"). Each entry will be added as an export statement in the
-#'   build phase.
-#' @details There are three ways to read in data in a rixpress pipeline: the
-#'   first is to point directly to a file, for example, `rxp_py_file(mtcars, path =
-#'   "data/mtcars.csv", read_function = pandas.read_csv)`. The second way is to
-#'   point to a file but to also include of the files in the "data/" folder (the
-#'   folder can named something else). This is needed when data is split between
-#'   several files, such as a shapefile which typically also needs other files
-#'   such as `.shx` and `.dbf` files. For this, `copy_data_folder` must be set
-#'   to `TRUE`. The last way to read in data, is to only point to a folder, and
-#'   use a function that recursively reads in all data. For example
-#'   `rxp_py_file(many_csvs, path = "data", read_function = 'lambda x:
-#'   pandas.read_csv(os.path.join(x, os.listdir(x)[0]), delimiter="|")')` the
-#'   provided anonymous function will read all the `.csv` file in the `data/`
-#'   folder.
-#' @return An object of class derivation which inherits from lists.
-#' @examples
-#' \dontrun{
-#'   # Read a CSV file with pandas
-#'   rxp_py_file(
-#'     name = pandas_data,
-#'     path = "data/dataset.csv",
-#'     read_function = "pandas.read_csv"
-#'   )
-#'
-#' # Read all CSV files in a directory using a
-#' # user defined function
-#'  rxp_py_file(
-#'   name = mtcars_py,
-#'   path = 'data',
-#'   read_function = "read_many_csvs",
-#'   copy_data_folder = TRUE
-#' )
-#' }
-#' @export
-rxp_py_file <- function(
-  name,
-  path,
-  read_function,
-  nix_env = "default.nix",
-  copy_data_folder = FALSE,
-  env_var = NULL
-) {
-  out_name <- deparse1(substitute(name))
-  # Sanitize the read_function string.
-  read_function <- gsub("'", "\\'", read_function, fixed = TRUE)
-  if (!is.character(read_function) || length(read_function) != 1) {
-    stop("read_function must be a single character string")
-  }
-
-  if (!copy_data_folder) {
-    build_phase <- sprintf(
-      "cp $src input_file\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_file'\ndata = eval('%s')(file_path)\nwith open('%s', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
-      read_function,
-      out_name
-    )
-    actual_path <- path
-  } else {
-    if (file.exists(path) && file.info(path)$isdir) {
-      # If path is a folder.
-      actual_path <- path
-      build_phase <- sprintf(
-        "cp -r $src input_folder\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_folder/'\ndata = eval('%s')(file_path)\nwith open('%s', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
-        read_function,
-        out_name
-      )
-    } else {
-      # Assume path is a file.
-      actual_path <- dirname(path)
-      file_name <- basename(path)
-      build_phase <- sprintf(
-        "cp -r $src input_folder\npython -c \"\nexec(open('libraries.py').read())\nfile_path = 'input_folder/%s'\ndata = eval('%s')(file_path)\nwith open('%s', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
-        file_name,
-        read_function,
-        out_name
-      )
-    }
-  }
-
-  rxp_file_common(
-    out_name = out_name,
-    path = actual_path,
-    nix_env = nix_env,
-    build_phase = build_phase,
-    type = "rxp_py",
-    derivation_func = "makePyDerivation",
-    library_ext = "py",
-    env_var = env_var
-  )
-}
-
-
-#' Generate the Nix derivation snippet for Python-R object transfer.
-#'
-#' This function constructs the `build_phase` and Nix derivation snippet
-#' based on the given parameters.
-#'
-#' @param out_name Character, name of the derivation.
-#' @param expr_str Character, name of the object being transferred.
-#' @param nix_env Character, path to the Nix environment file.
-#' @param direction Character, either "py2r" (Python to R) or "r2py" (R to
-#'   Python).
-#' @return A list with elements: `name`, `snippet`, `type`, `additional_files`,
-#'   `nix_env`.
-#' @keywords internal
-#' @examples
-#' \dontrun{
-#'   # This is an internal function used by rxp_py2r and rxp_r2py
-#'   # Not typically called directly by users
-#'   deriv <- rxp_common_setup(
-#'     out_name = "r_data",
-#'     expr_str = "py_data",
-#'     nix_env = "default.nix",
-#'     direction = "py2r"
-#'   )
-#' }
-rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
-  expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
-  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
-  base <- sub("_nix$", "", base)
-
-  if (direction == "py2r") {
-    r_command <- sprintf(
-      "         %s <- reticulate::py_load_object('${%s}/%s', pickle = 'pickle', convert = TRUE)\n         saveRDS(%s, '%s')",
-      out_name,
-      expr_str,
-      expr_str,
-      out_name,
-      out_name
-    )
-  } else if (direction == "r2py") {
-    r_command <- sprintf(
-      "         %s <- readRDS('${%s}/%s')\n         reticulate::py_save_object(%s, '%s', pickle = 'pickle')",
-      expr_str,
-      expr_str,
-      expr_str,
-      expr_str,
-      out_name
-    )
-  } else {
-    stop("Invalid direction. Use 'py2r' or 'r2py'.")
-  }
-
-  build_phase <- sprintf(
-    "export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python\n       Rscript -e \"\n         source('libraries.R')\n%s\"",
-    r_command
-  )
-
-  snippet <- make_derivation_snippet(
-    out_name = out_name,
-    src_snippet = "",
-    base = base,
-    build_phase = build_phase,
-    derivation_type = "R"
-  )
-
-  list(
-    name = out_name,
-    snippet = snippet,
-    type = paste0("rxp_", direction),
-    additional_files = "",
-    nix_env = nix_env
-  ) |>
-    structure(class = "rxp_derivation")
-}
-
-
-#' Transfer Python object into an R session.
-#'
-#' @family interop functions
-#' @param name Symbol, name of the derivation.
-#' @param expr Symbol, Python object to be loaded into R.
-#' @param nix_env Character, path to the Nix environment file, default is
-#'   "default.nix".
-#' @details `rxp_py2r(my_obj, my_python_object)` loads a serialized Python
-#'   object and saves it as an RDS file using `reticulate::py_load_object()`.
-#' @return An object of class derivation which inherits from lists.
-#' @examples
-#' \dontrun{
-#' rxp_py2r(my_obj, my_python_object)
-#' }
-#' @export
-rxp_py2r <- function(name, expr, nix_env = "default.nix") {
-  out_name <- deparse1(substitute(name))
-  expr_str <- deparse1(substitute(expr))
-  rxp_common_setup(out_name, expr_str, nix_env, "py2r")
-}
-
-#' Transfer R object into a Python session.
-#'
-#' @family interop functions
-#' @param name Symbol, name of the derivation.
-#' @param expr Symbol, R object to be saved into a Python pickle.
-#' @param nix_env Character, path to the Nix environment file, default is
-#'   "default.nix".
-#' @details `rxp_r2py(my_obj, my_r_object)` saves an R object to a Python pickle
-#'   using `reticulate::py_save_object()`.
-#' @return An object of class derivation which inherits from lists.
-#' @examples
-#' \dontrun{
-#'   rxp_r2py(my_obj, my_r_object)
-#' }
-#' @export
-rxp_r2py <- function(name, expr, nix_env = "default.nix") {
-  out_name <- deparse1(substitute(name))
-  expr_str <- deparse1(substitute(expr))
-  rxp_common_setup(out_name, expr_str, nix_env, "r2py")
-}
-
 #' Render an R Markdown document as a Nix derivation
 #'
 #' @family derivations
@@ -1345,235 +1148,4 @@ print.rxp_derivation <- function(x, ...) {
       "\n"
     )
   }
-}
-
-#' Create a Nix expression running a Julia function
-#'
-#' @param name Symbol, name of the derivation.
-#' @param jl_expr Character, Julia code to generate the expression.
-#' @param additional_files Character vector, additional files to include
-#'   during the build process. For example, if a function expects a certain
-#'   file to be available, this is where you should include it.
-#' @param user_functions Character vector, user-defined functions to include.
-#'   This should be a script (or scripts) containing user-defined functions
-#'   to include during the build process for this derivation. It is recommended
-#'   to use one script per function, and only include the required script(s) in
-#'   the derivation.
-#' @param nix_env Character, path to the Nix environment file, default is
-#'   "default.nix".
-#' @param serialize_function Character, defaults to NULL. The name of the Julia
-#'   function used to serialize the object. It must accept two arguments: the
-#'   object to serialize (first), and the target file path (second). If NULL,
-#'   the default behaviour uses the built‐in `Serialization.serialize` API. Define
-#'   any custom serializer in `functions.jl`.
-#' @param unserialize_function Character, defaults to NULL. The name of the Julia
-#'   function used to unserialize the object. It must accept one argument: the
-#'   file path. If NULL, the default is assumed to be `Serialization.deserialize`.
-#' @param env_var Character vector, defaults to NULL. A named vector of
-#'   environment variables to set before running the Julia script, e.g.,
-#'   `c("JULIA_DEPOT_PATH" = "/path/to/depot")`. Each entry will be added as
-#'   an `export` statement in the build phase.
-#' @details At a basic level,
-#'   `rxp_jl(filtered_data, "filter(df, :col .> 10)")` is equivalent to
-#'   `filtered_data = filter(df, :col .> 10)` in Julia. `rxp_jl()` generates the
-#'   required Nix boilerplate to output a so‐called "derivation" in Nix jargon.
-#'   A Nix derivation is a recipe that defines how to create an output (in this
-#'   case `filtered_data`) including its dependencies, build steps, and output
-#'   paths.
-#' @return An object of class derivation which inherits from lists.
-#' @examples
-#' \dontrun{
-#' # Basic usage, no custom serializer
-#' rxp_jl(
-#'   name = filtered_df,
-#'   jl_expr = "filter(df, :col .> 10)"
-#' )
-#'
-#' # Custom serialization: assume `save_my_obj(obj, path)` is defined in functions.jl
-#' rxp_jl(
-#'   name = model_output,
-#'   jl_expr = "train_model(data)",
-#'   serialize_function = "save_my_obj",
-#'   additional_files = "functions.jl"
-#' )
-#' }
-#' @family derivations
-#' @export
-rxp_jl <- function(
-  name,
-  jl_expr,
-  additional_files = "",
-  user_functions = "",
-  nix_env = "default.nix",
-  serialize_function = NULL,
-  unserialize_function = NULL,
-  env_var = NULL
-) {
-  out_name <- deparse1(substitute(name))
-  # Escape double quotes for Julia one-liner
-  jl_expr_escaped <- gsub("\"", "\\\\\"", jl_expr)
-
-  # Determine which serialize function to call
-  if (is.null(serialize_function)) {
-    # Default: use built-in Serialization.serialize
-    serialize_str <- paste0(
-      "using Serialization; ",
-      "io = open(\\\"",
-      out_name,
-      "\\\", \\\"w\\\"); ",
-      "serialize(io, ",
-      out_name,
-      "); ",
-      "close(io)"
-    )
-  } else {
-    if (!is.character(serialize_function) || length(serialize_function) != 1) {
-      stop("serialize_function must be a single character string or NULL")
-    }
-    serialize_str <- sprintf(
-      "%s(%s, \\\"%s\\\")",
-      serialize_function,
-      out_name,
-      out_name
-    )
-  }
-
-  # Determine unserialize string (passed through metadata; user can choose)
-  if (is.null(unserialize_function)) {
-    unserialize_str <- "Serialization.deserialize"
-  } else {
-    if (
-      !is.character(unserialize_function) || length(unserialize_function) != 1
-    ) {
-      stop("unserialize_function must be a single character string or NULL")
-    }
-    unserialize_str <- unserialize_function
-  }
-
-  # Generate environment variable export statements if env_var is provided
-  env_exports <- ""
-  if (!is.null(env_var)) {
-    env_exports <- paste(
-      vapply(
-        names(env_var),
-        function(var) sprintf("export %s=%s", var, env_var[[var]]),
-        character(1)
-      ),
-      collapse = "\n      "
-    )
-    if (nzchar(env_exports)) {
-      env_exports <- paste0(env_exports, "\n      ")
-    }
-  }
-
-  # Prepare the fileset for src, INCLUDE user_functions as well
-  fileset_parts <- c()
-  if (!is.null(additional_files) && any(nzchar(additional_files))) {
-    fileset_parts <- c(
-      fileset_parts,
-      additional_files[nzchar(additional_files)]
-    )
-  }
-  if (!is.null(user_functions) && any(nzchar(user_functions))) {
-    fileset_parts <- c(fileset_parts, user_functions[nzchar(user_functions)])
-  }
-
-  # Build copy command for additional files (not user_functions)
-  additional_files_clean <- additional_files[nzchar(additional_files)]
-  copy_cmd <- ""
-  if (length(additional_files_clean) > 0) {
-    copy_lines <- vapply(
-      additional_files_clean,
-      function(f) sprintf("cp -r ${./%s} %s", f, f),
-      character(1)
-    )
-    copy_cmd <- paste0(paste(copy_lines, collapse = "\n      "), "\n      ")
-  }
-
-  # Build copy command for user_functions (explicit copy, not -r)
-  user_functions_copy_cmd <- ""
-  if (!is.null(user_functions) && any(nzchar(user_functions))) {
-    user_functions_clean <- user_functions[nzchar(user_functions)]
-    user_copy_lines <- vapply(
-      user_functions_clean,
-      function(f) sprintf("cp ${./%s} %s", f, f),
-      character(1)
-    )
-    user_functions_copy_cmd <- paste0(
-      paste(user_copy_lines, collapse = "\n      "),
-      "\n      "
-    )
-  }
-
-  # Generate include commands for user_functions
-  user_include_cmd <- ""
-  if (!is.null(user_functions) && any(nzchar(user_functions))) {
-    user_functions_clean <- user_functions[nzchar(user_functions)]
-    include_lines <- vapply(
-      user_functions_clean,
-      function(f) sprintf("include(\\\"%s\\\")", f),
-      character(1)
-    )
-    user_include_cmd <- paste0(paste(include_lines, collapse = "; "), "; ")
-  }
-
-  # Construct the Julia build phase: include libraries.jl if present,
-  # include user_functions, run expression, then serialize
-  build_phase <- paste0(
-    env_exports,
-    copy_cmd,
-    user_functions_copy_cmd,
-    "julia -e \"\n",
-    "if isfile(\\\"libraries.jl\\\"); include(\\\"libraries.jl\\\"); end; ",
-    "# RIXPRESS_JL_LOAD_DEPENDENCIES_HERE; ",
-    user_include_cmd,
-    out_name,
-    " = ",
-    jl_expr_escaped,
-    "; ",
-    serialize_str,
-    "\n",
-    "\""
-  )
-
-  # Derive base variable from nix_env
-  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
-  base <- sub("_nix$", "", base)
-
-  # Prepare src snippet with all relevant files
-  if (length(fileset_parts) > 0) {
-    fileset_nix <- paste0("./", fileset_parts, collapse = " ")
-    src_snippet <- sprintf(
-      "    src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    };\n",
-      fileset_nix
-    )
-  } else {
-    src_snippet <- ""
-  }
-
-  # Assemble the Nix-derivation snippet
-  snippet <- make_derivation_snippet(
-    out_name = out_name,
-    src_snippet = src_snippet,
-    base = base,
-    build_phase = build_phase,
-    derivation_type = "Jl"
-  )
-
-  list(
-    name = out_name,
-    snippet = snippet,
-    type = "rxp_jl",
-    additional_files = additional_files,
-    user_functions = user_functions,
-    nix_env = nix_env,
-    serialize_function = if (is.null(serialize_function)) {
-      "Serialization.serialize"
-    } else {
-      serialize_function
-    },
-    unserialize_function = unserialize_str,
-    env_var = env_var
-  ) |>
-    structure(class = "rxp_derivation")
 }
