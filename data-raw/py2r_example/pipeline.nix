@@ -58,9 +58,11 @@ let
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
       cp $src input_file
+      
 python -c "
 exec(open('libraries.py').read())
 file_path = 'input_file'
+
 data = eval('lambda x: polars.read_csv(x, separator=\'|\')')(file_path)
 with open('mtcars_pl', 'wb') as f:
     pickle.dump(data, f)
