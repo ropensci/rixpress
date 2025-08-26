@@ -440,7 +440,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
       replacement_str <- paste(load_lines, collapse = "\n")
     } else if (type == "rxp_jl") {
       placeholder <- "# RIXPRESS_JL_LOAD_DEPENDENCIES_HERE"
-      load_line_template <- "%s = open(\\\"%s\\\", \\\"r\\\") do io; %s(io); end" # obj = open("${obj}/obj", "r") do io; Serialization.deserialize(io); end
+      load_line_template <- "%s = open(\\\\\\\"%s\\\\\\\", \\\\\\\"r\\\\\\\") do io; %s(io); end" # obj = open(\"${obj}/obj\", \"r\") do io; Serialization.deserialize(io); end
       load_lines <- vapply(
         deps,
         function(dep) {

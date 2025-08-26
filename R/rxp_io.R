@@ -36,17 +36,13 @@ build_user_copy_cmd <- function(user_functions) {
 #' @return A string of import/source statements.
 build_user_code_cmd <- function(user_functions, lang) {
   if (length(user_functions) == 0) return("")
-
   fmt <- switch(
     lang,
     R      = "source('%s')",
-    Py = "exec(open('%s').read())"
+    Py = "exec(open('%s').read())",
+    stop("Unsupported lang: ", lang)
   )
-
-  paste0(
-    paste(sprintf(fmt, user_functions), collapse = "\n        "),
-    "\n        "
-  )
+  paste(sprintf(fmt, user_functions), collapse = "\n")
 }
 
 #' Build environment variable export commands
@@ -111,10 +107,12 @@ sanitize_base <- function(nix_env) {
   sub("_nix$", "", base)
 }
 
-#' Build build phase command
+#' Build build phase command (fixed single-file copy with subfolders)
 #'
-#' Constructs the build phase shell command for R or Python, choosing the right
+#' Constructs the build-phase shell command for R or Python, choosing the right
 #' copy mode (file vs folder) and setting the file path argument correctly.
+#' For the single-file case it preserves subfolders by copying the file from its
+#' path *inside* the $src directory (not $src itself).
 #'
 #' @param lang "R" or "Python".
 #' @param read_func String representing the function to call for reading data.
@@ -127,47 +125,68 @@ sanitize_base <- function(nix_env) {
 build_phase <- function(lang, read_func, copy_cmd, user_code, out_name,
                         copy_data_folder, path) {
 
-  # Decide copy target and the argument that the reader should receive
+  rel_path <- function(p) sub("^\\./+", "", p)
+
   if (!copy_data_folder) {
-    # Single file mode
+    # single file: copy the file *inside* $src preserving subdirs
+    frel <- rel_path(path)
     actual_path <- path
-    copy_line <- "cp $src input_file"
-    arg_R     <- "input_file"
-    arg_Py    <- "file_path = 'input_file'"
+    copy_line <- sprintf("cp \"$src/%s\" input_file", frel)
+    arg_R  <- "input_file"
+    arg_Py <- "file_path = 'input_file'"
+
   } else if (file.exists(path) && isTRUE(file.info(path)$isdir)) {
-    # Whole directory
     actual_path <- path
     copy_line <- "cp -r $src input_folder"
-    arg_R     <- "input_folder/"
-    arg_Py    <- "file_path = 'input_folder/'"
+    arg_R  <- "input_folder/"
+    arg_Py <- "file_path = 'input_folder/'"
+
   } else {
-    # File but copy its directory; then point to that file within the folder
-    actual_path <- dirname(path)
     fname <- basename(path)
+    actual_path <- dirname(path)
     copy_line <- "cp -r $src input_folder"
-    arg_R     <- sprintf("input_folder/%s", fname)
-    arg_Py    <- sprintf("file_path = 'input_folder/%s'", fname)
+    arg_R  <- sprintf("input_folder/%s", fname)
+    arg_Py <- sprintf("file_path = 'input_folder/%s'", fname)
   }
 
+  # helper to add optional copy of user_functions (copy_cmd may be "")
+  copy_cmd_block <- if (nzchar(copy_cmd)) c(copy_cmd) else character(0)
+
   if (lang == "R") {
-    body <- sprintf(
-      "%s%s\n      Rscript -e \"\n        source('libraries.R')\n        %sdata <- do.call(%s, list('%s'))\n        saveRDS(data, '%s')\"",
-      copy_cmd, if (nzchar(copy_cmd)) "" else "",
-      user_code, read_func, arg_R, out_name
+    # Build Rscript lines (no extra left-margin padding)
+    r_lines <- c(
+      "Rscript -e \"",
+      "source('libraries.R')",
+      if (nzchar(user_code)) unlist(strsplit(user_code, "\n")),
+      sprintf("data <- do.call(%s, list('%s'))", read_func, arg_R),
+      sprintf("saveRDS(data, '%s')\"", out_name)
     )
+    body_block <- c(copy_cmd_block, r_lines)
+
   } else if (lang == "Py") {
-    # Always define file_path, then call the function
-    body <- sprintf(
-      "%s%s\npython -c \"\nexec(open('libraries.py').read())\n%s%s\ndata = eval('%s')(file_path)\nwith open('%s', 'wb') as f:\n    pickle.dump(data, f)\n\"\n",
-      copy_cmd, if (nzchar(copy_cmd)) "" else "",
-      user_code, paste0(arg_Py, "\n"), read_func, out_name
+    # Build python lines (no leading spaces). Ensure file_path is always defined.
+    py_lines <- c(
+      "python -c \"",
+      "exec(open('libraries.py').read())"
     )
+    if (nzchar(user_code)) {
+      py_lines <- c(py_lines, unlist(strsplit(user_code, "\n")))
+    }
+    py_lines <- c(py_lines,
+                  arg_Py,
+                  sprintf("data = eval('%s')(file_path)", read_func),
+                  sprintf("with open('%s', 'wb') as f:", out_name),
+                  "    pickle.dump(data, f)",
+                  "\"")
+    body_block <- c(copy_cmd_block, py_lines)
+
   } else {
     stop("Unsupported lang: ", lang)
   }
 
-  # Prepend the copy of input data (file or folder)
-  build_phase <- sprintf("%s\n      %s", copy_line, body)
+  # join everything without inserting extra indentation
+  body <- paste(body_block, collapse = "\n")
+  build_phase <- paste(copy_line, body, sep = "\n")
 
   list(actual_path = actual_path, build_phase = build_phase)
 }

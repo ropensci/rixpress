@@ -514,7 +514,7 @@ rxp_py <- function(
 #'   name = model_output,
 #'   jl_expr = "train_model(data)",
 #'   serialize_function = "save_my_obj",
-#'   additional_files = "functions.jl"
+#'   user_functions = "functions.jl"
 #' )
 #' }
 #' @family derivations
@@ -644,8 +644,8 @@ rxp_jl <- function(
     copy_cmd,
     user_functions_copy_cmd,
     "julia -e \"\n",
-    "if isfile(\\\"libraries.jl\\\"); include(\\\"libraries.jl\\\"); end; ",
-    "# RIXPRESS_JL_LOAD_DEPENDENCIES_HERE; ",
+    "if isfile(\\\"libraries.jl\\\"); include(\\\"libraries.jl\\\"); end;\n",
+    "# RIXPRESS_JL_LOAD_DEPENDENCIES_HERE;\n",
     user_include_cmd,
     out_name,
     " = ",
