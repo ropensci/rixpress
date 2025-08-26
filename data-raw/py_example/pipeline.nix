@@ -48,7 +48,7 @@ with open('diabetes_raw', 'wb') as f: pickle.dump(globals()['diabetes_raw'], f)
     buildPhase = ''
       python -c "
 exec(open('libraries.py').read())
-# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE
+with open('${diabetes_raw}/diabetes_raw', 'rb') as f: diabetes_raw = pickle.load(f)
 exec('diabetes = pandas.DataFrame(diabetes_raw.data, columns=diabetes_raw.feature_names)')
 with open('diabetes', 'wb') as f: pickle.dump(globals()['diabetes'], f)
 "
@@ -67,7 +67,7 @@ with open('diabetes', 'wb') as f: pickle.dump(globals()['diabetes'], f)
       cp ${./functions.py} functions.py
       python -c "
 exec(open('libraries.py').read())
-# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE
+with open('${diabetes}/diabetes', 'rb') as f: diabetes = pickle.load(f)
 exec(open('functions.py').read())
 exec('diabetes_head = my_head(diabetes)')
 with open('diabetes_head', 'wb') as f: pickle.dump(globals()['diabetes_head'], f)
@@ -82,7 +82,7 @@ with open('diabetes_head', 'wb') as f: pickle.dump(globals()['diabetes_head'], f
     buildPhase = ''
       python -c "
 exec(open('libraries.py').read())
-# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE
+with open('${diabetes}/diabetes', 'rb') as f: diabetes = pickle.load(f)
 exec('diabetes_tail = diabetes.tail()')
 with open('diabetes_tail', 'wb') as f: pickle.dump(globals()['diabetes_tail'], f)
 "
@@ -96,7 +96,8 @@ with open('diabetes_tail', 'wb') as f: pickle.dump(globals()['diabetes_tail'], f
     buildPhase = ''
       python -c "
 exec(open('libraries.py').read())
-# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE
+with open('${diabetes_head}/diabetes_head', 'rb') as f: diabetes_head = pickle.load(f)
+with open('${diabetes_tail}/diabetes_tail', 'rb') as f: diabetes_tail = pickle.load(f)
 exec('concat_diabetes = pandas.concat([diabetes_head, diabetes_tail], ignore_index=True)')
 with open('concat_diabetes', 'wb') as f: pickle.dump(globals()['concat_diabetes'], f)
 "

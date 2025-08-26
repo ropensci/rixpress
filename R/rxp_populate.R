@@ -426,7 +426,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
         },
         character(1)
       )
-      replacement_str <- paste(load_lines, collapse = "\n")
+      replacement_str <- paste(load_lines, collapse = "\n        ")
     } else if (type == "rxp_py") {
       placeholder <- "# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE"
       load_line_template <- "with open('${%s}/%s', 'rb') as f: %s = %s(f)" # with open('${obj}/obj', 'rb') as f: obj = pickle.load(f)
@@ -468,28 +468,31 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
       "rxp_jl" = "makeJlDerivation"
     )
 
+    # Define a pattern that captures the content BEFORE the placeholder.
+    # This allows us to replace the placeholder directly with the new code
+    # in a single, robust step.
     pattern <- paste0(
-      "(",
+      "(",                                 # Start capturing group 1
       deriv_name,
       "\\s*=\\s*",
       derivation_func,
-      "[\\s\\S]*?", # Match derivation start
-      placeholder, # Find the placeholder
-      ")" # Capture the whole block
+      "[\\s\\S]*?",                       # Match derivation start and everything up to...
+      ")",                                 # End capturing group 1
+      placeholder                          # Match the placeholder itself (but don't capture it)
     )
-    # The replacement function \1 refers to the captured group, ensuring we only
-    # modify the placeholder inside the correct derivation block.
+
+    # The replacement consists of the captured group (\1) followed by the new
+    # dependency loading code. This effectively replaces the placeholder.
     pipeline_str <- sub(
       pattern,
       paste0("\\1", replacement_str),
       pipeline_str,
       perl = TRUE
     )
-    # Now, replace the placeholder itself in the modified block
-    pipeline_str <- sub(placeholder, "", pipeline_str, fixed = TRUE)
   }
   strsplit(pipeline_str, "\n")[[1]]
 }
+
 
 #' Generate an R or Py script with library calls from a default.nix file
 #'
