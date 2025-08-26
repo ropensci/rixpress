@@ -418,6 +418,81 @@ rxp_py_file <- function(
     structure(class = "rxp_derivation")
 }
 
+
+#' Generate the Nix derivation snippet for Python-R object transfer.
+#'
+#' This function constructs the `build_phase` and Nix derivation snippet
+#' based on the given parameters.
+#'
+#' @param out_name Character, name of the derivation.
+#' @param expr_str Character, name of the object being transferred.
+#' @param nix_env Character, path to the Nix environment file.
+#' @param direction Character, either "py2r" (Python to R) or "r2py" (R to
+#'   Python).
+#' @return A list with elements: `name`, `snippet`, `type`, `additional_files`,
+#'   `nix_env`.
+#' @keywords internal
+#' @examples
+#' \dontrun{
+#'   # This is an internal function used by rxp_py2r and rxp_r2py
+#'   # Not typically called directly by users
+#'   deriv <- rxp_common_setup(
+#'     out_name = "r_data",
+#'     expr_str = "py_data",
+#'     nix_env = "default.nix",
+#'     direction = "py2r"
+#'   )
+#' }
+rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
+  expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
+  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
+  base <- sub("_nix$", "", base)
+
+  if (direction == "py2r") {
+    r_command <- sprintf(
+      "         %s <- reticulate::py_load_object('${%s}/%s', pickle = 'pickle', convert = TRUE)\n         saveRDS(%s, '%s')",
+      out_name,
+      expr_str,
+      expr_str,
+      out_name,
+      out_name
+    )
+  } else if (direction == "r2py") {
+    r_command <- sprintf(
+      "         %s <- readRDS('${%s}/%s')\n         reticulate::py_save_object(%s, '%s', pickle = 'pickle')",
+      expr_str,
+      expr_str,
+      expr_str,
+      expr_str,
+      out_name
+    )
+  } else {
+    stop("Invalid direction. Use 'py2r' or 'r2py'.")
+  }
+
+  build_phase <- sprintf(
+    "export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python\n       Rscript -e \"\n         source('libraries.R')\n%s\"",
+    r_command
+  )
+
+  snippet <- make_derivation_snippet(
+    out_name = out_name,
+    src_snippet = "",
+    base = base,
+    build_phase = build_phase,
+    derivation_type = "R"
+  )
+
+  list(
+    name = out_name,
+    snippet = snippet,
+    type = paste0("rxp_", direction),
+    additional_files = "",
+    nix_env = nix_env
+  ) |>
+    structure(class = "derivation")
+}
+
 #' Transfer Python object into an R session.
 #'
 #' @family interop functions

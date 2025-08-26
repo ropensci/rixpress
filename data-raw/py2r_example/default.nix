@@ -10,7 +10,10 @@ let
 
   pyconf = builtins.attrValues {
     inherit (pkgs.python312Packages) 
-      pandas;
+      pandas
+      polars
+      pyarrow
+      ;
   };
 
     rix = (pkgs.rPackages.buildRPackage {
