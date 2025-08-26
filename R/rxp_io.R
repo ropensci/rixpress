@@ -128,9 +128,15 @@ build_phase <- function(lang, read_func, copy_cmd, user_code, out_name,
   rel_path <- function(p) sub("^\\./+", "", p)
 
   if (!copy_data_folder) {
-    # single file: copy $src directly (for single files, $src IS the file)
+    # single file: check if user_functions exist
     actual_path <- path
-    copy_line <- "cp $src input_file"
+    if (nzchar(copy_cmd)) {
+      # user_functions exist: $src is a fileset, need to copy from within it
+      copy_line <- sprintf("cp \"$src/%s\" input_file", rel_path(path))
+    } else {
+      # no user_functions: $src points directly to the file
+      copy_line <- "cp $src input_file"
+    }
     arg_R  <- "input_file"
     arg_Py <- "file_path = 'input_file'"
 
