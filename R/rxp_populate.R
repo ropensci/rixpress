@@ -404,12 +404,11 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
   dag <- jsonlite::read_json(dag_file)
   pipeline_str <- paste(flat_pipeline, collapse = "\n")
   for (d in dag$derivations) {
-    if (
-      length(d$depends) == 0 ||
-        d$type %in% c("rxp_qmd", "rxp_rmd", "rxp_py2r", "rxp_r2py")
-    ) {
+    # Skip only conversion types that don't use dependency loading
+    if (d$type %in% c("rxp_qmd", "rxp_rmd", "rxp_py2r", "rxp_r2py")) {
       next
     }
+    
     deriv_name <- as.character(d$deriv_name[1])
     deps <- d$depends
     type <- d$type[1]
@@ -418,42 +417,54 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     # Define language-specific helpers
     if (type == "rxp_r") {
       placeholder <- "# RIXPRESS_LOAD_DEPENDENCIES_HERE"
-      load_line_template <- "%s <- %s('${%s}/%s')" # obj <- readRDS('${obj}/obj')
-      load_lines <- vapply(
-        deps,
-        function(dep) {
-          sprintf(load_line_template, dep, unserialize_function, dep, dep)
-        },
-        character(1)
-      )
-      replacement_str <- paste(load_lines, collapse = "\n        ")
+      if (length(deps) > 0) {
+        load_line_template <- "%s <- %s('${%s}/%s')" # obj <- readRDS('${obj}/obj')
+        load_lines <- vapply(
+          deps,
+          function(dep) {
+            sprintf(load_line_template, dep, unserialize_function, dep, dep)
+          },
+          character(1)
+        )
+        replacement_str <- paste(load_lines, collapse = "\n        ")
+      } else {
+        replacement_str <- "" # No dependencies, replace with empty string
+      }
     } else if (type == "rxp_py") {
       placeholder <- "# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE"
-      load_line_template <- "with open('${%s}/%s', 'rb') as f: %s = %s(f)" # with open('${obj}/obj', 'rb') as f: obj = pickle.load(f)
-      load_lines <- vapply(
-        deps,
-        function(dep) {
-          sprintf(load_line_template, dep, dep, dep, unserialize_function)
-        },
-        character(1)
-      )
-      replacement_str <- paste(load_lines, collapse = "\n")
+      if (length(deps) > 0) {
+        load_line_template <- "with open('${%s}/%s', 'rb') as f: %s = %s(f)" # with open('${obj}/obj', 'rb') as f: obj = pickle.load(f)
+        load_lines <- vapply(
+          deps,
+          function(dep) {
+            sprintf(load_line_template, dep, dep, dep, unserialize_function)
+          },
+          character(1)
+        )
+        replacement_str <- paste(load_lines, collapse = "\n")
+      } else {
+        replacement_str <- "" # No dependencies, replace with empty string
+      }
     } else if (type == "rxp_jl") {
       placeholder <- "# RIXPRESS_JL_LOAD_DEPENDENCIES_HERE"
-      load_line_template <- "%s = open(\\\\\\\"%s\\\\\\\", \\\\\\\"r\\\\\\\") do io; %s(io); end" # obj = open(\"${obj}/obj\", \"r\") do io; Serialization.deserialize(io); end
-      load_lines <- vapply(
-        deps,
-        function(dep) {
-          sprintf(
-            load_line_template,
-            dep,
-            paste0("${", dep, "}/", dep),
-            unserialize_function
-          )
-        },
-        character(1)
-      )
-      replacement_str <- paste(load_lines, collapse = "; ")
+      if (length(deps) > 0) {
+        load_line_template <- "%s = open(\\\\\\\"%s\\\\\\\", \\\\\\\"r\\\\\\\") do io; %s(io); end" # obj = open(\"${obj}/obj\", \"r\") do io; Serialization.deserialize(io); end
+        load_lines <- vapply(
+          deps,
+          function(dep) {
+            sprintf(
+              load_line_template,
+              dep,
+              paste0("${", dep, "}/", dep),
+              unserialize_function
+            )
+          },
+          character(1)
+        )
+        replacement_str <- paste(load_lines, collapse = "; ")
+      } else {
+        replacement_str <- "" # No dependencies, replace with empty string
+      }
     } else {
       next # Skip unsupported types for now
     }
