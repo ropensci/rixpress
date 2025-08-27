@@ -118,16 +118,25 @@ rxp_r <- function(
   expr_str <- gsub("\"", "'", expr_str) # Replace " with ' for Nix
   expr_str <- gsub("$", "\\$", expr_str, fixed = TRUE) # Replace $ with \$ for Nix
 
-  if (is.null(serialize_function)) {
+  # Capture without evaluating promises; supports bare symbols (qs::qsave)
+  # and character literals ("qs::qsave") without loading packages now.
+  serialize_expr <- substitute(serialize_function)
+  if (identical(serialize_expr, quote(NULL))) {
     serialize_str <- "saveRDS"
+  } else if (is.character(serialize_expr)) {
+    # User passed a character literal; use it as-is (no quotes in final code)
+    serialize_str <- serialize_expr
   } else {
-    serialize_str <- deparse1(substitute(serialize_function))
+    serialize_str <- deparse1(serialize_expr)
   }
 
-  if (is.null(unserialize_function)) {
+  unserialize_expr <- substitute(unserialize_function)
+  if (identical(unserialize_expr, quote(NULL))) {
     unserialize_str <- "readRDS"
+  } else if (is.character(unserialize_expr)) {
+    unserialize_str <- unserialize_expr
   } else {
-    unserialize_str <- deparse1(substitute(unserialize_function))
+    unserialize_str <- deparse1(unserialize_expr)
   }
 
   # Generate environment variable export statements if env_var is provided
@@ -149,7 +158,6 @@ rxp_r <- function(
   }
 
   # Prepare the fileset for src
-  # Combine additional_files and user_functions
   all_files <- c(additional_files, user_functions)
   fileset_parts <- all_files[nzchar(all_files)]
 
@@ -201,7 +209,7 @@ rxp_r <- function(
     }
   }
 
-  # Unique placeholder per derivation (robust injection)
+  # If you adopted name-scoped placeholders, keep using it here
   unique_placeholder <- sprintf(
     "# RIXPRESS_LOAD_DEPENDENCIES_HERE:%s",
     out_name
