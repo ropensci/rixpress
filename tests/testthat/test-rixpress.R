@@ -216,3 +216,103 @@ test_that("rixpress correctly handles dependencies", {
     name = "pipeline_with_dependencies.nix"
   )
 })
+
+test_that("gen_pipeline correctly handles derivations with no dependencies", {
+  # Create a test DAG with derivations having no dependencies and some with dependencies
+  dag_content <- list(
+    derivations = list(
+      list(
+        deriv_name = "no_deps_r",
+        depends = list(), # No dependencies - key test case
+        unserialize_function = "readRDS",
+        type = "rxp_r"
+      ),
+      list(
+        deriv_name = "with_deps_r", 
+        depends = list("no_deps_r"), # Depends on no_deps_r
+        unserialize_function = "readRDS",
+        type = "rxp_r"
+      ),
+      list(
+        deriv_name = "no_deps_py",
+        depends = list(), # No dependencies - key test case
+        unserialize_function = "pickle.load",
+        type = "rxp_py"
+      )
+    )
+  )
+  
+  # Write DAG to temporary file
+  dag_file <- tempfile(fileext = ".json")
+  jsonlite::write_json(dag_content, dag_file, pretty = TRUE)
+  
+  # Create flat pipeline with placeholders
+  flat_pipeline <- c(
+    "  no_deps_r = makeRDerivation {",
+    "    name = \"no_deps_r\";",
+    "    buildInputs = defaultBuildInputs;",
+    "    configurePhase = defaultConfigurePhase;",
+    "    buildPhase = ''",
+    "      Rscript -e \"",
+    "        source('libraries.R')",
+    "        # RIXPRESS_LOAD_DEPENDENCIES_HERE",
+    "        no_deps_r <- list(x = 1)",
+    "        saveRDS(no_deps_r, 'no_deps_r')\"",
+    "    '';",
+    "  };",
+    "",
+    "  with_deps_r = makeRDerivation {",
+    "    name = \"with_deps_r\";", 
+    "    buildInputs = defaultBuildInputs;",
+    "    configurePhase = defaultConfigurePhase;",
+    "    buildPhase = ''",
+    "      Rscript -e \"",
+    "        source('libraries.R')",
+    "        # RIXPRESS_LOAD_DEPENDENCIES_HERE", 
+    "        with_deps_r <- no_deps_r$x + 1",
+    "        saveRDS(with_deps_r, 'with_deps_r')\"",
+    "    '';",
+    "  };",
+    "",
+    "  no_deps_py = makePyDerivation {",
+    "    name = \"no_deps_py\";",
+    "    buildInputs = defaultBuildInputs;",
+    "    configurePhase = defaultConfigurePhase;",
+    "    buildPhase = ''",
+    "      python -c \"",
+    "exec(open('libraries.py').read())",
+    "# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE",
+    "exec('no_deps_py = [1, 2, 3]')",
+    "with open('no_deps_py', 'wb') as f: pickle.dump(globals()['no_deps_py'], f)",
+    "\"",
+    "    '';",
+    "  };"
+  )
+  
+  # Call gen_pipeline function
+  result_pipeline <- gen_pipeline(dag_file, flat_pipeline)
+  result_str <- paste(result_pipeline, collapse = "\n")
+  
+  # Test 1: Derivations with no dependencies should have placeholders replaced with empty strings
+  # Check that placeholders are removed
+  expect_false(grepl("# RIXPRESS_LOAD_DEPENDENCIES_HERE", result_str))
+  expect_false(grepl("# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE", result_str))
+  
+  # Test 2: Derivations with no dependencies should not have any dependency loading code
+  no_deps_r_section <- regmatches(result_str, regexpr("no_deps_r = makeRDerivation[\\s\\S]*?};", result_str, perl = TRUE))
+  expect_false(grepl("readRDS\\('\\$\\{", no_deps_r_section))
+  
+  no_deps_py_section <- regmatches(result_str, regexpr("no_deps_py = makePyDerivation[\\s\\S]*?};", result_str, perl = TRUE))
+  expect_false(grepl("with open\\('\\$\\{", no_deps_py_section))
+  
+  # Test 3: Derivations with dependencies should load only those specific dependencies
+  with_deps_r_section <- regmatches(result_str, regexpr("with_deps_r = makeRDerivation[\\s\\S]*?};", result_str, perl = TRUE))
+  expect_true(grepl("no_deps_r <- readRDS\\('\\$\\{no_deps_r\\}/no_deps_r'\\)", with_deps_r_section))
+  
+  # Test 4: Should load exactly the number of dependencies specified in DAG
+  dep_loads <- gregexpr("readRDS\\('\\$\\{[^}]+\\}", with_deps_r_section)[[1]]
+  expect_equal(length(dep_loads), 1) # Should load exactly one dependency
+  
+  # Clean up
+  unlink(dag_file)
+})
