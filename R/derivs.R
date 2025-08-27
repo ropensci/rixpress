@@ -201,11 +201,18 @@ rxp_r <- function(
     }
   }
 
+  # Unique placeholder per derivation (robust injection)
+  unique_placeholder <- sprintf(
+    "# RIXPRESS_LOAD_DEPENDENCIES_HERE:%s",
+    out_name
+  )
+
   build_phase <- sprintf(
-    "%s%s%sRscript -e \"\n        source('libraries.R')\n        # RIXPRESS_LOAD_DEPENDENCIES_HERE\n        %s%s <- %s\n        %s(%s, '%s')\"",
+    "%s%s%sRscript -e \"\n        source('libraries.R')\n        %s\n        %s%s <- %s\n        %s(%s, '%s')\"",
     env_exports,
     copy_cmd,
     user_functions_copy_cmd,
+    unique_placeholder,
     source_cmd,
     out_name,
     expr_str,
@@ -409,6 +416,12 @@ rxp_py <- function(
     user_import_cmd <- paste0(paste(import_lines, collapse = "\n"), "\n")
   }
 
+  # Unique placeholder per derivation
+  unique_placeholder <- sprintf(
+    "# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE:%s",
+    out_name
+  )
+
   # Construct build_phase including cp commands then python execution
   build_phase <- paste0(
     env_exports,
@@ -416,7 +429,8 @@ rxp_py <- function(
     user_functions_copy_cmd,
     "python -c \"\n",
     "exec(open('libraries.py').read())\n",
-    "# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE\n",
+    unique_placeholder,
+    "\n",
     user_import_cmd,
     "exec('",
     out_name,
@@ -637,6 +651,12 @@ rxp_jl <- function(
     user_include_cmd <- paste0(paste(include_lines, collapse = "; "), "; ")
   }
 
+  # Unique placeholder per derivation (line-only, no trailing semicolon)
+  unique_placeholder <- sprintf(
+    "# RIXPRESS_JL_LOAD_DEPENDENCIES_HERE:%s",
+    out_name
+  )
+
   # Construct the Julia build phase: include libraries.jl if present,
   # include user_functions, run expression, then serialize
   build_phase <- paste0(
@@ -645,7 +665,8 @@ rxp_jl <- function(
     user_functions_copy_cmd,
     "julia -e \"\n",
     "if isfile(\\\"libraries.jl\\\"); include(\\\"libraries.jl\\\"); end;\n",
-    "# RIXPRESS_JL_LOAD_DEPENDENCIES_HERE;\n",
+    unique_placeholder,
+    "\n",
     user_include_cmd,
     out_name,
     " = ",

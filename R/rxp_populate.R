@@ -290,7 +290,7 @@ parse_nix_envs <- function(derivs) {
 #'     - `$type`, character, can be R, Python or Quarto
 #'     - `$additional_files`, character vector of paths to files to make
 #'        available to build sandbox
-#'     - `$nix_env`, character, path to Nix environment to build this derivation
+#'     - `$nix_env`, character, path to the Nix environment to build this derivation
 #'   A single deriv is the output of `rxp_r()`, `rxp_qmd()` or `rxp_py()`
 #'   function.
 #' @noRd
@@ -396,6 +396,12 @@ in
   strsplit(pipeline_nix, split = "\n")[[1]]
 }
 
+# Escape regex special characters in a literal string
+#' @noRd
+escape_regex <- function(x) {
+  gsub("([][{}()+*^$|\\\\.?])", "\\\\\\1", x)
+}
+
 #' gen_pipeline Internal function used to finalise a flat pipeline
 #' @param dag_file A json file giving the names and relationships between derivations.
 #' @param flat_pipeline A flat pipeline, output of `gen_flat_elements()`.
@@ -403,6 +409,7 @@ in
 gen_pipeline <- function(dag_file, flat_pipeline) {
   dag <- jsonlite::read_json(dag_file)
   pipeline_str <- paste(flat_pipeline, collapse = "\n")
+
   for (d in dag$derivations) {
     if (
       length(d$depends) == 0 ||
@@ -415,10 +422,27 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     type <- d$type[1]
     unserialize_function <- d$unserialize_function
 
-    # Define language-specific helpers
+    # Normalize unserialize_function to a single character string
+    if (is.null(unserialize_function) || length(unserialize_function) == 0) {
+      unserialize_function <- switch(
+        type,
+        "rxp_r" = "readRDS",
+        "rxp_py" = "pickle.load",
+        "rxp_jl" = "Serialization.deserialize",
+        "readRDS"
+      )
+    } else {
+      if (is.list(unserialize_function)) {
+        unserialize_function <- as.character(unserialize_function[[1]])
+      } else {
+        unserialize_function <- as.character(unserialize_function[1])
+      }
+    }
+
+    # Build load lines per type
     if (type == "rxp_r") {
-      placeholder <- "# RIXPRESS_LOAD_DEPENDENCIES_HERE"
-      load_line_template <- "%s <- %s('${%s}/%s')" # obj <- readRDS('${obj}/obj')
+      base_placeholder <- "# RIXPRESS_LOAD_DEPENDENCIES_HERE"
+      load_line_template <- "%s <- %s('${%s}/%s')"
       load_lines <- vapply(
         deps,
         function(dep) {
@@ -426,10 +450,9 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
         },
         character(1)
       )
-      replacement_str <- paste(load_lines, collapse = "\n        ")
     } else if (type == "rxp_py") {
-      placeholder <- "# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE"
-      load_line_template <- "with open('${%s}/%s', 'rb') as f: %s = %s(f)" # with open('${obj}/obj', 'rb') as f: obj = pickle.load(f)
+      base_placeholder <- "# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE"
+      load_line_template <- "with open('${%s}/%s', 'rb') as f: %s = %s(f)"
       load_lines <- vapply(
         deps,
         function(dep) {
@@ -437,10 +460,9 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
         },
         character(1)
       )
-      replacement_str <- paste(load_lines, collapse = "\n")
     } else if (type == "rxp_jl") {
-      placeholder <- "# RIXPRESS_JL_LOAD_DEPENDENCIES_HERE"
-      load_line_template <- "%s = open(\\\\\\\"%s\\\\\\\", \\\\\\\"r\\\\\\\") do io; %s(io); end" # obj = open(\"${obj}/obj\", \"r\") do io; Serialization.deserialize(io); end
+      base_placeholder <- "# RIXPRESS_JL_LOAD_DEPENDENCIES_HERE"
+      load_line_template <- "%s = open(\\\"%s\\\", \\\"r\\\") do io; %s(io); end"
       load_lines <- vapply(
         deps,
         function(dep) {
@@ -453,43 +475,26 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
         },
         character(1)
       )
-      replacement_str <- paste(load_lines, collapse = "; ")
     } else {
-      next # Skip unsupported types for now
+      next
     }
 
-    # Use sub() to replace the placeholder in the entire pipeline string
-    # We use a regex to uniquely identify the placeholder within its derivation block
-    # This is safer than a global substitution.
-    derivation_func <- switch(
-      type,
-      "rxp_r" = "makeRDerivation",
-      "rxp_py" = "makePyDerivation",
-      "rxp_jl" = "makeJlDerivation"
-    )
-
-    # Define a pattern that captures the content BEFORE the placeholder.
-    # This allows us to replace the placeholder directly with the new code
-    # in a single, robust step.
+    # Name-scoped placeholder pattern; preserve indentation
+    specific_placeholder <- paste0(base_placeholder, ":", deriv_name)
     pattern <- paste0(
-      "(",                                 # Start capturing group 1
-      deriv_name,
-      "\\s*=\\s*",
-      derivation_func,
-      "[\\s\\S]*?",                       # Match derivation start and everything up to...
-      ")",                                 # End capturing group 1
-      placeholder                          # Match the placeholder itself (but don't capture it)
+      "(?m)^([ \\t]*)",
+      escape_regex(specific_placeholder),
+      "\\s*$"
     )
 
-    # The replacement consists of the captured group (\1) followed by the new
-    # dependency loading code. This effectively replaces the placeholder.
-    pipeline_str <- sub(
-      pattern,
-      paste0("\\1", replacement_str),
-      pipeline_str,
-      perl = TRUE
-    )
+    # Prefix every injected line with the captured indentation
+    replacement_block <- paste(load_lines, collapse = "\n")
+    replacement_block <- gsub("\n", "\n\\1", replacement_block, fixed = TRUE)
+    replacement <- paste0("\\1", replacement_block)
+
+    pipeline_str <- sub(pattern, replacement, pipeline_str, perl = TRUE)
   }
+
   strsplit(pipeline_str, "\n")[[1]]
 }
 
