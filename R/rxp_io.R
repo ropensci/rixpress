@@ -5,26 +5,10 @@
 #' @param user_functions Character vector of user-defined function script paths.
 #' @return Character vector without empty strings.
 clean_user_functions <- function(user_functions) {
-  if (is.null(user_functions)) return(character(0))
+  if (is.null(user_functions)) {
+    return(character(0))
+  }
   user_functions[nzchar(user_functions)]
-}
-
-#' Build copy commands for user functions
-#'
-#' Generates shell commands to copy user-defined function scripts into the
-#' build sandbox.
-#'
-#' @param user_functions Character vector of script file names.
-#' @return A string of `cp` commands, suitable for embedding in a build phase.
-build_user_copy_cmd <- function(user_functions) {
-  if (length(user_functions) == 0) return("")
-  paste0(
-    paste(
-      sprintf("cp ${./%s} %s", user_functions, user_functions),
-      collapse = "\n      "
-    ),
-    "\n      "
-  )
 }
 
 #' Build code import/source commands for user functions
@@ -35,14 +19,19 @@ build_user_copy_cmd <- function(user_functions) {
 #' @param lang Language string, `"R"` or `"Python"`.
 #' @return A string of import/source statements.
 build_user_code_cmd <- function(user_functions, lang) {
-  if (length(user_functions) == 0) return("")
+  if (length(user_functions) == 0) {
+    return("")
+  }
+  # Always prepend input_folder/
+  files <- paste0("input_folder/", user_functions)
   fmt <- switch(
     lang,
-    R      = "source('%s')",
+    R = "source('%s')",
     Py = "exec(open('%s').read())",
+    jl = "include('%s')",
     stop("Unsupported lang: ", lang)
   )
-  paste(sprintf(fmt, user_functions), collapse = "\n")
+  paste(sprintf(fmt, files), collapse = "\n")
 }
 
 #' Build environment variable export commands
@@ -53,11 +42,17 @@ build_user_code_cmd <- function(user_functions, lang) {
 #' @param env_var Named list of environment variables.
 #' @return A string of `export` commands with line breaks, or `""` if none.
 build_env_exports <- function(env_var) {
-  if (is.null(env_var) || length(env_var) == 0) return("")
-  lines <- vapply(names(env_var), function(var) {
-    sprintf("export %s=%s", var, env_var[[var]])
-  }, character(1))
-  paste0(paste(lines, collapse = "\n      "), "\n      ")
+  if (is.null(env_var) || length(env_var) == 0) {
+    return("")
+  }
+  lines <- vapply(
+    names(env_var),
+    function(var) {
+      sprintf("export %s=%s", var, env_var[[var]])
+    },
+    character(1)
+  )
+  paste0(paste(lines, collapse = "\n"), "\n")
 }
 
 #' Build Nix src part
@@ -75,23 +70,22 @@ build_src_part <- function(actual_path, user_functions) {
       system(paste("nix-prefetch-url", shQuote(actual_path)), intern = TRUE),
       error = function(e) stop("Failed to run nix-prefetch-url: ", e$message)
     )
-    if (length(hash) == 0 || hash == "")
+    if (length(hash) == 0 || hash == "") {
       stop("nix-prefetch-url did not return a hash for URL: ", actual_path)
-
+    }
     sprintf(
       "defaultPkgs.fetchurl {\n      url = \"%s\";\n      sha256 = \"%s\";\n    }",
       actual_path,
       trimws(hash[1])
     )
-  } else if (length(user_functions) > 0) {
-    fileset_parts <- c(actual_path, user_functions)
-    fileset_nix <- paste0("./", fileset_parts, collapse = " ")
+  } else {
+    all_files <- c(actual_path, user_functions)
+    all_files <- all_files[nzchar(all_files)]
+    fileset_nix <- paste0("./", all_files, collapse = " ")
     sprintf(
       "defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ %s ];\n    }",
       fileset_nix
     )
-  } else {
-    sprintf("./%s", actual_path)
   }
 }
 
@@ -114,7 +108,7 @@ sanitize_base <- function(nix_env) {
 #' For the single-file case it preserves subfolders by copying the file from its
 #' path *inside* the $src directory (not $src itself).
 #'
-#' @param lang "R" or "Python".
+#' @param lang "R" or "Py" or "Jl".
 #' @param read_func String representing the function to call for reading data.
 #' @param copy_cmd Shell copy command for user functions (may be empty).
 #' @param user_code Source/import statements for user functions.
@@ -122,78 +116,47 @@ sanitize_base <- function(nix_env) {
 #' @param copy_data_folder Logical, whether to copy the entire folder.
 #' @param path Input path (file or folder).
 #' @return A list with `actual_path` and `build_phase` string.
-build_phase <- function(lang, read_func, copy_cmd, user_code, out_name,
-                        copy_data_folder, path) {
+build_phase <- function(lang, read_func, user_code, out_name, path) {
+  rel_path <- paste0("input_folder/", path) # everything under input_folder
+  copy_line <- "cp -r $src input_folder"
 
-  rel_path <- function(p) sub("^\\./+", "", p)
-
-  if (!copy_data_folder) {
-    # single file: check if user_functions exist
-    actual_path <- path
-    if (nzchar(copy_cmd)) {
-      # user_functions exist: $src is a fileset, need to copy from within it
-      copy_line <- sprintf("cp \"$src/%s\" input_file", rel_path(path))
-    } else {
-      # no user_functions: $src points directly to the file
-      copy_line <- "cp $src input_file"
-    }
-    arg_R  <- "input_file"
-    arg_Py <- "file_path = 'input_file'"
-
-  } else if (file.exists(path) && isTRUE(file.info(path)$isdir)) {
-    actual_path <- path
-    copy_line <- "cp -r $src input_folder"
-    arg_R  <- "input_folder/"
-    arg_Py <- "file_path = 'input_folder/'"
-
-  } else {
-    fname <- basename(path)
-    actual_path <- dirname(path)
-    copy_line <- "cp -r $src input_folder"
-    arg_R  <- sprintf("input_folder/%s", fname)
-    arg_Py <- sprintf("file_path = 'input_folder/%s'", fname)
-  }
-
-  # helper to add optional copy of user_functions (copy_cmd may be "")
-  copy_cmd_block <- if (nzchar(copy_cmd)) c(copy_cmd) else character(0)
+  # User scripts
+  copy_cmd_block <- character(0) # fileset handles everything now
 
   if (lang == "R") {
-    # Build Rscript lines (no extra left-margin padding)
     r_lines <- c(
       "Rscript -e \"",
       "source('libraries.R')",
       if (nzchar(user_code)) unlist(strsplit(user_code, "\n")),
-      sprintf("data <- do.call(%s, list('%s'))", read_func, arg_R),
+      sprintf("data <- do.call(%s, list('%s'))", read_func, rel_path),
       sprintf("saveRDS(data, '%s')\"", out_name)
     )
-    body_block <- c(copy_cmd_block, r_lines)
-
+    body_block <- c(copy_cmd_block, copy_line, r_lines)
   } else if (lang == "Py") {
-    # Build python lines (no leading spaces). Ensure file_path is always defined.
     py_lines <- c(
       "python -c \"",
-      "exec(open('libraries.py').read())"
+      "exec(open('libraries.py').read())",
+      if (nzchar(user_code)) unlist(strsplit(user_code, "\n")),
+      sprintf("file_path = '%s'", rel_path),
+      sprintf("data = eval('%s')(file_path)", read_func),
+      sprintf("with open('%s', 'wb') as f:", out_name),
+      "    pickle.dump(data, f)",
+      "\""
     )
-    if (nzchar(user_code)) {
-      py_lines <- c(py_lines, unlist(strsplit(user_code, "\n")))
-    }
-    py_lines <- c(py_lines,
-                  arg_Py,
-                  sprintf("data = eval('%s')(file_path)", read_func),
-                  sprintf("with open('%s', 'wb') as f:", out_name),
-                  "    pickle.dump(data, f)",
-                  "\"")
-    body_block <- c(copy_cmd_block, py_lines)
-
+    body_block <- c(copy_cmd_block, copy_line, py_lines)
+  } else if (lang == "Jl") {
+    jl_lines <- c(
+      "# Julia derivation build",
+      copy_line,
+      if (nzchar(user_code)) unlist(strsplit(user_code, "\n")),
+      sprintf("data = %s(\"%s\")", read_func, rel_path)
+    )
+    body_block <- c(copy_cmd_block, jl_lines)
   } else {
     stop("Unsupported lang: ", lang)
   }
 
-  # join everything without inserting extra indentation
-  body <- paste(body_block, collapse = "\n")
-  build_phase <- paste(copy_line, body, sep = "\n")
-
-  list(actual_path = actual_path, build_phase = build_phase)
+  paste(body_block, collapse = "\n")
 }
 
 #' Generic Nix expression builder for R and Python data readers
@@ -202,65 +165,65 @@ build_phase <- function(lang, read_func, copy_cmd, user_code, out_name,
 #' Python. Handles user-defined functions, environment variables, and Nix
 #' environment specification.
 #'
-#' @param lang `"R"` or `"Python"`.
+#' @param lang `"R"`, `"Py"` or `"Jl"`.
 #' @inheritParams rxp_r_file
 #' @inheritParams rxp_py_file
+#' @inheritParams rxp_jl_file
 #' @return An object of class `rxp_derivation`.
-rxp_file <- function(lang,
-                     name,
-                     path,
-                     read_function,
-                     user_functions = "",
-                     nix_env = "default.nix",
-                     copy_data_folder = FALSE,
-                     env_var = NULL) {
-
+rxp_file <- function(
+  lang,
+  name,
+  path,
+  read_function,
+  user_functions = "",
+  nix_env = "default.nix",
+  env_var = NULL
+) {
   out_name <- deparse1(substitute(name))
   user_functions <- clean_user_functions(user_functions)
 
-  # Sanitize read_function
   read_func_str <- switch(
     lang,
-    R      = gsub("\"", "'", deparse1(substitute(read_function))),
+    R = gsub("\"", "'", deparse1(substitute(read_function))),
     Py = {
-      if (!is.character(read_function) || length(read_function) != 1)
+      if (!is.character(read_function) || length(read_function) != 1) {
         stop("For Python, read_function must be a single string")
+      }
       gsub("'", "\\'", read_function, fixed = TRUE)
-    }
+    },
+    Jl = gsub("\"", "'", deparse1(substitute(read_function)))
   )
 
-  copy_cmd  <- build_user_copy_cmd(user_functions)
   user_code <- build_user_code_cmd(user_functions, lang)
   env_exports <- build_env_exports(env_var)
-
-  # Build build_phase and actual_path
-  bp <- build_phase(lang, read_func_str, copy_cmd, user_code,
-                    out_name, copy_data_folder, path)
-
-  if (env_exports != "") {
-    bp$build_phase <- paste0(env_exports, bp$build_phase)
+  bp <- build_phase(lang, read_func_str, user_code, out_name, path)
+  if (nzchar(env_exports)) {
+    bp <- paste(env_exports, bp, sep = "\n")
   }
 
-  src_part <- build_src_part(bp$actual_path, user_functions)
-  base <- sanitize_base(nix_env)
+  src_part <- build_src_part(path, user_functions)
+  base <- sub("_nix$", "", gsub("[^a-zA-Z0-9]", "_", nix_env))
 
   snippet <- make_derivation_snippet(
     out_name = out_name,
     src_snippet = sprintf("    src = %s;\n", src_part),
     base = base,
-    build_phase = bp$build_phase,
+    build_phase = bp,
     derivation_type = lang
   )
 
-  structure(list(
-    name = out_name,
-    snippet = snippet,
-    type = paste0("rxp_", tolower(lang)),
-    additional_files = "",
-    user_functions = user_functions,
-    nix_env = nix_env,
-    env_var = env_var
-  ), class = "rxp_derivation")
+  structure(
+    list(
+      name = out_name,
+      snippet = snippet,
+      type = paste0("rxp_", tolower(lang)),
+      additional_files = "",
+      user_functions = user_functions,
+      nix_env = nix_env,
+      env_var = env_var
+    ),
+    class = "rxp_derivation"
+  )
 }
 
 
@@ -292,6 +255,19 @@ rxp_r_file <- function(...) rxp_file("R", ...)
 #' @export
 rxp_py_file <- function(...) rxp_file("Py", ...)
 
+#' Creates a Nix expression that reads in a file (or folder of data) using Julia.
+#'
+#' @family derivations
+#' @param name Symbol, the name of the derivation.
+#' @param path Character, file or folder path to include.
+#' @param read_function Character, Python function to read the data.
+#' @param user_functions Character vector of script paths to include.
+#' @param nix_env Character, path to the Nix environment file.
+#' @param copy_data_folder Logical, copy folder recursively if TRUE.
+#' @param env_var Named list of environment variables.
+#' @return An object of class `rxp_derivation`.
+#' @export
+rxp_jl_file <- function(...) rxp_file("Jl", ...)
 
 
 #' Generate the Nix derivation snippet for Python-R object transfer.

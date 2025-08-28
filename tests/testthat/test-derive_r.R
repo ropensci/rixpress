@@ -643,19 +643,22 @@ test_that("rxp_r_file: single file WITHOUT user_functions generates correct copy
 })
 
 test_that("rxp_r_file: single file WITH user_functions generates correct copy command", {
-  # Create a temporary CSV for testing  
+  # Create a temporary CSV for testing
   csv_file <- tempfile(fileext = ".csv")
   write.csv(mtcars[1:5, ], csv_file, row.names = FALSE)
 
   d1 <- rxp_r_file(
-    mtcars_data, 
-    path = csv_file, 
+    mtcars_data,
+    path = csv_file,
     read_function = read.csv,
     user_functions = "functions.R"
   )
 
   # Check that the snippet contains the quoted path format, not "cp $src input_file"
-  testthat::expect_true(grepl(sprintf("cp \"\\$src/%s\" input_file", basename(csv_file)), d1$snippet))
+  testthat::expect_true(grepl(
+    sprintf("cp \"\\$src/%s\" input_file", basename(csv_file)),
+    d1$snippet
+  ))
   testthat::expect_false(grepl("cp \\$src input_file", d1$snippet))
 
   # Cleanup
@@ -667,7 +670,11 @@ test_that("rxp_py_file: single file WITHOUT user_functions generates correct cop
   csv_file <- tempfile(fileext = ".csv")
   write.csv(mtcars[1:5, ], csv_file, row.names = FALSE)
 
-  d1 <- rxp_py_file(mtcars_data, path = csv_file, read_function = "pandas.read_csv")
+  d1 <- rxp_py_file(
+    mtcars_data,
+    path = csv_file,
+    read_function = "pandas.read_csv"
+  )
 
   # Check that the snippet contains "cp $src input_file" (not quoted path)
   testthat::expect_true(grepl("cp \\$src input_file", d1$snippet))
@@ -683,14 +690,17 @@ test_that("rxp_py_file: single file WITH user_functions generates correct copy c
   write.csv(mtcars[1:5, ], csv_file, row.names = FALSE)
 
   d1 <- rxp_py_file(
-    mtcars_data, 
-    path = csv_file, 
+    mtcars_data,
+    path = csv_file,
     read_function = "pandas.read_csv",
     user_functions = "functions.py"
   )
 
   # Check that the snippet contains the quoted path format, not "cp $src input_file"
-  testthat::expect_true(grepl(sprintf("cp \"\\$src/%s\" input_file", basename(csv_file)), d1$snippet))
+  testthat::expect_true(grepl(
+    sprintf("cp \"\\$src/%s\" input_file", basename(csv_file)),
+    d1$snippet
+  ))
   testthat::expect_false(grepl("cp \\$src input_file", d1$snippet))
 
   # Cleanup
@@ -700,31 +710,37 @@ test_that("rxp_py_file: single file WITH user_functions generates correct copy c
 test_that("rxp_r_file: complex path WITH user_functions generates correct copy command", {
   # Test with a more complex path like in the problem statement
   complex_path <- "md_source/gorilla/gorilla-waving-cartoon-black-white-outline-clipart-914.jpg"
-  
+
   d1 <- rxp_r_file(
-    gorilla_pixels, 
-    path = complex_path, 
+    gorilla_pixels,
+    path = complex_path,
     read_function = read_image,
     user_functions = "functions.R"
   )
 
   # Check that the snippet contains the correct quoted path format
-  testthat::expect_true(grepl("cp \"\\$src/md_source/gorilla/gorilla-waving-cartoon-black-white-outline-clipart-914.jpg\" input_file", d1$snippet))
+  testthat::expect_true(grepl(
+    "cp \"\\$src/md_source/gorilla/gorilla-waving-cartoon-black-white-outline-clipart-914.jpg\" input_file",
+    d1$snippet
+  ))
   testthat::expect_false(grepl("cp \\$src input_file", d1$snippet))
 })
 
 test_that("rxp_py_file: complex path WITH user_functions generates correct copy command", {
-  # Test with a more complex path like in the problem statement  
+  # Test with a more complex path like in the problem statement
   complex_path <- "md_source/gorilla/gorilla-waving-cartoon-black-white-outline-clipart-914.jpg"
-  
+
   d1 <- rxp_py_file(
-    gorilla_pixels, 
-    path = complex_path, 
+    gorilla_pixels,
+    path = complex_path,
     read_function = "read_image",
     user_functions = "functions.py"
   )
 
   # Check that the snippet contains the correct quoted path format
-  testthat::expect_true(grepl("cp \"\\$src/md_source/gorilla/gorilla-waving-cartoon-black-white-outline-clipart-914.jpg\" input_file", d1$snippet))
+  testthat::expect_true(grepl(
+    "cp \"\\$src/md_source/gorilla/gorilla-waving-cartoon-black-white-outline-clipart-914.jpg\" input_file",
+    d1$snippet
+  ))
   testthat::expect_false(grepl("cp \\$src input_file", d1$snippet))
 })
