@@ -44,7 +44,7 @@ returned instead.
 }
 \seealso{
 Other utilities: 
-\code{\link{print.derivation}()},
+\code{\link{print.rxp_derivation}()},
 \code{\link{rxp_copy}()},
 \code{\link{rxp_init}()},
 \code{\link{rxp_inspect}()},

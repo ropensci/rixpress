@@ -159,7 +159,7 @@ Now, we use this wrapper in our pipeline:
       inputs = inputs,
       seed = 22
     ),
-    additional_files = "functions.R",
+    user_functions = "functions.R",
     serialize_function = "save_model",
     env_var = c("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan")
   )

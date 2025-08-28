@@ -156,17 +156,21 @@ generate_libraries_script <- function(
   # Generate import statements for each package
   import_lines <- sapply(packages, import_formatter)
 
-  # Filter additional files based on pattern
-  additional_scripts <- Filter(
-    function(x) grepl(additional_file_pattern, x),
-    additional_files
-  )
+  # Filter additional files based on pattern (only if pattern is not NULL)
+  if (!is.null(additional_file_pattern)) {
+    additional_scripts <- Filter(
+      function(x) grepl(additional_file_pattern, x),
+      additional_files
+    )
 
-  # Combine import statements with additional content
-  if (length(additional_scripts) > 0) {
-    list_additional_content <- lapply(additional_scripts, readLines)
-    additional_content <- Reduce(append, list_additional_content)
-    output <- append(import_lines, additional_content)
+    # Combine import statements with additional content
+    if (length(additional_scripts) > 0) {
+      list_additional_content <- lapply(additional_scripts, readLines)
+      additional_content <- Reduce(append, list_additional_content)
+      output <- append(import_lines, additional_content)
+    } else {
+      output <- import_lines
+    }
   } else {
     output <- import_lines
   }
@@ -248,7 +252,7 @@ language_configs <- list(
     transform_func = transform_r,
     adjust_func = adjust_r_packages,
     import_formatter = import_formatter_r,
-    additional_file_pattern = "functions\\.[Rr]",
+    additional_file_pattern = NULL, # Changed from "functions\\.[Rr]"
     extension = "R",
     parse_git = TRUE
   ),
@@ -257,7 +261,7 @@ language_configs <- list(
     transform_func = transform_py,
     adjust_func = adjust_py_packages,
     import_formatter = import_formatter_py,
-    additional_file_pattern = "functions\\.py",
+    additional_file_pattern = NULL, # Changed from "functions\\.[py]"
     extension = "py",
     parse_git = FALSE
   ),
@@ -266,7 +270,7 @@ language_configs <- list(
     transform_func = transform_jl,
     adjust_func = adjust_jl_packages,
     import_formatter = import_formatter_jl,
-    additional_file_pattern = "functions\\.jl",
+    additional_file_pattern = NULL, # Changed from "functions\\.[jl]"
     extension = "jl",
     parse_git = FALSE
   )

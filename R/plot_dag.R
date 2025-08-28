@@ -170,8 +170,9 @@ rxp_ggdag <- function(nodes_and_edges = get_nodes_edges()) {
 #' @export
 #' @importFrom jsonlite fromJSON
 rxp_visnetwork <- function(nodes_and_edges = get_nodes_edges()) {
-  if (!requireNamespace("visNetwork", quietly = TRUE))
+  if (!requireNamespace("visNetwork", quietly = TRUE)) {
     stop("You need to install {visNetwork} to use this feature.")
+  }
 
   nodes <- nodes_and_edges$nodes
   edges <- nodes_and_edges$edges
@@ -238,7 +239,9 @@ unnest_all_columns <- function(df) {
   list_cols <- sapply(df, is.list)
 
   # If no list-columns, return original data frame
-  if (!any(list_cols)) return(df)
+  if (!any(list_cols)) {
+    return(df)
+  }
 
   # Initialize result with non-list columns
   result <- df[!list_cols]

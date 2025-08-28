@@ -9,21 +9,21 @@ d0 <- rxp_r_file(
 )
 d1 <- rxp_r(
   mtcars_am,
-  filter(mtcars, mpg = 100),
+  filter(mtcars, am == 1),
   nix_env = "default2.nix"
 )
 
 d2 <- rxp_r(
   mtcars_head,
   my_head(mtcars_am, 10),
-  additional_files = "functions.R",
+  user_functions = "my_head.R",
   nix_env = "default.nix"
 )
 
 d3 <- rxp_r(
   mtcars_tail,
   my_tail(mtcars_head),
-  additional_files = "functions.R",
+  user_functions = "my_tail.R",
   nix_env = "default.nix"
 )
 
@@ -40,7 +40,7 @@ derivs <- list(d0, d1, d2, d3, d4, doc)
 
 rxp_populate(derivs, project_path = ".", build = FALSE)
 
-rxp_make(verbose = 5)
+rxp_make()
 
 #dag_obj <- plot_dag(return_igraph = TRUE)
 

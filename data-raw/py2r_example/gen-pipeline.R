@@ -4,7 +4,6 @@ d0 <- rxp_py_file(
   name = mtcars_pl,
   path = 'data/mtcars.csv',
   read_function = "lambda x: polars.read_csv(x, separator='|')",
-  nix_env = "py-env.nix"
 )
 
 d1 <- rxp_py(
@@ -12,7 +11,6 @@ d1 <- rxp_py(
   # first to pandas DF
   name = mtcars_pl_am,
   py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()",
-  nix_env = "py-env.nix"
 )
 
 d2 <- rxp_py2r(
@@ -23,7 +21,7 @@ d2 <- rxp_py2r(
 d3 <- rxp_r(
   name = mtcars_head,
   expr = my_head(mtcars_am),
-  additional_files = "functions.R"
+  user_functions = "functions.R"
 )
 
 d3_1 <- rxp_r2py(
@@ -34,7 +32,6 @@ d3_1 <- rxp_r2py(
 d4 <- rxp_py(
   name = mtcars_tail_py,
   py_expr = 'mtcars_head_py.tail()',
-  nix_env = "py-env.nix"
 )
 
 d4_1 <- rxp_py2r(

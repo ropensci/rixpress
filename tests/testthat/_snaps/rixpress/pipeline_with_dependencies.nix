@@ -44,6 +44,7 @@ let
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
+        # RIXPRESS_LOAD_DEPENDENCIES_HERE:data_prep
         data_prep <- mtcars
         saveRDS(data_prep, 'data_prep')"
     '';
@@ -69,6 +70,7 @@ let
     buildPhase = ''
       python -c "
 exec(open('libraries.py').read())
+# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE:py_process
 exec('py_process = pd.DataFrame({\'a\': [1, 2, 3]})')
 with open('py_process', 'wb') as f: pickle.dump(globals()['py_process'], f)
 "

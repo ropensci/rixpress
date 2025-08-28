@@ -8,6 +8,7 @@ rxp_jl(
   name,
   jl_expr,
   additional_files = "",
+  user_functions = "",
   nix_env = "default.nix",
   serialize_function = NULL,
   unserialize_function = NULL,
@@ -19,9 +20,15 @@ rxp_jl(
 
 \item{jl_expr}{Character, Julia code to generate the expression.}
 
-\item{additional_files}{Character vector, additional files to include. Custom
-functions must go into a script called "functions.jl", and additional files
-that need to be accessible during the build process can be named anything.}
+\item{additional_files}{Character vector, additional files to include
+during the build process. For example, if a function expects a certain
+file to be available, this is where you should include it.}
+
+\item{user_functions}{Character vector, user-defined functions to include.
+This should be a script (or scripts) containing user-defined functions
+to include during the build process for this derivation. It is recommended
+to use one script per function, and only include the required script(s) in
+the derivation.}
 
 \item{nix_env}{Character, path to the Nix environment file, default is
 "default.nix".}
@@ -69,12 +76,13 @@ rxp_jl(
   name = model_output,
   jl_expr = "train_model(data)",
   serialize_function = "save_my_obj",
-  additional_files = "functions.jl"
+  user_functions = "functions.jl"
 )
 }
 }
 \seealso{
 Other derivations: 
+\code{\link{rxp_jl_file}()},
 \code{\link{rxp_py}()},
 \code{\link{rxp_py_file}()},
 \code{\link{rxp_qmd}()},

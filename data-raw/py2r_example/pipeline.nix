@@ -1,14 +1,4 @@
 let
-  py_env = import ./py-env.nix;
-  py_envPkgs = py_env.pkgs;
-  py_envShell = py_env.shell;
-  py_envBuildInputs = py_envShell.buildInputs;
-  py_envConfigurePhase = ''
-    cp ${./_rixpress/py_env_libraries.py} libraries.py
-    mkdir -p $out
-  '';
-  
-
   default = import ./default.nix;
   defaultPkgs = default.pkgs;
   defaultShell = default.shell;
@@ -16,7 +6,10 @@ let
   defaultConfigurePhase = ''
     cp ${./_rixpress/default_libraries.py} libraries.py
     cp ${./_rixpress/default_libraries.R} libraries.R
-    mkdir -p $out
+    mkdir -p $out  
+    mkdir -p .julia_depot  
+    export JULIA_DEPOT_PATH=$PWD/.julia_depot  
+    export HOME_PATH=$PWD
   '';
   
 
@@ -26,7 +19,10 @@ let
   quarto_envBuildInputs = quarto_envShell.buildInputs;
   quarto_envConfigurePhase = ''
     cp ${./_rixpress/quarto_env_libraries.R} libraries.R
-    mkdir -p $out
+    mkdir -p $out  
+    mkdir -p .julia_depot  
+    export JULIA_DEPOT_PATH=$PWD/.julia_depot  
+    export HOME_PATH=$PWD
   '';
   
   # Function to create R derivations
@@ -58,13 +54,15 @@ let
     mtcars_pl = makePyDerivation {
     name = "mtcars_pl";
     src = ./data/mtcars.csv;
-    buildInputs = py_envBuildInputs;
-    configurePhase = py_envConfigurePhase;
+    buildInputs = defaultBuildInputs;
+    configurePhase = defaultConfigurePhase;
     buildPhase = ''
       cp $src input_file
+      
 python -c "
 exec(open('libraries.py').read())
 file_path = 'input_file'
+
 data = eval('lambda x: polars.read_csv(x, separator=\'|\')')(file_path)
 with open('mtcars_pl', 'wb') as f:
     pickle.dump(data, f)
@@ -75,8 +73,8 @@ with open('mtcars_pl', 'wb') as f:
 
   mtcars_pl_am = makePyDerivation {
     name = "mtcars_pl_am";
-    buildInputs = py_envBuildInputs;
-    configurePhase = py_envConfigurePhase;
+    buildInputs = defaultBuildInputs;
+    configurePhase = defaultConfigurePhase;
     buildPhase = ''
       python -c "
 exec(open('libraries.py').read())
@@ -102,12 +100,18 @@ with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)
 
   mtcars_head = makeRDerivation {
     name = "mtcars_head";
+     src = defaultPkgs.lib.fileset.toSource {
+      root = ./.;
+      fileset = defaultPkgs.lib.fileset.unions [ ./functions.R ];
+    };
     buildInputs = defaultBuildInputs;
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
+      cp ${./functions.R} functions.R
       Rscript -e "
         source('libraries.R')
         mtcars_am <- readRDS('${mtcars_am}/mtcars_am')
+        source('functions.R')
         mtcars_head <- my_head(mtcars_am)
         saveRDS(mtcars_head, 'mtcars_head')"
     '';
@@ -128,8 +132,8 @@ with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)
 
   mtcars_tail_py = makePyDerivation {
     name = "mtcars_tail_py";
-    buildInputs = py_envBuildInputs;
-    configurePhase = py_envConfigurePhase;
+    buildInputs = defaultBuildInputs;
+    configurePhase = defaultConfigurePhase;
     buildPhase = ''
       python -c "
 exec(open('libraries.py').read())
@@ -179,10 +183,10 @@ with open('mtcars_tail_py', 'wb') as f: pickle.dump(globals()['mtcars_tail_py'],
       export HOME=$PWD/home
       export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python
 
-      substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_head")' 'rxp_read("${mtcars_head}")'
-      substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail")' 'rxp_read("${mtcars_tail}")'
-      substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_mpg")' 'rxp_read("${mtcars_mpg}")'
-      substituteInPlace page.qmd --replace-fail 'rxp_read("mtcars_tail_py")' 'rxp_read("${mtcars_tail_py}")'
+      substituteInPlace page.qmd --replace-fail 'rixpress::rxp_read("mtcars_head")' 'rixpress::rxp_read("${mtcars_head}")'
+      substituteInPlace page.qmd --replace-fail 'rixpress::rxp_read("mtcars_tail")' 'rixpress::rxp_read("${mtcars_tail}")'
+      substituteInPlace page.qmd --replace-fail 'rixpress::rxp_read("mtcars_mpg")' 'rixpress::rxp_read("${mtcars_mpg}")'
+      substituteInPlace page.qmd --replace-fail 'rixpress::rxp_read("mtcars_tail_py")' 'rixpress::rxp_read("${mtcars_tail_py}")'
       quarto render page.qmd  --output-dir $out
     '';
   };

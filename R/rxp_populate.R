@@ -290,7 +290,7 @@ parse_nix_envs <- function(derivs) {
 #'     - `$type`, character, can be R, Python or Quarto
 #'     - `$additional_files`, character vector of paths to files to make
 #'        available to build sandbox
-#'     - `$nix_env`, character, path to Nix environment to build this derivation
+#'     - `$nix_env`, character, path to the Nix environment to build this derivation
 #'   A single deriv is the output of `rxp_r()`, `rxp_qmd()` or `rxp_py()`
 #'   function.
 #' @noRd
@@ -396,146 +396,108 @@ in
   strsplit(pipeline_nix, split = "\n")[[1]]
 }
 
+# Escape regex special characters in a literal string
+#' @noRd
+escape_regex <- function(x) {
+  gsub("([][{}()+*^$|\\\\.?])", "\\\\\\1", x)
+}
+
 #' gen_pipeline Internal function used to finalise a flat pipeline
 #' @param dag_file A json file giving the names and relationships between derivations.
 #' @param flat_pipeline A flat pipeline, output of `gen_flat_elements()`.
 #' @noRd
 gen_pipeline <- function(dag_file, flat_pipeline) {
   dag <- jsonlite::read_json(dag_file)
-  pipeline <- flat_pipeline
+  pipeline_str <- paste(flat_pipeline, collapse = "\n")
 
   for (d in dag$derivations) {
     if (
       length(d$depends) == 0 ||
-        d$type == "rxp_qmd" ||
-        d$type == "rxp_rmd" ||
-        d$type == "rxp_py2r" ||
-        d$type == "rxp_r2py"
+        d$type %in% c("rxp_qmd", "rxp_rmd", "rxp_py2r", "rxp_r2py")
     ) {
       next
     }
-
     deriv_name <- as.character(d$deriv_name[1])
     deps <- d$depends
     type <- d$type[1]
     unserialize_function <- d$unserialize_function
 
-    # Set parameters based on derivation type
-    if (type == "rxp_r") {
-      maker <- "makeRDerivation"
-      script_cmd <- "Rscript -e \""
-      load_line <- function(dep, indent, unserialize_function) {
-        paste0(
-          indent,
-          dep,
-          " <- ",
-          unserialize_function,
-          "('${",
-          dep,
-          "}/",
-          dep,
-          "')"
-        )
-      }
-    } else if (type == "rxp_py") {
-      maker <- "makePyDerivation"
-      script_cmd <- "python -c \""
-      load_line <- function(dep, indent, unserialize_function) {
-        path <- paste0("${", dep, "}/", dep)
-        if (unserialize_function == "pickle.load") {
-          paste0(
-            "with open('",
-            path,
-            "', 'rb') as f: ",
-            dep,
-            " = pickle.load(f)"
-          )
-        } else {
-          paste0(
-            dep,
-            " = ",
-            unserialize_function,
-            "('",
-            path,
-            "')"
-          )
-        }
-      }
-    } else if (type == "rxp_jl") {
-      maker <- "makeJlDerivation"
-      script_cmd <- "julia -e \""
-      load_line <- function(dep, indent, unserialize_function) {
-        path <- paste0("${", dep, "}/", dep)
-        paste0(
-          dep,
-          " = ",
-          unserialize_function,
-          "(\\\"",
-          path,
-          "\\\")"
-        )
-      }
+    # Normalize unserialize_function to a single character string
+    if (is.null(unserialize_function) || length(unserialize_function) == 0) {
+      unserialize_function <- switch(
+        type,
+        "rxp_r" = "readRDS",
+        "rxp_py" = "pickle.load",
+        "rxp_jl" = "Serialization.deserialize",
+        "readRDS"
+      )
     } else {
-      warning("Unsupported type for derivation ", deriv_name)
-      next
-    }
-
-    # Locate the derivation block
-    pattern <- paste0("^\\s*", deriv_name, " = ", maker, " \\{")
-    start_idx <- grep(pattern, pipeline)
-    if (!length(start_idx)) {
-      warning("Derivation ", deriv_name, " not found")
-      next
-    }
-    start_idx <- start_idx[1]
-
-    # Find the end of the block
-    end_candidates <- grep("^\\s*};", pipeline)
-    block_end_idx <- end_candidates[end_candidates > start_idx][1]
-    if (is.na(block_end_idx)) {
-      warning("Block end for ", deriv_name, " not found")
-      next
-    }
-
-    block <- pipeline[start_idx:block_end_idx]
-    bp_idx <- grep("buildPhase = ''", block)
-    if (!length(bp_idx)) {
-      warning("buildPhase not found for ", deriv_name)
-      next
-    }
-    build_phase_idx <- start_idx + bp_idx[1] - 1
-
-    sub_block <- block[bp_idx[1]:length(block)]
-    script_idx <- grep(script_cmd, sub_block, fixed = TRUE)
-    if (!length(script_idx)) {
-      warning("Script command not found in buildPhase for ", deriv_name)
-      next
-    }
-    script_idx <- build_phase_idx + script_idx[1]
-
-    # Determine indentation for R scripts, none for Python or Julia
-    indent <- if (type == "rxp_r") {
-      if (script_idx + 1 <= length(pipeline)) {
-        sub("^([[:space:]]*).*", "\\1", pipeline[script_idx + 1])
+      if (is.list(unserialize_function)) {
+        unserialize_function <- as.character(unserialize_function[[1]])
       } else {
-        "      "
+        unserialize_function <- as.character(unserialize_function[1])
       }
-    } else {
-      ""
     }
 
-    load_lines <- vapply(
-      deps,
-      load_line,
-      indent,
-      unserialize_function,
-      FUN.VALUE = character(1)
+    # Build load lines per type
+    if (type == "rxp_r") {
+      base_placeholder <- "# RIXPRESS_LOAD_DEPENDENCIES_HERE"
+      load_line_template <- "%s <- %s('${%s}/%s')"
+      load_lines <- vapply(
+        deps,
+        function(dep) {
+          sprintf(load_line_template, dep, unserialize_function, dep, dep)
+        },
+        character(1)
+      )
+    } else if (type == "rxp_py") {
+      base_placeholder <- "# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE"
+      load_line_template <- "with open('${%s}/%s', 'rb') as f: %s = %s(f)"
+      load_lines <- vapply(
+        deps,
+        function(dep) {
+          sprintf(load_line_template, dep, dep, dep, unserialize_function)
+        },
+        character(1)
+      )
+    } else if (type == "rxp_jl") {
+      base_placeholder <- "# RIXPRESS_JL_LOAD_DEPENDENCIES_HERE"
+      load_line_template <- "%s = open(\\\"%s\\\", \\\"r\\\") do io; %s(io); end"
+      load_lines <- vapply(
+        deps,
+        function(dep) {
+          sprintf(
+            load_line_template,
+            dep,
+            paste0("${", dep, "}/", dep),
+            unserialize_function
+          )
+        },
+        character(1)
+      )
+    } else {
+      next
+    }
+
+    # Name-scoped placeholder pattern; preserve indentation
+    specific_placeholder <- paste0(base_placeholder, ":", deriv_name)
+    pattern <- paste0(
+      "(?m)^([ \\t]*)",
+      escape_regex(specific_placeholder),
+      "\\s*$"
     )
-    pipeline <- append(pipeline, load_lines, after = build_phase_idx + 2)
+
+    # Prefix every injected line with the captured indentation
+    replacement_block <- paste(load_lines, collapse = "\n")
+    replacement_block <- gsub("\n", "\n\\1", replacement_block, fixed = TRUE)
+    replacement <- paste0("\\1", replacement_block)
+
+    pipeline_str <- sub(pattern, replacement, pipeline_str, perl = TRUE)
   }
 
-  pipeline
+  strsplit(pipeline_str, "\n")[[1]]
 }
+
 
 #' Generate an R or Py script with library calls from a default.nix file
 #'
