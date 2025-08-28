@@ -9,7 +9,8 @@ make_derivation_snippet(
   src_snippet,
   base,
   build_phase,
-  derivation_type
+  derivation_type,
+  build = TRUE
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ make_derivation_snippet(
 \item{build_phase}{Character, the build phase commands}
 
 \item{derivation_type}{Character, one of "R", "Py", "Jl", "Qmd", "Rmd"}
+
+\item{build}{Logical, whether to actually build the derivation (default TRUE)}
 }
 \value{
 Character string with the formatted Nix derivation

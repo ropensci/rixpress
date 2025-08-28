@@ -12,7 +12,8 @@ rxp_jl(
   nix_env = "default.nix",
   serialize_function = NULL,
   unserialize_function = NULL,
-  env_var = NULL
+  env_var = NULL,
+  build = TRUE
 )
 }
 \arguments{
@@ -47,6 +48,10 @@ file path. If NULL, the default is assumed to be \code{Serialization.deserialize
 environment variables to set before running the Julia script, e.g.,
 \code{c("JULIA_DEPOT_PATH" = "/path/to/depot")}. Each entry will be added as
 an \code{export} statement in the build phase.}
+
+\item{build}{Logical, defaults to TRUE. If TRUE, the derivation will be built
+when the pipeline runs. If FALSE, the derivation definition is created but
+the build is skipped.}
 }
 \value{
 An object of class derivation which inherits from lists.
@@ -69,6 +74,13 @@ paths.
 rxp_jl(
   name = filtered_df,
   jl_expr = "filter(df, :col .> 10)"
+)
+
+# Skip building this derivation
+rxp_jl(
+  name = model_result,
+  jl_expr = "train_model(data)",
+  build = FALSE
 )
 
 # Custom serialization: assume `save_my_obj(obj, path)` is defined in functions.jl

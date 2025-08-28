@@ -12,7 +12,8 @@ rxp_r(
   nix_env = "default.nix",
   serialize_function = NULL,
   unserialize_function = NULL,
-  env_var = NULL
+  env_var = NULL,
+  build = TRUE
 )
 }
 \arguments{
@@ -54,6 +55,10 @@ should use \code{keras::load_model_hdf5()} to load it correctly.}
 environment variables to set before running the R script, e.g.,
 \verb{c("CMDSTAN" = "$\{defaultPkgs.cmdstan\}/opt/cmdstan)"}.
 Each entry will be added as an export statement in the build phase.}
+
+\item{build}{Logical, defaults to TRUE. If TRUE, the derivation will be built
+when the pipeline runs. If FALSE, the derivation definition is created but
+the build is skipped.}
 }
 \value{
 An object of class derivation which inherits from lists.
@@ -73,6 +78,13 @@ paths.
 \dontrun{
   # Basic usage
   rxp_r(name = filtered_mtcars, expr = filter(mtcars, am == 1))
+
+  # Skip building this derivation
+  rxp_r(
+    name = turtles,
+    expr = occurrence(species, geometry = atlantic),
+    build = FALSE
+  )
 
   # Serialize object using qs
   rxp_r(

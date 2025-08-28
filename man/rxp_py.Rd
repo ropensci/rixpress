@@ -12,7 +12,8 @@ rxp_py(
   nix_env = "default.nix",
   serialize_function = NULL,
   unserialize_function = NULL,
-  env_var = NULL
+  env_var = NULL,
+  build = TRUE
 )
 }
 \arguments{
@@ -47,6 +48,10 @@ argument: the file path.}
 environment variables
 before running the Python script, e.g., c(PYTHONPATH = "/path/to/modules").
 Each entry will be added as an export statement in the build phase.}
+
+\item{build}{Logical, defaults to TRUE. If TRUE, the derivation will be built
+when the pipeline runs. If FALSE, the derivation definition is created but
+the build is skipped.}
 }
 \value{
 An object of class derivation which inherits from lists.
@@ -69,6 +74,13 @@ and output paths.
   rxp_py(
     mtcars_pl_am,
     py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()"
+  )
+
+  # Skip building this derivation
+  rxp_py(
+    data_prep,
+    py_expr = "preprocess_data(raw_data)",
+    build = FALSE
   )
 
   # Custom serialization

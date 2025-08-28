@@ -10,7 +10,8 @@ rxp_qmd(
   additional_files = "",
   nix_env = "default.nix",
   args = "",
-  env_var = NULL
+  env_var = NULL,
+  build = TRUE
 )
 }
 \arguments{
@@ -31,6 +32,10 @@ example a folder containing images to include in the Quarto document.}
 to set before running the Quarto render command, e.g., c(QUARTO_PROFILE =
 "production"). Each entry will be added as an export statement in the build
 phase.}
+
+\item{build}{Logical, defaults to TRUE. If TRUE, the derivation will be built
+when the pipeline runs. If FALSE, the derivation definition is created but
+the build is skipped.}
 }
 \value{
 An object of class derivation which inherits from lists.
@@ -51,6 +56,13 @@ To include built derivations in the document,
     qmd_file = "report.qmd",
     additional_files = "images",
     args = "--to typst"
+  )
+
+  # Skip building this derivation
+  rxp_qmd(
+    name = draft_report,
+    qmd_file = "draft.qmd",
+    build = FALSE
   )
 }
 }
