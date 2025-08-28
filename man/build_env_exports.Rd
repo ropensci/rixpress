@@ -16,3 +16,4 @@ A string of \code{export} commands with line breaks, or \code{""} if none.
 Generates shell export commands for setting environment variables before
 running the build script.
 }
+\keyword{internal}

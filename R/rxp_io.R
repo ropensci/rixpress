@@ -23,6 +23,7 @@ LANG_CONFIG <- list(
 #'
 #' @param user_functions Character vector of user-defined function script paths.
 #' @return Character vector without empty strings.
+#' @keywords internal
 clean_user_functions <- function(user_functions) {
   if (is.null(user_functions)) {
     return(character(0))
@@ -37,6 +38,7 @@ clean_user_functions <- function(user_functions) {
 #' @param user_functions Character vector of script file names.
 #' @param lang Language string, `"R"`, `"Py"`, or `"Jl"`.
 #' @return A string of import/source statements.
+#' @keywords internal
 build_user_code_cmd <- function(user_functions, lang) {
   if (length(user_functions) == 0) {
     return("")
@@ -58,6 +60,7 @@ build_user_code_cmd <- function(user_functions, lang) {
 #'
 #' @param env_var Named list of environment variables.
 #' @return A string of `export` commands with line breaks, or `""` if none.
+#' @keywords internal
 build_env_exports <- function(env_var) {
   if (is.null(env_var) || length(env_var) == 0) {
     return("")

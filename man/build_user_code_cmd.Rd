@@ -17,3 +17,4 @@ A string of import/source statements.
 \description{
 Creates language-specific commands to load user-defined function scripts.
 }
+\keyword{internal}

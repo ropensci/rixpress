@@ -15,3 +15,4 @@ Character vector without empty strings.
 \description{
 Removes empty character entries from the provided \code{user_functions} vector.
 }
+\keyword{internal}
