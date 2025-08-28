@@ -103,17 +103,20 @@ build_hybrid_src <- function(url, user_functions) {
   }
 
   remote_filename <- basename(url)
-  
+
   # Create the local fileset for user functions
   user_files_list <- paste0("./", user_functions, collapse = " ")
   local_src_var <- sprintf(
     "localSrc = defaultPkgs.lib.fileset.toSource {\n        root = ./.;\n        fileset = defaultPkgs.lib.fileset.unions [ %s ];\n      }",
     user_files_list
   )
-  
+
   # Create copy commands for user functions
-  user_files_cp <- paste(sprintf("cp ${localSrc}/%s $out/", user_functions), collapse = "\n      ")
-  
+  user_files_cp <- paste(
+    sprintf("cp ${localSrc}/%s $out/", user_functions),
+    collapse = "\n      "
+  )
+
   sprintf(
     "(let\n      %s;\n    in defaultPkgs.runCommand \"combined-src\" {} ''\n      mkdir -p $out\n      cp ${defaultPkgs.fetchurl {\n        url = \"%s\";\n        sha256 = \"%s\";\n      }} $out/%s\n      %s\n    '')",
     local_src_var,
@@ -237,17 +240,27 @@ build_language_commands <- function(
 #' @param path Input path (file or folder).
 #' @param user_functions Character vector of user function files.
 #' @return A string with the build phase commands.
-build_phase <- function(lang, read_func, user_code, out_name, path, user_functions = character(0)) {
+build_phase <- function(
+  lang,
+  read_func,
+  user_code,
+  out_name,
+  path,
+  user_functions = character(0)
+) {
   if (is_remote_url(path)) {
     rel_name <- basename(path)
     rel_path <- rel_name
-    
+
     if (length(user_functions) > 0) {
       # Hybrid case: everything is in $src, just organize it
       copy_line <- paste(
         "cp $src/* .",
         "mkdir -p input_folder",
-        paste(sprintf("cp %s input_folder/", basename(user_functions)), collapse = "\n"),
+        paste(
+          sprintf("cp %s input_folder/", basename(user_functions)),
+          collapse = "\n"
+        ),
         sep = "\n"
       )
     } else {
@@ -349,7 +362,14 @@ rxp_file <- function(
   # Build components
   user_code <- build_user_code_cmd(user_functions, lang)
   env_exports <- build_env_exports(env_var)
-  bp <- build_phase(lang, read_func_str, user_code, out_name, path, user_functions)
+  bp <- build_phase(
+    lang,
+    read_func_str,
+    user_code,
+    out_name,
+    path,
+    user_functions
+  )
 
   # Add environment exports if present
   if (nzchar(env_exports)) {
