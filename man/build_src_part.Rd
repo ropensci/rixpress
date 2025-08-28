@@ -19,3 +19,4 @@ Creates the \code{src} attribute for the Nix derivation. Handles both remote URL
 (using \code{nix-prefetch-url}) and local paths (with optional user function
 scripts).
 }
+\keyword{internal}

@@ -19,3 +19,4 @@ Character command
 \description{
 Build transfer command for py2r or r2py
 }
+\keyword{internal}

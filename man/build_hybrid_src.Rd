@@ -17,3 +17,4 @@ Character Nix expression
 \description{
 Build hybrid source configuration for remote URL + local user functions
 }
+\keyword{internal}

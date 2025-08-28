@@ -37,3 +37,4 @@ Creates a Nix derivation that reads a file or folder of data using R,
 Python, or Julia. Handles user-defined functions, environment variables, and Nix
 environment specification.
 }
+\keyword{internal}

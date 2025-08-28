@@ -19,3 +19,4 @@ Character string
 \description{
 Process read function for different languages
 }
+\keyword{internal}

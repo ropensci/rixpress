@@ -16,3 +16,4 @@ Sanitized base string.
 Produces a base identifier string by replacing invalid characters and
 stripping suffixes.
 }
+\keyword{internal}

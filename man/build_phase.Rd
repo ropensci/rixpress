@@ -32,3 +32,4 @@ A string with the build phase commands.
 \description{
 Constructs the build-phase shell command for R, Python, or Julia.
 }
+\keyword{internal}

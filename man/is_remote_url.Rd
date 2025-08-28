@@ -15,3 +15,4 @@ Logical
 \description{
 Check if path is a remote URL
 }
+\keyword{internal}

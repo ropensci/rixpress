@@ -75,8 +75,9 @@ and output paths.
   rxp_py(
     mtcars_pl_am,
     py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()",
+    user_functions = "functions.py",
     serialize_function = "serialize_model",
-    additional_files = "functions.py")
+    additional_files = "some_required_file.bin")
 }
 }
 \seealso{

@@ -32,3 +32,4 @@ rxp_derivation object
 \description{
 Create rxp_derivation object
 }
+\keyword{internal}

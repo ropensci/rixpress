@@ -17,3 +17,4 @@ Character Nix expression
 \description{
 Build local source configuration
 }
+\keyword{internal}

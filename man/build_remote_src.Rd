@@ -15,3 +15,4 @@ Character Nix expression
 \description{
 Build remote source configuration
 }
+\keyword{internal}
