@@ -186,7 +186,7 @@ build_language_commands <- function(
   )
 }
 
-#' Build build phase command
+#' Build build_phase command
 #'
 #' Constructs the build-phase shell command for R, Python, or Julia.
 #'
@@ -197,8 +197,17 @@ build_language_commands <- function(
 #' @param path Input path (file or folder).
 #' @return A string with the build phase commands.
 build_phase <- function(lang, read_func, user_code, out_name, path) {
-  rel_path <- file.path("input_folder", path)
-  copy_line <- "cp -r $src input_folder"
+  # For remote URLs we want the local filename that $src will copy into input_folder.
+  # e.g. fetchurl of "https://.../mtcars.csv" will be copied to input_folder/mtcars.csv
+  if (is_remote_url(path)){
+    rel_name <- basename(path)
+    rel_path <- rel_name
+    copy_line <- paste0("cp -r $src ", rel_path)
+  } else {
+    rel_name <- path
+    rel_path <- file.path("input_folder", rel_name)
+    copy_line <- "cp -r $src input_folder"
+  }
 
   lang_commands <- build_language_commands(
     lang,
