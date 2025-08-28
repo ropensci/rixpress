@@ -168,21 +168,21 @@ Here’s an example of a pipeline that uses both R and Julia:</p>
 <span><span class="st">    d_size, \</span></span>
 <span><span class="st">    d_size \</span></span>
 <span><span class="st">    )"</span>,</span>
-<span>    additional_files <span class="op">=</span> <span class="st">"functions.jl"</span></span>
+<span>    user_functions <span class="op">=</span> <span class="st">"functions.jl"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="fu"><a href="../reference/rxp_jl.html">rxp_jl</a></span><span class="op">(</span></span>
 <span>    <span class="va">laplace_df</span>,</span>
 <span>    <span class="st">'DataFrame(data, :auto)'</span>,</span>
 <span>    serialize_function <span class="op">=</span> <span class="st">'arrow_write'</span>,</span>
-<span>    additional_files <span class="op">=</span> <span class="st">"functions.jl"</span></span>
+<span>    user_functions <span class="op">=</span> <span class="st">"functions.jl"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
 <span>    <span class="va">laplace_long_df</span>,</span>
 <span>    <span class="fu">prepare_data</span><span class="op">(</span><span class="va">laplace_df</span><span class="op">)</span>,</span>
 <span>    unserialize_function <span class="op">=</span> <span class="st">'read_ipc_file'</span>,</span>
-<span>    additional_files <span class="op">=</span> <span class="st">"functions.R"</span></span>
+<span>    user_functions <span class="op">=</span> <span class="st">"functions.R"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
@@ -265,7 +265,7 @@ both R and Julia. Let’s look at the Julia functions first:</p>
 <span>  <span class="fu">ggsave</span><span class="op">(</span><span class="st">"gg.png"</span>, <span class="va">gg</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>These functions are used in the appropriate derivations using the
-<code>additional_files</code> argument.</p>
+<code>user_functions</code> argument.</p>
 </div>
 <div class="section level3">
 <h3 id="data-transfer-between-r-and-julia">Data transfer between R and Julia<a class="anchor" aria-label="anchor" href="#data-transfer-between-r-and-julia"></a>

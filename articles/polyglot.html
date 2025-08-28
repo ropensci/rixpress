@@ -190,7 +190,7 @@ interactively as usual. To learn more, check out <a href="https://docs.ropensci.
 <span>  <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
 <span>    name <span class="op">=</span> <span class="va">mtcars_head</span>,</span>
 <span>    expr <span class="op">=</span> <span class="fu">my_head</span><span class="op">(</span><span class="va">mtcars_am</span><span class="op">)</span>,</span>
-<span>    additional_files <span class="op">=</span> <span class="st">"functions.R"</span></span>
+<span>    user_functions <span class="op">=</span> <span class="st">"functions.R"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="fu"><a href="../reference/rxp_r2py.html">rxp_r2py</a></span><span class="op">(</span></span>
@@ -231,11 +231,11 @@ computed using a user-defined function called <code>my_head()</code>.
 User-defined functions should all go into a script called
 <code>functions.R</code> or <code>functions.py</code> and derivations
 that use them need to be aware of them by setting the
-<code>additional_files</code> argument (if derivations need further
-files to be available, these can also be specified there. A main
-difference between <code><a href="../reference/rxp_py.html">rxp_py()</a></code> and <code><a href="../reference/rxp_r.html">rxp_r()</a></code> is
-that Python code should be passed as a string, and not as an
-expression.</p>
+<code>user_functions</code> argument. If derivations need further files
+to be available in the sandbox, these should be listed in the
+<code>additional_files</code> argument. A main difference between
+<code><a href="../reference/rxp_py.html">rxp_py()</a></code> and <code><a href="../reference/rxp_r.html">rxp_r()</a></code> is that Python code
+should be passed as a string, and not as an expression.</p>
 <p>What’s also import for Python is to define how packages should be
 imported. In this case, I want <code>polars</code> to be imported using
 <code>import polars as pl</code>, so I need to use the
@@ -265,14 +265,14 @@ should use the <code>serialize_function</code> and
 <span>  <span class="fu"><a href="../reference/rxp_py.html">rxp_py</a></span><span class="op">(</span></span>
 <span>    name <span class="op">=</span> <span class="va">mtcars_pl_am</span>,</span>
 <span>    py_expr <span class="op">=</span> <span class="st">"mtcars_pl.filter(pl.col('am') == 1)"</span>,</span>
-<span>    additional_files <span class="op">=</span> <span class="st">"functions.py"</span>,</span>
+<span>    user_functions <span class="op">=</span> <span class="st">"functions.py"</span>,</span>
 <span>    serialize_function <span class="op">=</span> <span class="st">"serialize_to_json"</span>,</span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
 <span>    name <span class="op">=</span> <span class="va">mtcars_head</span>,</span>
 <span>    expr <span class="op">=</span> <span class="fu">my_head</span><span class="op">(</span><span class="va">mtcars_pl_am</span><span class="op">)</span>,</span>
-<span>    additional_files <span class="op">=</span> <span class="st">"functions.R"</span>,</span>
+<span>    user_functions <span class="op">=</span> <span class="st">"functions.R"</span>,</span>
 <span>    unserialize_function <span class="op">=</span> <span class="st">"jsonlite::fromJSON"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
@@ -366,8 +366,6 @@ packages in the call to <code><a href="https://docs.ropensci.org/rix/reference/r
 <span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>  <span class="at">r_pkgs =</span> <span class="fu">c</span>(<span class="st">"dplyr"</span>, <span class="st">"igraph"</span>, <span class="st">"reticulate"</span>, <span class="st">"quarto"</span>),</span>
 <span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  <span class="at">system_pkgs =</span> <span class="st">"typst"</span>,</span>
 <span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>  <span class="at">git_pkgs =</span> <span class="fu">list</span>(...</span></code></pre></div>
-<p>In the future, other languages could be added to
-<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>, notably Julia.</p>
 <p>For more examples, check out <a href="https://github.com/b-rodrigues/rixpress_demos" class="external-link">rixpress_demos
 repository</a>. These examples demonstrate additional features of
 <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>, including:</p>

@@ -57,6 +57,7 @@
 <span>  <span class="va">name</span>,</span>
 <span>  <span class="va">py_expr</span>,</span>
 <span>  additional_files <span class="op">=</span> <span class="st">""</span>,</span>
+<span>  user_functions <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  nix_env <span class="op">=</span> <span class="st">"default.nix"</span>,</span>
 <span>  serialize_function <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  unserialize_function <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -77,9 +78,17 @@
 
 
 <dt id="arg-additional-files">additional_files<a class="anchor" aria-label="anchor" href="#arg-additional-files"></a></dt>
-<dd><p>Character vector, additional files to include. Custom
-functions must go into a script called "functions.py", and additional files
-that need to be accessible during the build process can be named anything.</p></dd>
+<dd><p>Character vector, additional files to include
+during the build process. For example, if a function expects a certain
+file to be available, this is where you should include it.</p></dd>
+
+
+<dt id="arg-user-functions">user_functions<a class="anchor" aria-label="anchor" href="#arg-user-functions"></a></dt>
+<dd><p>Character vector, user-defined functions to include.
+This should be a script (or scripts) containing user-defined functions
+to include during the build process for this derivation. It is recommended
+to use one script per function, and only include the required script(s) in
+the derivation.</p></dd>
 
 
 <dt id="arg-nix-env">nix_env<a class="anchor" aria-label="anchor" href="#arg-nix-env"></a></dt>
@@ -127,6 +136,7 @@ and output paths.</p>
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other derivations:
 <code><a href="rxp_jl.html">rxp_jl</a>()</code>,
+<code><a href="rxp_jl_file.html">rxp_jl_file</a>()</code>,
 <code><a href="rxp_py_file.html">rxp_py_file</a>()</code>,
 <code><a href="rxp_qmd.html">rxp_qmd</a>()</code>,
 <code><a href="rxp_r.html">rxp_r</a>()</code>,
@@ -146,8 +156,9 @@ and output paths.</p>
 <span class="r-in"><span>  <span class="fu">rxp_py</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    <span class="va">mtcars_pl_am</span>,</span></span>
 <span class="r-in"><span>    py_expr <span class="op">=</span> <span class="st">"mtcars_pl.filter(polars.col('am') == 1).to_pandas()"</span>,</span></span>
+<span class="r-in"><span>    user_functions <span class="op">=</span> <span class="st">"functions.py"</span>,</span></span>
 <span class="r-in"><span>    serialize_function <span class="op">=</span> <span class="st">"serialize_model"</span>,</span></span>
-<span class="r-in"><span>    additional_files <span class="op">=</span> <span class="st">"functions.py"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    additional_files <span class="op">=</span> <span class="st">"some_required_file.bin"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
