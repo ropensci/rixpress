@@ -2,9 +2,16 @@
 % Please edit documentation in R/rxp_io.R
 \name{build_phase}
 \alias{build_phase}
-\title{Build build phase command}
+\title{Build build_phase command}
 \usage{
-build_phase(lang, read_func, user_code, out_name, path)
+build_phase(
+  lang,
+  read_func,
+  user_code,
+  out_name,
+  path,
+  user_functions = character(0)
+)
 }
 \arguments{
 \item{lang}{\code{"R"}, \code{"Py"}, or \code{"Jl"}.}
@@ -16,6 +23,8 @@ build_phase(lang, read_func, user_code, out_name, path)
 \item{out_name}{Name of the output object (RDS/pickle file).}
 
 \item{path}{Input path (file or folder).}
+
+\item{user_functions}{Character vector of user function files.}
 }
 \value{
 A string with the build phase commands.

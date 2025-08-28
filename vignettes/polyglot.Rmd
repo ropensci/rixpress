@@ -148,7 +148,7 @@ list(
   rxp_r(
     name = mtcars_head,
     expr = my_head(mtcars_am),
-    additional_files = "functions.R"
+    user_functions = "functions.R"
   ),
 
   rxp_r2py(
@@ -189,10 +189,10 @@ converts it back to a Python data frame and back to R. You'll notice that at
 some point the *head* of the data is computed using a user-defined function
 called `my_head()`. User-defined functions should all go into a script called
 `functions.R` or `functions.py` and derivations that use them need to be aware
-of them by setting the `additional_files` argument (if derivations need further
-files to be available, these can also be specified there. A main difference
-between `rxp_py()` and `rxp_r()` is that Python code should be passed as a
-string, and not as an expression.
+of them by setting the `user_functions` argument. If derivations need further
+files to be available in the sandbox, these should be listed in the
+`additional_files` argument. A main difference between `rxp_py()` and `rxp_r()`
+is that Python code should be passed as a string, and not as an expression.
 
 What's also import for Python is to define how packages should be imported. In
 this case, I want `polars` to be imported using `import polars as pl`, so I need
@@ -225,14 +225,14 @@ list(
   rxp_py(
     name = mtcars_pl_am,
     py_expr = "mtcars_pl.filter(pl.col('am') == 1)",
-    additional_files = "functions.py",
+    user_functions = "functions.py",
     serialize_function = "serialize_to_json",
   ),
 
   rxp_r(
     name = mtcars_head,
     expr = my_head(mtcars_pl_am),
-    additional_files = "functions.R",
+    user_functions = "functions.R",
     unserialize_function = "jsonlite::fromJSON"
   ),
 
@@ -338,8 +338,6 @@ rix(
   system_pkgs = "typst",
   git_pkgs = list(...
 ```
-
-In the future, other languages could be added to `{rixpress}`, notably Julia.
 
 For more examples, check out [rixpress_demos
 repository](https://github.com/b-rodrigues/rixpress_demos). These examples
