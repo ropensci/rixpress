@@ -16,7 +16,7 @@ clean_user_functions <- function(user_functions) {
 #' Creates language-specific commands to load user-defined function scripts.
 #'
 #' @param user_functions Character vector of script file names.
-#' @param lang Language string, `"R"` or `"Python"`.
+#' @param lang Language string, `"R"`, `"Python"` and `"Julia"`.
 #' @return A string of import/source statements.
 build_user_code_cmd <- function(user_functions, lang) {
   if (length(user_functions) == 0) {
@@ -28,7 +28,7 @@ build_user_code_cmd <- function(user_functions, lang) {
     lang,
     R = "source('%s')",
     Py = "exec(open('%s').read())",
-    jl = "include('%s')",
+    Jl = "include('%s')",
     stop("Unsupported lang: ", lang)
   )
   paste(sprintf(fmt, files), collapse = "\n")
@@ -101,21 +101,16 @@ sanitize_base <- function(nix_env) {
   sub("_nix$", "", base)
 }
 
-#' Build build phase command (fixed single-file copy with subfolders)
+#' Build build phase command
 #'
-#' Constructs the build-phase shell command for R or Python, choosing the right
-#' copy mode (file vs folder) and setting the file path argument correctly.
-#' For the single-file case it preserves subfolders by copying the file from its
-#' path *inside* the $src directory (not $src itself).
+#' Constructs the build-phase shell command for R, Python, or Julia.
 #'
-#' @param lang "R" or "Py" or "Jl".
+#' @param lang `"R"`, `"Py"`, or `"Jl"`.
 #' @param read_func String representing the function to call for reading data.
-#' @param copy_cmd Shell copy command for user functions (may be empty).
 #' @param user_code Source/import statements for user functions.
 #' @param out_name Name of the output object (RDS/pickle file).
-#' @param copy_data_folder Logical, whether to copy the entire folder.
 #' @param path Input path (file or folder).
-#' @return A list with `actual_path` and `build_phase` string.
+#' @return A string with the build phase commands.
 build_phase <- function(lang, read_func, user_code, out_name, path) {
   rel_path <- paste0("input_folder/", path) # everything under input_folder
   copy_line <- "cp -r $src input_folder"
@@ -159,10 +154,10 @@ build_phase <- function(lang, read_func, user_code, out_name, path) {
   paste(body_block, collapse = "\n")
 }
 
-#' Generic Nix expression builder for R and Python data readers
+#' Generic Nix expression builder for R, Python, and Julia data readers
 #'
-#' Creates a Nix derivation that reads a file or folder of data using R or
-#' Python. Handles user-defined functions, environment variables, and Nix
+#' Creates a Nix derivation that reads a file or folder of data using R,
+#' Python, or Julia. Handles user-defined functions, environment variables, and Nix
 #' environment specification.
 #'
 #' @param lang `"R"`, `"Py"` or `"Jl"`.
@@ -235,7 +230,6 @@ rxp_file <- function(
 #' @param read_function Function, R function to read the data.
 #' @param user_functions Character vector of script paths to include.
 #' @param nix_env Character, path to the Nix environment file.
-#' @param copy_data_folder Logical, copy folder recursively if TRUE.
 #' @param env_var Named list of environment variables.
 #' @return An object of class `rxp_derivation`.
 #' @export
@@ -249,7 +243,6 @@ rxp_r_file <- function(...) rxp_file("R", ...)
 #' @param read_function Character, Python function to read the data.
 #' @param user_functions Character vector of script paths to include.
 #' @param nix_env Character, path to the Nix environment file.
-#' @param copy_data_folder Logical, copy folder recursively if TRUE.
 #' @param env_var Named list of environment variables.
 #' @return An object of class `rxp_derivation`.
 #' @export
@@ -260,10 +253,9 @@ rxp_py_file <- function(...) rxp_file("Py", ...)
 #' @family derivations
 #' @param name Symbol, the name of the derivation.
 #' @param path Character, file or folder path to include.
-#' @param read_function Character, Python function to read the data.
+#' @param read_function Function, Julia function to read the data.
 #' @param user_functions Character vector of script paths to include.
 #' @param nix_env Character, path to the Nix environment file.
-#' @param copy_data_folder Logical, copy folder recursively if TRUE.
 #' @param env_var Named list of environment variables.
 #' @return An object of class `rxp_derivation`.
 #' @export
@@ -341,7 +333,7 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
     additional_files = "",
     nix_env = nix_env
   ) |>
-    structure(class = "derivation")
+    structure(class = "rxp_derivation")
 }
 
 #' Transfer Python object into an R session.
@@ -353,7 +345,7 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
 #'   "default.nix".
 #' @details `rxp_py2r(my_obj, my_python_object)` loads a serialized Python
 #'   object and saves it as an RDS file using `reticulate::py_load_object()`.
-#' @return An object of class derivation which inherits from lists.
+#' @return An object of class `rxp_derivation`.
 #' @examples
 #' \dontrun{
 #' rxp_py2r(my_obj, my_python_object)
@@ -374,7 +366,7 @@ rxp_py2r <- function(name, expr, nix_env = "default.nix") {
 #'   "default.nix".
 #' @details `rxp_r2py(my_obj, my_r_object)` saves an R object to a Python pickle
 #'   using `reticulate::py_save_object()`.
-#' @return An object of class derivation which inherits from lists.
+#' @return An object of class `rxp_derivation`.
 #' @examples
 #' \dontrun{
 #'   rxp_r2py(my_obj, my_r_object)
