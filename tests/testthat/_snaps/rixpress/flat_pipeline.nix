@@ -30,6 +30,7 @@ let
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
+        # RIXPRESS_LOAD_DEPENDENCIES_HERE:mtcars_am
         mtcars_am <- dplyr::filter(mtcars, am == 1)
         saveRDS(mtcars_am, 'mtcars_am')"
     '';
@@ -42,6 +43,7 @@ let
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
+        # RIXPRESS_LOAD_DEPENDENCIES_HERE:mtcars_head
         mtcars_head <- head(mtcars_am)
         saveRDS(mtcars_head, 'mtcars_head')"
     '';

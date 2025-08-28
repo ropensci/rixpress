@@ -76,12 +76,13 @@ rxp_jl(
   name = model_output,
   jl_expr = "train_model(data)",
   serialize_function = "save_my_obj",
-  additional_files = "functions.jl"
+  user_functions = "functions.jl"
 )
 }
 }
 \seealso{
 Other derivations: 
+\code{\link{rxp_jl_file}()},
 \code{\link{rxp_py}()},
 \code{\link{rxp_py_file}()},
 \code{\link{rxp_qmd}()},

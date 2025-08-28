@@ -57,6 +57,7 @@ To include objects built in the pipeline,
 \seealso{
 Other derivations: 
 \code{\link{rxp_jl}()},
+\code{\link{rxp_jl_file}()},
 \code{\link{rxp_py}()},
 \code{\link{rxp_py_file}()},
 \code{\link{rxp_qmd}()},

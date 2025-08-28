@@ -5,7 +5,7 @@ test_that("rxp_r: generates correct list", {
     structure(
       list(
         "name" = "mtcars_am",
-        "snippet" = '  mtcars_am = makeRDerivation {\n    name = \"mtcars_am\";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      Rscript -e \"\n        source(\'libraries.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')\"\n    \'\';\n  };',
+        "snippet" = '  mtcars_am = makeRDerivation {\n    name = \"mtcars_am\";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      Rscript -e \"\n        source(\'libraries.R\')\n        # RIXPRESS_LOAD_DEPENDENCIES_HERE:mtcars_am\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')\"\n    \'\';\n  };',
         "type" = "rxp_r",
         "additional_files" = "",
         "user_functions" = "",
@@ -26,7 +26,7 @@ test_that("rxp_py: generates correct list", {
     structure(
       list(
         "name" = "mtcars_pl_am",
-        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = \"mtcars_pl_am\";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      python -c "\nexec(open(\'libraries.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
+        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = \"mtcars_pl_am\";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      python -c "\nexec(open(\'libraries.py\').read())\n# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE:mtcars_pl_am\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
         "type" = "rxp_py",
         "additional_files" = "",
         "user_functions" = "",
@@ -54,7 +54,7 @@ test_that("rxp_py: custom serialization functions work", {
     structure(
       list(
         "name" = "mtcars_pl_am",
-        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = \"mtcars_pl_am\";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      python -c "\nexec(open(\'libraries.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\ncustom_save(globals()[\'mtcars_pl_am\'], \'mtcars_pl_am\')\n"\n    \'\';\n  };',
+        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = \"mtcars_pl_am\";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      python -c "\nexec(open(\'libraries.py\').read())\n# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE:mtcars_pl_am\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\ncustom_save(globals()[\'mtcars_pl_am\'], \'mtcars_pl_am\')\n"\n    \'\';\n  };',
         "type" = "rxp_py",
         "additional_files" = "",
         "user_functions" = "",
@@ -125,8 +125,7 @@ test_that("rxp_r_file: single file reading works", {
     "type" = d1$type,
     "path" = csv_file,
     "read_function" = read.csv,
-    "nix_env" = d1$nix_env,
-    "copy_data_folder" = FALSE
+    "nix_env" = d1$nix_env
   )
   class(d1_subset) <- "rxp_derivation"
 
@@ -138,8 +137,7 @@ test_that("rxp_r_file: single file reading works", {
         "type" = "rxp_r",
         "path" = csv_file,
         "read_function" = read.csv,
-        "nix_env" = "default.nix",
-        "copy_data_folder" = FALSE
+        "nix_env" = "default.nix"
       ),
       class = "rxp_derivation"
     )
@@ -172,7 +170,6 @@ test_that("rxp_r_file: folder reading works", {
     read_function = function(x) {
       lapply(list.files(x, full.names = TRUE, pattern = "\\.csv$"), read.csv)
     },
-    copy_data_folder = TRUE
   )
 
   # Create a subset of d1 with only the fields we want to test
@@ -183,8 +180,7 @@ test_that("rxp_r_file: folder reading works", {
     "read_function" = function(x) {
       lapply(list.files(x, full.names = TRUE, pattern = "\\.csv$"), read.csv)
     },
-    "nix_env" = d1$nix_env,
-    "copy_data_folder" = TRUE
+    "nix_env" = d1$nix_env
   )
   class(d1_subset) <- "rxp_derivation"
 
@@ -205,8 +201,7 @@ test_that("rxp_r_file: folder reading works", {
       "name" = "all_data",
       "type" = "rxp_r",
       "path" = test_data_dir,
-      "nix_env" = "default.nix",
-      "copy_data_folder" = TRUE
+      "nix_env" = "default.nix"
     ),
     class = "rxp_derivation"
   )
@@ -234,8 +229,7 @@ test_that("rxp_py_file: basic functionality works", {
     "type" = d1$type,
     "path" = csv_file,
     "read_function" = "pandas.read_csv",
-    "nix_env" = d1$nix_env,
-    "copy_data_folder" = FALSE
+    "nix_env" = d1$nix_env
   )
   class(d1_subset) <- "rxp_derivation"
 
@@ -247,8 +241,7 @@ test_that("rxp_py_file: basic functionality works", {
         "type" = "rxp_py",
         "path" = csv_file,
         "read_function" = "pandas.read_csv",
-        "nix_env" = "default.nix",
-        "copy_data_folder" = FALSE
+        "nix_env" = "default.nix"
       ),
       class = "rxp_derivation"
     )
@@ -348,7 +341,7 @@ test_that("rxp_r: with additional files", {
     structure(
       list(
         "name" = "mtcars_am",
-        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ./functions.R ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r ${./data.csv} data.csv\n      cp ${./functions.R} functions.R\n      Rscript -e "\n        source(\'libraries.R\')\n        source(\'functions.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
+        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ./functions.R ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r ${./data.csv} data.csv\n      cp ${./functions.R} functions.R\n      Rscript -e "\n        source(\'libraries.R\')\n        # RIXPRESS_LOAD_DEPENDENCIES_HERE:mtcars_am\n        source(\'functions.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
         "type" = "rxp_r",
         "additional_files" = "data.csv",
         "user_functions" = "functions.R",
@@ -376,7 +369,7 @@ test_that("rxp_py: with additional files", {
     structure(
       list(
         "name" = "mtcars_pl_am",
-        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = "mtcars_pl_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ./functions.py ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r ${./data.csv} data.csv\n      cp ${./functions.py} functions.py\n      python -c "\nexec(open(\'libraries.py\').read())\nexec(open(\'functions.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
+        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = "mtcars_pl_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ./functions.py ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r ${./data.csv} data.csv\n      cp ${./functions.py} functions.py\n      python -c "\nexec(open(\'libraries.py\').read())\n# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE:mtcars_pl_am\nexec(open(\'functions.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
         "type" = "rxp_py",
         "additional_files" = "data.csv",
         "user_functions" = "functions.py",
@@ -403,7 +396,7 @@ test_that("rxp_r: with env_var parameter", {
     structure(
       list(
         "name" = "mtcars_am",
-        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export MY_VAR=test_value\n      export ANOTHER_VAR=123\n      Rscript -e "\n        source(\'libraries.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
+        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export MY_VAR=test_value\n      export ANOTHER_VAR=123\n      Rscript -e "\n        source(\'libraries.R\')\n        # RIXPRESS_LOAD_DEPENDENCIES_HERE:mtcars_am\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
         "type" = "rxp_r",
         "additional_files" = "",
         "user_functions" = "",
@@ -442,7 +435,7 @@ test_that("rxp_py: with env_var parameter", {
     structure(
       list(
         "name" = "mtcars_pl_am",
-        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = "mtcars_pl_am";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export PYTHON_ENV=production\n      export DEBUG=0\n      python -c "\nexec(open(\'libraries.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
+        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = "mtcars_pl_am";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export PYTHON_ENV=production\n      export DEBUG=0\n      python -c "\nexec(open(\'libraries.py\').read())\n# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE:mtcars_pl_am\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
         "type" = "rxp_py",
         "additional_files" = "",
         "user_functions" = "",
@@ -518,22 +511,8 @@ test_that("rxp_r_file: with env_var parameter", {
 
   # Test the entire object
   testthat::expect_equal(
-    d1,
-    structure(
-      list(
-        "name" = "mtcars_data",
-        "snippet" = paste0(
-          '  mtcars_data = makeRDerivation {\n    name = "mtcars_data";\n    src = ./',
-          csv_file,
-          ';\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export R_DATA_DIR=/path/to/data\n      export R_DEBUG=TRUE\n      cp $src input_file\n      Rscript -e "\n        source(\'libraries.R\')\n        data <- do.call(read.csv, list(\'input_file\'))\n        saveRDS(data, \'mtcars_data\')"\n    \'\';\n  };'
-        ),
-        "type" = "rxp_r",
-        "additional_files" = "",
-        "nix_env" = "default.nix",
-        "env_var" = c(R_DATA_DIR = "/path/to/data", R_DEBUG = "TRUE")
-      ),
-      class = "rxp_derivation"
-    )
+    d1$env_var,
+    c(R_DATA_DIR = "/path/to/data", R_DEBUG = "TRUE")
   )
 
   # Cleanup
@@ -554,23 +533,9 @@ test_that("rxp_py_file: with env_var parameter", {
 
   # Test the entire object
   testthat::expect_equal(
-    d1,
-    structure(
-      list(
-        "name" = "mtcars_data",
-        "snippet" = paste0(
-          '  mtcars_data = makePyDerivation {\n    name = "mtcars_data";\n    src = ./',
-          csv_file,
-          ';\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export PYTHONPATH=/custom/modules\n      export PYTHON_DEBUG=1\n      cp $src input_file\npython -c "\nexec(open(\'libraries.py\').read())\nfile_path = \'input_file\'\ndata = eval(\'pandas.read_csv\')(file_path)\nwith open(\'mtcars_data\', \'wb\') as f:\n    pickle.dump(data, f)\n"\n\n    \'\';\n  };'
-        ),
-        "type" = "rxp_py",
-        "additional_files" = "",
-        "nix_env" = "default.nix",
-        "env_var" = c(PYTHONPATH = "/custom/modules", PYTHON_DEBUG = "1")
-      ),
-      class = "rxp_derivation"
+    d1$env_var,
+    c(PYTHONPATH = "/custom/modules", PYTHON_DEBUG = "1")
     )
-  )
 
   # Cleanup
   unlink(csv_file)
@@ -627,120 +592,3 @@ test_that("rxp_rmd: with env_var parameter", {
   unlink(rmd_file)
 })
 
-test_that("rxp_r_file: single file WITHOUT user_functions generates correct copy command", {
-  # Create a temporary CSV for testing
-  csv_file <- tempfile(fileext = ".csv")
-  write.csv(mtcars[1:5, ], csv_file, row.names = FALSE)
-
-  d1 <- rxp_r_file(mtcars_data, path = csv_file, read_function = read.csv)
-
-  # Check that the snippet contains "cp $src input_file" (not quoted path)
-  testthat::expect_true(grepl("cp \\$src input_file", d1$snippet))
-  testthat::expect_false(grepl("cp \"\\$src/", d1$snippet))
-
-  # Cleanup
-  unlink(csv_file)
-})
-
-test_that("rxp_r_file: single file WITH user_functions generates correct copy command", {
-  # Create a temporary CSV for testing
-  csv_file <- tempfile(fileext = ".csv")
-  write.csv(mtcars[1:5, ], csv_file, row.names = FALSE)
-
-  d1 <- rxp_r_file(
-    mtcars_data,
-    path = csv_file,
-    read_function = read.csv,
-    user_functions = "functions.R"
-  )
-
-  # Check that the snippet contains the quoted path format, not "cp $src input_file"
-  testthat::expect_true(grepl(
-    sprintf("cp \"\\$src/%s\" input_file", basename(csv_file)),
-    d1$snippet
-  ))
-  testthat::expect_false(grepl("cp \\$src input_file", d1$snippet))
-
-  # Cleanup
-  unlink(csv_file)
-})
-
-test_that("rxp_py_file: single file WITHOUT user_functions generates correct copy command", {
-  # Create a temporary CSV for testing
-  csv_file <- tempfile(fileext = ".csv")
-  write.csv(mtcars[1:5, ], csv_file, row.names = FALSE)
-
-  d1 <- rxp_py_file(
-    mtcars_data,
-    path = csv_file,
-    read_function = "pandas.read_csv"
-  )
-
-  # Check that the snippet contains "cp $src input_file" (not quoted path)
-  testthat::expect_true(grepl("cp \\$src input_file", d1$snippet))
-  testthat::expect_false(grepl("cp \"\\$src/", d1$snippet))
-
-  # Cleanup
-  unlink(csv_file)
-})
-
-test_that("rxp_py_file: single file WITH user_functions generates correct copy command", {
-  # Create a temporary CSV for testing
-  csv_file <- tempfile(fileext = ".csv")
-  write.csv(mtcars[1:5, ], csv_file, row.names = FALSE)
-
-  d1 <- rxp_py_file(
-    mtcars_data,
-    path = csv_file,
-    read_function = "pandas.read_csv",
-    user_functions = "functions.py"
-  )
-
-  # Check that the snippet contains the quoted path format, not "cp $src input_file"
-  testthat::expect_true(grepl(
-    sprintf("cp \"\\$src/%s\" input_file", basename(csv_file)),
-    d1$snippet
-  ))
-  testthat::expect_false(grepl("cp \\$src input_file", d1$snippet))
-
-  # Cleanup
-  unlink(csv_file)
-})
-
-test_that("rxp_r_file: complex path WITH user_functions generates correct copy command", {
-  # Test with a more complex path like in the problem statement
-  complex_path <- "md_source/gorilla/gorilla-waving-cartoon-black-white-outline-clipart-914.jpg"
-
-  d1 <- rxp_r_file(
-    gorilla_pixels,
-    path = complex_path,
-    read_function = read_image,
-    user_functions = "functions.R"
-  )
-
-  # Check that the snippet contains the correct quoted path format
-  testthat::expect_true(grepl(
-    "cp \"\\$src/md_source/gorilla/gorilla-waving-cartoon-black-white-outline-clipart-914.jpg\" input_file",
-    d1$snippet
-  ))
-  testthat::expect_false(grepl("cp \\$src input_file", d1$snippet))
-})
-
-test_that("rxp_py_file: complex path WITH user_functions generates correct copy command", {
-  # Test with a more complex path like in the problem statement
-  complex_path <- "md_source/gorilla/gorilla-waving-cartoon-black-white-outline-clipart-914.jpg"
-
-  d1 <- rxp_py_file(
-    gorilla_pixels,
-    path = complex_path,
-    read_function = "read_image",
-    user_functions = "functions.py"
-  )
-
-  # Check that the snippet contains the correct quoted path format
-  testthat::expect_true(grepl(
-    "cp \"\\$src/md_source/gorilla/gorilla-waving-cartoon-black-white-outline-clipart-914.jpg\" input_file",
-    d1$snippet
-  ))
-  testthat::expect_false(grepl("cp \\$src input_file", d1$snippet))
-})
