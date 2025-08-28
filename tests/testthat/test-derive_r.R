@@ -535,7 +535,7 @@ test_that("rxp_py_file: with env_var parameter", {
   testthat::expect_equal(
     d1$env_var,
     c(PYTHONPATH = "/custom/modules", PYTHON_DEBUG = "1")
-    )
+  )
 
   # Cleanup
   unlink(csv_file)
@@ -591,4 +591,3 @@ test_that("rxp_rmd: with env_var parameter", {
   # Cleanup
   unlink(rmd_file)
 })
-

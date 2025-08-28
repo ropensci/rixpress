@@ -199,7 +199,7 @@ build_language_commands <- function(
 build_phase <- function(lang, read_func, user_code, out_name, path) {
   # For remote URLs we want the local filename that $src will copy into input_folder.
   # e.g. fetchurl of "https://.../mtcars.csv" will be copied to input_folder/mtcars.csv
-  if (is_remote_url(path)){
+  if (is_remote_url(path)) {
     rel_name <- basename(path)
     rel_path <- rel_name
     copy_line <- paste0("cp -r $src ", rel_path)
