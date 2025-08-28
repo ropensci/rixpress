@@ -234,7 +234,7 @@ process_read_function <- function(
         as.character(read_expr)
       } else {
         # Function definition or call - need to deparse properly
-        func_str <- deparse(read_expr, width.cutoff = 500L)
+        func_str <- deparse1(read_expr)
         # Join multi-line deparsed functions and clean up
         func_str <- paste(func_str, collapse = " ")
         # Replace double quotes with single quotes for Nix compatibility
@@ -252,7 +252,7 @@ process_read_function <- function(
       if (is.symbol(read_expr)) {
         as.character(read_expr)
       } else {
-        func_str <- deparse(read_expr, width.cutoff = 500L)
+        func_str <- deparse1(read_expr)
         func_str <- paste(func_str, collapse = " ")
         gsub("\"", "'", func_str, fixed = TRUE)
       }

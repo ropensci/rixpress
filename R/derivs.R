@@ -1034,7 +1034,7 @@ rxp_rmd <- function(
       "list(",
       paste(
         mapply(
-          function(name, value) sprintf("%s = %s", name, deparse(value)),
+          function(name, value) sprintf("%s = %s", name, deparse1(value)),
           names(params),
           params
         ),
