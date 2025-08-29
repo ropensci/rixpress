@@ -13,7 +13,7 @@ rxp_jl(
   serialize_function = NULL,
   unserialize_function = NULL,
   env_var = NULL,
-  build = TRUE
+  noop_build = FALSE
 )
 }
 \arguments{
@@ -49,9 +49,10 @@ environment variables to set before running the Julia script, e.g.,
 \code{c("JULIA_DEPOT_PATH" = "/path/to/depot")}. Each entry will be added as
 an \code{export} statement in the build phase.}
 
-\item{build}{Logical, defaults to TRUE. If TRUE, the derivation will be built
-when the pipeline runs. If FALSE, the derivation definition is created but
-the build is skipped.}
+\item{noop_build}{Logical, defaults to FALSE. If TRUE, the derivation
+produces a no-op build (a stub output with no actual build steps). Any
+downstream derivations depending on a no-op build will themselves also
+become no-op builds.}
 }
 \value{
 An object of class derivation which inherits from lists.
@@ -80,7 +81,7 @@ rxp_jl(
 rxp_jl(
   name = model_result,
   jl_expr = "train_model(data)",
-  build = FALSE
+  noop_build = TRUE
 )
 
 # Custom serialization: assume `save_my_obj(obj, path)` is defined in functions.jl

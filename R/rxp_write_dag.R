@@ -30,12 +30,13 @@ rxp_write_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
   n <- length(rxp_list)
   dag <- vector("list", n)
 
-  # Process each derivation
+  # First pass: Process each derivation to extract dependencies
   for (i in seq_along(rxp_list)) {
     deriv <- rxp_list[[i]]
     name <- deriv$name
     type <- deriv$type
     unserialize_function <- deriv$unserialize_function
+    noop_build <- if (is.null(deriv$noop_build)) FALSE else deriv$noop_build
 
     # Extract dependencies based on derivation type
     deps <- extract_dependencies(
@@ -44,14 +45,19 @@ rxp_write_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
       name,
       all_derivs_names
     )
+
     # Add the derivation to the DAG
     dag[[i]] <- list(
       deriv_name = name,
       depends = deps,
       unserialize_function = unserialize_function,
-      type = type
+      type = type,
+      noop_build = noop_build
     )
   }
+
+  # Second pass: Propagate no-op builds to dependent derivations
+  dag <- propagate_noop_builds(dag)
 
   # Write the DAG to a JSON file
   jsonlite::write_json(list(derivations = dag), output_file, pretty = TRUE)
@@ -60,6 +66,59 @@ rxp_write_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
   if (identical(Sys.getenv("TESTTHAT"), "true")) {
     output_file
   }
+}
+
+#' Propagate no-op builds to dependent derivations
+#'
+#' @param dag A list of derivation nodes with dependencies
+#' @return Updated DAG with propagated no-op flags
+#' @importFrom stats setNames
+#' @keywords internal
+propagate_noop_builds <- function(dag) {
+  # Create a lookup for easier access
+  dag_lookup <- setNames(dag, sapply(dag, function(x) x$deriv_name))
+
+  # Keep iterating until no more changes occur
+  changed <- TRUE
+  while (changed) {
+    changed <- FALSE
+
+    for (i in seq_along(dag)) {
+      # Skip if already marked as no-op
+      if (dag[[i]]$noop_build) {
+        next
+      }
+
+      # Check if any dependencies are no-op
+      deps <- dag[[i]]$depends
+      if (length(deps) > 0) {
+        dep_noop_flags <- sapply(deps, function(dep_name) {
+          dep_node <- dag_lookup[[dep_name]]
+          if (is.null(dep_node)) {
+            warning("Dependency '", dep_name, "' not found in DAG")
+            return(FALSE)
+          }
+          dep_node$noop_build
+        })
+
+        # If any dependency is no-op, mark this derivation as no-op too
+        if (any(dep_noop_flags)) {
+          dag[[i]]$noop_build <- TRUE
+          dag_lookup[[dag[[i]]$deriv_name]]$noop_build <- TRUE
+          changed <- TRUE
+
+          message(
+            "Derivation '",
+            dag[[i]]$deriv_name,
+            "' marked as no-op due to no-op dependency: ",
+            paste(names(dep_noop_flags)[dep_noop_flags], collapse = ", ")
+          )
+        }
+      }
+    }
+  }
+
+  dag
 }
 
 #' Extract dependencies for a derivation

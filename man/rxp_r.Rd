@@ -13,7 +13,7 @@ rxp_r(
   serialize_function = NULL,
   unserialize_function = NULL,
   env_var = NULL,
-  build = TRUE
+  noop_build = FALSE
 )
 }
 \arguments{
@@ -56,9 +56,10 @@ environment variables to set before running the R script, e.g.,
 \verb{c("CMDSTAN" = "$\{defaultPkgs.cmdstan\}/opt/cmdstan)"}.
 Each entry will be added as an export statement in the build phase.}
 
-\item{build}{Logical, defaults to TRUE. If TRUE, the derivation will be built
-when the pipeline runs. If FALSE, the derivation definition is created but
-the build is skipped.}
+\item{noop_build}{Logical, defaults to FALSE. If TRUE, the derivation
+produces a no-op build (a stub output with no actual build steps). Any
+downstream derivations depending on a no-op build will themselves also
+become no-op builds.}
 }
 \value{
 An object of class derivation which inherits from lists.
@@ -83,7 +84,7 @@ paths.
   rxp_r(
     name = turtles,
     expr = occurrence(species, geometry = atlantic),
-    build = FALSE
+    noop_build = TRUE
   )
 
   # Serialize object using qs

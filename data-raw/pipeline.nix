@@ -52,14 +52,17 @@ let
   # Define all derivations
     mtcars = makeRDerivation {
     name = "mtcars";
-    src = ./mtcars.csv;
+    src = defaultPkgs.lib.fileset.toSource {
+      root = ./.;
+      fileset = defaultPkgs.lib.fileset.unions [ ./mtcars.csv ];
+    };
     buildInputs = defaultBuildInputs;
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
-      cp "$src/mtcars.csv" input_file
+      cp -r $src input_folder
 Rscript -e "
 source('libraries.R')
-data <- do.call(function(x) (read.csv(file = x, sep = '|')), list('input_file'))
+data <- do.call(function(x) (read.csv(file = x, sep = '|')), list('input_folder/mtcars.csv'))
 saveRDS(data, 'mtcars')"
     '';
   };
@@ -96,57 +99,20 @@ saveRDS(data, 'mtcars')"
     '';
   };
 
-  mtcars_tail = makeRDerivation {
-    name = "mtcars_tail";
-     src = defaultPkgs.lib.fileset.toSource {
-      root = ./.;
-      fileset = defaultPkgs.lib.fileset.unions [ ./my_tail.R ];
-    };
-    buildInputs = defaultBuildInputs;
-    configurePhase = defaultConfigurePhase;
-    buildPhase = ''
-      cp ${./my_tail.R} my_tail.R
-      Rscript -e "
-        source('libraries.R')
-        mtcars_head <- readRDS('${mtcars_head}/mtcars_head')
-        source('my_tail.R')
-        mtcars_tail <- my_tail(mtcars_head)
-        saveRDS(mtcars_tail, 'mtcars_tail')"
-    '';
-  };
+  mtcars_tail = defaultPkgs.runCommand "mtcars_tail" {} "
+    mkdir -p $out
+    echo 'Build skipped for mtcars_tail' > $out/NOOPBUILD
+  ";
 
-  mtcars_mpg = makeRDerivation {
-    name = "mtcars_mpg";
-    buildInputs = default2BuildInputs;
-    configurePhase = default2ConfigurePhase;
-    buildPhase = ''
-      Rscript -e "
-        source('libraries.R')
-        mtcars_tail <- readRDS('${mtcars_tail}/mtcars_tail')
-        mtcars_mpg <- select(mtcars_tail, mpg)
-        saveRDS(mtcars_mpg, 'mtcars_mpg')"
-    '';
-  };
+  mtcars_mpg = defaultPkgs.runCommand "mtcars_mpg" {} "
+    mkdir -p $out
+    echo 'Build skipped for mtcars_mpg (cascading no-op)' > $out/NOOPBUILD
+  ";
 
-  page = defaultPkgs.stdenv.mkDerivation {
-    name = "page";
-    src = defaultPkgs.lib.fileset.toSource {
-      root = ./.;
-      fileset = defaultPkgs.lib.fileset.unions [ ./page.qmd ./content.qmd ./images ];
-    };
-    buildInputs = quarto_envBuildInputs;
-    configurePhase = quarto_envConfigurePhase;
-    buildPhase = ''
-      mkdir home
-      export HOME=$PWD/home
-      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python
-
-      substituteInPlace page.qmd --replace-fail 'rixpress::rxp_read("mtcars_head")' 'rixpress::rxp_read("${mtcars_head}")'
-      substituteInPlace page.qmd --replace-fail 'rixpress::rxp_read("mtcars_tail")' 'rixpress::rxp_read("${mtcars_tail}")'
-      substituteInPlace page.qmd --replace-fail 'rixpress::rxp_read("mtcars_mpg")' 'rixpress::rxp_read("${mtcars_mpg}")'
-      quarto render page.qmd  --output-dir $out
-    '';
-  };
+  page = defaultPkgs.runCommand "page" {} "
+    mkdir -p $out
+    echo 'Build skipped for page (cascading no-op)' > $out/NOOPBUILD
+  ";
 
   # Generic default target that builds all derivations
   allDerivations = defaultPkgs.symlinkJoin {

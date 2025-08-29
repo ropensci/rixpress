@@ -253,6 +253,25 @@ Now you can follow these instructions:
    `rxp_copy()` without arguments, all pipeline outputs will be copied to this
    folder.
 
+## No-op builds for individual derivations
+
+You can disable building a specific derivation by setting its `noop_build`
+parameter to `TRUE`. This creates a no-op build, a placeholder derivation that
+performs no work:
+
+```r
+rxp_r(
+  name = turtles,
+  expr = occurrence(species, geometry = atlantic),
+  noop_build = TRUE
+)
+```
+
+Any derivations that depend on a no-op build will themselves also resolve to
+no-op builds. This can be useful when prototyping or debugging a pipeline,
+allowing you to skip expensive or unnecessary computations while keeping the
+dependency graph intact.
+
 ## DAG Representation of the Pipeline
 
 It's often helpful to visualise your pipeline as a DAG (directed acyclic graph).

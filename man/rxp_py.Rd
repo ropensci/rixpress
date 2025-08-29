@@ -13,7 +13,7 @@ rxp_py(
   serialize_function = NULL,
   unserialize_function = NULL,
   env_var = NULL,
-  build = TRUE
+  noop_build = FALSE
 )
 }
 \arguments{
@@ -49,9 +49,10 @@ environment variables
 before running the Python script, e.g., c(PYTHONPATH = "/path/to/modules").
 Each entry will be added as an export statement in the build phase.}
 
-\item{build}{Logical, defaults to TRUE. If TRUE, the derivation will be built
-when the pipeline runs. If FALSE, the derivation definition is created but
-the build is skipped.}
+\item{noop_build}{Logical, defaults to FALSE. If TRUE, the derivation
+produces a no-op build (a stub output with no actual build steps). Any
+downstream derivations depending on a no-op build will themselves also
+become no-op builds.}
 }
 \value{
 An object of class derivation which inherits from lists.
@@ -80,7 +81,7 @@ and output paths.
   rxp_py(
     data_prep,
     py_expr = "preprocess_data(raw_data)",
-    build = FALSE
+    noop_build = TRUE
   )
 
   # Custom serialization

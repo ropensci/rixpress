@@ -12,18 +12,6 @@ rxp_r_file(...)
   \describe{
     \item{\code{}}{}
   }}
-
-\item{name}{Symbol, the name of the derivation.}
-
-\item{path}{Character, file or folder path to include.}
-
-\item{read_function}{Function, R function to read the data.}
-
-\item{user_functions}{Character vector of script paths to include.}
-
-\item{nix_env}{Character, path to the Nix environment file.}
-
-\item{env_var}{Named list of environment variables.}
 }
 \value{
 An object of class \code{rxp_derivation}.

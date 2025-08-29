@@ -11,7 +11,7 @@ rxp_qmd(
   nix_env = "default.nix",
   args = "",
   env_var = NULL,
-  build = TRUE
+  noop_build = FALSE
 )
 }
 \arguments{
@@ -33,9 +33,10 @@ to set before running the Quarto render command, e.g., c(QUARTO_PROFILE =
 "production"). Each entry will be added as an export statement in the build
 phase.}
 
-\item{build}{Logical, defaults to TRUE. If TRUE, the derivation will be built
-when the pipeline runs. If FALSE, the derivation definition is created but
-the build is skipped.}
+\item{noop_build}{Logical, defaults to FALSE. If TRUE, the derivation
+produces a no-op build (a stub output with no actual build steps). Any
+downstream derivations depending on a no-op build will themselves also
+become no-op builds.}
 }
 \value{
 An object of class derivation which inherits from lists.
@@ -62,7 +63,7 @@ To include built derivations in the document,
   rxp_qmd(
     name = draft_report,
     qmd_file = "draft.qmd",
-    build = FALSE
+    noop_build = TRUE
   )
 }
 }

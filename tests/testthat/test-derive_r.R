@@ -12,7 +12,8 @@ test_that("rxp_r: generates correct list", {
         "nix_env" = "default.nix",
         "serialize_function" = "saveRDS",
         "unserialize_function" = "readRDS",
-        "env_var" = NULL
+        "env_var" = NULL,
+        "noop_build" = FALSE
       ),
       class = "rxp_derivation"
     )
@@ -33,7 +34,8 @@ test_that("rxp_py: generates correct list", {
         "nix_env" = "default.nix",
         "serialize_function" = "with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)",
         "unserialize_function" = "pickle.load",
-        "env_var" = NULL
+        "env_var" = NULL,
+        "noop_build" = FALSE
       ),
       class = "rxp_derivation"
     )
@@ -61,7 +63,8 @@ test_that("rxp_py: custom serialization functions work", {
         "nix_env" = "default.nix",
         "serialize_function" = "custom_save(globals()['mtcars_pl_am'], 'mtcars_pl_am')",
         "unserialize_function" = "custom_load",
-        "env_var" = NULL
+        "env_var" = NULL,
+        "noop_build" = FALSE
       ),
       class = "rxp_derivation"
     )
@@ -102,7 +105,8 @@ test_that("rxp_qmd: generates correct list", {
         "additional_files" = "images",
         "nix_env" = "default.nix",
         "args" = "--to pdf",
-        "env_var" = NULL
+        "env_var" = NULL,
+        "noop_build" = FALSE
       ),
       class = "rxp_derivation"
     )
@@ -348,7 +352,8 @@ test_that("rxp_r: with additional files", {
         "nix_env" = "default.nix",
         "serialize_function" = "saveRDS",
         "unserialize_function" = "readRDS",
-        "env_var" = NULL
+        "env_var" = NULL,
+        "noop_build" = FALSE
       ),
       class = "rxp_derivation"
     )
@@ -376,7 +381,8 @@ test_that("rxp_py: with additional files", {
         "nix_env" = "default.nix",
         "serialize_function" = "with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)",
         "unserialize_function" = "pickle.load",
-        "env_var" = NULL
+        "env_var" = NULL,
+        "noop_build" = FALSE
       ),
       class = "rxp_derivation"
     )
@@ -403,7 +409,8 @@ test_that("rxp_r: with env_var parameter", {
         "nix_env" = "default.nix",
         "serialize_function" = "saveRDS",
         "unserialize_function" = "readRDS",
-        "env_var" = c(MY_VAR = "test_value", ANOTHER_VAR = "123")
+        "env_var" = c(MY_VAR = "test_value", ANOTHER_VAR = "123"),
+        "noop_build" = FALSE
       ),
       class = "rxp_derivation"
     )
@@ -442,7 +449,8 @@ test_that("rxp_py: with env_var parameter", {
         "nix_env" = "default.nix",
         "serialize_function" = "with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)",
         "unserialize_function" = "pickle.load",
-        "env_var" = c(PYTHON_ENV = "production", DEBUG = "0")
+        "env_var" = c(PYTHON_ENV = "production", DEBUG = "0"),
+        "noop_build" = FALSE
       ),
       class = "rxp_derivation"
     )
@@ -487,7 +495,8 @@ test_that("rxp_qmd: with env_var parameter", {
         "env_var" = c(
           QUARTO_PROFILE = "production",
           QUARTO_RENDER_TOKEN = "abc123"
-        )
+        ),
+        "noop_build" = FALSE
       ),
       class = "rxp_derivation"
     )
@@ -582,7 +591,8 @@ test_that("rxp_rmd: with env_var parameter", {
         "env_var" = c(
           RSTUDIO_PANDOC = "/usr/local/bin/pandoc",
           R_LIBS_USER = "/custom/r/libs"
-        )
+        ),
+        "noop_build" = FALSE
       ),
       class = "rxp_derivation"
     )

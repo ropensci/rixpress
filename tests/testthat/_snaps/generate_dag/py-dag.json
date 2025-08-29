@@ -4,13 +4,15 @@
       "deriv_name": ["mtcars_am"],
       "depends": [],
       "unserialize_function": ["pickle.load"],
-      "type": ["rxp_py"]
+      "type": ["rxp_py"],
+      "noop_build": [false]
     },
     {
       "deriv_name": ["mtcars_head"],
       "depends": ["mtcars_am"],
       "unserialize_function": ["pickle.load"],
-      "type": ["rxp_py"]
+      "type": ["rxp_py"],
+      "noop_build": [false]
     }
   ]
 }

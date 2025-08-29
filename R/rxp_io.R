@@ -2,17 +2,17 @@
 LANG_CONFIG <- list(
   R = list(
     source_cmd = "source('%s')",
-    derivation_type = "R",
+    derivation_type = "rxp_r",
     output_ext = "RDS"
   ),
   Py = list(
     source_cmd = "exec(open('%s').read())",
-    derivation_type = "Py",
+    derivation_type = "rxp_py",
     output_ext = "pickle"
   ),
   Jl = list(
     source_cmd = "include('%s')",
-    derivation_type = "Jl",
+    derivation_type = "rxp_jl",
     output_ext = "jld2"
   )
 )
@@ -393,12 +393,20 @@ rxp_file <- function(
   src_part <- build_src_part(path, user_functions)
   base <- sanitize_nix_env(nix_env)
 
+  derivation_type <- switch(
+    lang,
+    "R" = "rxp_r",
+    "Py" = "rxp_py",
+    "Jy" = "rxp_jl",
+    stop("Unknown derivation type: ", derivation_type)
+  )
+
   snippet <- make_derivation_snippet(
     out_name = out_name,
     src_snippet = sprintf("    src = %s;\n", src_part),
     base = base,
     build_phase = bp,
-    derivation_type = lang
+    derivation_type = derivation_type
   )
 
   create_rxp_derivation(
@@ -445,12 +453,6 @@ create_rxp_derivation <- function(
 #' Creates a Nix expression that reads in a file (or folder of data) using R.
 #'
 #' @family derivations
-#' @param name Symbol, the name of the derivation.
-#' @param path Character, file or folder path to include.
-#' @param read_function Function, R function to read the data.
-#' @param user_functions Character vector of script paths to include.
-#' @param nix_env Character, path to the Nix environment file.
-#' @param env_var Named list of environment variables.
 #' @return An object of class `rxp_derivation`.
 #' @inheritDotParams rxp_file name:env_var
 #' @export
@@ -459,12 +461,6 @@ rxp_r_file <- function(...) rxp_file("R", ...)
 #' Creates a Nix expression that reads in a file (or folder of data) using Python.
 #'
 #' @family derivations
-#' @param name Symbol, the name of the derivation.
-#' @param path Character, file or folder path to include.
-#' @param read_function Character, Python function to read the data.
-#' @param user_functions Character vector of script paths to include.
-#' @param nix_env Character, path to the Nix environment file.
-#' @param env_var Named list of environment variables.
 #' @return An object of class `rxp_derivation`.
 #' @inheritDotParams rxp_file name:env_var
 #' @export
@@ -473,12 +469,6 @@ rxp_py_file <- function(...) rxp_file("Py", ...)
 #' Creates a Nix expression that reads in a file (or folder of data) using Julia.
 #'
 #' @family derivations
-#' @param name Symbol, the name of the derivation.
-#' @param path Character, file or folder path to include.
-#' @param read_function Function, Julia function to read the data.
-#' @param user_functions Character vector of script paths to include.
-#' @param nix_env Character, path to the Nix environment file.
-#' @param env_var Named list of environment variables.
 #' @return An object of class `rxp_derivation`.
 #' @inheritDotParams rxp_file name:env_var
 #' @export
@@ -509,7 +499,7 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
     src_snippet = "",
     base = base,
     build_phase = build_phase,
-    derivation_type = "R"
+    derivation_type = "rxp_r"
   )
 
   structure(
