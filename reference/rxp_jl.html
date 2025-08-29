@@ -176,13 +176,6 @@ paths.</p>
 <span class="r-in"><span>  serialize_function <span class="op">=</span> <span class="st">"save_my_obj"</span>,</span></span>
 <span class="r-in"><span>  user_functions <span class="op">=</span> <span class="st">"functions.jl"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Multiple unserialize functions for different dependencies</span></span></span>
-<span class="r-in"><span><span class="fu">rxp_jl</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  name <span class="op">=</span> <span class="va">combined_data</span>,</span></span>
-<span class="r-in"><span>  jl_expr <span class="op">=</span> <span class="st">"merge(data1, data2)"</span>,</span></span>
-<span class="r-in"><span>  unserialize_function <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>data1 <span class="op">=</span> <span class="st">"JLD2.load"</span>, data2 <span class="op">=</span> <span class="st">"CSV.read"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
