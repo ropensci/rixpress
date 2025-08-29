@@ -89,11 +89,11 @@ saveRDS(data, 'mtcars')"
     buildInputs = defaultBuildInputs;
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
-      cp ${./my_head.R} my_head.R
+            cp ${./my_head.R} my_head.R
       Rscript -e "
         source('libraries.R')
         mtcars_am <- readRDS('${mtcars_am}/mtcars_am')
-        source('my_head.R')
+                source('my_head.R')
         mtcars_head <- my_head(mtcars_am, 100)
         write.csv(mtcars_head, 'mtcars_head')"
     '';
@@ -108,11 +108,11 @@ saveRDS(data, 'mtcars')"
     buildInputs = defaultBuildInputs;
     configurePhase = defaultConfigurePhase;
     buildPhase = ''
-      cp ${./my_tail.R} my_tail.R
+            cp ${./my_tail.R} my_tail.R
       Rscript -e "
         source('libraries.R')
         mtcars_head <- read.csv('${mtcars_head}/mtcars_head')
-        source('my_tail.R')
+                source('my_tail.R')
         mtcars_tail <- my_tail(mtcars_head)
         qs::qsave(mtcars_tail, 'mtcars_tail')"
     '';
@@ -134,7 +134,7 @@ saveRDS(data, 'mtcars')"
 
   page = defaultPkgs.stdenv.mkDerivation {
     name = "page";
-    src = defaultPkgs.lib.fileset.toSource {
+     src = defaultPkgs.lib.fileset.toSource {
       root = ./.;
       fileset = defaultPkgs.lib.fileset.unions [ ./page.qmd ./content.qmd ./images ];
     };
@@ -144,7 +144,6 @@ saveRDS(data, 'mtcars')"
       mkdir home
       export HOME=$PWD/home
       export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python
-
       substituteInPlace page.qmd --replace-fail 'rixpress::rxp_read("mtcars_head")' 'rixpress::rxp_read("${mtcars_head}")'
       substituteInPlace page.qmd --replace-fail 'rixpress::rxp_read("mtcars_tail")' 'rixpress::rxp_read("${mtcars_tail}")'
       substituteInPlace page.qmd --replace-fail 'rixpress::rxp_read("mtcars_mpg")' 'rixpress::rxp_read("${mtcars_mpg}")'

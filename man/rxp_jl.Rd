@@ -95,6 +95,13 @@ rxp_jl(
   serialize_function = "save_my_obj",
   user_functions = "functions.jl"
 )
+
+# Multiple unserialize functions for different dependencies
+rxp_jl(
+  name = combined_data,
+  jl_expr = "merge(data1, data2)",
+  unserialize_function = c(data1 = "JLD2.load", data2 = "CSV.read")
+)
 }
 }
 \seealso{
