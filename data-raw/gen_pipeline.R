@@ -9,13 +9,13 @@ d0 <- rxp_r_file(
 )
 d1 <- rxp_r(
   mtcars_am,
-  filter(mtcars, am == 1),
+  filter(mtcars, TRUE),
   nix_env = "default2.nix"
 )
 
 d2 <- rxp_r(
   mtcars_head,
-  my_head(mtcars_am, 10),
+  my_head(mtcars_am, 100),
   user_functions = "my_head.R",
   nix_env = "default.nix"
 )
@@ -41,7 +41,7 @@ derivs <- list(d0, d1, d2, d3, d4, doc)
 
 rxp_populate(derivs, project_path = ".", build = FALSE)
 
-rxp_make()
+rxp_make(verbose = 0)
 
 #dag_obj <- plot_dag(return_igraph = TRUE)
 
