@@ -61,13 +61,11 @@
 
 
 <dl><dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
-<dd><p>Integer, defaults to 0L. Verbosity level: 0 = silent build
-(no live output), 1+ = show nix output with increasing verbosity. 0:
-"Errors only", 1: "Informational", 2: "Talkative", 3: "Chatty", 4: "Debug",
-5: "Vomit". Values higher than 5 are capped to 5
-Each level adds one –verbose flag to nix-store command.
-For backward compatibility, logical TRUE/FALSE are accepted with a
-deprecation warning (TRUE → 1, FALSE → 0).</p></dd>
+<dd><p>Integer, defaults to 0L. Verbosity level: 0 = show progress
+indicators only, 1+ = show nix output with increasing verbosity. 0:
+"Progress only", 1: "Informational", 2: "Talkative", 3: "Chatty", 4: "Debug",
+5: "Vomit". Values higher than 5 are capped to 5.
+Each level adds one –verbose flag to nix-store command.</p></dd>
 
 
 <dt id="arg-max-jobs">max_jobs<a class="anchor" aria-label="anchor" href="#arg-max-jobs"></a></dt>
@@ -91,7 +89,7 @@ deprecation warning (TRUE → 1, FALSE → 0).</p></dd>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span>  <span class="co"># Build the pipeline with default settings (silent)</span></span></span>
+<span class="r-in"><span>  <span class="co"># Build the pipeline with progress indicators (default)</span></span></span>
 <span class="r-in"><span>  <span class="fu">rxp_make</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="co"># Build with verbose output and parallel execution</span></span></span>

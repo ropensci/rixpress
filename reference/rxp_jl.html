@@ -106,9 +106,11 @@ any custom serializer in <code>functions.jl</code>.</p></dd>
 
 
 <dt id="arg-unserialize-function">unserialize_function<a class="anchor" aria-label="anchor" href="#arg-unserialize-function"></a></dt>
-<dd><p>Character, defaults to NULL. The name of the Julia
-function used to unserialize the object. It must accept one argument: the
-file path. If NULL, the default is assumed to be <code>Serialization.deserialize</code>.</p></dd>
+<dd><p>Character or named vector/list, defaults to NULL. Can be:</p><ul><li><p>A single string for the Julia function to unserialize all upstream objects</p></li>
+<li><p>A named vector/list where names are upstream dependency names and values
+are their specific unserialize functions
+If NULL, the default is <code>Serialization.deserialize</code>.</p></li>
+</ul></dd>
 
 
 <dt id="arg-env-var">env_var<a class="anchor" aria-label="anchor" href="#arg-env-var"></a></dt>
@@ -173,6 +175,13 @@ paths.</p>
 <span class="r-in"><span>  jl_expr <span class="op">=</span> <span class="st">"train_model(data)"</span>,</span></span>
 <span class="r-in"><span>  serialize_function <span class="op">=</span> <span class="st">"save_my_obj"</span>,</span></span>
 <span class="r-in"><span>  user_functions <span class="op">=</span> <span class="st">"functions.jl"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Multiple unserialize functions for different dependencies</span></span></span>
+<span class="r-in"><span><span class="fu">rxp_jl</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  name <span class="op">=</span> <span class="va">combined_data</span>,</span></span>
+<span class="r-in"><span>  jl_expr <span class="op">=</span> <span class="st">"merge(data1, data2)"</span>,</span></span>
+<span class="r-in"><span>  unserialize_function <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>data1 <span class="op">=</span> <span class="st">"JLD2.load"</span>, data2 <span class="op">=</span> <span class="st">"CSV.read"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>

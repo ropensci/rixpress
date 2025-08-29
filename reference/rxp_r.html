@@ -110,12 +110,13 @@ etc.).</p></dd>
 
 
 <dt id="arg-unserialize-function">unserialize_function<a class="anchor" aria-label="anchor" href="#arg-unserialize-function"></a></dt>
-<dd><p>Function, defaults to NULL. A function used to
-unserialize objects transferred between derivations. By default,
-<code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code> is used, but this may produce unexpected results with complex
-objects like machine learning models. For example, if the parent derivation
-used <code>keras::save_model_hdf5()</code> to serialize a model, this derivation
-should use <code>keras::load_model_hdf5()</code> to load it correctly.</p></dd>
+<dd><p>Function, character, or named vector/list,
+defaults to NULL. Can be:</p><ul><li><p>A single function/string to unserialize all upstream objects (e.g., <code>readRDS</code>)</p></li>
+<li><p>A named vector/list where names are upstream dependency names and values
+are their specific unserialize functions (e.g.,
+<code>c(mtcars_tail = "qs::qread", mtcars_head = "read.csv")</code>)
+By default, <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code> is used.</p></li>
+</ul></dd>
 
 
 <dt id="arg-env-var">env_var<a class="anchor" aria-label="anchor" href="#arg-env-var"></a></dt>

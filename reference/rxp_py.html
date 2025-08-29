@@ -106,9 +106,11 @@ the default behaviour uses <code>pickle.dump</code>. Define this function in
 
 
 <dt id="arg-unserialize-function">unserialize_function<a class="anchor" aria-label="anchor" href="#arg-unserialize-function"></a></dt>
-<dd><p>Character, defaults to NULL. The name of the
-Python function used to unserialize the object. It must accept one
-argument: the file path.</p></dd>
+<dd><p>Character or named vector/list, defaults to NULL. Can be:</p><ul><li><p>A single string for the Python function to unserialize all upstream objects</p></li>
+<li><p>A named vector/list where names are upstream dependency names and values
+are their specific unserialize functions
+If NULL, the default uses <code>pickle.load</code>.</p></li>
+</ul></dd>
 
 
 <dt id="arg-env-var">env_var<a class="anchor" aria-label="anchor" href="#arg-env-var"></a></dt>
