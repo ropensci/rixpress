@@ -5,15 +5,6 @@
 #' @keywords internal
 #' @noRd
 .rxp_validate_verbose <- function(verbose) {
-  if (is.logical(verbose)) {
-    warning(
-      "logical values for 'verbose' are deprecated. ",
-      "Use integer values instead: verbose = 0 (FALSE) or verbose = 1 (TRUE).",
-      call. = FALSE
-    )
-    return(as.integer(verbose))
-  }
-
   if (!is.numeric(verbose) || length(verbose) != 1) {
     stop("verbose must be a single numeric or integer value", call. = FALSE)
   }
@@ -24,7 +15,110 @@
     stop("rxp_make(): verbose must be a non-negative integer", call. = FALSE)
   }
 
+  if (verbose > 5L) {
+    warning(
+      sprintf(
+        "Argument 'verbose' (%d) exceeds the maximum of 5; using 5.",
+        verbose
+      ),
+      call. = FALSE
+    )
+    verbose <- 5L
+  }
+
   verbose
+}
+
+#' Parse Nix build output to track derivation progress
+#'
+#' @param line Output line from nix-store
+#' @param derivation_names Vector of derivation names to track
+#' @return List with status info, or NULL if not a relevant line
+#' @keywords internal
+#' @noRd
+#' Parse Nix build output to track derivation progress
+#'
+#' @param line Output line from nix-store
+#' @param derivation_names Vector of derivation names to track
+#' @return List with status info, or NULL if not a relevant line
+#' @keywords internal
+#' @noRd
+.rxp_parse_build_line <- function(line, derivation_names) {
+  # Handle final store paths (when derivations are already built)
+  if (grepl("^/nix/store/.*-[^/]+$", line)) {
+    for (deriv_name in derivation_names) {
+      if (grepl(paste0("-", deriv_name, "$"), line)) {
+        # Skip internal derivations from progress display
+        if (deriv_name == "all-derivations") {
+          return(NULL)
+        }
+        return(list(
+          derivation = deriv_name,
+          status = "completed",
+          message = line,
+          from_store = TRUE
+        ))
+      }
+    }
+  }
+
+  # Handle dispatch: "building '/nix/store/...-derivation_name.drv'..."
+  if (grepl("building '/nix/store/.*\\.drv'\\.\\.\\.", line)) {
+    for (deriv_name in derivation_names) {
+      if (grepl(paste0("-", deriv_name, "\\.drv"), line)) {
+        # Skip internal derivations from progress display
+        if (deriv_name == "all-derivations") {
+          return(NULL)
+        }
+        return(list(
+          derivation = deriv_name,
+          status = "dispatched",
+          message = line,
+          from_store = FALSE
+        ))
+      }
+    }
+  }
+
+  # Handle direct build failures: "error: builder for '/nix/store/...-derivation_name.drv' failed"
+  if (grepl("error: builder for.*failed", line)) {
+    for (deriv_name in derivation_names) {
+      if (grepl(paste0("-", deriv_name, "\\.drv"), line)) {
+        return(list(
+          derivation = deriv_name,
+          status = "errored",
+          message = line,
+          from_store = FALSE
+        ))
+      }
+    }
+  }
+
+  # Handle dependency failures: "error: X dependencies of derivation '/nix/store/...-derivation_name.drv' failed"
+  if (grepl("error: .* dependencies of derivation.*failed", line)) {
+    for (deriv_name in derivation_names) {
+      if (grepl(paste0("-", deriv_name, "\\.drv"), line)) {
+        return(list(
+          derivation = deriv_name,
+          status = "errored",
+          message = line,
+          from_store = FALSE
+        ))
+      }
+    }
+  }
+
+  # Capture actual R/Python/etc errors (these are the useful error messages)
+  if (grepl("^Error in.*:|^Error:|^Fatal error", line)) {
+    return(list(
+      derivation = "RUNTIME_ERROR", # Special marker
+      status = "runtime_error",
+      message = line,
+      from_store = FALSE
+    ))
+  }
+
+  return(NULL)
 }
 
 #' Prepare nix-store command arguments
@@ -60,13 +154,11 @@
 #'
 #' Runs `nix-build` with a quiet flag, outputting to `_rixpress/result`.
 #' @family pipeline functions
-#' @param verbose Integer, defaults to 0L. Verbosity level: 0 = silent build
-#'   (no live output), 1+ = show nix output with increasing verbosity. 0:
-#'   "Errors only", 1: "Informational", 2: "Talkative", 3: "Chatty", 4: "Debug",
-#'   5: "Vomit". Values higher than 5 are capped to 5
+#' @param verbose Integer, defaults to 0L. Verbosity level: 0 = show progress
+#'   indicators only, 1+ = show nix output with increasing verbosity. 0:
+#'   "Progress only", 1: "Informational", 2: "Talkative", 3: "Chatty", 4: "Debug",
+#'   5: "Vomit". Values higher than 5 are capped to 5.
 #'   Each level adds one --verbose flag to nix-store command.
-#'   For backward compatibility, logical TRUE/FALSE are accepted with a
-#'   deprecation warning (TRUE → 1, FALSE → 0).
 #' @param max_jobs Integer, number of derivations to be built in parallel.
 #' @param cores Integer, number of cores a derivation can use during build.
 #' @importFrom processx run
@@ -74,7 +166,7 @@
 #' @return A character vector of paths to the built outputs.
 #' @examples
 #' \dontrun{
-#'   # Build the pipeline with default settings (silent)
+#'   # Build the pipeline with progress indicators (default)
 #'   rxp_make()
 #'
 #'   # Build with verbose output and parallel execution
@@ -85,11 +177,12 @@
 #' }
 #' @export
 rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
-  # Validate and normalize verbose parameter
+  # [existing validation code]
   verbose <- .rxp_validate_verbose(verbose)
 
-  message("Build process started...\n", "\n")
+  message("Build process started...\n")
 
+  # [existing instantiation code]
   instantiate <- processx::run(
     command = "nix-instantiate",
     args = "pipeline.nix",
@@ -97,34 +190,84 @@ rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
     spinner = TRUE
   )
 
-  # Check for instantiation failure
   if (instantiate$status != 0) {
     cat(instantiate$stderr)
     stop("nix-instantiate failed")
   }
-
-  # Extract derivation paths from stdout (split into lines)
   drv_paths <- strsplit(instantiate$stdout, "\n")[[1]]
+  # Extract derivation names: everything after hash- and before .drv
+  derivation_names <- gsub("^/nix/store/[^-]+-(.+)\\.drv$", "\\1", drv_paths)
+  # Filter out only the internal "all-derivations"
+  derivation_names <- derivation_names[derivation_names != "all-derivations"]
+
+  # Initialize progress tracking
+  build_status <- setNames(
+    rep("pending", length(derivation_names)),
+    derivation_names
+  )
+  error_messages <- setNames(
+    rep(as.character(NA), length(derivation_names)),
+    derivation_names
+  )
+  currently_building <- NULL # Track which derivation is currently building
 
   # Set up callbacks based on verbosity level
   if (verbose >= 1) {
-    cb <- function(line, proc) cat(line, "\n")
+    cb_stdout <- function(line, proc) cat(line, "\n")
+    cb_stderr <- function(line, proc) cat(line, "\n")
   } else {
-    cb <- NULL
+    # verbose == 0: show progress only
+    cb_stdout <- function(line, proc) {
+      # Skip the garbage collector warning
+      if (grepl("warning.*garbage collector", line)) {
+        return()
+      }
+
+      parsed <- .rxp_parse_build_line(line, derivation_names)
+      if (!is.null(parsed)) {
+        if (parsed$status == "completed" && parsed$from_store) {
+          cat(paste0("\u2713 ", parsed$derivation, " built\n"))
+          build_status[[parsed$derivation]] <<- "completed"
+        }
+      }
+    }
+
+    cb_stderr <- function(line, proc) {
+      # Skip garbage collector warnings
+      if (grepl("warning.*garbage collector", line)) {
+        return()
+      }
+
+      parsed <- .rxp_parse_build_line(line, derivation_names)
+      if (!is.null(parsed)) {
+        if (parsed$status == "dispatched") {
+          cat(paste0("+ ", parsed$derivation, " building\n"))
+          build_status[[parsed$derivation]] <<- "dispatched"
+          currently_building <<- parsed$derivation # Track current build
+        } else if (parsed$status == "completed" && !parsed$from_store) {
+          cat(paste0("\u2713 ", parsed$derivation, " built\n"))
+          build_status[[parsed$derivation]] <<- "completed"
+          currently_building <<- NULL
+        } else if (parsed$status == "errored") {
+          cat(paste0("\u2716 ", parsed$derivation, " errored\n"))
+          build_status[[parsed$derivation]] <<- "errored"
+          # Only store the Nix error message if we don't already have a runtime error
+          if (is.na(error_messages[[parsed$derivation]])) {
+            error_messages[[parsed$derivation]] <<- parsed$message
+          }
+          currently_building <<- NULL
+        } else if (
+          parsed$status == "runtime_error" && !is.null(currently_building)
+        ) {
+          # Associate runtime errors with currently building derivation
+          # Runtime errors are more informative, so always store them
+          error_messages[[currently_building]] <<- parsed$message
+        }
+      }
+    }
   }
 
-  if (verbose > 5L) {
-    warning(
-      sprintf(
-        "Argument 'verbose' (%d) exceeds the maximum of 5; using 5.",
-        verbose
-      ),
-      call. = FALSE
-    )
-    verbose <- 5L
-  }
-
-  # Prepare nix-store arguments using helper function
+  # [rest of the existing build process code]
   nix_store_args <- .rxp_prepare_nix_store_args(
     max_jobs,
     cores,
@@ -135,14 +278,36 @@ rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
   build_process <- processx::run(
     command = "nix-store",
     args = nix_store_args,
-    stdout_line_callback = cb,
-    stderr_line_callback = cb,
+    stdout_line_callback = cb_stdout,
+    stderr_line_callback = cb_stderr,
     error_on_status = FALSE,
-    spinner = TRUE
+    spinner = ifelse(verbose >= 1, TRUE, FALSE)
   )
 
+  # Show final status for verbose = 0
+  if (verbose == 0) {
+    completed_count <- sum(build_status == "completed")
+    errored_count <- sum(build_status == "errored")
+
+    if (build_process$status == 0) {
+      cat(paste0(
+        "\u2713 pipeline completed [",
+        completed_count,
+        " completed, 0 errored]\n"
+      ))
+    } else {
+      cat(paste0(
+        "\u2716 errored pipeline [",
+        completed_count,
+        " completed, ",
+        errored_count,
+        " errored]\n"
+      ))
+    }
+  }
+
+  # [rest of existing build log creation code - unchanged]
   build_log <- lapply(drv_paths, function(drv_path) {
-    # Get the output paths for this derivation
     output_result <- processx::run(
       command = "nix-store",
       args = c("-q", "--outputs", drv_path),
@@ -155,43 +320,49 @@ rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
       list(path = path, files = files, build_success = length(files) > 0)
     })
 
+    deriv_name <- gsub("\\.drv$", "", gsub("^[^-]*-", "", drv_path))
+
     data.frame(
-      derivation = gsub("\\.drv$", "", gsub("^[^-]*-", "", drv_path)),
+      derivation = deriv_name,
       build_success = vapply(output_checks, `[[`, logical(1), "build_success"),
       path = vapply(output_checks, `[[`, character(1), "path"),
-      output = I(lapply(output_checks, `[[`, "files"))
+      output = I(lapply(output_checks, `[[`, "files")),
+      error_message = ifelse(
+        deriv_name %in%
+          names(error_messages) &&
+          !is.na(error_messages[[deriv_name]]),
+        error_messages[[deriv_name]],
+        NA_character_
+      ),
+      stringsAsFactors = FALSE
     )
   })
 
   build_log <- do.call(rbind, build_log)
 
-  # Get timestamp
+  # [rest of existing code unchanged...]
   timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
 
-  # Extract hash of all-derivations from the path
   all_derivs_row <- which(build_log$derivation == "all-derivations")
   all_derivs_hash <- ""
   if (length(all_derivs_row) > 0) {
     path <- build_log$path[all_derivs_row[1]]
-    # Extract hash from path (format: /nix/store/HASH-all-derivations)
     all_derivs_hash <- gsub(
       "^/nix/store/([^-]+)-all-derivations.*$",
       "\\1",
       path
     )
     if (all_derivs_hash == path) {
-      all_derivs_hash <- "" # If regex didn't match
+      all_derivs_hash <- ""
     }
   }
 
-  # Save with timestamp and hash
   log_filename <- sprintf(
     "_rixpress/build_log_%s%s.rds",
     timestamp,
     ifelse(all_derivs_hash != "", paste0("_", all_derivs_hash), "")
   )
 
-  # Save both the timestamped version and the standard version
   saveRDS(build_log, log_filename)
 
   failures <- subset(build_log, subset = !build_success)
@@ -203,7 +374,9 @@ rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
   }
 
   if (build_process$status != 0) {
-    cat(build_process$stderr)
+    if (verbose >= 1) {
+      cat(build_process$stderr)
+    }
     stop("Build failed! Check the log above for hints\nor run `rxp_inspect()`.")
   }
 

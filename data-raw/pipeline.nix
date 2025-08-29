@@ -75,7 +75,7 @@ saveRDS(data, 'mtcars')"
       Rscript -e "
         source('libraries.R')
         mtcars <- readRDS('${mtcars}/mtcars')
-        mtcars_am <- filter(mtcars, am == 1)
+        mtcars_am <- filter(mtcars, TRUE)
         saveRDS(mtcars_am, 'mtcars_am')"
     '';
   };
@@ -94,7 +94,7 @@ saveRDS(data, 'mtcars')"
         source('libraries.R')
         mtcars_am <- readRDS('${mtcars_am}/mtcars_am')
         source('my_head.R')
-        mtcars_head <- my_head(mtcars_am, 10)
+        mtcars_head <- my_head(mtcars_am, 100)
         saveRDS(mtcars_head, 'mtcars_head')"
     '';
   };

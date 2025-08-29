@@ -86,19 +86,3 @@ test_that("verbose parameter validation works", {
   expect_equal(.rxp_validate_verbose(2L), 2L)
   expect_equal(.rxp_validate_verbose(3.0), 3L)
 })
-
-test_that("logical verbose backward compatibility works with deprecation warning", {
-  # Test TRUE maps to 1 with warning
-  expect_warning(
-    result <- .rxp_validate_verbose(TRUE),
-    "logical values for 'verbose' are deprecated"
-  )
-  expect_equal(result, 1L)
-
-  # Test FALSE maps to 0 with warning
-  expect_warning(
-    result <- .rxp_validate_verbose(FALSE),
-    "logical values for 'verbose' are deprecated"
-  )
-  expect_equal(result, 0L)
-})
