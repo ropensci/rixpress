@@ -25,7 +25,6 @@ let
       urlchecker
       usethis
       visNetwork
-      qs
       ;
   };
 
