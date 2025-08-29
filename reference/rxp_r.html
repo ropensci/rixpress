@@ -61,7 +61,8 @@
 <span>  nix_env <span class="op">=</span> <span class="st">"default.nix"</span>,</span>
 <span>  serialize_function <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  unserialize_function <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  env_var <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  env_var <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  noop_build <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -123,6 +124,13 @@ environment variables to set before running the R script, e.g.,
 <code>c("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan)"</code>.
 Each entry will be added as an export statement in the build phase.</p></dd>
 
+
+<dt id="arg-noop-build">noop_build<a class="anchor" aria-label="anchor" href="#arg-noop-build"></a></dt>
+<dd><p>Logical, defaults to FALSE. If TRUE, the derivation
+produces a no-op build (a stub output with no actual build steps). Any
+downstream derivations depending on a no-op build will themselves also
+become no-op builds.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -154,6 +162,13 @@ paths.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span>  <span class="co"># Basic usage</span></span></span>
 <span class="r-in"><span>  <span class="fu">rxp_r</span><span class="op">(</span>name <span class="op">=</span> <span class="va">filtered_mtcars</span>, expr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">am</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># Skip building this derivation</span></span></span>
+<span class="r-in"><span>  <span class="fu">rxp_r</span><span class="op">(</span></span></span>
+<span class="r-in"><span>    name <span class="op">=</span> <span class="va">turtles</span>,</span></span>
+<span class="r-in"><span>    expr <span class="op">=</span> <span class="fu">occurrence</span><span class="op">(</span><span class="va">species</span>, geometry <span class="op">=</span> <span class="va">atlantic</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    noop_build <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>  <span class="co"># Serialize object using qs</span></span></span>
 <span class="r-in"><span>  <span class="fu">rxp_r</span><span class="op">(</span></span></span>

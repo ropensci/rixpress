@@ -306,13 +306,30 @@ copied to this folder.</li>
 </ol>
 </div>
 <div class="section level2">
+<h2 id="no-op-builds-for-individual-derivations">No-op builds for individual derivations<a class="anchor" aria-label="anchor" href="#no-op-builds-for-individual-derivations"></a>
+</h2>
+<p>You can disable building a specific derivation by setting its
+<code>noop_build</code> parameter to <code>TRUE</code>. This creates a
+no-op build, a placeholder derivation that performs no work:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
+<span>  name <span class="op">=</span> <span class="va">turtles</span>,</span>
+<span>  expr <span class="op">=</span> <span class="fu">occurrence</span><span class="op">(</span><span class="va">species</span>, geometry <span class="op">=</span> <span class="va">atlantic</span><span class="op">)</span>,</span>
+<span>  noop_build <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Any derivations that depend on a no-op build will themselves also
+resolve to no-op builds. This can be useful when prototyping or
+debugging a pipeline, allowing you to skip expensive or unnecessary
+computations while keeping the dependency graph intact.</p>
+</div>
+<div class="section level2">
 <h2 id="dag-representation-of-the-pipeline">DAG Representation of the Pipeline<a class="anchor" aria-label="anchor" href="#dag-representation-of-the-pipeline"></a>
 </h2>
 <p>It’s often helpful to visualise your pipeline as a DAG (directed
 acyclic graph). By default, the <code>build</code> argument of
 <code><a href="../reference/rxp_populate.html">rxp_populate()</a></code> is <code>FALSE</code>, so calling this will
 not build the pipeline:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_populate.html">rxp_populate</a></span><span class="op">(</span><span class="va">derivs</span><span class="op">)</span></span></code></pre></div>
 <p>This won’t build the pipeline but will generate useful files,
 including a JSON representation of the pipeline at
@@ -329,7 +346,7 @@ Your browser does not support the MP4 video format.
 DAG
 </figcaption></figure><p>You can also return the underlying <code>igraph</code> object to plot
 the DAG using other tools:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_dag_for_ci.html">rxp_dag_for_ci</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>which saves the <code>dag.dot</code> object in the project’s
 <code>_rixpress/</code> folder.</p>

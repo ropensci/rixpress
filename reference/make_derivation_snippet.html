@@ -58,7 +58,8 @@
 <span>  <span class="va">src_snippet</span>,</span>
 <span>  <span class="va">base</span>,</span>
 <span>  <span class="va">build_phase</span>,</span>
-<span>  <span class="va">derivation_type</span></span>
+<span>  <span class="va">derivation_type</span>,</span>
+<span>  noop_build <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -83,7 +84,14 @@
 
 
 <dt id="arg-derivation-type">derivation_type<a class="anchor" aria-label="anchor" href="#arg-derivation-type"></a></dt>
-<dd><p>Character, one of "R", "Py", "Jl", "Qmd", "Rmd"</p></dd>
+<dd><p>Character, one of "rxp_r", "rxp_py", "rxp_jl", "rxp_qmd", "rxp_rmd"</p></dd>
+
+
+<dt id="arg-noop-build">noop_build<a class="anchor" aria-label="anchor" href="#arg-noop-build"></a></dt>
+<dd><p>Logical, defaults to FALSE. If TRUE, the derivation
+produces a no-op build (a stub output with no actual build steps). Any
+downstream derivations depending on a no-op build will themselves also
+become no-op builds.</p></dd>
 
 </dl></div>
     <div class="section level2">
