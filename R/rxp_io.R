@@ -452,6 +452,7 @@ create_rxp_derivation <- function(
 #' @param nix_env Character, path to the Nix environment file.
 #' @param env_var Named list of environment variables.
 #' @return An object of class `rxp_derivation`.
+#' @inheritDotParams rxp_file name:env_var
 #' @export
 rxp_r_file <- function(...) rxp_file("R", ...)
 
@@ -465,6 +466,7 @@ rxp_r_file <- function(...) rxp_file("R", ...)
 #' @param nix_env Character, path to the Nix environment file.
 #' @param env_var Named list of environment variables.
 #' @return An object of class `rxp_derivation`.
+#' @inheritDotParams rxp_file name:env_var
 #' @export
 rxp_py_file <- function(...) rxp_file("Py", ...)
 
@@ -478,6 +480,7 @@ rxp_py_file <- function(...) rxp_file("Py", ...)
 #' @param nix_env Character, path to the Nix environment file.
 #' @param env_var Named list of environment variables.
 #' @return An object of class `rxp_derivation`.
+#' @inheritDotParams rxp_file name:env_var
 #' @export
 rxp_jl_file <- function(...) rxp_file("Jl", ...)
 

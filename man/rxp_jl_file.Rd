@@ -7,6 +7,12 @@
 rxp_jl_file(...)
 }
 \arguments{
+\item{...}{
+  Arguments passed on to \code{\link[=rxp_file]{rxp_file}}
+  \describe{
+    \item{\code{}}{}
+  }}
+
 \item{name}{Symbol, the name of the derivation.}
 
 \item{path}{Character, file or folder path to include.}
