@@ -5,6 +5,7 @@ let
     inherit (pkgs.rPackages) 
       purrr
       data_table
+      qs
       dplyr;
   };
   

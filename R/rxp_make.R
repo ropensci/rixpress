@@ -36,13 +36,6 @@
 #' @return List with status info, or NULL if not a relevant line
 #' @keywords internal
 #' @noRd
-#' Parse Nix build output to track derivation progress
-#'
-#' @param line Output line from nix-store
-#' @param derivation_names Vector of derivation names to track
-#' @return List with status info, or NULL if not a relevant line
-#' @keywords internal
-#' @noRd
 .rxp_parse_build_line <- function(line, derivation_names) {
   # Handle final store paths (when derivations are already built)
   if (grepl("^/nix/store/.*-[^/]+$", line)) {

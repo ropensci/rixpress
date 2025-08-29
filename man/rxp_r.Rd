@@ -44,12 +44,15 @@ instance, for \code{{keras}} models, use \code{keras::save_model_hdf5()} to capt
 the full model (architecture, weights, training config, optimiser state,
 etc.).}
 
-\item{unserialize_function}{Function, defaults to NULL. A function used to
-unserialize objects transferred between derivations. By default,
-\code{readRDS()} is used, but this may produce unexpected results with complex
-objects like machine learning models. For example, if the parent derivation
-used \code{keras::save_model_hdf5()} to serialize a model, this derivation
-should use \code{keras::load_model_hdf5()} to load it correctly.}
+\item{unserialize_function}{Function, character, or named vector/list,
+defaults to NULL. Can be:
+\itemize{
+\item A single function/string to unserialize all upstream objects (e.g., \code{readRDS})
+\item A named vector/list where names are upstream dependency names and values
+are their specific unserialize functions (e.g.,
+\code{c(mtcars_tail = "qs::qread", mtcars_head = "read.csv")})
+By default, \code{readRDS()} is used.
+}}
 
 \item{env_var}{Character vector, defaults to NULL. A named vector of
 environment variables to set before running the R script, e.g.,

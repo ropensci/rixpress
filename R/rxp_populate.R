@@ -446,55 +446,89 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     type <- d$type[1]
     unserialize_function <- d$unserialize_function
 
-    # Normalize unserialize_function to a single character string
-    if (is.null(unserialize_function) || length(unserialize_function) == 0) {
-      unserialize_function <- switch(
-        type,
-        "rxp_r" = "readRDS",
-        "rxp_py" = "pickle.load",
-        "rxp_jl" = "Serialization.deserialize",
-        "readRDS"
-      )
-    } else {
+    # Helper function to get the unserialize function for a specific dependency
+    get_unserialize_func_for_dep <- function(
+      dep_name,
+      unserialize_function,
+      type
+    ) {
+      if (is.null(unserialize_function) || length(unserialize_function) == 0) {
+        # Use default based on type
+        return(switch(
+          type,
+          "rxp_r" = "readRDS",
+          "rxp_py" = "pickle.load",
+          "rxp_jl" = "Serialization.deserialize",
+          "readRDS"
+        ))
+      }
+
+      # Check if unserialize_function is a list (from JSON)
       if (is.list(unserialize_function)) {
-        unserialize_function <- as.character(unserialize_function[[1]])
+        # Check if it has names (named list/vector case)
+        func_names <- names(unserialize_function)
+        if (!is.null(func_names) && length(func_names) > 0) {
+          # It's a named list - look up the specific dependency
+          if (dep_name %in% func_names) {
+            return(as.character(unserialize_function[[dep_name]]))
+          } else {
+            # Dependency not in the named list, use default
+            return(switch(
+              type,
+              "rxp_r" = "readRDS",
+              "rxp_py" = "pickle.load",
+              "rxp_jl" = "Serialization.deserialize",
+              "readRDS"
+            ))
+          }
+        } else {
+          # It's a single value in a list
+          return(as.character(unserialize_function[[1]]))
+        }
       } else {
-        unserialize_function <- as.character(unserialize_function[1])
+        # It's a single string value
+        return(as.character(unserialize_function[1]))
       }
     }
 
     # Build load lines per type
     if (type == "rxp_r") {
       base_placeholder <- "# RIXPRESS_LOAD_DEPENDENCIES_HERE"
-      load_line_template <- "%s <- %s('${%s}/%s')"
       load_lines <- vapply(
         deps,
         function(dep) {
-          sprintf(load_line_template, dep, unserialize_function, dep, dep)
+          func <- get_unserialize_func_for_dep(dep, unserialize_function, type)
+          sprintf("%s <- %s('${%s}/%s')", dep, func, dep, dep)
         },
         character(1)
       )
     } else if (type == "rxp_py") {
       base_placeholder <- "# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE"
-      load_line_template <- "with open('${%s}/%s', 'rb') as f: %s = %s(f)"
       load_lines <- vapply(
         deps,
         function(dep) {
-          sprintf(load_line_template, dep, dep, dep, unserialize_function)
+          func <- get_unserialize_func_for_dep(dep, unserialize_function, type)
+          sprintf(
+            "with open('${%s}/%s', 'rb') as f: %s = %s(f)",
+            dep,
+            dep,
+            dep,
+            func
+          )
         },
         character(1)
       )
     } else if (type == "rxp_jl") {
       base_placeholder <- "# RIXPRESS_JL_LOAD_DEPENDENCIES_HERE"
-      load_line_template <- "%s = open(\\\"%s\\\", \\\"r\\\") do io; %s(io); end"
       load_lines <- vapply(
         deps,
         function(dep) {
+          func <- get_unserialize_func_for_dep(dep, unserialize_function, type)
           sprintf(
-            load_line_template,
+            "%s = open(\\\"%s\\\", \\\"r\\\") do io; %s(io); end",
             dep,
             paste0("${", dep, "}/", dep),
-            unserialize_function
+            func
           )
         },
         character(1)

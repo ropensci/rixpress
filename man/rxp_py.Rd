@@ -40,9 +40,13 @@ object to serialize (first), and the target file path (second). If NULL,
 the default behaviour uses \code{pickle.dump}. Define this function in
 \code{functions.py}.}
 
-\item{unserialize_function}{Character, defaults to NULL. The name of the
-Python function used to unserialize the object. It must accept one
-argument: the file path.}
+\item{unserialize_function}{Character or named vector/list, defaults to NULL. Can be:
+\itemize{
+\item A single string for the Python function to unserialize all upstream objects
+\item A named vector/list where names are upstream dependency names and values
+are their specific unserialize functions
+If NULL, the default uses \code{pickle.load}.
+}}
 
 \item{env_var}{Character vector, defaults to NULL. A named vector of
 environment variables

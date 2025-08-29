@@ -84,12 +84,13 @@ make_derivation_snippet <- function(
 #'   instance, for `{keras}` models, use `keras::save_model_hdf5()` to capture
 #'   the full model (architecture, weights, training config, optimiser state,
 #'   etc.).
-#' @param unserialize_function Function, defaults to NULL. A function used to
-#'   unserialize objects transferred between derivations. By default,
-#'   `readRDS()` is used, but this may produce unexpected results with complex
-#'   objects like machine learning models. For example, if the parent derivation
-#'   used `keras::save_model_hdf5()` to serialize a model, this derivation
-#'   should use `keras::load_model_hdf5()` to load it correctly.
+#' @param unserialize_function Function, character, or named vector/list,
+#'   defaults to NULL. Can be:
+#'   - A single function/string to unserialize all upstream objects (e.g., `readRDS`)
+#'   - A named vector/list where names are upstream dependency names and values
+#'     are their specific unserialize functions (e.g.,
+#'     `c(mtcars_tail = "qs::qread", mtcars_head = "read.csv")`)
+#'   By default, `readRDS()` is used.
 #' @param env_var Character vector, defaults to NULL. A named vector of
 #'   environment variables to set before running the R script, e.g.,
 #'   `c("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan)"`.
@@ -158,13 +159,70 @@ rxp_r <- function(
     serialize_str <- deparse1(serialize_expr)
   }
 
+  # Handle unserialize_function - can be single value or named vector/list
   unserialize_expr <- substitute(unserialize_function)
   if (identical(unserialize_expr, quote(NULL))) {
     unserialize_str <- "readRDS"
-  } else if (is.character(unserialize_expr)) {
-    unserialize_str <- unserialize_expr
   } else {
-    unserialize_str <- deparse1(unserialize_expr)
+    # Check if it's a call to c() with named arguments
+    if (
+      is.call(unserialize_expr) && identical(unserialize_expr[[1]], quote(c))
+    ) {
+      # It's a c() call - check if it has names
+      call_names <- names(unserialize_expr)
+      if (!is.null(call_names) && any(nzchar(call_names[-1]))) {
+        # Has named arguments (skip first element which is the function name 'c')
+        # Extract as a named list to preserve names in JSON
+        unserialize_str <- list()
+        for (i in 2:length(unserialize_expr)) {
+          if (nzchar(call_names[i])) {
+            # Get the value as a string
+            val <- unserialize_expr[[i]]
+            if (is.character(val)) {
+              unserialize_str[[call_names[i]]] <- val
+            } else {
+              unserialize_str[[call_names[i]]] <- as.character(val)
+            }
+          }
+        }
+        # Convert to a named list explicitly
+        unserialize_str <- as.list(unserialize_str)
+      } else {
+        # No names, treat as single value
+        unserialize_str <- deparse1(unserialize_expr)
+      }
+    } else if (is.character(unserialize_expr)) {
+      # Direct character value
+      unserialize_str <- unserialize_expr
+    } else {
+      # Try to evaluate it to see if it's a pre-existing named vector
+      tryCatch(
+        {
+          unserialize_val <- eval(unserialize_expr, envir = parent.frame())
+          if (
+            !is.null(names(unserialize_val)) &&
+              length(names(unserialize_val)) > 0
+          ) {
+            # Convert named vector to named list for JSON preservation
+            unserialize_str <- as.list(setNames(
+              unserialize_val,
+              names(unserialize_val)
+            ))
+          } else {
+            # Single value
+            if (is.character(unserialize_val)) {
+              unserialize_str <- unserialize_val
+            } else {
+              unserialize_str <- deparse1(unserialize_expr)
+            }
+          }
+        },
+        error = function(e) {
+          # If evaluation fails, treat as a symbol
+          unserialize_str <- deparse1(unserialize_expr)
+        }
+      )
+    }
   }
 
   # Generate environment variable export statements if env_var is provided
@@ -315,9 +373,11 @@ rxp_r <- function(
 #'   object to serialize (first), and the target file path (second). If NULL,
 #'   the default behaviour uses `pickle.dump`. Define this function in
 #'   `functions.py`.
-#' @param unserialize_function Character, defaults to NULL. The name of the
-#'   Python function used to unserialize the object. It must accept one
-#'   argument: the file path.
+#' @param unserialize_function Character or named vector/list, defaults to NULL. Can be:
+#'   - A single string for the Python function to unserialize all upstream objects
+#'   - A named vector/list where names are upstream dependency names and values
+#'     are their specific unserialize functions
+#'   If NULL, the default uses `pickle.load`.
 #' @param env_var Character vector, defaults to NULL. A named vector of
 #'   environment variables
 #'   before running the Python script, e.g., c(PYTHONPATH = "/path/to/modules").
@@ -391,14 +451,76 @@ rxp_py <- function(
     )
   }
 
-  # Handle unserialize_function to pass down
-  if (is.null(unserialize_function)) {
+  # Handle unserialize_function - can be single value or named vector/list
+  unserialize_expr <- substitute(unserialize_function)
+  if (identical(unserialize_expr, quote(NULL))) {
     unserialize_str <- "pickle.load"
   } else {
-    if (!is.character(unserialize_function)) {
-      stop("unserialize_function must be a character string or NULL")
+    # Check if it's a call to c() with named arguments
+    if (
+      is.call(unserialize_expr) && identical(unserialize_expr[[1]], quote(c))
+    ) {
+      # It's a c() call - check if it has names
+      call_names <- names(unserialize_expr)
+      if (!is.null(call_names) && any(nzchar(call_names[-1]))) {
+        # Has named arguments (skip first element which is the function name 'c')
+        # Extract as a named list to preserve names in JSON
+        unserialize_str <- list()
+        for (i in 2:length(unserialize_expr)) {
+          if (nzchar(call_names[i])) {
+            # Get the value as a string
+            val <- unserialize_expr[[i]]
+            if (is.character(val)) {
+              unserialize_str[[call_names[i]]] <- val
+            } else {
+              unserialize_str[[call_names[i]]] <- as.character(val)
+            }
+          }
+        }
+        # Convert to a named list explicitly
+        unserialize_str <- as.list(unserialize_str)
+      } else {
+        # No names, treat as single value
+        if (length(unserialize_expr) > 1) {
+          # It's c() with multiple unnamed values - take the first
+          val <- unserialize_expr[[2]]
+          unserialize_str <- if (is.character(val)) val else as.character(val)
+        } else {
+          unserialize_str <- deparse1(unserialize_expr)
+        }
+      }
+    } else if (is.character(unserialize_expr)) {
+      # Direct character value
+      unserialize_str <- unserialize_expr
+    } else {
+      # Try to evaluate it to see if it's a pre-existing named vector
+      tryCatch(
+        {
+          unserialize_val <- eval(unserialize_expr, envir = parent.frame())
+          if (
+            !is.null(names(unserialize_val)) &&
+              length(names(unserialize_val)) > 0
+          ) {
+            # Convert named vector to named list for JSON preservation
+            unserialize_str <- as.list(setNames(
+              unserialize_val,
+              names(unserialize_val)
+            ))
+          } else {
+            # Single value
+            if (is.character(unserialize_val)) {
+              unserialize_str <- unserialize_val
+            } else {
+              unserialize_str <- as.character(unserialize_val)
+            }
+          }
+        },
+        error = function(e) {
+          # If evaluation fails, treat as a symbol and convert to string
+          unserialize_str <- deparse1(unserialize_expr)
+        }
+      )
     }
-    unserialize_str <- unserialize_function
   }
 
   # Generate environment variable export statements if env_var is provided
@@ -533,7 +655,6 @@ rxp_py <- function(
     structure(class = "rxp_derivation")
 }
 
-
 #' Create a Nix expression running a Julia function
 #'
 #' @param name Symbol, name of the derivation.
@@ -553,9 +674,11 @@ rxp_py <- function(
 #'   object to serialize (first), and the target file path (second). If NULL,
 #'   the default behaviour uses the built‐in `Serialization.serialize` API. Define
 #'   any custom serializer in `functions.jl`.
-#' @param unserialize_function Character, defaults to NULL. The name of the Julia
-#'   function used to unserialize the object. It must accept one argument: the
-#'   file path. If NULL, the default is assumed to be `Serialization.deserialize`.
+#' @param unserialize_function Character or named vector/list, defaults to NULL. Can be:
+#'   - A single string for the Julia function to unserialize all upstream objects
+#'   - A named vector/list where names are upstream dependency names and values
+#'     are their specific unserialize functions
+#'   If NULL, the default is `Serialization.deserialize`.
 #' @param env_var Character vector, defaults to NULL. A named vector of
 #'   environment variables to set before running the Julia script, e.g.,
 #'   `c("JULIA_DEPOT_PATH" = "/path/to/depot")`. Each entry will be added as
@@ -637,16 +760,76 @@ rxp_jl <- function(
     )
   }
 
-  # Determine unserialize string (passed through metadata; user can choose)
-  if (is.null(unserialize_function)) {
+  # Handle unserialize_function - can be single value or named vector/list
+  unserialize_expr <- substitute(unserialize_function)
+  if (identical(unserialize_expr, quote(NULL))) {
     unserialize_str <- "Serialization.deserialize"
   } else {
+    # Check if it's a call to c() with named arguments
     if (
-      !is.character(unserialize_function) || length(unserialize_function) != 1
+      is.call(unserialize_expr) && identical(unserialize_expr[[1]], quote(c))
     ) {
-      stop("unserialize_function must be a single character string or NULL")
+      # It's a c() call - check if it has names
+      call_names <- names(unserialize_expr)
+      if (!is.null(call_names) && any(nzchar(call_names[-1]))) {
+        # Has named arguments (skip first element which is the function name 'c')
+        # Extract as a named list to preserve names in JSON
+        unserialize_str <- list()
+        for (i in 2:length(unserialize_expr)) {
+          if (nzchar(call_names[i])) {
+            # Get the value as a string
+            val <- unserialize_expr[[i]]
+            if (is.character(val)) {
+              unserialize_str[[call_names[i]]] <- val
+            } else {
+              unserialize_str[[call_names[i]]] <- as.character(val)
+            }
+          }
+        }
+        # Convert to a named list explicitly
+        unserialize_str <- as.list(unserialize_str)
+      } else {
+        # No names, treat as single value
+        if (length(unserialize_expr) > 1) {
+          # It's c() with multiple unnamed values - take the first
+          val <- unserialize_expr[[2]]
+          unserialize_str <- if (is.character(val)) val else as.character(val)
+        } else {
+          unserialize_str <- deparse1(unserialize_expr)
+        }
+      }
+    } else if (is.character(unserialize_expr)) {
+      # Direct character value
+      unserialize_str <- unserialize_expr
+    } else {
+      # Try to evaluate it to see if it's a pre-existing named vector
+      tryCatch(
+        {
+          unserialize_val <- eval(unserialize_expr, envir = parent.frame())
+          if (
+            !is.null(names(unserialize_val)) &&
+              length(names(unserialize_val)) > 0
+          ) {
+            # Convert named vector to named list for JSON preservation
+            unserialize_str <- as.list(setNames(
+              unserialize_val,
+              names(unserialize_val)
+            ))
+          } else {
+            # Single value
+            if (is.character(unserialize_val)) {
+              unserialize_str <- unserialize_val
+            } else {
+              unserialize_str <- as.character(unserialize_val)
+            }
+          }
+        },
+        error = function(e) {
+          # If evaluation fails, treat as a symbol and convert to string
+          unserialize_str <- deparse1(unserialize_expr)
+        }
+      )
     }
-    unserialize_str <- unserialize_function
   }
 
   # Generate environment variable export statements if env_var is provided

@@ -40,9 +40,13 @@ object to serialize (first), and the target file path (second). If NULL,
 the default behaviour uses the built‐in \code{Serialization.serialize} API. Define
 any custom serializer in \code{functions.jl}.}
 
-\item{unserialize_function}{Character, defaults to NULL. The name of the Julia
-function used to unserialize the object. It must accept one argument: the
-file path. If NULL, the default is assumed to be \code{Serialization.deserialize}.}
+\item{unserialize_function}{Character or named vector/list, defaults to NULL. Can be:
+\itemize{
+\item A single string for the Julia function to unserialize all upstream objects
+\item A named vector/list where names are upstream dependency names and values
+are their specific unserialize functions
+If NULL, the default is \code{Serialization.deserialize}.
+}}
 
 \item{env_var}{Character vector, defaults to NULL. A named vector of
 environment variables to set before running the Julia script, e.g.,
