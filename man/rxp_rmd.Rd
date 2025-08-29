@@ -10,7 +10,8 @@ rxp_rmd(
   additional_files = "",
   nix_env = "default.nix",
   params = NULL,
-  env_var = NULL
+  env_var = NULL,
+  noop_build = FALSE
 )
 }
 \arguments{
@@ -32,6 +33,11 @@ NULL.}
 to set before running the R Markdown render command, e.g., c(RSTUDIO_PANDOC
 = "/path/to/pandoc"). Each entry will be added as an export statement in
 the build phase.}
+
+\item{noop_build}{Logical, defaults to FALSE. If TRUE, the derivation
+produces a no-op build (a stub output with no actual build steps). Any
+downstream derivations depending on a no-op build will themselves also
+become no-op builds.}
 }
 \value{
 An object of class derivation which inherits from lists.
@@ -51,6 +57,13 @@ To include objects built in the pipeline,
     name = report,
     rmd_file = "report.Rmd",
     additional_files = "images"
+  )
+
+  # Skip building this derivation
+  rxp_rmd(
+    name = draft_report,
+    rmd_file = "draft.Rmd",
+    noop_build = TRUE
   )
 }
 }

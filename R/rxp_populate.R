@@ -92,6 +92,30 @@ rxp_populate <- function(
     output_file = file.path(project_path, "_rixpress", "dag.json")
   )
 
+  # Read back the DAG to get the final no-op flags
+  dag <- jsonlite::read_json(file.path(project_path, "_rixpress", "dag.json"))
+
+  # Update derivation snippets based on final no-op flags
+  for (i in seq_along(derivs)) {
+    dag_entry <- Find(
+      function(x) x$deriv_name[1] == derivs[[i]]$name,
+      dag$derivations
+    )
+    if (!is.null(dag_entry) && isTRUE(dag_entry$noop_build[[1]])) {
+      # Only update if it wasn't already a no-op
+      if (!isTRUE(derivs[[i]]$noop_build)) {
+        # Just update the fields directly
+        derivs[[i]]$noop_build <- TRUE
+        derivs[[i]]$snippet <- sprintf(
+          "  %s = defaultPkgs.runCommand \"%s\" {} \"\n    mkdir -p $out\n    echo 'Build skipped for %s (cascading no-op)' > $out/NOOPBUILD\n  \";",
+          derivs[[i]]$name,
+          derivs[[i]]$name,
+          derivs[[i]]$name
+        )
+      }
+    }
+  }
+
   # Need to combine nix envs and additional files into a
   # list of two elements, "nix_env" and "additional_files"
   # which list all the unique combinations

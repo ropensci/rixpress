@@ -4,7 +4,11 @@
 #' @param src_snippet Character, the src part of the derivation
 #' @param base Character, base name for buildInputs and configurePhase
 #' @param build_phase Character, the build phase commands
-#' @param derivation_type Character, one of "R", "Py", "Jl", "Qmd", "Rmd"
+#' @param derivation_type Character, one of "rxp_r", "rxp_py", "rxp_jl", "rxp_qmd", "rxp_rmd"
+#' @param noop_build Logical, defaults to FALSE. If TRUE, the derivation
+#'   produces a no-op build (a stub output with no actual build steps). Any
+#'   downstream derivations depending on a no-op build will themselves also
+#'   become no-op builds.
 #' @return Character string with the formatted Nix derivation
 #' @keywords internal
 make_derivation_snippet <- function(
@@ -12,21 +16,33 @@ make_derivation_snippet <- function(
   src_snippet,
   base,
   build_phase,
-  derivation_type
+  derivation_type,
+  noop_build = FALSE
 ) {
+  # If noop_build is TRUE, create a dummy derivation that just creates an empty output
+  if (noop_build) {
+    return(sprintf(
+      "  %s = defaultPkgs.runCommand \"%s\" {} \"\n    mkdir -p $out\n    echo 'Build skipped for %s' > $out/NOOPBUILD\n  \";",
+      out_name,
+      out_name,
+      out_name
+    ))
+  }
+
+  # Normal build logic for when noop_build = FALSE
   # Determine the derivation function based on type
   derivation_func <- switch(
     derivation_type,
-    "R" = "makeRDerivation",
-    "Py" = "makePyDerivation",
-    "Jl" = "makeJlDerivation",
-    "Qmd" = "defaultPkgs.stdenv.mkDerivation",
-    "Rmd" = "defaultPkgs.stdenv.mkDerivation",
+    "rxp_r" = "makeRDerivation",
+    "rxp_py" = "makePyDerivation",
+    "rxp_jl" = "makeJlDerivation",
+    "rxp_qmd" = "defaultPkgs.stdenv.mkDerivation",
+    "rxp_rmd" = "defaultPkgs.stdenv.mkDerivation",
     stop("Unknown derivation type: ", derivation_type)
   )
 
   # Format the build phase with appropriate indentation
-  formatted_build_phase <- if (derivation_type %in% c("Qmd", "Rmd")) {
+  formatted_build_phase <- if (derivation_type %in% c("rxp_qmd", "rxp_rmd")) {
     paste0("\n", build_phase, "\n    ")
   } else {
     paste0("\n      ", build_phase, "\n    ")
@@ -78,6 +94,10 @@ make_derivation_snippet <- function(
 #'   environment variables to set before running the R script, e.g.,
 #'   `c("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan)"`.
 #'   Each entry will be added as an export statement in the build phase.
+#' @param noop_build Logical, defaults to FALSE. If TRUE, the derivation
+#'   produces a no-op build (a stub output with no actual build steps). Any
+#'   downstream derivations depending on a no-op build will themselves also
+#'   become no-op builds.
 #' @details At a basic level, `rxp_r(mtcars_am, filter(mtcars, am == 1))` is
 #'   equivalent to `mtcars_am <- filter(mtcars, am == 1)`. `rxp_r()` generates the
 #'   required Nix boilerplate to output a so-called "derivation" in Nix jargon.
@@ -88,6 +108,13 @@ make_derivation_snippet <- function(
 #' @examples \dontrun{
 #'   # Basic usage
 #'   rxp_r(name = filtered_mtcars, expr = filter(mtcars, am == 1))
+#'
+#'   # Skip building this derivation
+#'   rxp_r(
+#'     name = turtles,
+#'     expr = occurrence(species, geometry = atlantic),
+#'     noop_build = TRUE
+#'   )
 #'
 #'   # Serialize object using qs
 #'   rxp_r(
@@ -111,7 +138,8 @@ rxp_r <- function(
   nix_env = "default.nix",
   serialize_function = NULL,
   unserialize_function = NULL,
-  env_var = NULL
+  env_var = NULL,
+  noop_build = FALSE
 ) {
   out_name <- deparse1(substitute(name))
   expr_str <- deparse1(substitute(expr))
@@ -248,7 +276,8 @@ rxp_r <- function(
     src_snippet = src_snippet,
     base = base,
     build_phase = build_phase,
-    derivation_type = "R"
+    derivation_type = "rxp_r",
+    noop_build = noop_build
   )
 
   list(
@@ -260,7 +289,8 @@ rxp_r <- function(
     nix_env = nix_env,
     serialize_function = serialize_str,
     unserialize_function = unserialize_str,
-    env_var = env_var
+    env_var = env_var,
+    noop_build = noop_build
   ) |>
     structure(class = "rxp_derivation")
 }
@@ -292,6 +322,10 @@ rxp_r <- function(
 #'   environment variables
 #'   before running the Python script, e.g., c(PYTHONPATH = "/path/to/modules").
 #'   Each entry will be added as an export statement in the build phase.
+#' @param noop_build Logical, defaults to FALSE. If TRUE, the derivation
+#'   produces a no-op build (a stub output with no actual build steps). Any
+#'   downstream derivations depending on a no-op build will themselves also
+#'   become no-op builds.
 #' @details At a basic level,
 #'   `rxp_py(mtcars_am, "mtcars.filter(polars.col('am') == 1).to_pandas()")`
 #'    is equivalent to
@@ -306,6 +340,13 @@ rxp_r <- function(
 #'   rxp_py(
 #'     mtcars_pl_am,
 #'     py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()"
+#'   )
+#'
+#'   # Skip building this derivation
+#'   rxp_py(
+#'     data_prep,
+#'     py_expr = "preprocess_data(raw_data)",
+#'     noop_build = TRUE
 #'   )
 #'
 #'   # Custom serialization
@@ -325,7 +366,8 @@ rxp_py <- function(
   nix_env = "default.nix",
   serialize_function = NULL,
   unserialize_function = NULL,
-  env_var = NULL
+  env_var = NULL,
+  noop_build = FALSE
 ) {
   out_name <- deparse1(substitute(name))
   py_expr <- gsub("'", "\\'", py_expr, fixed = TRUE)
@@ -472,7 +514,8 @@ rxp_py <- function(
     src_snippet = src_snippet,
     base = base,
     build_phase = build_phase,
-    derivation_type = "Py"
+    derivation_type = "rxp_py",
+    noop_build = noop_build
   )
 
   list(
@@ -484,7 +527,8 @@ rxp_py <- function(
     nix_env = nix_env,
     serialize_function = serialize_str,
     unserialize_function = unserialize_str,
-    env_var = env_var
+    env_var = env_var,
+    noop_build = noop_build
   ) |>
     structure(class = "rxp_derivation")
 }
@@ -516,6 +560,10 @@ rxp_py <- function(
 #'   environment variables to set before running the Julia script, e.g.,
 #'   `c("JULIA_DEPOT_PATH" = "/path/to/depot")`. Each entry will be added as
 #'   an `export` statement in the build phase.
+#' @param noop_build Logical, defaults to FALSE. If TRUE, the derivation
+#'   produces a no-op build (a stub output with no actual build steps). Any
+#'   downstream derivations depending on a no-op build will themselves also
+#'   become no-op builds.
 #' @details At a basic level,
 #'   `rxp_jl(filtered_data, "filter(df, :col .> 10)")` is equivalent to
 #'   `filtered_data = filter(df, :col .> 10)` in Julia. `rxp_jl()` generates the
@@ -530,6 +578,13 @@ rxp_py <- function(
 #' rxp_jl(
 #'   name = filtered_df,
 #'   jl_expr = "filter(df, :col .> 10)"
+#' )
+#'
+#' # Skip building this derivation
+#' rxp_jl(
+#'   name = model_result,
+#'   jl_expr = "train_model(data)",
+#'   noop_build = TRUE
 #' )
 #'
 #' # Custom serialization: assume `save_my_obj(obj, path)` is defined in functions.jl
@@ -550,7 +605,8 @@ rxp_jl <- function(
   nix_env = "default.nix",
   serialize_function = NULL,
   unserialize_function = NULL,
-  env_var = NULL
+  env_var = NULL,
+  noop_build = FALSE
 ) {
   out_name <- deparse1(substitute(name))
   # Escape double quotes for Julia one-liner
@@ -707,7 +763,8 @@ rxp_jl <- function(
     src_snippet = src_snippet,
     base = base,
     build_phase = build_phase,
-    derivation_type = "Jl"
+    derivation_type = "rxp_jl",
+    noop_build = noop_build
   )
 
   list(
@@ -723,7 +780,8 @@ rxp_jl <- function(
       serialize_function
     },
     unserialize_function = unserialize_str,
-    env_var = env_var
+    env_var = env_var,
+    noop_build = noop_build
   ) |>
     structure(class = "rxp_derivation")
 }
@@ -744,6 +802,10 @@ rxp_jl <- function(
 #'   to set before running the Quarto render command, e.g., c(QUARTO_PROFILE =
 #'   "production"). Each entry will be added as an export statement in the build
 #'   phase.
+#' @param noop_build Logical, defaults to FALSE. If TRUE, the derivation
+#'   produces a no-op build (a stub output with no actual build steps). Any
+#'   downstream derivations depending on a no-op build will themselves also
+#'   become no-op builds.
 #' @details To include built derivations in the document,
 #'   `rxp_read("derivation_name")` should be put in the .qmd file.
 #' @return An object of class derivation which inherits from lists.
@@ -757,6 +819,13 @@ rxp_jl <- function(
 #'     additional_files = "images",
 #'     args = "--to typst"
 #'   )
+#'
+#'   # Skip building this derivation
+#'   rxp_qmd(
+#'     name = draft_report,
+#'     qmd_file = "draft.qmd",
+#'     noop_build = TRUE
+#'   )
 #' }
 #' @export
 rxp_qmd <- function(
@@ -765,7 +834,8 @@ rxp_qmd <- function(
   additional_files = "",
   nix_env = "default.nix",
   args = "",
-  env_var = NULL
+  env_var = NULL,
+  noop_build = FALSE
 ) {
   out_name <- deparse1(substitute(name))
 
@@ -948,7 +1018,8 @@ rxp_qmd <- function(
     ),
     base = base,
     build_phase = build_phase,
-    derivation_type = "Qmd"
+    derivation_type = "rxp_qmd",
+    noop_build = noop_build
   )
 
   list(
@@ -959,7 +1030,8 @@ rxp_qmd <- function(
     additional_files = additional_files,
     nix_env = nix_env,
     args = args,
-    env_var = env_var
+    env_var = env_var,
+    noop_build = noop_build
   ) |>
     structure(class = "rxp_derivation")
 }
@@ -980,6 +1052,10 @@ rxp_qmd <- function(
 #'   to set before running the R Markdown render command, e.g., c(RSTUDIO_PANDOC
 #'   = "/path/to/pandoc"). Each entry will be added as an export statement in
 #'   the build phase.
+#' @param noop_build Logical, defaults to FALSE. If TRUE, the derivation
+#'   produces a no-op build (a stub output with no actual build steps). Any
+#'   downstream derivations depending on a no-op build will themselves also
+#'   become no-op builds.
 #' @details To include objects built in the pipeline,
 #'   `rxp_read("derivation_name")` should be put in the .Rmd file.
 #' @return An object of class derivation which inherits from lists.
@@ -992,6 +1068,13 @@ rxp_qmd <- function(
 #'     rmd_file = "report.Rmd",
 #'     additional_files = "images"
 #'   )
+#'
+#'   # Skip building this derivation
+#'   rxp_rmd(
+#'     name = draft_report,
+#'     rmd_file = "draft.Rmd",
+#'     noop_build = TRUE
+#'   )
 #' }
 #' @export
 rxp_rmd <- function(
@@ -1000,7 +1083,8 @@ rxp_rmd <- function(
   additional_files = "",
   nix_env = "default.nix",
   params = NULL,
-  env_var = NULL
+  env_var = NULL,
+  noop_build = FALSE
 ) {
   out_name <- deparse1(substitute(name))
 
@@ -1096,7 +1180,8 @@ rxp_rmd <- function(
     ),
     base = base,
     build_phase = build_phase,
-    derivation_type = "Rmd"
+    derivation_type = "rxp_rmd",
+    noop_build = noop_build
   )
 
   list(
@@ -1107,7 +1192,8 @@ rxp_rmd <- function(
     additional_files = additional_files,
     nix_env = nix_env,
     params = params,
-    env_var = env_var
+    env_var = env_var,
+    noop_build = noop_build
   ) |>
     structure(class = "rxp_derivation")
 }
@@ -1126,6 +1212,7 @@ rxp_rmd <- function(
 print.rxp_derivation <- function(x, ...) {
   cat("Name:", x$name, "\n")
   cat("Type:", x$type, "\n")
+  cat("No-op Build:", x$noop_build, "\n")
   if ("serialize_function" %in% names(x)) {
     cat("Serialize function:", x$serialize_function, "\n")
   }

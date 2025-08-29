@@ -24,7 +24,8 @@ d3 <- rxp_r(
   mtcars_tail,
   my_tail(mtcars_head),
   user_functions = "my_tail.R",
-  nix_env = "default.nix"
+  nix_env = "default.nix",
+  noop_build = TRUE
 )
 
 d4 <- rxp_r(mtcars_mpg, select(mtcars_tail, mpg), nix_env = "default2.nix")

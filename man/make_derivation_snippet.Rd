@@ -9,7 +9,8 @@ make_derivation_snippet(
   src_snippet,
   base,
   build_phase,
-  derivation_type
+  derivation_type,
+  noop_build = FALSE
 )
 }
 \arguments{
@@ -21,7 +22,12 @@ make_derivation_snippet(
 
 \item{build_phase}{Character, the build phase commands}
 
-\item{derivation_type}{Character, one of "R", "Py", "Jl", "Qmd", "Rmd"}
+\item{derivation_type}{Character, one of "rxp_r", "rxp_py", "rxp_jl", "rxp_qmd", "rxp_rmd"}
+
+\item{noop_build}{Logical, defaults to FALSE. If TRUE, the derivation
+produces a no-op build (a stub output with no actual build steps). Any
+downstream derivations depending on a no-op build will themselves also
+become no-op builds.}
 }
 \value{
 Character string with the formatted Nix derivation

@@ -12,7 +12,8 @@ rxp_py(
   nix_env = "default.nix",
   serialize_function = NULL,
   unserialize_function = NULL,
-  env_var = NULL
+  env_var = NULL,
+  noop_build = FALSE
 )
 }
 \arguments{
@@ -47,6 +48,11 @@ argument: the file path.}
 environment variables
 before running the Python script, e.g., c(PYTHONPATH = "/path/to/modules").
 Each entry will be added as an export statement in the build phase.}
+
+\item{noop_build}{Logical, defaults to FALSE. If TRUE, the derivation
+produces a no-op build (a stub output with no actual build steps). Any
+downstream derivations depending on a no-op build will themselves also
+become no-op builds.}
 }
 \value{
 An object of class derivation which inherits from lists.
@@ -69,6 +75,13 @@ and output paths.
   rxp_py(
     mtcars_pl_am,
     py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()"
+  )
+
+  # Skip building this derivation
+  rxp_py(
+    data_prep,
+    py_expr = "preprocess_data(raw_data)",
+    noop_build = TRUE
   )
 
   # Custom serialization

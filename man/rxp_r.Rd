@@ -12,7 +12,8 @@ rxp_r(
   nix_env = "default.nix",
   serialize_function = NULL,
   unserialize_function = NULL,
-  env_var = NULL
+  env_var = NULL,
+  noop_build = FALSE
 )
 }
 \arguments{
@@ -54,6 +55,11 @@ should use \code{keras::load_model_hdf5()} to load it correctly.}
 environment variables to set before running the R script, e.g.,
 \verb{c("CMDSTAN" = "$\{defaultPkgs.cmdstan\}/opt/cmdstan)"}.
 Each entry will be added as an export statement in the build phase.}
+
+\item{noop_build}{Logical, defaults to FALSE. If TRUE, the derivation
+produces a no-op build (a stub output with no actual build steps). Any
+downstream derivations depending on a no-op build will themselves also
+become no-op builds.}
 }
 \value{
 An object of class derivation which inherits from lists.
@@ -73,6 +79,13 @@ paths.
 \dontrun{
   # Basic usage
   rxp_r(name = filtered_mtcars, expr = filter(mtcars, am == 1))
+
+  # Skip building this derivation
+  rxp_r(
+    name = turtles,
+    expr = occurrence(species, geometry = atlantic),
+    noop_build = TRUE
+  )
 
   # Serialize object using qs
   rxp_r(
