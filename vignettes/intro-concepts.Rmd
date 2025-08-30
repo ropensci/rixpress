@@ -14,23 +14,23 @@ knitr::opts_chunk$set(
 )
 ```
 
-For a video version of this tutorial,
-[click here](https://youtu.be/bMiNfXJdgXg).
+For a video version of this tutorial, [click here](https://youtu.be/bMiNfXJdgXg).
 
 This vignette introduces key terminology and walks you through setting up a
 simple pipeline using `{rixpress}`. Understanding the concepts presented here is
 helpful but not mandatory. I recommend reading through this vignette, but don't
 worry if you don't grasp everything immediately. You can try building a simple
-pipeline by following the vignette `vignette("core-functions")`, and then
-return to this one; things should become clearer after some hands-on experience!
+pipeline by following the next vignette, `vignette("core-functions")`, and
+then return to this one; things should become clearer after some hands-on
+experience!
 
 Also, this package makes heavy use of its sister package `{rix}`, and I highly
 recommend that you first get familiar with `Nix` by using `{rix}`. With `{rix}`,
 you'll learn how to set up reproducible development environments for data
 science, which you can use for interactive data analysis work. Then, if you want
 to go one step further in the reproducibility
-spectrum/continuum^[https://doi.org/10.1126/science.1213847], this is where
-`{rixpress}` comes in.
+spectrum/continuum^[https://doi.org/10.1126/science.1213847],
+this is where `{rixpress}` comes in.
 
 ## Definitions
 
@@ -59,7 +59,7 @@ Here is an example of a *simple* `Nix` expression:
 
 ```nix
 let
- pkgs = import (fetchTarball "https://github.com/rstats-on-nix/nixpkgs/archive/2025-04-11.tar.gz") {};
+  pkgs = import (fetchTarball "https://github.com/rstats-on-nix/nixpkgs/archive/2025-04-11.tar.gz") {};
 
 in
 
@@ -86,10 +86,10 @@ fail (though it's a bit of a stretch to call this a *pipeline*) is if the
 `mtcars.csv` file is not provided to it.
 
 You could then add another step that uses `filtered.csv` as input and continue
-processing it. If you label the above code as `f` and a subsequent chunk of
-`Nix` code as `g`, then adding another step would essentially result in the
-following computation: `mtcars |> f |> g`, where `f` and `g` are pure functions,
-and the pipeline is thus a composition of pure functions.
+processing it. If you label the above code as `f` and a subsequent chunk of `Nix`
+code as `g`, then adding another step would essentially result in the following
+computation: `mtcars |> f |> g`, where `f` and `g` are pure functions, and the
+pipeline is thus a composition of pure functions.
 
 `Nix` builds `filtered.csv` in two steps: it first generates a *derivation* from
 this expression, and only then builds it. For clarity in this document, I'll
@@ -248,3 +248,47 @@ Now that you're familiar with the basic `Nix` concepts, let's move on to the nex
 vignette where you'll set up your first basic pipeline:
 `vignette("core-functions")` (if you wish to learn more about the scope and roadmap
 of the package, you can also take a look at `vignette("scope")` first).
+
+
+## Minimal runnable example
+
+The following short example demonstrates creating a minimal pipeline and
+generating its Nix graph without building it. This example is intended to be
+copied and run locally. It does not build outputs (no Nix build is invoked), so
+it is fast and safe to run on systems without a configured `default.nix`. To
+build the pipeline you'll need Nix and a suitable `default.nix` generated (e.g.,
+with `{rix}`).
+
+```{r runnable-example, eval = FALSE}
+# Create a temporary project directory
+proj <- file.path(tempdir(), "rixpress_example")
+dir.create(proj, showWarnings = FALSE)
+
+# Write a small, pipe-separated CSV copy of mtcars
+write.table(mtcars, file = file.path(proj, "mtcars.csv"), sep = "|", row.names = FALSE)
+
+# Define a small pipeline: read the CSV, then filter for am == 1
+d1 <- rxp_r_file(mtcars, "mtcars.csv", \(x) read.csv(file = x, sep = "|"))
+d2 <- rxp_r(mtcars_am, filter(mtcars, am == 1))
+
+derivs <- list(d1, d2)
+
+# Generate pipeline.nix and DAG (do not build)
+rxp_populate(derivs, project_path = proj, build = FALSE)
+
+# Inspect generated helper files
+list.files(file.path(proj, "_rixpress"))
+# See the pipeline file
+file.path(proj, "pipeline.nix")
+
+# When ready to build (requires Nix & default.nix), run:
+# rxp_make(project_path = proj)
+```
+
+Notes:
+- The example uses `eval = FALSE` so it won't attempt to run during vignette
+  building on systems that may not have Nix configured. Copy and run the code
+  block interactively to try it out on your machine (or set `eval = TRUE` if you
+  know your environment is configured).
+- To actually build the artifacts you must supply a `default.nix` (see `{rix}`)
+  and run `rxp_make()` (or set `build = TRUE` in `rxp_populate()`).
