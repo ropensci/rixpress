@@ -81,9 +81,9 @@ setting up a simple pipeline using <a href="https://github.com/b-rodrigues/rixpr
 Understanding the concepts presented here is helpful but not mandatory.
 I recommend reading through this vignette, but don’t worry if you don’t
 grasp everything immediately. You can try building a simple pipeline by
-following the vignette <code><a href="../articles/core-functions.html">vignette("core-functions")</a></code>, and then
-return to this one; things should become clearer after some hands-on
-experience!</p>
+following the next vignette, <code><a href="../articles/core-functions.html">vignette("core-functions")</a></code>,
+and then return to this one; things should become clearer after some
+hands-on experience!</p>
 <p>Also, this package makes heavy use of its sister package
 <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, and I highly recommend that you first get familiar
 with <code>Nix</code> by using <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>. With
@@ -120,7 +120,7 @@ detail.</p>
 <p>Here is an example of a <em>simple</em> <code>Nix</code>
 expression:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode nix"><code class="sourceCode nix"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="kw">let</span></span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a> <span class="va">pkgs</span> <span class="op">=</span> <span class="bu">import</span> <span class="op">(</span><span class="bu">fetchTarball</span> <span class="st">"https://github.com/rstats-on-nix/nixpkgs/archive/2025-04-11.tar.gz"</span><span class="op">)</span> <span class="op">{};</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>  <span class="va">pkgs</span> <span class="op">=</span> <span class="bu">import</span> <span class="op">(</span><span class="bu">fetchTarball</span> <span class="st">"https://github.com/rstats-on-nix/nixpkgs/archive/2025-04-11.tar.gz"</span><span class="op">)</span> <span class="op">{};</span></span>
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a></span>
 <span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="kw">in</span></span>
 <span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a></span>
@@ -324,6 +324,49 @@ let’s move on to the next vignette where you’ll set up your first basic
 pipeline: <code><a href="../articles/core-functions.html">vignette("core-functions")</a></code> (if you wish to learn
 more about the scope and roadmap of the package, you can also take a
 look at <code><a href="../articles/scope.html">vignette("scope")</a></code> first).</p>
+</div>
+<div class="section level2">
+<h2 id="minimal-runnable-example">Minimal runnable example<a class="anchor" aria-label="anchor" href="#minimal-runnable-example"></a>
+</h2>
+<p>The following short example demonstrates creating a minimal pipeline
+and generating its Nix graph without building it. This example is
+intended to be copied and run locally. It does not build outputs (no Nix
+build is invoked), so it is fast and safe to run on systems without a
+configured <code>default.nix</code>. To build the pipeline you’ll need
+Nix and a suitable <code>default.nix</code> generated (e.g., with
+<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>).</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Create a temporary project directory</span></span>
+<span><span class="va">proj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"rixpress_example"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">proj</span>, showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Write a small, pipe-separated CSV copy of mtcars</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.table</a></span><span class="op">(</span><span class="va">mtcars</span>, file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">proj</span>, <span class="st">"mtcars.csv"</span><span class="op">)</span>, sep <span class="op">=</span> <span class="st">"|"</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Define a small pipeline: read the CSV, then filter for am == 1</span></span>
+<span><span class="va">d1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_r_file.html">rxp_r_file</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="st">"mtcars.csv"</span>, \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span>file <span class="op">=</span> <span class="va">x</span>, sep <span class="op">=</span> <span class="st">"|"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">d2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span><span class="va">mtcars_am</span>, <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">am</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">derivs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">d1</span>, <span class="va">d2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Generate pipeline.nix and DAG (do not build)</span></span>
+<span><span class="fu"><a href="../reference/rxp_populate.html">rxp_populate</a></span><span class="op">(</span><span class="va">derivs</span>, project_path <span class="op">=</span> <span class="va">proj</span>, build <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Inspect generated helper files</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">proj</span>, <span class="st">"_rixpress"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># See the pipeline file</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">proj</span>, <span class="st">"pipeline.nix"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># When ready to build (requires Nix &amp; default.nix), run:</span></span>
+<span><span class="co"># rxp_make(project_path = proj)</span></span></code></pre></div>
+<p>Notes: - The example uses <code>eval = FALSE</code> so it won’t
+attempt to run during vignette building on systems that may not have Nix
+configured. Copy and run the code block interactively to try it out on
+your machine (or set <code>eval = TRUE</code> if you know your
+environment is configured). - To actually build the artifacts you must
+supply a <code>default.nix</code> (see <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>) and run
+<code><a href="../reference/rxp_make.html">rxp_make()</a></code> (or set <code>build = TRUE</code> in
+<code><a href="../reference/rxp_populate.html">rxp_populate()</a></code>).</p>
 </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
