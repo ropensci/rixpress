@@ -67,9 +67,7 @@
 <a class="anchor" aria-label="anchor" href="#rixpress-reproducible-analytical-pipelines-with-nix"></a>
 </h1></div>
 <p><a href="https://github.com/b-rodrigues/rixpress/actions/workflows/rhub.yaml/" class="external-link"><img src="https://github.com/b-rodrigues/rixpress/actions/workflows/rhub.yaml/badge.svg" alt="R-hub v2"></a> <a href="https://github.com/ropensci/software-review/issues/706" class="external-link"><img src="https://badges.ropensci.org/706_status.svg" alt="Status at rOpenSci Software Peer Review"></a></p>
-<p>
-If you want to watch a 2-Minute video introduction, click the image below:
-</p>
+<p>If you want to watch a 2-Minute video introduction, click the image below:</p>
 <p><a href="https://www.youtube.com/watch?v=a1eNG9TFZ_o" target="_blank" rel="noopener noreferrer" class="external-link"> <img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/main/video_thumbnail.png" alt="Video Thumbnail" style="width:100%; max-width:560px; height:auto; display:block; margin:0 auto;"></a></p>
 <p><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> provides a framework for building multilanguage reproducible analytical pipelines by leveraging Nix’s build automation capabilities. One of the design goals of <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> is to mimic the user experience of the <a href="https://docs.ropensci.org/targets/" class="external-link">targets</a> package, and it is heavily inspired by that workflow. It builds on the <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> package, which provides helper functions to define reproducible development environments as code using Nix, ensuring the pipeline runs in a fully reproducible Nix-managed environment. <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> only requires users to write the pipeline using familiar R code.</p>
 <p><code>rixpress</code> focuses on “micropipelines”: pipelines executed on a single machine for small-to-medium sized projects.</p>
@@ -120,7 +118,7 @@ If you want to watch a 2-Minute video introduction, click the image below:
 <code class="sourceCode R"><span><span class="fu"><a href="reference/rxp_ggdag.html">rxp_ggdag</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <figure><img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/main/dag.png" alt="DAG"><figcaption aria-hidden="true">
 DAG
-</figcaption></figure><p>Because the pipeline is built using Nix, outputs are stored in the Nix store under <code>/nix/store/</code>. To make working with these outputs easier, {rixpress} provides several helper functions:</p>
+</figcaption></figure><p>Because the pipeline is built using Nix, outputs are stored in the Nix store under <code>/nix/store/</code>. To make working with these outputs easier, <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> provides several helper functions:</p>
 <ul>
 <li>
 <code>rxp_read("mtcars_mpg")</code> — read the content of <code>mtcars_mpg</code> into R (the return value depends on the derivation type: an R object, a file path, etc.);</li>
@@ -133,14 +131,6 @@ DAG
 <p>You can export the cache into a file and import it on another machine (or in CI) to avoid rebuilding everything from scratch using <code><a href="reference/rxp_export_artifacts.html">rxp_export_artifacts()</a></code> and <code><a href="reference/rxp_import_artifacts.html">rxp_import_artifacts()</a></code> respectively.</p>
 <p><code><a href="reference/rxp_populate.html">rxp_populate()</a></code> is flexible; please consult the examples repository for many different patterns and complete demos:</p>
 <p><a href="https://github.com/b-rodrigues/rixpress_demos/tree/master" class="external-link uri">https://github.com/b-rodrigues/rixpress_demos/tree/master</a></p>
-<div class="section level2">
-<h2 id="quick-summary">Quick summary<a class="anchor" aria-label="anchor" href="#quick-summary"></a>
-</h2>
-<ul>
-<li>Purpose: let you define reproducible, multi-language analytical micropipelines in R and build them deterministically with Nix.</li>
-<li>Approach: write derivations in R (and optionally Python/Julia), call <code><a href="reference/rxp_populate.html">rxp_populate()</a></code> to generate the Nix build graph, then build with <code><a href="reference/rxp_make.html">rxp_make()</a></code> (or let <code><a href="reference/rxp_populate.html">rxp_populate()</a></code> build by default).</li>
-</ul>
-</div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
