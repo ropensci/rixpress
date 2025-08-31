@@ -138,7 +138,7 @@ are defined.</p>
 <div class="section level2">
 <h2 id="generating-the-pipeline">Generating the pipeline<a class="anchor" aria-label="anchor" href="#generating-the-pipeline"></a>
 </h2>
-<p>Let’s stop here and build our pipeline. First, we need to define a
+<p>Let’s stop here and generate our pipeline. First, we need to define a
 list of derivations:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">derivs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">d0</span>, <span class="va">d1</span>, <span class="va">d2</span><span class="op">)</span></span></code></pre></div>
@@ -277,59 +277,16 @@ the reproducible analytical pipeline</li>
 starter code to help you get started quickly.</p>
 </div>
 <div class="section level2">
-<h2 id="building-and-inspecting-outputs">Building and inspecting outputs<a class="anchor" aria-label="anchor" href="#building-and-inspecting-outputs"></a>
+<h2 id="optional-steps-before-building-the-pipeline">Optional steps before building the pipeline<a class="anchor" aria-label="anchor" href="#optional-steps-before-building-the-pipeline"></a>
 </h2>
-<p>When you run <code>gen-pipeline.R</code> (or execute its contents
-line-by-line), the environment defined in <code>default.nix</code> is
-used. (It’s also possible to define separate environments for different
-derivations, which we’ll cover in a later vignette.) Upon successful
-execution, you will see:</p>
-<pre><code>Build process started...
-
-
-Build successful! Run `rxp_inspect()` for a summary.
-Read individual derivations using `rxp_read()` or
-load them into the global environment using `rxp_load()`.</code></pre>
-<p>Now you can follow these instructions:</p>
-<ol style="list-style-type: decimal">
-<li>Use <code><a href="../reference/rxp_inspect.html">rxp_inspect()</a></code> to see where the outputs are located.
-This function is particularly useful if the pipeline fails, as it shows
-which derivations succeeded and which failed.</li>
-<li>Use <code>rxp_read("mtcars_mpg")</code> to read the object into your
-current R session, or <code>rxp_load("mtcars_mpg")</code> to load it
-directly into your global environment.</li>
-<li>Alternatively, use <code>rxp_copy("mtcars_mpg")</code> to create a
-folder called <code>pipeline-outputs</code> containing
-<code>mtcars_mpg</code> as an <code>.rds</code> file. If you call
-<code><a href="../reference/rxp_copy.html">rxp_copy()</a></code> without arguments, all pipeline outputs will be
-copied to this folder.</li>
-</ol>
-</div>
-<div class="section level2">
-<h2 id="no-op-builds-for-individual-derivations">No-op builds for individual derivations<a class="anchor" aria-label="anchor" href="#no-op-builds-for-individual-derivations"></a>
-</h2>
-<p>You can disable building a specific derivation by setting its
-<code>noop_build</code> parameter to <code>TRUE</code>. This creates a
-no-op build, a placeholder derivation that performs no work:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
-<span>  name <span class="op">=</span> <span class="va">turtles</span>,</span>
-<span>  expr <span class="op">=</span> <span class="fu">occurrence</span><span class="op">(</span><span class="va">species</span>, geometry <span class="op">=</span> <span class="va">atlantic</span><span class="op">)</span>,</span>
-<span>  noop_build <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>Any derivations that depend on a no-op build will themselves also
-resolve to no-op builds. This can be useful when prototyping or
-debugging a pipeline, allowing you to skip expensive or unnecessary
-computations while keeping the dependency graph intact.</p>
-</div>
-<div class="section level2">
-<h2 id="dag-representation-of-the-pipeline">DAG Representation of the Pipeline<a class="anchor" aria-label="anchor" href="#dag-representation-of-the-pipeline"></a>
-</h2>
+<div class="section level3">
+<h3 id="graphical-representation-of-the-pipelines-dag">Graphical representation of the pipeline’s DAG<a class="anchor" aria-label="anchor" href="#graphical-representation-of-the-pipelines-dag"></a>
+</h3>
 <p>It’s often helpful to visualise your pipeline as a DAG (directed
 acyclic graph). By default, the <code>build</code> argument of
 <code><a href="../reference/rxp_populate.html">rxp_populate()</a></code> is <code>FALSE</code>, so calling this will
 not build the pipeline:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_populate.html">rxp_populate</a></span><span class="op">(</span><span class="va">derivs</span><span class="op">)</span></span></code></pre></div>
 <p>This won’t build the pipeline but will generate useful files,
 including a JSON representation of the pipeline at
@@ -346,13 +303,117 @@ Your browser does not support the MP4 video format.
 DAG
 </figcaption></figure><p>You can also return the underlying <code>igraph</code> object to plot
 the DAG using other tools:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_dag_for_ci.html">rxp_dag_for_ci</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>which saves the <code>dag.dot</code> object in the project’s
 <code>_rixpress/</code> folder.</p>
 <p>After reviewing the DAG, you can build the pipeline by running
 <code><a href="../reference/rxp_make.html">rxp_make()</a></code> instead of modifying your original
 <code><a href="../reference/rxp_populate.html">rxp_populate()</a></code> call.</p>
+</div>
+<div class="section level3">
+<h3 id="tracing-the-lineage-of-derivations">Tracing the lineage of derivations<a class="anchor" aria-label="anchor" href="#tracing-the-lineage-of-derivations"></a>
+</h3>
+<p>It is possible to also trace the lineage of individual derivations
+using <code><a href="../reference/rxp_trace.html">rxp_trace()</a></code>. For example:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_trace.html">rxp_trace</a></span><span class="op">(</span><span class="st">"mtcars_mpg"</span><span class="op">)</span></span></code></pre></div>
+<p>will return:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="sc">==</span><span class="er">==</span> Lineage <span class="cf">for</span><span class="sc">:</span> mtcars_mpg <span class="sc">==</span><span class="er">==</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="fu">Dependencies</span> (ancestors)<span class="sc">:</span></span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>  <span class="sc">-</span> mtcars_head</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>    <span class="sc">-</span> mtcars_am<span class="sc">*</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>      <span class="sc">-</span> mtcars<span class="sc">*</span></span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>  <span class="sc">-</span> mtcars_tail</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>    <span class="sc">-</span> mtcars_head<span class="sc">*</span></span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>Reverse <span class="fu">dependencies</span> (children)<span class="sc">:</span></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>          <span class="sc">-</span> page</span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>Note<span class="sc">:</span> <span class="st">'*'</span> marks transitive <span class="fu">dependencies</span> (depth <span class="sc">&gt;=</span> <span class="dv">2</span>).</span></code></pre></div>
+<p>This makes it quite easy to quickly double check whether derivations
+were defined correctly. A <code>*</code> symbol next to a derivation’s
+name indicates it is a transitive dependency. Calling
+<code><a href="../reference/rxp_trace.html">rxp_trace()</a></code> without arguments shows the whole graph:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_trace.html">rxp_trace</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="sc">==</span><span class="er">==</span> Pipeline dependency <span class="fu">tree</span> (outputs → inputs) <span class="sc">==</span><span class="er">==</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="sc">-</span> page</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>  <span class="sc">-</span> mtcars_head</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>    <span class="sc">-</span> mtcars_am<span class="sc">*</span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>      <span class="sc">-</span> mtcars<span class="sc">*</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>  <span class="sc">-</span> mtcars_tail</span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>    <span class="sc">-</span> mtcars_head<span class="sc">*</span></span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a>  <span class="sc">-</span> mtcars_mpg</span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>    <span class="sc">-</span> mtcars_head<span class="sc">*</span></span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a>    <span class="sc">-</span> mtcars_tail<span class="sc">*</span></span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a></span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a>Note<span class="sc">:</span> <span class="st">'*'</span> marks transitive <span class="fu">dependencies</span> (depth <span class="sc">&gt;=</span> <span class="dv">2</span>).</span></code></pre></div>
+<p>We are now ready to actually build the artifacts.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="building-and-inspecting-outputs">Building and inspecting outputs<a class="anchor" aria-label="anchor" href="#building-and-inspecting-outputs"></a>
+</h2>
+<p>When you run <code>gen-pipeline.R</code> (or execute its contents
+line-by-line), the environment defined in <code>default.nix</code> is
+used (it’s also possible to define separate environments for different
+derivations, which we’ll cover in a later vignette).</p>
+<p>By default, <code><a href="../reference/rxp_populate.html">rxp_populate()</a></code> doesn’t build the pipeline,
+so to trigger the build, you have to use <code><a href="../reference/rxp_make.html">rxp_make()</a></code>:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_make.html">rxp_make</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>You should see something like this:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>Build process started...</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="sc">+</span> <span class="er">&gt;</span> mtcars building</span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="sc">+</span> <span class="er">&gt;</span> mtcars_am building</span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="sc">+</span> <span class="er">&gt;</span> mtcars_head building</span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a><span class="sc">+</span> <span class="er">&gt;</span> mtcars_tail building</span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a><span class="sc">+</span> <span class="er">&gt;</span> mtcars_mpg building</span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a><span class="sc">+</span> <span class="er">&gt;</span> page building</span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a>✓ mtcars built</span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a>✓ mtcars_am built</span>
+<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a>✓ mtcars_head built</span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a>✓ mtcars_mpg built</span>
+<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a>✓ mtcars_tail built</span>
+<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a>✓ page built</span>
+<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a>✓ pipeline completed [<span class="dv">6</span> completed, <span class="dv">0</span> errored]</span>
+<span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a>Build successful<span class="sc">!</span> Run <span class="st">`</span><span class="at">rxp_inspect()</span><span class="st">`</span> <span class="cf">for</span> a summary.</span>
+<span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a>Use <span class="st">`</span><span class="at">rxp_read("derivation_name")</span><span class="st">`</span> to read objects or</span>
+<span id="cb17-18"><a href="#cb17-18" tabindex="-1"></a><span class="st">`</span><span class="at">rxp_load("derivation_name")</span><span class="st">`</span> to load them into the global environment.</span></code></pre></div>
+<p>Now you can follow these instructions:</p>
+<ol style="list-style-type: decimal">
+<li>Use <code><a href="../reference/rxp_inspect.html">rxp_inspect()</a></code> to see where the outputs are located.
+This function is particularly useful if the pipeline fails, as it shows
+which derivations succeeded and which failed, and captures the error
+messages.</li>
+<li>Use <code>rxp_read("mtcars_mpg")</code> to read the object into your
+current R session, or <code>rxp_load("mtcars_mpg")</code> to load it
+directly into your global environment.</li>
+<li>Alternatively, use <code>rxp_copy("mtcars_mpg")</code> to create a
+folder called <code>pipeline-outputs</code> containing
+<code>mtcars_mpg</code> as an <code>.rds</code> file. If you call
+<code><a href="../reference/rxp_copy.html">rxp_copy()</a></code> without arguments, all pipeline outputs will be
+copied to this folder.</li>
+</ol>
+</div>
+<div class="section level2">
+<h2 id="no-op-builds-for-individual-derivations">No-op builds for individual derivations<a class="anchor" aria-label="anchor" href="#no-op-builds-for-individual-derivations"></a>
+</h2>
+<p>You can disable building a specific derivation by setting its
+<code>noop_build</code> parameter to <code>TRUE</code>. This creates a
+no-op build, a placeholder derivation that performs no work:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
+<span>  name <span class="op">=</span> <span class="va">turtles</span>,</span>
+<span>  expr <span class="op">=</span> <span class="fu">occurrence</span><span class="op">(</span><span class="va">species</span>, geometry <span class="op">=</span> <span class="va">atlantic</span><span class="op">)</span>,</span>
+<span>  noop_build <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Any derivations that depend on a no-op build will themselves also
+resolve to no-op builds. This can be useful when prototyping or
+debugging a pipeline, allowing you to skip expensive or unnecessary
+computations while keeping the dependency graph intact.</p>
 </div>
 <div class="section level2">
 <h2 id="caveats">Caveats<a class="anchor" aria-label="anchor" href="#caveats"></a>
@@ -368,9 +429,12 @@ data from an API, you must first retrieve the data in a standard
 interactive R session, save it to disk, and then include it in the
 pipeline. The only exception to this is <code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code>, which
 can download a file from a URL;</li>
+<li>if you functions need to access internal resources, use the
+<code>additional_files</code> argument of <code><a href="../reference/rxp_r.html">rxp_r()</a></code> to
+include these resources into the build sandbox;</li>
 <li>all build artifacts will be saved in the <code>Nix</code> store,
 <code>/nix/store/</code>. If you are working with confidential data,
-make sure no one else can access the <code>/nix/store</code>;</li>
+make sure no one else can access the <code>/nix/store</code> path;</li>
 <li>if you have proprietary R packages, you will need to include them in
 the <code>Nix</code> shell. This is primarily a concern for
 <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, as it generates the execution environment. If you
@@ -386,6 +450,50 @@ single calls to pure functions.</li>
 <p>Now that you understand the basic, high-level concepts, let’s move on
 to the next vignette, <code><a href="../articles/tutorial.html">vignette("tutorial")</a></code>, where we’ll
 learn how to set up a pipeline from start to finish.</p>
+</div>
+<div class="section level2">
+<h2 id="minimal-runnable-example">Minimal runnable example<a class="anchor" aria-label="anchor" href="#minimal-runnable-example"></a>
+</h2>
+<p>The following short example demonstrates creating a minimal pipeline
+and generating its Nix graph without building it. This example is
+intended to be copied and run locally. It does not build outputs (no Nix
+build is invoked), so it is fast and safe to run on systems without a
+configured <code>default.nix</code>. To build the pipeline you’ll need
+Nix and a suitable <code>default.nix</code> generated (e.g., with
+<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>).</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Create a temporary project directory</span></span>
+<span><span class="va">proj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"rixpress_example"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">proj</span>, showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Write a small, pipe-separated CSV copy of mtcars</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.table</a></span><span class="op">(</span><span class="va">mtcars</span>, file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">proj</span>, <span class="st">"mtcars.csv"</span><span class="op">)</span>, sep <span class="op">=</span> <span class="st">"|"</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Define a small pipeline: read the CSV, then filter for am == 1</span></span>
+<span><span class="va">d1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_r_file.html">rxp_r_file</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="st">"mtcars.csv"</span>, \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span>file <span class="op">=</span> <span class="va">x</span>, sep <span class="op">=</span> <span class="st">"|"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">d2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span><span class="va">mtcars_am</span>, <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">am</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">derivs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">d1</span>, <span class="va">d2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Generate pipeline.nix and DAG</span></span>
+<span><span class="fu"><a href="../reference/rxp_populate.html">rxp_populate</a></span><span class="op">(</span><span class="va">derivs</span>, project_path <span class="op">=</span> <span class="va">proj</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Inspect generated helper files</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">proj</span>, <span class="st">"_rixpress"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Check the lineage of d2</span></span>
+<span><span class="fu"><a href="../reference/rxp_trace.html">rxp_trace</a></span><span class="op">(</span><span class="st">"d2"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># When ready to build (requires Nix &amp; default.nix), run:</span></span>
+<span><span class="co"># rxp_make()</span></span></code></pre></div>
+<p>Notes: - The example uses <code>eval = FALSE</code> so it won’t
+attempt to run during vignette building on systems that may not have Nix
+configured. Copy and run the code block interactively to try it out on
+your machine (or set <code>eval = TRUE</code> if you know your
+environment is configured). - To actually build the artifacts you must
+supply a <code>default.nix</code> (see <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>) and run
+<code><a href="../reference/rxp_make.html">rxp_make()</a></code> (or set <code>build = TRUE</code> in
+<code><a href="../reference/rxp_populate.html">rxp_populate()</a></code>).</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
