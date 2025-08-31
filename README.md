@@ -182,9 +182,12 @@ Pull requests are welcome. If you’re unsure whether to open one, feel
 free to open an issue first to discuss your idea. For contributor
 guidelines, see CONTRIBUTING.md.
 
-If you plan to contribute documentation or vignettes, please: - Add
-runnable, minimal examples. - Prefer small datasets and short-running
-examples. - Document required system dependencies for the example.
+If you plan to contribute documentation or vignettes, please:
+
+- Add runnable, minimal examples.
+- Prefer small datasets and short-running examples.
+- Document required system dependencies for the example (through a
+  `default.nix`).
 
 ## Scope
 

@@ -184,7 +184,9 @@ rxp_trace <- function(
     }
     rec_rev(target, 0)
 
-    cat("\n")
+    if (transitive) {
+      cat("\nNote: '*' marks transitive dependencies (depth >= 2).\n\n")
+    }
     invisible(NULL)
   }
 

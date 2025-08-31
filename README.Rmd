@@ -192,9 +192,10 @@ free to open an issue first to discuss your idea. For contributor
 guidelines, see CONTRIBUTING.md.
 
 If you plan to contribute documentation or vignettes, please:
+
 - Add runnable, minimal examples.
 - Prefer small datasets and short-running examples.
-- Document required system dependencies for the example.
+- Document required system dependencies for the example (through a `default.nix`).
 
 ## Scope
 

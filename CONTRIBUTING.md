@@ -5,9 +5,9 @@
 We provide a `default.nix` file that defines the right development environment
 if you already are a Nix user and wish to contribute to the package. This
 development environment will provide the required R packages to allow you to
-work on `{rixpress}`. This development environment is pinned to a specific `nixpkgs`
-commit, so it does not reflect the current status on CRAN. This is why it's also
-important to make sure that contributions work on `rhub`.
+work on `{rixpress}`. This development environment is pinned to a specific
+`nixpkgs` commit, so it does not reflect the current status on CRAN. This is why
+it's also important to make sure that contributions work on `rhub`.
 
 ## Unit and end-to-end tests
 

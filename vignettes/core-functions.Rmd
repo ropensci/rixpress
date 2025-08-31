@@ -80,7 +80,7 @@ dependencies between derivations are defined.
 
 ## Generating the pipeline
 
-Let's stop here and build our pipeline. First, we need to define a list of
+Let's stop here and generate our pipeline. First, we need to define a list of
 derivations:
 
 ```{r, eval = FALSE}
@@ -225,54 +225,9 @@ I recommend always using two separate scripts:
 You can quickly create these scripts using the `rxp_init()` function, which
 generates both files with starter code to help you get started quickly.
 
-## Building and inspecting outputs
+## Optional steps before building the pipeline
 
-When you run `gen-pipeline.R` (or execute its contents line-by-line), the
-environment defined in `default.nix` is used. (It's also possible to define
-separate environments for different derivations, which we'll cover in a later
-vignette.) Upon successful execution, you will see:
-
-```
-Build process started...
-
-
-Build successful! Run `rxp_inspect()` for a summary.
-Read individual derivations using `rxp_read()` or
-load them into the global environment using `rxp_load()`.
-```
-
-Now you can follow these instructions:
-
-1. Use `rxp_inspect()` to see where the outputs are located. This function is
-   particularly useful if the pipeline fails, as it shows which derivations
-   succeeded and which failed.
-2. Use `rxp_read("mtcars_mpg")` to read the object into your current R session,
-   or `rxp_load("mtcars_mpg")` to load it directly into your global environment.
-3. Alternatively, use `rxp_copy("mtcars_mpg")` to create a folder called
-   `pipeline-outputs` containing `mtcars_mpg` as an `.rds` file. If you call
-   `rxp_copy()` without arguments, all pipeline outputs will be copied to this
-   folder.
-
-## No-op builds for individual derivations
-
-You can disable building a specific derivation by setting its `noop_build`
-parameter to `TRUE`. This creates a no-op build, a placeholder derivation that
-performs no work:
-
-```r
-rxp_r(
-  name = turtles,
-  expr = occurrence(species, geometry = atlantic),
-  noop_build = TRUE
-)
-```
-
-Any derivations that depend on a no-op build will themselves also resolve to
-no-op builds. This can be useful when prototyping or debugging a pipeline,
-allowing you to skip expensive or unnecessary computations while keeping the
-dependency graph intact.
-
-## DAG Representation of the Pipeline
+### Graphical representation of the pipeline's DAG
 
 It's often helpful to visualise your pipeline as a DAG (directed acyclic graph).
 By default, the `build` argument of `rxp_populate()` is `FALSE`, so calling
@@ -326,6 +281,126 @@ which saves the `dag.dot` object in the project's `_rixpress/` folder.
 After reviewing the DAG, you can build the pipeline by running `rxp_make()`
 instead of modifying your original `rxp_populate()` call.
 
+### Tracing the lineage of derivations
+
+It is possible to also trace the lineage of individual derivations using
+`rxp_trace()`. For example:
+
+```r
+rxp_trace("mtcars_mpg")
+```
+
+will return:
+
+```r
+==== Lineage for: mtcars_mpg ====
+Dependencies (ancestors):
+  - mtcars_head
+    - mtcars_am*
+      - mtcars*
+  - mtcars_tail
+    - mtcars_head*
+
+Reverse dependencies (children):
+          - page
+
+Note: '*' marks transitive dependencies (depth >= 2).
+```
+
+This makes it quite easy to quickly double check whether derivations
+were defined correctly. A `*` symbol next to a derivation's name indicates
+it is a transitive dependency. Calling `rxp_trace()` without arguments
+shows the whole graph:
+
+```r
+rxp_trace()
+```
+
+```r
+==== Pipeline dependency tree (outputs → inputs) ====
+- page
+  - mtcars_head
+    - mtcars_am*
+      - mtcars*
+  - mtcars_tail
+    - mtcars_head*
+  - mtcars_mpg
+    - mtcars_head*
+    - mtcars_tail*
+
+Note: '*' marks transitive dependencies (depth >= 2).
+```
+
+We are now ready to actually build the artifacts.
+
+## Building and inspecting outputs
+
+When you run `gen-pipeline.R` (or execute its contents line-by-line), the
+environment defined in `default.nix` is used (it's also possible to define
+separate environments for different derivations, which we'll cover in a later
+vignette).
+
+By default, `rxp_populate()` doesn't build the pipeline, so to trigger the
+build, you have to use `rxp_make()`:
+
+```r
+rxp_make()
+```
+
+You should see something like this:
+
+```r
+Build process started...
+
++ > mtcars building
++ > mtcars_am building
++ > mtcars_head building
++ > mtcars_tail building
++ > mtcars_mpg building
++ > page building
+✓ mtcars built
+✓ mtcars_am built
+✓ mtcars_head built
+✓ mtcars_mpg built
+✓ mtcars_tail built
+✓ page built
+✓ pipeline completed [6 completed, 0 errored]
+Build successful! Run `rxp_inspect()` for a summary.
+Use `rxp_read("derivation_name")` to read objects or
+`rxp_load("derivation_name")` to load them into the global environment.
+```
+
+Now you can follow these instructions:
+
+1. Use `rxp_inspect()` to see where the outputs are located. This function is
+   particularly useful if the pipeline fails, as it shows which derivations
+   succeeded and which failed, and captures the error messages.
+2. Use `rxp_read("mtcars_mpg")` to read the object into your current R session,
+   or `rxp_load("mtcars_mpg")` to load it directly into your global environment.
+3. Alternatively, use `rxp_copy("mtcars_mpg")` to create a folder called
+   `pipeline-outputs` containing `mtcars_mpg` as an `.rds` file. If you call
+   `rxp_copy()` without arguments, all pipeline outputs will be copied to this
+   folder.
+
+## No-op builds for individual derivations
+
+You can disable building a specific derivation by setting its `noop_build`
+parameter to `TRUE`. This creates a no-op build, a placeholder derivation that
+performs no work:
+
+```r
+rxp_r(
+  name = turtles,
+  expr = occurrence(species, geometry = atlantic),
+  noop_build = TRUE
+)
+```
+
+Any derivations that depend on a no-op build will themselves also resolve to
+no-op builds. This can be useful when prototyping or debugging a pipeline,
+allowing you to skip expensive or unnecessary computations while keeping the
+dependency graph intact.
+
 ## Caveats
 
 There are some caveats that you need to be aware of when using `{rixpress}`.
@@ -337,9 +412,11 @@ Due to how `Nix` works, certain things are simply not possible:
   API, you must first retrieve the data in a standard interactive R session, save it
   to disk, and then include it in the pipeline. The only exception
   to this is `rxp_r_file()`, which can download a file from a URL;
+- if you functions need to access internal resources, use the `additional_files`
+  argument of `rxp_r()` to include these resources into the build sandbox;
 - all build artifacts will be saved in the `Nix` store, `/nix/store/`. If you
   are working with confidential data, make sure no one else can access the
-  `/nix/store`;
+  `/nix/store` path;
 - if you have proprietary R packages, you will need to include them in the `Nix`
   shell. This is primarily a concern for `{rix}`, as it generates the execution
   environment. If you need help packaging your proprietary packages, please open
@@ -353,3 +430,46 @@ Now that you understand the basic, high-level concepts, let's move on to the
 next vignette, `vignette("tutorial")`, where we'll learn how to set up a
 pipeline from start to finish.
 
+## Minimal runnable example
+
+The following short example demonstrates creating a minimal pipeline and
+generating its Nix graph without building it. This example is intended to be
+copied and run locally. It does not build outputs (no Nix build is invoked), so
+it is fast and safe to run on systems without a configured `default.nix`. To
+build the pipeline you'll need Nix and a suitable `default.nix` generated (e.g.,
+with `{rix}`).
+
+```{r runnable-example, eval = FALSE}
+# Create a temporary project directory
+proj <- file.path(tempdir(), "rixpress_example")
+dir.create(proj, showWarnings = FALSE)
+
+# Write a small, pipe-separated CSV copy of mtcars
+write.table(mtcars, file = file.path(proj, "mtcars.csv"), sep = "|", row.names = FALSE)
+
+# Define a small pipeline: read the CSV, then filter for am == 1
+d1 <- rxp_r_file(mtcars, "mtcars.csv", \(x) read.csv(file = x, sep = "|"))
+d2 <- rxp_r(mtcars_am, filter(mtcars, am == 1))
+
+derivs <- list(d1, d2)
+
+# Generate pipeline.nix and DAG
+rxp_populate(derivs, project_path = proj)
+
+# Inspect generated helper files
+list.files(file.path(proj, "_rixpress"))
+
+# Check the lineage of d2
+rxp_trace("d2")
+
+# When ready to build (requires Nix & default.nix), run:
+# rxp_make()
+```
+
+Notes:
+- The example uses `eval = FALSE` so it won't attempt to run during vignette
+  building on systems that may not have Nix configured. Copy and run the code
+  block interactively to try it out on your machine (or set `eval = TRUE` if you
+  know your environment is configured).
+- To actually build the artifacts you must supply a `default.nix` (see `{rix}`)
+  and run `rxp_make()` (or set `build = TRUE` in `rxp_populate()`).

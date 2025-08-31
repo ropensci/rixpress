@@ -20,17 +20,16 @@ This vignette introduces key terminology and walks you through setting up a
 simple pipeline using `{rixpress}`. Understanding the concepts presented here is
 helpful but not mandatory. I recommend reading through this vignette, but don't
 worry if you don't grasp everything immediately. You can try building a simple
-pipeline by following the next vignette, `vignette("core-functions")`, and
-then return to this one; things should become clearer after some hands-on
-experience!
+pipeline by following the next vignette, `vignette("core-functions")`, and then
+return to this one; things should become clearer after some hands-on experience!
 
 Also, this package makes heavy use of its sister package `{rix}`, and I highly
 recommend that you first get familiar with `Nix` by using `{rix}`. With `{rix}`,
 you'll learn how to set up reproducible development environments for data
 science, which you can use for interactive data analysis work. Then, if you want
 to go one step further in the reproducibility
-spectrum/continuum^[https://doi.org/10.1126/science.1213847],
-this is where `{rixpress}` comes in.
+spectrum/continuum^[https://doi.org/10.1126/science.1213847], this is where
+`{rixpress}` comes in.
 
 ## Definitions
 
@@ -60,9 +59,7 @@ Here is an example of a *simple* `Nix` expression:
 ```nix
 let
   pkgs = import (fetchTarball "https://github.com/rstats-on-nix/nixpkgs/archive/2025-04-11.tar.gz") {};
-
 in
-
 pkgs.stdenv.mkDerivation {
   name = "filtered_mtcars";
   buildInputs = [ pkgs.gawk ];
@@ -150,9 +147,9 @@ dependency that is not managed by `Nix`, in which case you might prefer to use
 situations should be the exception rather than the rule).
 
 `Nix` distinguishes between different types of dependencies (`buildInputs`,
-`nativeBuildInputs`, `propagatedBuildInputs`, `propagatedNativeBuildInputs`), but
-let's skip this concept, which is only relevant for packaging upstream software,
-not for defining our pipelines. But if you're curious, read
+`nativeBuildInputs`, `propagatedBuildInputs`, `propagatedNativeBuildInputs`),
+but let's skip this concept, which is only relevant for packaging upstream
+software, not for defining our pipelines. But if you're curious, read
 [this](https://gist.github.com/b-rodrigues/c677b59126d05d43347ed9623ddd5b0c).
 
 ## The `Nix` store and hermetic builds
@@ -190,7 +187,7 @@ might set the variable `JAVA_HOME` to make R aware of where the Java runtime is
 installed. However, if Java is required for a derivation, setting `JAVA_HOME`
 outside of the sandbox has no effect; it must be explicitly set within the
 sandbox. This isolation also means that if you need to access an API to download
-data, it won't work because no internet connection is allowed from within the
+data, it won't work because no Internet connection is allowed from within the
 build sandbox.
 
 This may seem very restrictive, but it makes perfect sense if your goal is to
@@ -238,7 +235,7 @@ in a different hash, even though the resulting `mtcars_tail` object might look
 identical to us. From `Nix`'s perspective, they're different because one of the
 inputs was different.
 
-The key takeaway is that `Nix` is a complex tool because it solves a complex
+The key take-away is that `Nix` is a complex tool because it solves a complex
 problem: ensuring complete reproducibility across different environments
 and time. `{rixpress}` and `{rix}` are packages designed to make `Nix` more
 accessible to R users, allowing you to benefit from `Nix`'s reproducibility
@@ -249,46 +246,3 @@ vignette where you'll set up your first basic pipeline:
 `vignette("core-functions")` (if you wish to learn more about the scope and roadmap
 of the package, you can also take a look at `vignette("scope")` first).
 
-
-## Minimal runnable example
-
-The following short example demonstrates creating a minimal pipeline and
-generating its Nix graph without building it. This example is intended to be
-copied and run locally. It does not build outputs (no Nix build is invoked), so
-it is fast and safe to run on systems without a configured `default.nix`. To
-build the pipeline you'll need Nix and a suitable `default.nix` generated (e.g.,
-with `{rix}`).
-
-```{r runnable-example, eval = FALSE}
-# Create a temporary project directory
-proj <- file.path(tempdir(), "rixpress_example")
-dir.create(proj, showWarnings = FALSE)
-
-# Write a small, pipe-separated CSV copy of mtcars
-write.table(mtcars, file = file.path(proj, "mtcars.csv"), sep = "|", row.names = FALSE)
-
-# Define a small pipeline: read the CSV, then filter for am == 1
-d1 <- rxp_r_file(mtcars, "mtcars.csv", \(x) read.csv(file = x, sep = "|"))
-d2 <- rxp_r(mtcars_am, filter(mtcars, am == 1))
-
-derivs <- list(d1, d2)
-
-# Generate pipeline.nix and DAG (do not build)
-rxp_populate(derivs, project_path = proj, build = FALSE)
-
-# Inspect generated helper files
-list.files(file.path(proj, "_rixpress"))
-# See the pipeline file
-file.path(proj, "pipeline.nix")
-
-# When ready to build (requires Nix & default.nix), run:
-# rxp_make(project_path = proj)
-```
-
-Notes:
-- The example uses `eval = FALSE` so it won't attempt to run during vignette
-  building on systems that may not have Nix configured. Copy and run the code
-  block interactively to try it out on your machine (or set `eval = TRUE` if you
-  know your environment is configured).
-- To actually build the artifacts you must supply a `default.nix` (see `{rix}`)
-  and run `rxp_make()` (or set `build = TRUE` in `rxp_populate()`).
