@@ -10,6 +10,7 @@
 #' @param transitive Logical, default TRUE. If TRUE, show transitive closure and
 #'   mark transitive-only nodes with "*". If FALSE, show immediate neighbours only.
 #' @param include_self Logical, default FALSE. If TRUE, include `name` itself in the results.
+#' @importFrom utils head
 #' @return Invisibly, a named list mapping each inspected derivation name to a
 #'   list with elements:
 #'     - dependencies
@@ -234,7 +235,7 @@ rxp_trace <- function(
 
   if (is.null(name)) {
     cat(
-      "==== Pipeline dependency tree (outputs → inputs) ====\n"
+      "==== Pipeline dependency tree (outputs \u2192 inputs) ====\n"
     )
     for (r in sinks()) {
       print_forest_once(r, depends_map, transitive)
