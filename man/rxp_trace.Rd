@@ -33,3 +33,14 @@ The function also prints a tree representation to the console.
 Reads the DAG produced by rxp_populate (stored by default in
 _rixpress/dag.json) and prints dependencies and reverse dependencies.
 }
+\seealso{
+Other utilities: 
+\code{\link{print.rxp_derivation}()},
+\code{\link{rxp_copy}()},
+\code{\link{rxp_init}()},
+\code{\link{rxp_inspect}()},
+\code{\link{rxp_list_logs}()},
+\code{\link{rxp_load}()},
+\code{\link{rxp_read}()}
+}
+\concept{utilities}

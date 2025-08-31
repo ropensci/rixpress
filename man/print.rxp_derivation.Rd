@@ -30,6 +30,7 @@ Other utilities:
 \code{\link{rxp_inspect}()},
 \code{\link{rxp_list_logs}()},
 \code{\link{rxp_load}()},
-\code{\link{rxp_read}()}
+\code{\link{rxp_read}()},
+\code{\link{rxp_trace}()}
 }
 \concept{utilities}

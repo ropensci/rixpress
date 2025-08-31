@@ -3,6 +3,7 @@
 #' Reads the DAG produced by rxp_populate (stored by default in
 #' _rixpress/dag.json) and prints dependencies and reverse dependencies.
 #'
+#' @family utilities
 #' @param name Optional character scalar. Name of the derivation to inspect.
 #'   If NULL (default), the function prints the whole pipeline (inverted global view).
 #' @param dag_file Character scalar. Path to dag.json. Defaults to "_rixpress/dag.json".
