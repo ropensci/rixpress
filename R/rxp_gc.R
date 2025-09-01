@@ -58,17 +58,29 @@
 #' }
 #'
 #' @export
-rxp_gc <- function(keep_since = NULL,
-                   project_path = ".",
-                   dry_run = FALSE,
-                   timeout_sec = 300,
-                   verbose = FALSE) {
-
+rxp_gc <- function(
+  keep_since = NULL,
+  project_path = ".",
+  dry_run = FALSE,
+  timeout_sec = 300,
+  verbose = FALSE
+) {
   safe_system2 <- function(cmd, args, ..., timeout_sec = 300) {
-    p <- processx::run(cmd, args, error_on_status = FALSE, timeout = timeout_sec)
+    p <- processx::run(
+      cmd,
+      args,
+      error_on_status = FALSE,
+      timeout = timeout_sec
+    )
     if (p$status != 0) {
-      stop(sprintf("Command '%s %s' failed with exit code %d.\nStdout: %s\nStderr: %s",
-                   cmd, paste(args, collapse = " "), p$status, p$stdout, p$stderr))
+      stop(sprintf(
+        "Command '%s %s' failed with exit code %d.\nStdout: %s\nStderr: %s",
+        cmd,
+        paste(args, collapse = " "),
+        p$status,
+        p$stdout,
+        p$stderr
+      ))
     }
     p
   }
@@ -83,7 +95,10 @@ rxp_gc <- function(keep_since = NULL,
     lock_pid <- as.integer(lock_info[1])
     lock_time <- as.numeric(lock_info[2])
     if (!is.na(lock_pid) && !is.na(lock_time)) {
-      if ((Sys.time() - as.POSIXct(lock_time, origin = "1970-01-01")) < timeout_sec) {
+      if (
+        (Sys.time() - as.POSIXct(lock_time, origin = "1970-01-01")) <
+          timeout_sec
+      ) {
         stop("Another rxp_gc process seems to be running (PID ", lock_pid, ").")
       } else {
         warning("Stale lockfile detected, removing.")
@@ -91,7 +106,10 @@ rxp_gc <- function(keep_since = NULL,
       }
     }
   }
-  writeLines(c(as.character(Sys.getpid()), as.character(as.numeric(Sys.time()))), lockfile)
+  writeLines(
+    c(as.character(Sys.getpid()), as.character(as.numeric(Sys.time()))),
+    lockfile
+  )
   on.exit(unlink(lockfile), add = TRUE)
 
   project_path <- normalizePath(project_path, mustWork = TRUE)
@@ -140,14 +158,21 @@ rxp_gc <- function(keep_since = NULL,
         cat("\n")
       }
       if (length(keep_paths) > 0) {
-        message("Store paths that would be kept/protected (", length(keep_paths), "):")
+        message(
+          "Store paths that would be kept/protected (",
+          length(keep_paths),
+          "):"
+        )
         cat("  ", keep_paths, sep = "\n  ")
         cat("\n")
       }
       if (nrow(logs_to_delete) > 0) {
         message("Store paths that would be deleted (dry run):")
-        safe_system2("nix-store", c("--delete", "--dry-run", logs_to_delete$path),
-                     timeout_sec = timeout_sec)
+        safe_system2(
+          "nix-store",
+          c("--delete", "--dry-run", logs_to_delete$path),
+          timeout_sec = timeout_sec
+        )
       }
       return(invisible(summary_info))
     }
@@ -172,11 +197,14 @@ rxp_gc <- function(keep_since = NULL,
     } else {
       cat(tail(lines, 20), sep = "\n")
     }
-
   } else {
     if (dry_run) {
       message("--- DRY RUN --- Would run 'nix-store --gc'. ---")
-      safe_system2("nix-store", c("--gc", "--dry-run"), timeout_sec = timeout_sec)
+      safe_system2(
+        "nix-store",
+        c("--gc", "--dry-run"),
+        timeout_sec = timeout_sec
+      )
       return(invisible(summary_info))
     }
 
