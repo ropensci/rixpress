@@ -50,6 +50,7 @@ loading fails, the path to the object is returned instead.
 Other utilities: 
 \code{\link{print.rxp_derivation}()},
 \code{\link{rxp_copy}()},
+\code{\link{rxp_gc}()},
 \code{\link{rxp_init}()},
 \code{\link{rxp_inspect}()},
 \code{\link{rxp_list_logs}()},

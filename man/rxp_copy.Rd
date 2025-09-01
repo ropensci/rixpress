@@ -47,6 +47,7 @@ input, as is the case for \code{html} output.
 \seealso{
 Other utilities: 
 \code{\link{print.rxp_derivation}()},
+\code{\link{rxp_gc}()},
 \code{\link{rxp_init}()},
 \code{\link{rxp_inspect}()},
 \code{\link{rxp_list_logs}()},
