@@ -17,7 +17,7 @@
 #'   - Date/string: retain builds newer than this date, delete older builds.
 #' @param project_path Path to the project root (default `"."`).
 #'   The project must contain an `_rixpress/` directory with build logs.
-#' @param dry_run Logical (default `TRUE`). If `TRUE`, show what would be done
+#' @param dry_run Logical (default `FALSE`). If `TRUE`, show what would be done
 #'   without deleting anything or running GC.
 #' @param timeout_sec Numeric (default `300`). Timeout (in seconds) for
 #'   `nix-store` commands.
@@ -48,261 +48,152 @@
 #' @examples
 #' \dontrun{
 #' # Dry run of full garbage collection
-#' rxp_gc()
+#' rxp_gc(dry_run = TRUE)
 #'
 #' # Dry run of date-based retention
-#' rxp_gc(keep_since = "2025-01-01")
+#' rxp_gc(keep_since = "2025-01-01", dry_run = TRUE)
 #'
 #' # Actually delete all unreferenced store paths
-#' rxp_gc(dry_run = FALSE)
+#' rxp_gc()
 #' }
 #'
 #' @export
-rxp_gc <- function(
-  keep_since = NULL,
-  project_path = ".",
-  dry_run = TRUE,
-  timeout_sec = 300,
-  verbose = FALSE
-) {
-  # --- Concurrency Check ---
-  lock_file <- file.path(tempdir(), "rixpress_gc.lock")
-  if (file.exists(lock_file)) {
-    tryCatch(
-      {
-        lock_info <- readLines(lock_file)
-        lock_pid <- as.numeric(lock_info[1])
-        lock_time <- as.POSIXct(lock_info[2])
+rxp_gc <- function(keep_since = NULL,
+                   project_path = ".",
+                   dry_run = FALSE,
+                   timeout_sec = 300,
+                   verbose = FALSE) {
 
-        alive <- FALSE
-        if (.Platform$OS.type == "unix" && !is.na(lock_pid)) {
-          res <- system2("ps", c("-p", lock_pid), stdout = TRUE, stderr = FALSE)
-          alive <- any(grepl(lock_pid, res))
-        }
-
-        if (alive) {
-          stop(
-            "Another rxp_gc process appears to be running (PID: ",
-            lock_pid,
-            " started at ",
-            lock_time,
-            "). If this is incorrect, remove: ",
-            lock_file
-          )
-        }
-
-        if (difftime(Sys.time(), lock_time, units = "secs") > timeout_sec) {
-          file.remove(lock_file)
-          message("Removed stale lock file from ", lock_time)
-        } else if (!alive) {
-          message("Stale lock file found (PID dead). Removing.")
-          file.remove(lock_file)
-        }
-      },
-      error = function(e) file.remove(lock_file)
-    )
-  }
-  writeLines(c(as.character(Sys.getpid()), as.character(Sys.time())), lock_file)
-  on.exit(if (file.exists(lock_file)) file.remove(lock_file), add = TRUE)
-
-  # --- Input Validation ---
-  if (!is.null(keep_since)) {
-    if (inherits(keep_since, "Date")) {
-      # ok
-    } else if (is.character(keep_since)) {
-      keep_since <- tryCatch(
-        as.Date(keep_since),
-        error = function(e) stop("Invalid 'keep_since'. Use 'YYYY-MM-DD'.")
-      )
-    } else stop("'keep_since' must be a Date or a 'YYYY-MM-DD' string.")
-  }
-  if (!is.numeric(timeout_sec) || timeout_sec <= 0)
-    stop("'timeout_sec' must be positive.")
-
-  nix_bin <- Sys.which("nix-store")
-  if (nix_bin == "")
-    stop("nix-store not found. Ensure Nix is installed and in PATH.")
-
-  all_logs <- rxp_list_logs(project_path)
-  if (
-    !is.data.frame(all_logs) ||
-      !all(c("filename", "modification_time") %in% names(all_logs))
-  ) {
-    stop(
-      "rxp_list_logs must return a data.frame with 'filename' and 'modification_time'."
-    )
-  }
-  if (nrow(all_logs) == 0) {
-    message("No build logs found. Nothing to do.")
-    return(invisible(NULL))
+  safe_system2 <- function(cmd, args, ..., timeout_sec = 300) {
+    p <- processx::run(cmd, args, error_on_status = FALSE, timeout = timeout_sec)
+    if (p$status != 0) {
+      stop(sprintf("Command '%s %s' failed with exit code %d.\nStdout: %s\nStderr: %s",
+                   cmd, paste(args, collapse = " "), p$status, p$stdout, p$stderr))
+    }
+    p
   }
 
-  # --- Helpers ---
-  safe_system2 <- function(command, args, timeout = timeout_sec, ...) {
-    tryCatch(
-      {
-        result <- system2(command, args, stdout = TRUE, stderr = TRUE, ...)
-        status <- attr(result, "status")
-        if (!is.null(status) && status != 0) {
-          stop(
-            "Command '",
-            command,
-            " ",
-            paste(args, collapse = " "),
-            "' failed with exit code ",
-            status
-          )
-        }
-        result
-      },
-      error = function(e) {
-        if (grepl("timeout", e$message, ignore.case = TRUE)) {
-          stop("Command '", command, "' timed out after ", timeout, " seconds")
-        }
-        stop("Command '", command, "' failed: ", e$message)
+  if (!nzchar(Sys.which("nix-store"))) {
+    stop("nix-store not found on PATH. Please install Nix or adjust your PATH.")
+  }
+
+  lockfile <- file.path(tempdir(), "rixpress_gc.lock")
+  if (file.exists(lockfile)) {
+    lock_info <- readLines(lockfile, warn = FALSE)
+    lock_pid <- as.integer(lock_info[1])
+    lock_time <- as.numeric(lock_info[2])
+    if (!is.na(lock_pid) && !is.na(lock_time)) {
+      if ((Sys.time() - as.POSIXct(lock_time, origin = "1970-01-01")) < timeout_sec) {
+        stop("Another rxp_gc process seems to be running (PID ", lock_pid, ").")
+      } else {
+        warning("Stale lockfile detected, removing.")
+        unlink(lockfile)
       }
-    )
+    }
+  }
+  writeLines(c(as.character(Sys.getpid()), as.character(as.numeric(Sys.time()))), lockfile)
+  on.exit(unlink(lockfile), add = TRUE)
+
+  project_path <- normalizePath(project_path, mustWork = TRUE)
+  logs <- rxp_list_logs(project_path)
+
+  if (!is.null(keep_since)) {
+    if (inherits(keep_since, "character")) {
+      keep_since <- as.Date(keep_since)
+    }
+    if (!inherits(keep_since, "Date")) {
+      stop("keep_since must be NULL, a Date, or a string in YYYY-MM-DD format.")
+    }
   }
 
-  validate_store_paths <- function(paths) {
-    if (length(paths) == 0) return(character(0))
-    paths <- unique(paths[nzchar(paths)])
-    valid_paths <- paths[grepl("^/nix/store/[a-z0-9]{32}-", paths)]
-    invalid_paths <- setdiff(paths, valid_paths)
-    if (length(invalid_paths) > 0)
-      warning(
-        "Skipping invalid store paths: ",
-        paste(invalid_paths, collapse = ", ")
-      )
-    existing_paths <- valid_paths[
-      file.exists(valid_paths) | dir.exists(valid_paths)
-    ]
-    missing <- setdiff(valid_paths, existing_paths)
-    if (length(missing) > 0 && verbose)
-      message("Missing store paths skipped: ", paste(missing, collapse = ", "))
-    existing_paths
+  logs_to_keep <- logs
+  logs_to_delete <- logs[0, ]
+  if (!is.null(keep_since)) {
+    logs_to_keep <- logs[logs$modification_time >= keep_since, ]
+    logs_to_delete <- logs[logs$modification_time < keep_since, ]
+  }
+
+  builds <- rxp_list_builds(project_path)
+  keep_paths <- unlist(lapply(builds, function(build_data) {
+    if (is.null(build_data$path)) character(0) else build_data$path
+  }))
+  keep_paths <- unique(keep_paths)
+
+  for (p in keep_paths) {
+    if (!grepl("^/nix/store/", p)) {
+      stop("Invalid store path: ", p)
+    }
   }
 
   summary_info <- list(
-    kept = character(0),
-    deleted = character(0),
-    protected = 0
+    kept = logs_to_keep$filename,
+    deleted = logs_to_delete$filename,
+    protected = length(keep_paths)
   )
 
-  # --- Date-based Retention ---
   if (!is.null(keep_since)) {
-    logs_to_keep <- all_logs[
-      as.Date(all_logs$modification_time) >= keep_since,
-    ]
-    logs_to_delete <- all_logs[
-      as.Date(all_logs$modification_time) < keep_since,
-    ]
-
-    summary_info$deleted <- logs_to_delete$filename
-    summary_info$kept <- logs_to_keep$filename
-
-    if (nrow(logs_to_delete) == 0) {
-      message(
-        "No build logs older than ",
-        format(keep_since),
-        " found. Nothing to do."
-      )
-      return(invisible(NULL))
-    }
     if (dry_run) {
-      message("--- DRY RUN --- No files will be deleted. ---")
+      message("--- DRY RUN --- No changes will be made. ---")
+      if (nrow(logs_to_delete) > 0) {
+        message("Logs that would be deleted (", nrow(logs_to_delete), "):")
+        cat("  ", logs_to_delete$filename, sep = "\n  ")
+        cat("\n")
+      }
+      if (length(keep_paths) > 0) {
+        message("Store paths that would be kept/protected (", length(keep_paths), "):")
+        cat("  ", keep_paths, sep = "\n  ")
+        cat("\n")
+      }
+      if (nrow(logs_to_delete) > 0) {
+        message("Store paths that would be deleted (dry run):")
+        safe_system2("nix-store", c("--delete", "--dry-run", logs_to_delete$path),
+                     timeout_sec = timeout_sec)
+      }
       return(invisible(summary_info))
     }
 
-    prompt <- paste0(
-      "This will permanently delete artifacts from ",
-      nrow(logs_to_delete),
-      " build(s) before ",
-      format(keep_since),
-      ".\nContinue?"
-    )
-    if (!utils::askYesNo(prompt, default = FALSE)) {
-      message("Operation cancelled.")
+    if (!utils::askYesNo("Proceed with garbage collection?")) {
+      message("Aborted.")
       return(invisible(NULL))
     }
 
-    paths_to_keep <- tryCatch(
-      {
-        all_paths <- unlist(lapply(logs_to_keep$filename, function(log_name) {
-          log_path <- file.path(project_path, "_rixpress", log_name)
-          if (!file.exists(log_path)) return(character(0))
-          build_data <- tryCatch(
-            readRDS(log_path),
-            error = function(e) list(path = character(0))
-          )
-          if (is.null(build_data$path)) character(0) else build_data$path
-        }))
-        validate_store_paths(all_paths)
-      },
-      error = function(e) stop("Failed to extract store paths: ", e$message)
-    )
-
-    if (length(paths_to_keep) == 0) {
-      message("No valid store paths found. Skipping GC.")
-      return(invisible(NULL))
+    temp_gc_dir <- tempfile("rixpress_gc_protect")
+    dir.create(temp_gc_dir)
+    on.exit(unlink(temp_gc_dir, recursive = TRUE), add = TRUE)
+    for (p in keep_paths) {
+      file.symlink(p, file.path(temp_gc_dir, basename(p)))
     }
 
-    temp_gcroots_dir <- tempfile("rixpress-gc-")
-    dir.create(temp_gcroots_dir)
-    on.exit(
-      unlink(temp_gcroots_dir, recursive = TRUE, force = TRUE),
-      add = TRUE
-    )
-
-    message("Protecting ", length(paths_to_keep), " recent artifacts...")
-    for (i in seq_along(paths_to_keep)) {
-      root_link <- file.path(temp_gcroots_dir, paste0("root-", i))
-      tryCatch(
-        file.symlink(paths_to_keep[i], root_link),
-        warning = function(w) NULL,
-        error = function(e) NULL
-      )
+    message("Running nix-store --gc...")
+    out <- safe_system2("nix-store", c("--gc"), timeout_sec = timeout_sec)
+    lines <- strsplit(out$stdout, "\n")[[1]]
+    if (verbose) {
+      cat(lines, sep = "\n")
+    } else {
+      cat(tail(lines, 20), sep = "\n")
     }
-    summary_info$protected <- length(paths_to_keep)
-    message("Created ", summary_info$protected, " GC root symlinks.")
+
   } else {
     if (dry_run) {
       message("--- DRY RUN --- Would run 'nix-store --gc'. ---")
+      safe_system2("nix-store", c("--gc", "--dry-run"), timeout_sec = timeout_sec)
       return(invisible(summary_info))
     }
-    if (
-      !utils::askYesNo(
-        "Run full Nix garbage collection (delete all unreferenced artifacts)?",
-        default = FALSE
-      )
-    ) {
-      message("Operation cancelled.")
+
+    if (!utils::askYesNo("Proceed with full garbage collection?")) {
+      message("Aborted.")
       return(invisible(NULL))
+    }
+
+    message("Running nix-store --gc...")
+    out <- safe_system2("nix-store", c("--gc"), timeout_sec = timeout_sec)
+    lines <- strsplit(out$stdout, "\n")[[1]]
+    if (verbose) {
+      cat(lines, sep = "\n")
+    } else {
+      cat(tail(lines, 20), sep = "\n")
     }
   }
 
-  # --- Run the garbage collector ---
-  message("Running Nix garbage collector...")
-  tryCatch(
-    {
-      gc_output <- safe_system2(nix_bin, "--gc")
-      if (length(gc_output) > 0) {
-        if (verbose) cat(gc_output, sep = "\n") else {
-          relevant <- gc_output[grepl(
-            "freed|removing|deleting",
-            gc_output,
-            ignore.case = TRUE
-          )]
-          if (length(relevant) > 0) {
-            message("GC summary (last 10 relevant lines):")
-            cat(tail(relevant, 10), sep = "\n")
-          }
-        }
-      }
-    },
-    error = function(e) stop("Garbage collection failed: ", e$message)
-  )
-
-  message("Garbage collection complete.")
   invisible(summary_info)
 }
