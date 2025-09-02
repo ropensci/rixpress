@@ -5,13 +5,14 @@ articles:
   ci: ci.html
   cmdstanr: cmdstanr.html
   core-functions: core-functions.html
+  debugging: debugging.html
+  gc: gc.html
   intro-concepts: intro-concepts.html
-  logs: logs.html
   polyglot-julia: polyglot-julia.html
   polyglot: polyglot.html
   scope: scope.html
   tutorial: tutorial.html
-last_built: 2025-09-02T14:04Z
+last_built: 2025-09-02T15:11Z
 urls:
   reference: https://b-rodrigues.github.io/rixpress/reference
   article: https://b-rodrigues.github.io/rixpress/articles

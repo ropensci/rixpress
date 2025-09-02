@@ -34,16 +34,21 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><hr class="dropdown-divider"></li>
-    <li><h6 class="dropdown-header" data-toc-skip>Articles</h6></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Introduction</h6></li>
     <li><a class="dropdown-item" href="../articles/intro-concepts.html">Introductory concepts</a></li>
     <li><a class="dropdown-item" href="../articles/scope.html">Scope and Roadmap</a></li>
     <li><a class="dropdown-item" href="../articles/core-functions.html">Core rixpress Functions and Usage</a></li>
     <li><a class="dropdown-item" href="../articles/tutorial.html">Setting up a pipeline from scratch: a tutorial</a></li>
+    <li><a class="dropdown-item" href="../articles/debugging.html">Effective debugging</a></li>
+    <li><a class="dropdown-item" href="../articles/gc.html">Managing Cached Build Artifacts</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Polyglot pipelines</h6></li>
     <li><a class="dropdown-item" href="../articles/polyglot.html">Polyglot pipelines and literate programming with Quarto or R Markdown</a></li>
     <li><a class="dropdown-item" href="../articles/polyglot-julia.html">Polyglot pipelines with Julia and R</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Advanced topics</h6></li>
     <li><a class="dropdown-item" href="../articles/ci.html">Running pipelines in CI</a></li>
     <li><a class="dropdown-item" href="../articles/cmdstanr.html">Using {cmdstanr} with {rixpress}</a></li>
-    <li><a class="dropdown-item" href="../articles/logs.html">Retrieving cached artifacts of previous runs</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -349,7 +354,9 @@ name indicates it is a transitive dependency. Calling
 <span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a>    <span class="sc">-</span> mtcars_tail<span class="sc">*</span></span>
 <span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a></span>
 <span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a>Note<span class="sc">:</span> <span class="st">'*'</span> marks transitive <span class="fu">dependencies</span> (depth <span class="sc">&gt;=</span> <span class="dv">2</span>).</span></code></pre></div>
-<p>We are now ready to actually build the artifacts.</p>
+<p>We are now ready to actually build the artifacts. This is also quite
+useful for debugging, as detailed in the
+<code><a href="../articles/debugging.html">vignette("debugging")</a></code>.</p>
 </div>
 </div>
 <div class="section level2">
@@ -413,7 +420,8 @@ no-op build, a placeholder derivation that performs no work:</p>
 <p>Any derivations that depend on a no-op build will themselves also
 resolve to no-op builds. This can be useful when prototyping or
 debugging a pipeline, allowing you to skip expensive or unnecessary
-computations while keeping the dependency graph intact.</p>
+computations while keeping the dependency graph intact. Further details
+are given in the vignette <code><a href="../articles/debugging.html">vignette("debugging")</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="caveats">Caveats<a class="anchor" aria-label="anchor" href="#caveats"></a>
@@ -450,50 +458,6 @@ single calls to pure functions.</li>
 <p>Now that you understand the basic, high-level concepts, let’s move on
 to the next vignette, <code><a href="../articles/tutorial.html">vignette("tutorial")</a></code>, where we’ll
 learn how to set up a pipeline from start to finish.</p>
-</div>
-<div class="section level2">
-<h2 id="minimal-runnable-example">Minimal runnable example<a class="anchor" aria-label="anchor" href="#minimal-runnable-example"></a>
-</h2>
-<p>The following short example demonstrates creating a minimal pipeline
-and generating its Nix graph without building it. This example is
-intended to be copied and run locally. It does not build outputs (no Nix
-build is invoked), so it is fast and safe to run on systems without a
-configured <code>default.nix</code>. To build the pipeline you’ll need
-Nix and a suitable <code>default.nix</code> generated (e.g., with
-<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>).</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Create a temporary project directory</span></span>
-<span><span class="va">proj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"rixpress_example"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">proj</span>, showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Write a small, pipe-separated CSV copy of mtcars</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.table</a></span><span class="op">(</span><span class="va">mtcars</span>, file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">proj</span>, <span class="st">"mtcars.csv"</span><span class="op">)</span>, sep <span class="op">=</span> <span class="st">"|"</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Define a small pipeline: read the CSV, then filter for am == 1</span></span>
-<span><span class="va">d1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_r_file.html">rxp_r_file</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="st">"mtcars.csv"</span>, \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span>file <span class="op">=</span> <span class="va">x</span>, sep <span class="op">=</span> <span class="st">"|"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">d2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span><span class="va">mtcars_am</span>, <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">am</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">derivs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">d1</span>, <span class="va">d2</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Generate pipeline.nix and DAG</span></span>
-<span><span class="fu"><a href="../reference/rxp_populate.html">rxp_populate</a></span><span class="op">(</span><span class="va">derivs</span>, project_path <span class="op">=</span> <span class="va">proj</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Inspect generated helper files</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">proj</span>, <span class="st">"_rixpress"</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Check the lineage of d2</span></span>
-<span><span class="fu"><a href="../reference/rxp_trace.html">rxp_trace</a></span><span class="op">(</span><span class="st">"d2"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># When ready to build (requires Nix &amp; default.nix), run:</span></span>
-<span><span class="co"># rxp_make()</span></span></code></pre></div>
-<p>Notes: - The example uses <code>eval = FALSE</code> so it won’t
-attempt to run during vignette building on systems that may not have Nix
-configured. Copy and run the code block interactively to try it out on
-your machine (or set <code>eval = TRUE</code> if you know your
-environment is configured). - To actually build the artifacts you must
-supply a <code>default.nix</code> (see <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>) and run
-<code><a href="../reference/rxp_make.html">rxp_make()</a></code> (or set <code>build = TRUE</code> in
-<code><a href="../reference/rxp_populate.html">rxp_populate()</a></code>).</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

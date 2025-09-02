@@ -34,16 +34,21 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><hr class="dropdown-divider"></li>
-    <li><h6 class="dropdown-header" data-toc-skip>Articles</h6></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Introduction</h6></li>
     <li><a class="dropdown-item" href="../articles/intro-concepts.html">Introductory concepts</a></li>
     <li><a class="dropdown-item" href="../articles/scope.html">Scope and Roadmap</a></li>
     <li><a class="dropdown-item" href="../articles/core-functions.html">Core rixpress Functions and Usage</a></li>
     <li><a class="dropdown-item" href="../articles/tutorial.html">Setting up a pipeline from scratch: a tutorial</a></li>
+    <li><a class="dropdown-item" href="../articles/debugging.html">Effective debugging</a></li>
+    <li><a class="dropdown-item" href="../articles/gc.html">Managing Cached Build Artifacts</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Polyglot pipelines</h6></li>
     <li><a class="dropdown-item" href="../articles/polyglot.html">Polyglot pipelines and literate programming with Quarto or R Markdown</a></li>
     <li><a class="dropdown-item" href="../articles/polyglot-julia.html">Polyglot pipelines with Julia and R</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Advanced topics</h6></li>
     <li><a class="dropdown-item" href="../articles/ci.html">Running pipelines in CI</a></li>
     <li><a class="dropdown-item" href="../articles/cmdstanr.html">Using {cmdstanr} with {rixpress}</a></li>
-    <li><a class="dropdown-item" href="../articles/logs.html">Retrieving cached artifacts of previous runs</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -217,12 +222,16 @@ by importing data and filtering it using <a href="https://dplyr.tidyverse.org" c
 <p>Select the pipeline and run it (I highly recommend you use keyboard
 shortcuts to quickly run the above code when working interactively). If
 everything went well, you will see the following in your R console:</p>
-<pre><code>Build process started...
-
-
-Build successful! Run `rxp_inspect()` for a summary.
-Read individual derivations using `rxp_read()` or
-load them into the global environment using `rxp_load()`.</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>Build process started...</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="sc">+</span> <span class="er">&gt;</span> mtcars building</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="sc">+</span> <span class="er">&gt;</span> filtered_mtcars building</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>✓ filtered_mtcars built</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>✓ mtcars built</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>✓ pipeline completed [<span class="dv">2</span> completed, <span class="dv">0</span> errored]</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>Build successful<span class="sc">!</span> Run <span class="st">`</span><span class="at">rxp_inspect()</span><span class="st">`</span> <span class="cf">for</span> a summary.</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>Read individual derivations using <span class="st">`</span><span class="at">rxp_read()</span><span class="st">`</span> or</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>load them into the global environment using <span class="st">`</span><span class="at">rxp_load()</span><span class="st">`</span>.</span></code></pre></div>
 <p>Let’s inspect the pipeline outputs using
 <code><a href="../reference/rxp_inspect.html">rxp_inspect()</a></code>:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>       derivation build_success</span>
@@ -230,9 +239,13 @@ load them into the global environment using `rxp_load()`.</code></pre>
 <span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="dv">2</span> filtered_mtcars          <span class="cn">TRUE</span></span>
 <span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="dv">3</span>          mtcars          <span class="cn">TRUE</span></span>
 <span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>                                                         path       output</span>
-<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="dv">1</span> <span class="sc">/</span>nix<span class="sc">/</span>store<span class="sc">/</span>bz7ynl23bxkb0gza069i6bhxqy8bngmr<span class="sc">-</span>all<span class="sc">-</span>derivations filtered....</span>
-<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="dv">2</span> <span class="sc">/</span>nix<span class="sc">/</span>store<span class="sc">/</span>lhmkmbdjpgzillsak3nwv1khlvabbgpa<span class="sc">-</span>filtered_mtcars filtered....</span>
-<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="dv">3</span>          <span class="sc">/</span>nix<span class="sc">/</span>store<span class="sc">/</span><span class="dv">0</span>nj75qf7md5xi0517qdi1qpk44466zqi<span class="sc">-</span>mtcars       mtcars</span></code></pre></div>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="dv">1</span> <span class="sc">/</span>nix<span class="sc">/</span>store<span class="sc">/</span>xc67xyqw8ziggwdk7hhiqsgh7hxfv4k1<span class="sc">-</span>all<span class="sc">-</span>derivations filtered....</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="dv">2</span> <span class="sc">/</span>nix<span class="sc">/</span>store<span class="sc">/</span>njv7zpgiq9p843dixkcg1dpryr5rn6h4<span class="sc">-</span>filtered_mtcars filtered....</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="dv">3</span>          <span class="sc">/</span>nix<span class="sc">/</span>store<span class="sc">/</span>gqf4l5jpbjdv1by0vw6vphhlrfa0600a<span class="sc">-</span>mtcars       mtcars</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  error_message</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="dv">1</span>          <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="dv">2</span>          <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="dv">3</span>          <span class="sc">&lt;</span><span class="cn">NA</span><span class="sc">&gt;</span></span></code></pre></div>
 <p>Three things were built: <code>mtcars</code>, which is simply the
 source data set; <code>filtered_mtcars</code>, which is the filtered
 data; and an object you didn’t define called
@@ -242,20 +255,20 @@ data; and an object you didn’t define called
 <code>filtered_mtcars</code>:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/rxp_read.html">rxp_read</a></span><span class="op">(</span><span class="st">"filtered_mtcars"</span><span class="op">)</span></span></code></pre></div>
-<pre><code>                mpg cyl  disp  hp drat    wt  qsec vs am gear carb
-Mazda RX4      21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4
-Mazda RX4 Wag  21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4
-Datsun 710     22.8   4 108.0  93 3.85 2.320 18.61  1  1    4    1
-Fiat 128       32.4   4  78.7  66 4.08 2.200 19.47  1  1    4    1
-Honda Civic    30.4   4  75.7  52 4.93 1.615 18.52  1  1    4    2
-Toyota Corolla 33.9   4  71.1  65 4.22 1.835 19.90  1  1    4    1
-Fiat X1-9      27.3   4  79.0  66 4.08 1.935 18.90  1  1    4    1
-Porsche 914-2  26.0   4 120.3  91 4.43 2.140 16.70  0  1    5    2
-Lotus Europa   30.4   4  95.1 113 3.77 1.513 16.90  1  1    5    2
-Ford Pantera L 15.8   8 351.0 264 4.22 3.170 14.50  0  1    5    4
-Ferrari Dino   19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6
-Maserati Bora  15.0   8 301.0 335 3.54 3.570 14.60  0  1    5    8
-Volvo 142E     21.4   4 121.0 109 4.11 2.780 18.60  1  1    4    2</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>                mpg cyl  disp  hp drat    wt  qsec vs am gear carb</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>Mazda RX4      <span class="fl">21.0</span>   <span class="dv">6</span> <span class="fl">160.0</span> <span class="dv">110</span> <span class="fl">3.90</span> <span class="fl">2.620</span> <span class="fl">16.46</span>  <span class="dv">0</span>  <span class="dv">1</span>    <span class="dv">4</span>    <span class="dv">4</span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>Mazda RX4 Wag  <span class="fl">21.0</span>   <span class="dv">6</span> <span class="fl">160.0</span> <span class="dv">110</span> <span class="fl">3.90</span> <span class="fl">2.875</span> <span class="fl">17.02</span>  <span class="dv">0</span>  <span class="dv">1</span>    <span class="dv">4</span>    <span class="dv">4</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>Datsun <span class="dv">710</span>     <span class="fl">22.8</span>   <span class="dv">4</span> <span class="fl">108.0</span>  <span class="dv">93</span> <span class="fl">3.85</span> <span class="fl">2.320</span> <span class="fl">18.61</span>  <span class="dv">1</span>  <span class="dv">1</span>    <span class="dv">4</span>    <span class="dv">1</span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>Fiat <span class="dv">128</span>       <span class="fl">32.4</span>   <span class="dv">4</span>  <span class="fl">78.7</span>  <span class="dv">66</span> <span class="fl">4.08</span> <span class="fl">2.200</span> <span class="fl">19.47</span>  <span class="dv">1</span>  <span class="dv">1</span>    <span class="dv">4</span>    <span class="dv">1</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>Honda Civic    <span class="fl">30.4</span>   <span class="dv">4</span>  <span class="fl">75.7</span>  <span class="dv">52</span> <span class="fl">4.93</span> <span class="fl">1.615</span> <span class="fl">18.52</span>  <span class="dv">1</span>  <span class="dv">1</span>    <span class="dv">4</span>    <span class="dv">2</span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>Toyota Corolla <span class="fl">33.9</span>   <span class="dv">4</span>  <span class="fl">71.1</span>  <span class="dv">65</span> <span class="fl">4.22</span> <span class="fl">1.835</span> <span class="fl">19.90</span>  <span class="dv">1</span>  <span class="dv">1</span>    <span class="dv">4</span>    <span class="dv">1</span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>Fiat X1<span class="dv">-9</span>      <span class="fl">27.3</span>   <span class="dv">4</span>  <span class="fl">79.0</span>  <span class="dv">66</span> <span class="fl">4.08</span> <span class="fl">1.935</span> <span class="fl">18.90</span>  <span class="dv">1</span>  <span class="dv">1</span>    <span class="dv">4</span>    <span class="dv">1</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>Porsche <span class="dv">914-2</span>  <span class="fl">26.0</span>   <span class="dv">4</span> <span class="fl">120.3</span>  <span class="dv">91</span> <span class="fl">4.43</span> <span class="fl">2.140</span> <span class="fl">16.70</span>  <span class="dv">0</span>  <span class="dv">1</span>    <span class="dv">5</span>    <span class="dv">2</span></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>Lotus Europa   <span class="fl">30.4</span>   <span class="dv">4</span>  <span class="fl">95.1</span> <span class="dv">113</span> <span class="fl">3.77</span> <span class="fl">1.513</span> <span class="fl">16.90</span>  <span class="dv">1</span>  <span class="dv">1</span>    <span class="dv">5</span>    <span class="dv">2</span></span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>Ford Pantera L <span class="fl">15.8</span>   <span class="dv">8</span> <span class="fl">351.0</span> <span class="dv">264</span> <span class="fl">4.22</span> <span class="fl">3.170</span> <span class="fl">14.50</span>  <span class="dv">0</span>  <span class="dv">1</span>    <span class="dv">5</span>    <span class="dv">4</span></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>Ferrari Dino   <span class="fl">19.7</span>   <span class="dv">6</span> <span class="fl">145.0</span> <span class="dv">175</span> <span class="fl">3.62</span> <span class="fl">2.770</span> <span class="fl">15.50</span>  <span class="dv">0</span>  <span class="dv">1</span>    <span class="dv">5</span>    <span class="dv">6</span></span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>Maserati Bora  <span class="fl">15.0</span>   <span class="dv">8</span> <span class="fl">301.0</span> <span class="dv">335</span> <span class="fl">3.54</span> <span class="fl">3.570</span> <span class="fl">14.60</span>  <span class="dv">0</span>  <span class="dv">1</span>    <span class="dv">5</span>    <span class="dv">8</span></span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a>Volvo <span class="dv">142</span>E     <span class="fl">21.4</span>   <span class="dv">4</span> <span class="fl">121.0</span> <span class="dv">109</span> <span class="fl">4.11</span> <span class="fl">2.780</span> <span class="fl">18.60</span>  <span class="dv">1</span>  <span class="dv">1</span>    <span class="dv">4</span>    <span class="dv">2</span></span></code></pre></div>
 <p>You can save this object like so:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">filtered_mtcars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_read.html">rxp_read</a></span><span class="op">(</span><span class="st">"filtered_mtcars"</span><span class="op">)</span></span></code></pre></div>
@@ -297,6 +310,8 @@ simple pipeline.</p>
 <p>The next vignette <code><a href="../articles/polyglot.html">vignette("polyglot")</a></code> explains how to
 build a pipeline with both R and Python derivations, as well as
 compiling a Quarto document.</p>
+<p>If you don’t need to work with multiple languages, you can continue
+with the vignette <code><a href="../articles/debugging.html">vignette("debugging")</a></code>.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
