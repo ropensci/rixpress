@@ -158,10 +158,14 @@ Select the pipeline and run it (I highly recommend you use keyboard shortcuts
 to quickly run the above code when working interactively). If everything
 went well, you will see the following in your R console:
 
-```
+```r
 Build process started...
 
-
++ > mtcars building
++ > filtered_mtcars building
+✓ filtered_mtcars built
+✓ mtcars built
+✓ pipeline completed [2 completed, 0 errored]
 Build successful! Run `rxp_inspect()` for a summary.
 Read individual derivations using `rxp_read()` or
 load them into the global environment using `rxp_load()`.
@@ -175,9 +179,13 @@ Let’s inspect the pipeline outputs using `rxp_inspect()`:
 2 filtered_mtcars          TRUE
 3          mtcars          TRUE
                                                          path       output
-1 /nix/store/bz7ynl23bxkb0gza069i6bhxqy8bngmr-all-derivations filtered....
-2 /nix/store/lhmkmbdjpgzillsak3nwv1khlvabbgpa-filtered_mtcars filtered....
-3          /nix/store/0nj75qf7md5xi0517qdi1qpk44466zqi-mtcars       mtcars
+1 /nix/store/xc67xyqw8ziggwdk7hhiqsgh7hxfv4k1-all-derivations filtered....
+2 /nix/store/njv7zpgiq9p843dixkcg1dpryr5rn6h4-filtered_mtcars filtered....
+3          /nix/store/gqf4l5jpbjdv1by0vw6vphhlrfa0600a-mtcars       mtcars
+  error_message
+1          <NA>
+2          <NA>
+3          <NA>
 ```
 
 Three things were built: `mtcars`, which is simply the source data set;
@@ -191,7 +199,7 @@ Let's now use `rxp_read()` to take a look at `filtered_mtcars`:
 rxp_read("filtered_mtcars")
 ```
 
-```
+```r
                 mpg cyl  disp  hp drat    wt  qsec vs am gear carb
 Mazda RX4      21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4
 Mazda RX4 Wag  21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4
@@ -217,10 +225,10 @@ filtered_mtcars <- rxp_read("filtered_mtcars")
 or you can simply use `rxp_load("filtered_mtcars")` which will achieve the same
 result.
 
-You can now manipulate this object interactively, as usual. You might still
-not quite know what the next step should be (maybe there are missing values
-you need to handle somehow, or another such cleaning step), but once you know
-the next steps, you can write the next derivation:
+You can now manipulate this object interactively, as usual. You might still not
+quite know what the next step should be (maybe there are missing values you need
+to handle somehow, or another such cleaning step), but once you know the next
+steps, you can write the next derivation:
 
 ```{r, eval = FALSE}
 library(rixpress)
@@ -254,4 +262,7 @@ You now know the basics of using `{rixpress}` to build a simple pipeline.
 
 The next vignette `vignette("polyglot")` explains how to build a pipeline
 with both R and Python derivations, as well as compiling a Quarto document.
+
+If you don't need to work with multiple languages, you can continue with
+the vignette `vignette("debugging")`.
 

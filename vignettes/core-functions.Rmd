@@ -331,7 +331,8 @@ rxp_trace()
 Note: '*' marks transitive dependencies (depth >= 2).
 ```
 
-We are now ready to actually build the artifacts.
+We are now ready to actually build the artifacts. This is also quite
+useful for debugging, as detailed in the `vignette("debugging")`.
 
 ## Building and inspecting outputs
 
@@ -399,7 +400,8 @@ rxp_r(
 Any derivations that depend on a no-op build will themselves also resolve to
 no-op builds. This can be useful when prototyping or debugging a pipeline,
 allowing you to skip expensive or unnecessary computations while keeping the
-dependency graph intact.
+dependency graph intact. Further details are given in the vignette
+`vignette("debugging")`.
 
 ## Caveats
 
@@ -430,46 +432,3 @@ Now that you understand the basic, high-level concepts, let's move on to the
 next vignette, `vignette("tutorial")`, where we'll learn how to set up a
 pipeline from start to finish.
 
-## Minimal runnable example
-
-The following short example demonstrates creating a minimal pipeline and
-generating its Nix graph without building it. This example is intended to be
-copied and run locally. It does not build outputs (no Nix build is invoked), so
-it is fast and safe to run on systems without a configured `default.nix`. To
-build the pipeline you'll need Nix and a suitable `default.nix` generated (e.g.,
-with `{rix}`).
-
-```{r runnable-example, eval = FALSE}
-# Create a temporary project directory
-proj <- file.path(tempdir(), "rixpress_example")
-dir.create(proj, showWarnings = FALSE)
-
-# Write a small, pipe-separated CSV copy of mtcars
-write.table(mtcars, file = file.path(proj, "mtcars.csv"), sep = "|", row.names = FALSE)
-
-# Define a small pipeline: read the CSV, then filter for am == 1
-d1 <- rxp_r_file(mtcars, "mtcars.csv", \(x) read.csv(file = x, sep = "|"))
-d2 <- rxp_r(mtcars_am, filter(mtcars, am == 1))
-
-derivs <- list(d1, d2)
-
-# Generate pipeline.nix and DAG
-rxp_populate(derivs, project_path = proj)
-
-# Inspect generated helper files
-list.files(file.path(proj, "_rixpress"))
-
-# Check the lineage of d2
-rxp_trace("d2")
-
-# When ready to build (requires Nix & default.nix), run:
-# rxp_make()
-```
-
-Notes:
-- The example uses `eval = FALSE` so it won't attempt to run during vignette
-  building on systems that may not have Nix configured. Copy and run the code
-  block interactively to try it out on your machine (or set `eval = TRUE` if you
-  know your environment is configured).
-- To actually build the artifacts you must supply a `default.nix` (see `{rix}`)
-  and run `rxp_make()` (or set `build = TRUE` in `rxp_populate()`).

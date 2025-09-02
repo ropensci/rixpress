@@ -3,18 +3,25 @@ template:
   bootstrap: 5
 
 articles:
-- title: Articles
-  navbar: Articles
+- title: Introduction
+  navbar: Introduction
   contents:
   - intro-concepts
   - scope
   - core-functions
   - tutorial
+  - debugging
+  - gc
+- title: Polyglot pipelines
+  navbar: Polyglot pipelines
+  contents:
   - polyglot
   - polyglot-julia
+- title: Advanced topics
+  navbar: Advanced topics
+  contents:
   - ci
   - cmdstanr
-  - logs
 
 reference:
 - title: Declaring derivations

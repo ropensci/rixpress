@@ -1,0 +1,113 @@
+---
+title: "Managing Cached Build Artifacts"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{managing-cache}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+Becuse `{rixpress}` uses Nix as its build engine, every build artifact is cached
+in the Nix store (`/nix/store`). When you modify your pipeline, new artifacts
+are created, but the old ones remain. This is powerful because it allows you to
+access a complete history of your work. However, over time, this can lead to the
+Nix store consuming a significant amount of disk space.
+
+This vignette explains how to manage this cache using the `rxp_gc()` function,
+which provides a safe and targeted way to garbage-collect old build artifacts.
+
+## Build Logs: The Key to Your Pipeline's History
+
+Before we discuss cleaning up, it's important to understand how `{rixpress}`
+keeps track of artifacts. Every time you run `rxp_make()`, a detailed **build
+log** is saved in your project's `_rixpress` directory. These logs record the
+outcome of each derivation and, crucially, the exact path to its output in the
+Nix store.
+
+You can see a list of all historical builds with `rxp_list_logs()`:
+
+```{r, eval=FALSE}
+rxp_list_logs()
+#>                                                         filename   modification_time size_kb
+#> 1 build_log_20250815_113000_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6.rds 2025-08-15 11:30:00    0.51
+#> 2 build_log_20250814_170000_z9y8x7w6v5u4t3s2r1q0p9o8n7m6l5k4.rds 2025-08-14 17:00:00    0.50
+```
+
+These logs are the foundation for debugging and retrieving historical data. For
+a deep dive into how to use them for troubleshooting, please see the
+`vignette("debugging")`. For now, just remember that these logs are what
+`rxp_gc()` uses to intelligently clean up your cache.
+
+## Cleaning Up Artifacts with `rxp_gc()`
+
+The `rxp_gc()` function is the primary tool for managing your project's storage footprint. It operates in two distinct modes.
+
+### 1. Targeted Deletion: Cleaning Up Old Builds
+
+The most common use case is to remove artifacts from builds that are no longer
+needed, while keeping recent ones. This is done by specifying the `keep_since`
+argument. The function will identify all build logs older than the given date
+and attempt to delete both the log files and the associated Nix store paths.
+
+Before deleting anything, it is **highly recommended** to perform a `dry_run`.
+This will print a detailed report of what actions *would* be taken, without
+actually modifying your system. To avoid mistakes, this is the default behaviour
+of `rxp_gc()`:
+
+```{r, eval=FALSE}
+# Preview what would be deleted if we keep artifacts from August 1st, 2025 onward.
+rxp_gc(keep_since = "2025-08-01", dry_run = TRUE) # dry_run = TRUE is actually the default
+```
+
+The output will list the log files and Nix store paths targeted for deletion.
+Once you have reviewed the plan and are confident, you can perform the actual
+cleanup by setting `dry_run = FALSE`.
+
+```{r, eval=FALSE}
+# Keep builds from the last 30 days and delete everything older.
+thirty_days_ago <- Sys.Date() - 30
+rxp_gc(keep_since = thirty_days_ago)
+```
+
+The function will prompt you for confirmation before proceeding. It
+intelligently protects the artifacts from your more recent builds, so you don't
+have to worry about accidentally deleting something you still need. Note that
+some paths may not be deleted if they are still referenced by other parts of
+your system (like a `result` symlink or an active `nix-shell`). `rxp_gc()`
+handles this gracefully and will report these paths as "skipped".
+
+### 2. Full Garbage Collection
+
+If you wish to perform a complete, system-wide cleanup, you can call `rxp_gc()`
+with no arguments.
+
+```{r, eval=FALSE}
+# This will trigger a full Nix garbage collection.
+rxp_gc()
+```
+
+This is equivalent to running `nix-store --gc` in your terminal. It will delete
+**all** unreferenced paths from your Nix store, not just those related to your
+current project. This is a powerful way to reclaim a large amount of disk space,
+but it will remove cached artifacts for all Nix-based projects and environments
+on your system. Use this option when you are certain you no longer need any old,
+unreferenced build caches.
+
+## Conclusion
+
+The Nix store's caching is a powerful feature for reproducibility, but it
+requires occasional maintenance. `rxp_gc()` provides the tools you need to
+manage this cache effectively.
+
+-   Use `rxp_gc(keep_since = ...)` for routine, project-specific cleanup.
+-   Use `rxp_gc()` with no arguments for a more aggressive, system-wide cleanup.
+

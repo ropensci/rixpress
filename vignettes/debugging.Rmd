@@ -1,0 +1,234 @@
+---
+title: "Effective debugging"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{debugging}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+This vignette will guide you through the primary debugging workflow in `{rixpress}`, covering how to:
+
+1.  Inspect the error messages from a failed build.
+2.  Trace the dependency graph to find structural problems.
+3.  Isolate specific parts of the pipeline for focused debugging.
+4.  Access logs from previous builds to investigate regressions.
+
+## The First Response to a Failed Build: `rxp_inspect()`
+
+Imagine you have just run `rxp_make()` and are greeted with an error message in your console.
+
+```r
+Build process started...
+
++ > mtcars building
++ > mtcars_am building
++ > mtcars_head building
+x mtcars_head errored
+✓ mtcars built
+✓ mtcars_am built
+! pipeline completed [2 completed, 1 errored]
+Build failed! Run `rxp_inspect()` for a summary.
+```
+
+The build has failed. Your immediate next step should always be to run
+`rxp_inspect()`. By default, this function reads the most recent build log,
+which in this case is the one from our failed run.
+
+```{r, eval=FALSE}
+rxp_inspect()
+```
+
+This will return a data frame summarizing the status of every derivation in the pipeline. Let's look at a hypothetical output:
+
+```
+       derivation build_success                                               path    output
+1 all-derivations         FALSE /nix/store/j5...-all-derivations       mtcars_head
+2       mtcars_am          TRUE /nix/store/a4...-mtcars_am                  mtcars_am
+3     mtcars_head         FALSE                                      <NA>          <NA>
+4          mtcars          TRUE /nix/store/b9...-mtcars                       mtcars
+                                              error_message
+1                                                      <NA>
+2                                                      <NA>
+3 Error: function 'headd' not found\nExecution halted\n
+4                                                      <NA>
+```
+
+The two most important columns for debugging are `build_success` and `error_message`.
+
+-   `build_success`: This `TRUE`/`FALSE` column immediately tells you which
+    derivation failed. In our example, `mtcars_head` is the culprit.
+-   `error_message`: This column contains the standard error output captured
+    from the Nix build process. It provides the exact reason for the failure.
+    Here, the message `"Error: function 'headd' not found"` points to a simple
+    typo in our R code.
+
+By pinpointing the specific derivation and providing the raw error message,
+`rxp_inspect()` eliminates guesswork and directs you straight to the source of
+the problem.
+
+## Investigating Structural Issues with `rxp_trace()`
+
+Sometimes, a pipeline fails not because of a typo in a single derivation, but
+because of a logical error in how the derivations are connected. `rxp_trace()`
+is the tool for diagnosing these structural issues. It reads the pipeline's
+dependency graph (`dag.json`) and helps you answer questions like:
+
+-   "What steps must run before this one?" (Dependencies)
+-   "If I change this step, what other steps will be affected?" (Reverse Dependencies)
+
+For instance, if `mtcars_mpg` is producing an unexpected result, you can trace its lineage:
+
+```{r, eval=FALSE}
+rxp_trace("mtcars_mpg")
+```
+
+This might return:
+
+```
+==== Lineage for: mtcars_mpg ====
+Dependencies (ancestors):
+  - filtered_mtcars
+    - mtcars*
+
+Reverse dependencies (children):
+  - final_report
+
+Note: '*' marks transitive dependencies (depth >= 2).
+```
+
+This output clearly shows that `mtcars_mpg` depends directly on
+`filtered_mtcars` and indirectly (transitively) on `mtcars`. It also shows that
+`final_report` depends on it. If you expected `mtcars_mpg` to depend on a
+different intermediate object, this trace would immediately reveal the mistake
+in your pipeline definition.
+
+Calling `rxp_trace()` without any arguments will print the entire dependency
+tree, which is useful for getting a high-level overview of your project's
+structure.
+
+You could instead plot the DAG using `rxp_ggdag()` for example, but if the project
+is large, reading the DAG could be difficult. `rxp_trace()` should be more useful
+in these cases.
+
+## A Proactive Strategy: Isolating Derivations with `noop_build`
+
+When debugging or prototyping, you often need to make frequent changes to an
+early step in your pipeline. If a slow, computationally expensive derivation
+depends on this changing step, your development cycle can become painfully slow.
+Because Nix's caching is based on inputs, any change to an upstream step will
+invalidate the cache for all downstream steps. Imagine a pipeline where you are
+tuning a data preprocessing step, which is then followed by a lengthy model
+training process:
+
+```{r, eval=FALSE}
+list(
+  # We are actively changing the filter condition in this step
+  rxp_r(
+    name = preprocessed_data,
+    expr = filter(raw_data, year > 2020)
+  ),
+  # This step takes hours to run
+  rxp_r(
+    name = expensive_model,
+    expr = run_long_simulation(preprocessed_data)
+  ),
+  rxp_rmd(
+    name = final_report,
+    rmd_file = "report.Rmd" # Depends on expensive_model
+  )
+)
+
+```
+
+In this scenario, every time you adjust the filter() condition in
+preprocessed_data, Nix correctly invalidates the cache for expensive_model. This
+means the hours-long simulation will be re-triggered with every small change,
+making it impossible to iterate quickly on the preprocessing logic. This is the
+perfect use case for noop_build = TRUE. By applying it to the expensive
+downstream step, you temporarily break the dependency chain:
+
+```r
+list(
+  # We can now change this step as much as we want
+  rxp_r(
+    name = preprocessed_data,
+    expr = filter(raw_data, year > 2020)
+  ),
+  # This and all downstream steps will be skipped
+  rxp_r(
+    name = expensive_model,
+    expr = run_long_simulation(preprocessed_data),
+    noop_build = TRUE
+  ),
+  rxp_rmd(
+    name = final_report,
+    rmd_file = "report.Rmd" # Also becomes a no-op
+  )
+)
+```
+
+Now, when you run `rxp_make()`, `preprocessed_data` will build as normal.
+However, `expensive_model` will resolve to a no-op build, and because `final_report`
+depends on it, it will also become a no-op. This allows you to rapidly iterate
+on and validate the `preprocessed_data` logic in isolation, without waiting for
+the simulation to run. Once you are satisfied with the preprocessing, simply
+remove `noop_build = TRUE` to re-enable the full pipeline and run the expensive
+model training with your finalized data.
+
+## Historical Debugging: Going Back in Time
+
+When iterating quickly, it might be useful to compare results to the ones
+obtained from previous runs. It is possible to check results from previous
+runs using the logs.
+
+First, use `rxp_list_logs()` to see the build history:
+
+```{r, eval=FALSE}
+rxp_list_logs()
+```
+
+```
+                                                        filename   modification_time size_kb
+1 build_log_20250815_113000_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6.rds 2025-08-15 11:30:00    0.51
+2 build_log_20250814_170000_z9y8x7w6v5u4t3s2r1q0p9o8n7m6l5k4.rds 2025-08-14 17:00:00    0.50
+```
+
+You can see a successful build from yesterday (`20250814`). To find out the
+differences with today's results, you can inspect that specific log by providing
+a unique part of its filename to `which_log`:
+
+```{r, eval=FALSE}
+# Inspect yesterday's successful build log
+rxp_inspect(which_log = "20250814")
+```
+
+This allows you to compare yesterday's build summary with today's one.
+Furthermore, you can use `rxp_read()` with `which_log` to load the *actual
+artifact* from the previous run, which is invaluable for comparing data or model
+outputs across different versions of your pipeline.
+
+```{r, eval=FALSE}
+# Load the output of `mtcars_head` from yesterday's build
+old_head <- rxp_read("mtcars_head", which_log = "20250814")
+```
+
+## Conclusion
+
+Debugging in `{rixpress}` is a systematic process supported by a powerful set of
+tools. By following this workflow, you can efficiently resolve issues in your
+pipelines:
+
+- For runtime errors, start with `rxp_inspect()` to find the failed derivation and its error message.
+- For logical or structural errors, use `rxp_trace()` to understand the dependencies.
+- To speed up iteration, use `noop_build = TRUE` to isolate the part of the pipeline you are working on.
+- For regressions, use `rxp_list_logs()` and the `which_log` argument to travel back in time and compare results.
