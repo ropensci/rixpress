@@ -393,7 +393,7 @@ rxp_gc <- function(
       for (i in seq_len(nrow(logs_to_delete))) {
         log_file <- logs_to_delete$filename[i]
         log_path <- file.path(project_path, "_rixpress", log_file)
-        exists_indicator <- if (file.exists(log_path)) "✓" else "✗"
+        exists_indicator <- if (file.exists(log_path)) "[OK]" else "[X]"
         message("  ", exists_indicator, " ", log_file)
       }
     }
@@ -593,7 +593,7 @@ rxp_gc <- function(
         status <- attr(delete_out, "status")
         if (is.null(status) || status == 0) {
           total_deleted <- total_deleted + 1L
-          message("    ✓ Successfully deleted")
+          message("    [OK] Successfully deleted")
           if (verbose && length(delete_out)) {
             cat("    ", delete_out, sep = "\n    ", "\n")
           }
@@ -607,13 +607,13 @@ rxp_gc <- function(
             ))
           ) {
             referenced_paths <- c(referenced_paths, path)
-            message("    ⚠ Skipped (still referenced)")
+            message("    [!] Skipped (still referenced)")
             if (verbose) {
               message("    Details: ", paste(delete_out, collapse = " "))
             }
           } else {
             failed_paths <- c(failed_paths, path)
-            message("    ✗ Failed to delete")
+            message("    [X] Failed to delete")
             if (verbose) {
               cat("    ", delete_out, sep = "\n    ", "\n")
             }
@@ -622,7 +622,7 @@ rxp_gc <- function(
       },
       error = function(e) {
         failed_paths <<- c(failed_paths, path)
-        message("    ✗ Error: ", conditionMessage(e))
+        message("    [X] Error: ", conditionMessage(e))
       }
     )
   }
@@ -729,7 +729,7 @@ rxp_gc <- function(
       )
 
       if (!file.exists(log_path)) {
-        message("    ⚠ File not found (already deleted?)")
+        message("    [!] File not found (already deleted?)")
         next
       }
 
@@ -738,15 +738,15 @@ rxp_gc <- function(
           unlink(log_path)
           if (!file.exists(log_path)) {
             log_files_deleted <- log_files_deleted + 1L
-            message("    ✓ Successfully deleted")
+            message("    [OK] Successfully deleted")
           } else {
             log_files_failed <- c(log_files_failed, log_file)
-            message("    ✗ Failed to delete (file still exists)")
+            message("    [X] Failed to delete (file still exists)")
           }
         },
         error = function(e) {
           log_files_failed <<- c(log_files_failed, log_file)
-          message("    ✗ Error: ", conditionMessage(e))
+          message("    [X] Error: ", conditionMessage(e))
         }
       )
     }
