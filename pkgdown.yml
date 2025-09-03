@@ -7,12 +7,13 @@ articles:
   core-functions: core-functions.html
   debugging: debugging.html
   gc: gc.html
+  importing-data: importing-data.html
   intro-concepts: intro-concepts.html
   polyglot-julia: polyglot-julia.html
   polyglot: polyglot.html
   scope: scope.html
   tutorial: tutorial.html
-last_built: 2025-09-03T14:40Z
+last_built: 2025-09-03T15:34Z
 urls:
   reference: https://b-rodrigues.github.io/rixpress/reference
   article: https://b-rodrigues.github.io/rixpress/articles
