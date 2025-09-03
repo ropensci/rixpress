@@ -10,6 +10,7 @@ articles:
   - scope
   - core-functions
   - tutorial
+  - importing-data
   - debugging
   - gc
 - title: Polyglot pipelines
