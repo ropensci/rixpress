@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_trace.R
 \name{rxp_trace}
 \alias{rxp_trace}
-\title{Trace lineage for derivations using _rixpress/dag.json}
+\title{Trace lineage of derivations}
 \usage{
 rxp_trace(
   name = NULL,
@@ -12,15 +12,15 @@ rxp_trace(
 )
 }
 \arguments{
-\item{name}{Optional character scalar. Name of the derivation to inspect.
-If NULL (default), the function prints the whole pipeline (inverted global view).}
+\item{name}{Charcter, defaults to NULL. Name of the derivation to inspect.
+If NULL, the function prints the whole pipeline (inverted global view).}
 
-\item{dag_file}{Character scalar. Path to dag.json. Defaults to "_rixpress/dag.json".}
+\item{dag_file}{Character, defaults to "_rixpress/dag.json". Path to dag.json.}
 
-\item{transitive}{Logical, default TRUE. If TRUE, show transitive closure and
+\item{transitive}{Logical, defaults to TRUE. If TRUE, show transitive closure and
 mark transitive-only nodes with "*". If FALSE, show immediate neighbours only.}
 
-\item{include_self}{Logical, default FALSE. If TRUE, include \code{name} itself in the results.}
+\item{include_self}{Logical, defaults to FALSE. If TRUE, include \code{name} itself in the results.}
 }
 \value{
 Invisibly, a named list mapping each inspected derivation name to a
@@ -30,8 +30,7 @@ list with elements:
 The function also prints a tree representation to the console.
 }
 \description{
-Reads the DAG produced by rxp_populate (stored by default in
-_rixpress/dag.json) and prints dependencies and reverse dependencies.
+Trace lineage of derivations
 }
 \seealso{
 Other utilities: 

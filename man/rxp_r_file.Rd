@@ -10,7 +10,22 @@ rxp_r_file(...)
 \item{...}{
   Arguments passed on to \code{\link[=rxp_file]{rxp_file}}
   \describe{
-    \item{\code{}}{}
+    \item{\code{name}}{Symbol, the name of the derivation.}
+    \item{\code{path}}{Character, the file path to include (e.g., "data/mtcars.shp") or
+a folder path (e.g., "data"). See details.}
+    \item{\code{read_function}}{Function, an R function to read the data, taking one
+argument (the path). This can be a user-defined function that is made available
+using \code{user_functions}.}
+    \item{\code{user_functions}}{Character vector, user-defined functions to include.
+This should be a script (or scripts) containing user-defined functions
+to include during the build process for this derivation. It is recommended
+to use one script per function, and only include the required script(s) in
+the derivation.}
+    \item{\code{nix_env}}{Character, path to the Nix environment file, default is
+"default.nix".}
+    \item{\code{env_var}}{List, defaults to NULL. A named list of environment variables
+to set before running the R script, e.g., c(VAR = "hello"). Each entry will
+be added as an export statement in the build phase.}
   }}
 }
 \value{
@@ -18,6 +33,15 @@ An object of class \code{rxp_derivation}.
 }
 \description{
 Creates a Nix expression that reads in a file (or folder of data) using R.
+}
+\details{
+The basic usage is to provide a path to a file, and the function
+to read it. For example: \code{rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)}.
+It is also possible instead to point to a folder that contains many
+files that should all be read at once, for example:
+\verb{rxp_r_file(many_csvs, path = "data", read_function = \\(x)(readr::read_csv(list.files(x, full.names = TRUE, pattern = ".csv$"))))}
+or for a Python example that uses a user-defined function:
+\code{rxp_py_file(mtcars_py, path = 'data', "read_many_csvs", user_functions = "functions.py")}.
 }
 \seealso{
 Other derivations: 

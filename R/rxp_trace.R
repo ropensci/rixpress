@@ -1,15 +1,12 @@
-#' Trace lineage for derivations using _rixpress/dag.json
-#'
-#' Reads the DAG produced by rxp_populate (stored by default in
-#' _rixpress/dag.json) and prints dependencies and reverse dependencies.
+#' Trace lineage of derivations
 #'
 #' @family utilities
-#' @param name Optional character scalar. Name of the derivation to inspect.
-#'   If NULL (default), the function prints the whole pipeline (inverted global view).
-#' @param dag_file Character scalar. Path to dag.json. Defaults to "_rixpress/dag.json".
-#' @param transitive Logical, default TRUE. If TRUE, show transitive closure and
+#' @param name Charcter, defaults to NULL. Name of the derivation to inspect.
+#'   If NULL, the function prints the whole pipeline (inverted global view).
+#' @param dag_file Character, defaults to "_rixpress/dag.json". Path to dag.json.
+#' @param transitive Logical, defaults to TRUE. If TRUE, show transitive closure and
 #'   mark transitive-only nodes with "*". If FALSE, show immediate neighbours only.
-#' @param include_self Logical, default FALSE. If TRUE, include `name` itself in the results.
+#' @param include_self Logical, defaults to FALSE. If TRUE, include `name` itself in the results.
 #' @importFrom utils head
 #' @return Invisibly, a named list mapping each inspected derivation name to a
 #'   list with elements:

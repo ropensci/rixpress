@@ -354,9 +354,22 @@ process_read_function <- function(
 #' environment specification.
 #'
 #' @param lang `"R"`, `"Py"` or `"Jl"`.
-#' @inheritParams rxp_r_file
-#' @inheritParams rxp_py_file
-#' @inheritParams rxp_jl_file
+#' @param name Symbol, the name of the derivation.
+#' @param path Character, the file path to include (e.g., "data/mtcars.shp") or
+#'   a folder path (e.g., "data"). See details.
+#' @param read_function Function, an R function to read the data, taking one
+#'   argument (the path). This can be a user-defined function that is made available
+#'   using `user_functions`.
+#' @param user_functions Character vector, user-defined functions to include.
+#'   This should be a script (or scripts) containing user-defined functions
+#'   to include during the build process for this derivation. It is recommended
+#'   to use one script per function, and only include the required script(s) in
+#'   the derivation.
+#' @param nix_env Character, path to the Nix environment file, default is
+#'   "default.nix".
+#' @param env_var List, defaults to NULL. A named list of environment variables
+#'   to set before running the R script, e.g., c(VAR = "hello"). Each entry will
+#'   be added as an export statement in the build phase.
 #' @return An object of class `rxp_derivation`.
 #' @keywords internal
 rxp_file <- function(
@@ -455,6 +468,13 @@ create_rxp_derivation <- function(
 #' @family derivations
 #' @return An object of class `rxp_derivation`.
 #' @inheritDotParams rxp_file name:env_var
+#' @details The basic usage is to provide a path to a file, and the function
+#'   to read it. For example: `rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)`.
+#'   It is also possible instead to point to a folder that contains many
+#'   files that should all be read at once, for example:
+#'   `rxp_r_file(many_csvs, path = "data", read_function = \(x)(readr::read_csv(list.files(x, full.names = TRUE, pattern = ".csv$"))))`
+#'   or for a Python example that uses a user-defined function:
+#'   `rxp_py_file(mtcars_py, path = 'data', "read_many_csvs", user_functions = "functions.py")`.
 #' @export
 rxp_r_file <- function(...) rxp_file("R", ...)
 
@@ -463,6 +483,13 @@ rxp_r_file <- function(...) rxp_file("R", ...)
 #' @family derivations
 #' @return An object of class `rxp_derivation`.
 #' @inheritDotParams rxp_file name:env_var
+#' @details The basic usage is to provide a path to a file, and the function
+#'   to read it. For example: `rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)`.
+#'   It is also possible instead to point to a folder that contains many
+#'   files that should all be read at once, for example:
+#'   `rxp_r_file(many_csvs, path = "data", read_function = \(x)(readr::read_csv(list.files(x, full.names = TRUE, pattern = ".csv$"))))`
+#'   or for a Python example that uses a user-defined function:
+#'   `rxp_py_file(mtcars_py, path = 'data', "read_many_csvs", user_functions = "functions.py")`.
 #' @export
 rxp_py_file <- function(...) rxp_file("Py", ...)
 
@@ -471,6 +498,13 @@ rxp_py_file <- function(...) rxp_file("Py", ...)
 #' @family derivations
 #' @return An object of class `rxp_derivation`.
 #' @inheritDotParams rxp_file name:env_var
+#' @details The basic usage is to provide a path to a file, and the function
+#'   to read it. For example: `rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)`.
+#'   It is also possible instead to point to a folder that contains many
+#'   files that should all be read at once, for example:
+#'   `rxp_r_file(many_csvs, path = "data", read_function = \(x)(readr::read_csv(list.files(x, full.names = TRUE, pattern = ".csv$"))))`
+#'   or for a Python example that uses a user-defined function:
+#'   `rxp_py_file(mtcars_py, path = 'data', "read_many_csvs", user_functions = "functions.py")`.
 #' @export
 rxp_jl_file <- function(...) rxp_file("Jl", ...)
 

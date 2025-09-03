@@ -16,6 +16,28 @@ rxp_file(
 }
 \arguments{
 \item{lang}{\code{"R"}, \code{"Py"} or \code{"Jl"}.}
+
+\item{name}{Symbol, the name of the derivation.}
+
+\item{path}{Character, the file path to include (e.g., "data/mtcars.shp") or
+a folder path (e.g., "data"). See details.}
+
+\item{read_function}{Function, an R function to read the data, taking one
+argument (the path). This can be a user-defined function that is made available
+using \code{user_functions}.}
+
+\item{user_functions}{Character vector, user-defined functions to include.
+This should be a script (or scripts) containing user-defined functions
+to include during the build process for this derivation. It is recommended
+to use one script per function, and only include the required script(s) in
+the derivation.}
+
+\item{nix_env}{Character, path to the Nix environment file, default is
+"default.nix".}
+
+\item{env_var}{List, defaults to NULL. A named list of environment variables
+to set before running the R script, e.g., c(VAR = "hello"). Each entry will
+be added as an export statement in the build phase.}
 }
 \value{
 An object of class \code{rxp_derivation}.
