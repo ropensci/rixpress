@@ -66,8 +66,33 @@
 
 
 <dl><dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Arguments passed on to <code><a href="rxp_file.html">rxp_file</a></code></p><dl><dt><code></code></dt>
-<dd></dd>
+<dd><p>Arguments passed on to <code><a href="rxp_file.html">rxp_file</a></code></p><dl><dt><code>name</code></dt>
+<dd><p>Symbol, the name of the derivation.</p></dd>
+
+    <dt><code>path</code></dt>
+<dd><p>Character, the file path to include (e.g., "data/mtcars.shp") or
+a folder path (e.g., "data"). See details.</p></dd>
+
+    <dt><code>read_function</code></dt>
+<dd><p>Function, an R function to read the data, taking one
+argument (the path). This can be a user-defined function that is made available
+using <code>user_functions</code>.</p></dd>
+
+    <dt><code>user_functions</code></dt>
+<dd><p>Character vector, user-defined functions to include.
+This should be a script (or scripts) containing user-defined functions
+to include during the build process for this derivation. It is recommended
+to use one script per function, and only include the required script(s) in
+the derivation.</p></dd>
+
+    <dt><code>nix_env</code></dt>
+<dd><p>Character, path to the Nix environment file, default is
+"default.nix".</p></dd>
+
+    <dt><code>env_var</code></dt>
+<dd><p>List, defaults to NULL. A named list of environment variables
+to set before running the R script, e.g., c(VAR = "hello"). Each entry will
+be added as an export statement in the build phase.</p></dd>
 
 
 </dl></dd>
@@ -76,6 +101,16 @@
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An object of class <code>rxp_derivation</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The basic usage is to provide a path to a file, and the function
+to read it. For example: <code>rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)</code>.
+It is also possible instead to point to a folder that contains many
+files that should all be read at once, for example:
+<code>rxp_r_file(many_csvs, path = "data", read_function = \(x)(readr::read_csv(list.files(x, full.names = TRUE, pattern = ".csv$"))))</code>
+or for a Python example that uses a user-defined function:
+<code>rxp_py_file(mtcars_py, path = 'data', "read_many_csvs", user_functions = "functions.py")</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

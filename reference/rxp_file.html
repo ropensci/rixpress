@@ -82,6 +82,40 @@ environment specification.</p>
 <dl><dt id="arg-lang">lang<a class="anchor" aria-label="anchor" href="#arg-lang"></a></dt>
 <dd><p><code>"R"</code>, <code>"Py"</code> or <code>"Jl"</code>.</p></dd>
 
+
+<dt id="arg-name">name<a class="anchor" aria-label="anchor" href="#arg-name"></a></dt>
+<dd><p>Symbol, the name of the derivation.</p></dd>
+
+
+<dt id="arg-path">path<a class="anchor" aria-label="anchor" href="#arg-path"></a></dt>
+<dd><p>Character, the file path to include (e.g., "data/mtcars.shp") or
+a folder path (e.g., "data"). See details.</p></dd>
+
+
+<dt id="arg-read-function">read_function<a class="anchor" aria-label="anchor" href="#arg-read-function"></a></dt>
+<dd><p>Function, an R function to read the data, taking one
+argument (the path). This can be a user-defined function that is made available
+using <code>user_functions</code>.</p></dd>
+
+
+<dt id="arg-user-functions">user_functions<a class="anchor" aria-label="anchor" href="#arg-user-functions"></a></dt>
+<dd><p>Character vector, user-defined functions to include.
+This should be a script (or scripts) containing user-defined functions
+to include during the build process for this derivation. It is recommended
+to use one script per function, and only include the required script(s) in
+the derivation.</p></dd>
+
+
+<dt id="arg-nix-env">nix_env<a class="anchor" aria-label="anchor" href="#arg-nix-env"></a></dt>
+<dd><p>Character, path to the Nix environment file, default is
+"default.nix".</p></dd>
+
+
+<dt id="arg-env-var">env_var<a class="anchor" aria-label="anchor" href="#arg-env-var"></a></dt>
+<dd><p>List, defaults to NULL. A named list of environment variables
+to set before running the R script, e.g., c(VAR = "hello"). Each entry will
+be added as an export statement in the build phase.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
