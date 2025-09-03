@@ -14,16 +14,18 @@ knitr::opts_chunk$set(
 )
 ```
 
-A crucial first step in any data analysis pipeline is importing data. 
-The `{rixpress}` package provides a flexible set of functions, `rxp_r_file`, `rxp_py_file`, and `rxp_jl_file`, to handle various data import scenarios in a reproducible way. 
-This vignette will guide you through the common use cases.
+A crucial first step in any data analysis pipeline is importing data. The
+`{rixpress}` package provides a flexible set of functions, `rxp_r_file`,
+`rxp_py_file`, and `rxp_jl_file`, to handle various data import scenarios in a
+reproducible way. This vignette will guide you through the common use cases.
 
 For more examples, check out the [rixpress_demos repository](https://github.com/b-rodrigues/rixpress_demos/).
 
 ## Importing a single local file
 
-The most straightforward case is reading a single data file from your local project directory. 
-You need to provide a `name` for the resulting R object, the `path` to the file, and a `read_function` to process it.
+The most straightforward case is reading a single data file from your local
+project directory. You need to provide a `name` for the resulting R object, the
+`path` to the file, and a `read_function` to process it.
 
 ```{r, eval = FALSE}
 library(rixpress)
@@ -40,13 +42,15 @@ list(
 In this example, `rxp_r_file` creates a derivation that:
 
 1. Copies `data/mtcars.csv` into a sandboxed build environment.
-2. Executes the provided anonymous function, `\(x) (read.csv(file = x, sep = "|"))`, where `x` is the path to the copied file inside the sandbox.
+2. Executes the provided anonymous function, `\(x) (read.csv(file = x, sep =
+   "|"))`, where `x` is the path to the copied file inside the sandbox.
 3. Saves the resulting data frame as an object named `mtcars` for subsequent steps in the pipeline.
 
 ## Importing a single file from the internet
 
-You can also directly import a file from a URL. Simply provide the URL as the `path`. 
-`{rixpress}` handles the download and ensures reproducibility by caching the file using its cryptographic hash.
+You can also directly import a file from a URL. Simply provide the URL as the
+`path`. `{rixpress}` handles the download and ensures reproducibility by caching
+the file using its cryptographic hash.
 
 ```{r, eval = FALSE}
 library(rixpress)
@@ -60,13 +64,20 @@ list(
 ...
 ```
 
-Behind the scenes, `{rixpress}` uses Nix to fetch the file, ensuring that the exact same version of the file is used every time the pipeline is run.
+Behind the scenes, `{rixpress}` uses Nix to fetch the file, ensuring that the
+exact same version of the file is used every time the pipeline is run. This is
+the only time the build sandbox can access a remote file: it's because the file
+actually gets downloaded by Nix ahead of time. If you need to access data in
+real-time from an API, then you'll need to download the data yourself
+outside of `{rixpress}` pipeline, and then import it in the pipeline using
+`rxp_r_file()`.
 
 ## Importing many files from a directory
 
-Often, you need to import and combine multiple files from a single directory. 
-  To do this, set the `path` argument to the directory's path. 
-Your `read_function` will then receive the path to this directory inside the build environment and must contain the logic to handle all the files within.
+Often, you need to import and combine multiple files from a single directory. To
+do this, set the `path` argument to the directory's path. Your `read_function`
+will then receive the path to this directory inside the build environment and
+must contain the logic to handle all the files within.
 
 Here is an example in R that reads all files in the `data` directory:
 
@@ -85,7 +96,8 @@ list(
   rxp_populate(project_path = ".")
 ```
 
-And here's a similar example using Python, which calls a user-defined function `read_many_csvs` from an external script:
+And here's a similar example using Python, which calls a user-defined function
+`read_many_csvs` from an external script:
 
 ```{r, eval = FALSE}
 library(rixpress)
@@ -113,21 +125,27 @@ def read_many_csvs(dir_path):
     return polars.concat([polars.read_csv(f) for f in csv_files])
 ```
 
-In both cases, the entire `data` directory is copied into the build sandbox, and the `read_function` is responsible for listing the files and reading them.
+In both cases, the entire `data` directory is copied into the build sandbox, and
+the `read_function` is responsible for listing the files and reading them.
 
 ## Importing files with dependencies (e.g., Shapefiles)
 
-Some file formats, like the ESRI Shapefile, consist of multiple "sidecar" files (e.g., `.shp`, `.shx`, `.dbf`) that must be present together for the data to be read correctly. 
-Even though you might only point the read function to the `.shp` file, the other component files need to be in the same directory.
+Some file formats, like the ESRI Shapefile, consist of multiple "sidecar" files
+(e.g., `.shp`, `.shx`, `.dbf`) that must be present together for the data to be
+read correctly. Even though you might only point the read function to the `.shp`
+file, the other component files need to be in the same directory.
 
-`{rixpress}` handles this by allowing you to specify a directory as the `path`. 
-This ensures all necessary files are copied into the build environment. 
-However, you must then provide the *full path to the main file inside the build environment* within your `read_function`.
+`{rixpress}` handles this by allowing you to specify a directory as the `path`.
+This ensures all necessary files are copied into the build environment. However,
+you must then provide the *full path to the main file inside the build
+environment* within your `read_function`.
 
-In a `{rixpress}` pipeline, local files and directories specified in `path` are copied into a sub-directory called `input_folder`. 
-Therefore, the path to your data inside the Nix sandbox will be `input_folder/YOUR_PATH`.
+In a `{rixpress}` pipeline, local files and directories specified in `path` are
+copied into a sub-directory called `input_folder`. Therefore, the path to your
+data inside the Nix sandbox will be `input_folder/YOUR_PATH`.
 
-The following example shows how to read a shapefile using Python and `geopandas`:
+The following example shows how to read a shapefile using Python and
+`geopandas`:
 
 ```{r, eval = FALSE}
 library(rixpress)
@@ -151,11 +169,62 @@ list(
 
 Here's what happens:
 
-1. The `path = 'data'` argument tells `{rixpress}` to copy the entire `data` directory into the sandbox.
-2. Inside the sandbox, the shapefile is located at `input_folder/data/oceans.shp`.
-3. The `read_function` is a lambda function that explicitly calls `geopandas.read_file` with this hardcoded path, allowing it to find the `.shp` file and its necessary sidecar files.
+1. The `path = 'data'` argument tells `{rixpress}` to copy the entire `data`
+   directory into the sandbox.
+2. Inside the sandbox, the shapefile is located at
+   `input_folder/data/oceans.shp`.
+3. The `read_function` is a lambda function that explicitly calls
+   `geopandas.read_file` with this hardcoded path, allowing it to find the
+   `.shp` file and its necessary sidecar files.
+
+A perhaps cleaner alternative is to write a function that takes the path to the
+data folder as an input, and then have this function look in that folder for the
+shapefile, and pass its path to `geopandas.read_file`. For example
+
+```py
+def read_shp(path_folder):
+    # Look for files ending with .shp in the given folder
+    candidates = glob.glob(os.path.join(path_folder, "*.shp"))
+    if not candidates:
+        raise FileNotFoundError(f"No .shp file found in {path_folder}")
+
+    shapefile = candidates[0]
+    return gpd.read_file(shapefile, driver="ESRI Shapefile")
+```
+
+We can then rewrite the derivation like so:
+
+```r
+rxp_py_file(
+    name = gdf,
+    path = 'data',
+    read_function = "read_shp",
+    user_functions = "functions.py"
+  ),
+```
+
+(assuming our function is defined in a script called `functions.py`).
+
+Because our Python function also uses `glob` and `os`, we need to import these
+functions using `add_import()`. We can add this just after calling
+`rxp_populate()`:
+
+
+```r
+  rxp_populate(
+    project_path = ".",
+    py_imports = c(geopandas = "import geopandas as gpd")
+  )
+
+# This is needed for the function defined in functions.py
+add_import("import os", "default.nix")
+add_import("import glob", "default.nix")
+```
 
 ## Conclusion
 
-The `rxp_*_file` functions in `{rixpress}` offer a powerful and consistent interface for ingesting data into your reproducible pipelines, whether your data lives locally, on the web, as a single file, or as a collection of files. 
-By understanding how to specify the `path` and tailor the `read_function`, you can handle a wide variety of data import tasks.
+The `rxp_*_file` functions in `{rixpress}` offer a powerful and consistent
+interface for ingesting data into your reproducible pipelines, whether your data
+lives locally, on the web, as a single file, or as a collection of files. By
+understanding how to specify the `path` and tailor the `read_function`, you can
+handle a wide variety of data import tasks.
