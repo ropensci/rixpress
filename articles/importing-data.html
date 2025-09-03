@@ -111,8 +111,8 @@ that:</p>
 <li>Copies <code>data/mtcars.csv</code> into a sandboxed build
 environment.</li>
 <li>Executes the provided anonymous function,
-<code>\(x) (read.csv(file = x, sep = "|"))</code>, where <code>x</code>
-is the path to the copied file inside the sandbox.</li>
+<code>\(x) (read.csv(file = x, sep =    "|"))</code>, where
+<code>x</code> is the path to the copied file inside the sandbox.</li>
 <li>Saves the resulting data frame as an object named
 <code>mtcars</code> for subsequent steps in the pipeline.</li>
 </ol>
@@ -135,7 +135,12 @@ cryptographic hash.</p>
 <span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>...</span></code></pre></div>
 <p>Behind the scenes, <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> uses Nix to fetch the
 file, ensuring that the exact same version of the file is used every
-time the pipeline is run.</p>
+time the pipeline is run. This is the only time the build sandbox can
+access a remote file: it’s because the file actually gets downloaded by
+Nix ahead of time. If you need to access data in real-time from an API,
+then you’ll need to download the data yourself outside of
+<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> pipeline, and then import it in the pipeline
+using <code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="importing-many-files-from-a-directory">Importing many files from a directory<a class="anchor" aria-label="anchor" href="#importing-many-files-from-a-directory"></a>
@@ -236,6 +241,40 @@ calls <code>geopandas.read_file</code> with this hardcoded path,
 allowing it to find the <code>.shp</code> file and its necessary sidecar
 files.</li>
 </ol>
+<p>A perhaps cleaner alternative is to write a function that takes the
+path to the data folder as an input, and then have this function look in
+that folder for the shapefile, and pass its path to
+<code>geopandas.read_file</code>. For example</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode py"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="kw">def</span> read_shp(path_folder):</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>    <span class="co"># Look for files ending with .shp in the given folder</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>    candidates <span class="op">=</span> glob.glob(os.path.join(path_folder, <span class="st">"*.shp"</span>))</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> candidates:</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">FileNotFoundError</span>(<span class="ss">f"No .shp file found in </span><span class="sc">{</span>path_folder<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>    shapefile <span class="op">=</span> candidates[<span class="dv">0</span>]</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>    <span class="cf">return</span> gpd.read_file(shapefile, driver<span class="op">=</span><span class="st">"ESRI Shapefile"</span>)</span></code></pre></div>
+<p>We can then rewrite the derivation like so:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">rxp_py_file</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>    <span class="at">name =</span> gdf,</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>    <span class="at">path =</span> <span class="st">'data'</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>    <span class="at">read_function =</span> <span class="st">"read_shp"</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>    <span class="at">user_functions =</span> <span class="st">"functions.py"</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>  ),</span></code></pre></div>
+<p>(assuming our function is defined in a script called
+<code>functions.py</code>).</p>
+<p>Because our Python function also uses <code>glob</code> and
+<code>os</code>, we need to import these functions using
+<code><a href="../reference/add_import.html">add_import()</a></code>. We can add this just after calling
+<code><a href="../reference/rxp_populate.html">rxp_populate()</a></code>:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span>  <span class="fu"><a href="../reference/rxp_populate.html">rxp_populate</a></span><span class="op">(</span></span>
+<span>    project_path <span class="op">=</span> <span class="st">"."</span>,</span>
+<span>    py_imports <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>geopandas <span class="op">=</span> <span class="st">"import geopandas as gpd"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="co"># This is needed for the function defined in functions.py</span></span>
+<span><span class="fu"><a href="../reference/add_import.html">add_import</a></span><span class="op">(</span><span class="st">"import os"</span>, <span class="st">"default.nix"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/add_import.html">add_import</a></span><span class="op">(</span><span class="st">"import glob"</span>, <span class="st">"default.nix"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="conclusion">Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>
