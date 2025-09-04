@@ -136,7 +136,7 @@ You can export the cache into a file and import it on another machine
 (or in CI) to avoid rebuilding everything from scratch using
 `rxp_export_artifacts()` and `rxp_import_artifacts()` respectively.
 
-`rxp_populate()` is flexible; please consult the examples repository for
+`{rixpress}` is flexible; please consult the examples repository for
 many different patterns and complete demos:
 
 <https://github.com/b-rodrigues/rixpress_demos/tree/master>
@@ -159,11 +159,8 @@ Since there’s little point in installing `{rixpress}` if you don’t use
 `Nix`, the ideal way to install `{rixpress}` is instead to use `{rix}`
 to set up a reproducible environment that includes `{rixpress}` and the
 other required dependencies for your project. Take a look at the
-[introductory concepts
-vignette](https://b-rodrigues.github.io/rixpress/articles/a-intro_concepts.html)
-and [basic usage
-vignette](https://b-rodrigues.github.io/rixpress/articles/b-basic_pipeline.html)
-to get started!
+`vignette("intro-concepts")` and `vignette("core-functions")` to get
+started!
 
 That being said, `{rixpress}` is a regular R package, so you can install
 it from GitHub directly (while it’s not on CRAN):
@@ -191,5 +188,5 @@ If you plan to contribute documentation or vignettes, please:
 
 ## Scope
 
-Please refer to the vignette titled “Scope and Roadmap” to learn more
-about what `{rixpress}` will and will not support.
+Please refer to the `vignette("scope")` to learn more about what
+`{rixpress}` will and will not support.

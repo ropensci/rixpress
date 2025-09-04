@@ -12,8 +12,8 @@ vignette: >
 # Overview
 
 `rixpress` focuses on “micropipelines”: pipelines executed on a single machine
-for small-to-medium projects, with strong, reproducible environments via Nix and
-a simple, pragmatic user experience from R. This document clarifies what
+for small-to-medium projects, with reproducible environments via Nix and a
+simple, pragmatic user experience from R. This document clarifies what
 `rixpress` is and is not, and lays out a short roadmap so users and contributors
 can align expectations and proposals.
 
@@ -21,7 +21,7 @@ Key goals:
 
 - Single-machine, small-to-medium pipelines (“micropipelines”).
 - Reproducible builds pinned by Nix.
-- Simple DAG wiring, minimal ceremony.
+- Simple DAG wiring.
 - Polyglot steps where R is first-class, with pragmatic Python/Julia interop.
 - CI-friendly (e.g., GitHub Actions) without requiring distributed stacks.
 
@@ -53,7 +53,7 @@ Key goals:
 # Primary audience
 
 - R users (and teams) who want strong reproducibility via Nix without leaving R.
-- Python users that are not satisfied with current solution for micropipelines,
+- Python users that are not satisfied with current solutions for micropipelines,
   and who are ok with defining the pipeline as an R script.
 - Projects that fit on a developer’s workstation or CI runner:
   - Research, analysis, reporting.
@@ -91,14 +91,16 @@ clarify priorities. Timelines are indicative and may change.
 
 ## Near-term (next minor releases)
 
-- Robust expressions: support multi-line/brace R expressions in `rxp_r()` by emitting a small script file for the build phase.
+- Execution of several interconnected pipelines from a single script.
 
 ## Maybe later
 
-- Store helpers: summarise store size for latest run and a conservative GC helper with explicit confirmation.
-- Visualisation: Mermaid-first DAG output (portable, text-first), with simple CI rendering. Keep a minimal interactive option for large DAGs.
-- Lightweight progress summaries: per-derivation timestamps in build logs and simple summaries.
-- Optional: a separate low-level Nix client package if deeper integrations are needed across `rix` and `rixpress`.
+- Visualisation: Mermaid-first DAG output (portable, text-first), with simple CI
+  rendering. Keep a minimal interactive option for large DAGs.
+- Lightweight progress summaries: per-derivation timestamps in build logs and
+  simple summaries.
+- Optional: a separate low-level Nix client package if deeper integrations are
+  needed across `rix` and `rixpress`.
 
 ## Not planned
 
@@ -124,9 +126,10 @@ When you file an issue, please:
 
 # Related projects and inspiration
 
+- `{targets}`, whose user-experience `{rixpress}` takes the most inspiration from.
+- Micropipelines inspirations like Ploomber’s local-first approach (Python).
 - Nix and nixpkgs for declarative, reproducible environments.
 - `{rix}` for defining Nix environments from R.
-- Micropipelines inspirations like Ploomber’s local-first approach (Python).
 
 # Links
 
