@@ -525,7 +525,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
         function(dep) {
           func <- get_unserialize_func_for_dep(dep, unserialize_function, type)
           sprintf(
-            "%s = open(\\\"%s\\\", \\\"r\\\") do io; %s(io); end",
+            "%s = open(\\\\\\\"%s\\\\\\\", \\\\\\\"r\\\\\\\") do io; %s(io); end",
             dep,
             paste0("${", dep, "}/", dep),
             func
