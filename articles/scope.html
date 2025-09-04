@@ -85,16 +85,16 @@
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
 <p><code>rixpress</code> focuses on “micropipelines”: pipelines executed
-on a single machine for small-to-medium projects, with strong,
-reproducible environments via Nix and a simple, pragmatic user
-experience from R. This document clarifies what <code>rixpress</code> is
-and is not, and lays out a short roadmap so users and contributors can
-align expectations and proposals.</p>
+on a single machine for small-to-medium projects, with reproducible
+environments via Nix and a simple, pragmatic user experience from R.
+This document clarifies what <code>rixpress</code> is and is not, and
+lays out a short roadmap so users and contributors can align
+expectations and proposals.</p>
 <p>Key goals:</p>
 <ul>
 <li>Single-machine, small-to-medium pipelines (“micropipelines”).</li>
 <li>Reproducible builds pinned by Nix.</li>
-<li>Simple DAG wiring, minimal ceremony.</li>
+<li>Simple DAG wiring.</li>
 <li>Polyglot steps where R is first-class, with pragmatic Python/Julia
 interop.</li>
 <li>CI-friendly (e.g., GitHub Actions) without requiring distributed
@@ -143,7 +143,7 @@ targets (beyond what Nix + the current design support).</li>
 <ul>
 <li>R users (and teams) who want strong reproducibility via Nix without
 leaving R.</li>
-<li>Python users that are not satisfied with current solution for
+<li>Python users that are not satisfied with current solutions for
 micropipelines, and who are ok with defining the pipeline as an R
 script.</li>
 <li>Projects that fit on a developer’s workstation or CI runner:
@@ -200,17 +200,14 @@ change.</p>
 <h3 id="near-term-next-minor-releases">Near-term (next minor releases)<a class="anchor" aria-label="anchor" href="#near-term-next-minor-releases"></a>
 </h3>
 <ul>
-<li>Robust expressions: support multi-line/brace R expressions in
-<code><a href="../reference/rxp_r.html">rxp_r()</a></code> by emitting a small script file for the build
-phase.</li>
+<li>Execution of several interconnected pipelines from a single
+script.</li>
 </ul>
 </div>
 <div class="section level3">
 <h3 id="maybe-later">Maybe later<a class="anchor" aria-label="anchor" href="#maybe-later"></a>
 </h3>
 <ul>
-<li>Store helpers: summarise store size for latest run and a
-conservative GC helper with explicit confirmation.</li>
 <li>Visualisation: Mermaid-first DAG output (portable, text-first), with
 simple CI rendering. Keep a minimal interactive option for large
 DAGs.</li>
@@ -255,11 +252,14 @@ that preserves simplicity and reproducibility.</p>
 <h2 id="related-projects-and-inspiration">Related projects and inspiration<a class="anchor" aria-label="anchor" href="#related-projects-and-inspiration"></a>
 </h2>
 <ul>
+<li>
+<a href="https://docs.ropensci.org/targets/" class="external-link">targets</a>, whose user-experience
+<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> takes the most inspiration from.</li>
+<li>Micropipelines inspirations like Ploomber’s local-first approach
+(Python).</li>
 <li>Nix and nixpkgs for declarative, reproducible environments.</li>
 <li>
 <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> for defining Nix environments from R.</li>
-<li>Micropipelines inspirations like Ploomber’s local-first approach
-(Python).</li>
 </ul>
 </div>
 <div class="section level2">
