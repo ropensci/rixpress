@@ -196,6 +196,7 @@ sanitize_nix_env <- function(nix_env) {
 #' @param user_code Source/import statements for user functions
 #' @param out_name Name of the output object
 #' @param rel_path Relative path to input file
+#' @param serialize_str Language-specific serializer identifier or NULL for default
 #' @return Character vector of commands
 #' @keywords internal
 build_language_commands <- function(
@@ -203,7 +204,8 @@ build_language_commands <- function(
   read_func,
   user_code,
   out_name,
-  rel_path
+  rel_path,
+  serialize_str = NULL
 ) {
   user_lines <- if (nzchar(user_code)) {
     strsplit(user_code, "\n")[[1]]
@@ -213,28 +215,61 @@ build_language_commands <- function(
 
   switch(
     lang,
-    R = c(
-      "Rscript -e \"",
-      "source('libraries.R')",
-      user_lines,
-      sprintf("data <- do.call(%s, list('%s'))", read_func, rel_path),
-      sprintf("saveRDS(data, '%s')\"", out_name)
-    ),
-    Py = c(
-      "python -c \"",
-      "exec(open('libraries.py').read())",
-      user_lines,
-      sprintf("file_path = '%s'", rel_path),
-      sprintf("data = eval('%s')(file_path)", read_func),
-      sprintf("with open('%s', 'wb') as f:", out_name),
-      "    pickle.dump(data, f)",
-      "\""
-    ),
-    Jl = c(
-      "# Julia derivation build",
-      user_lines,
-      sprintf("data = %s(\"%s\")", read_func, rel_path)
-    ),
+    R = {
+      ser_fun <- if (is.null(serialize_str)) "saveRDS" else serialize_str
+      ser_call <- sprintf("%s(data, '%s')", ser_fun, out_name)
+      c(
+        "Rscript -e \"",
+        "source('libraries.R')",
+        user_lines,
+        sprintf("data <- do.call(%s, list('%s'))", read_func, rel_path),
+        paste0(ser_call, "\"")
+      )
+    },
+    Py = {
+      if (is.null(serialize_str)) {
+        ser_lines <- c(
+          sprintf("with open('%s', 'wb') as f:", out_name),
+          "    pickle.dump(data, f)"
+        )
+      } else {
+        ser_lines <- c(sprintf("%s(data, '%s')", serialize_str, out_name))
+      }
+      c(
+        "python -c \"",
+        "exec(open('libraries.py').read())",
+        user_lines,
+        sprintf("file_path = '%s'", rel_path),
+        sprintf("data = eval('%s')(file_path)", read_func),
+        ser_lines,
+        "\""
+      )
+    },
+    Jl = {
+      # Escape double quotes within -e string
+      user_lines_jl <- gsub("\"", "\\\\\"", user_lines, fixed = TRUE)
+      read_line <- sprintf("data = %s(\\\"%s\\\")", read_func, rel_path)
+      ser_line <- if (is.null(serialize_str)) {
+        paste0(
+          "using Serialization; ",
+          "io = open(\\\"",
+          out_name,
+          "\\\", \\\"w\\\"); ",
+          "serialize(io, data); ",
+          "close(io)"
+        )
+      } else {
+        sprintf("%s(data, \\\"%s\\\")", serialize_str, out_name)
+      }
+      c(
+        "julia -e \"",
+        "if isfile(\\\"libraries.jl\\\"); include(\\\"libraries.jl\\\"); end;",
+        user_lines_jl,
+        read_line,
+        ser_line,
+        "\""
+      )
+    },
     stop("Unsupported lang: ", lang)
   )
 }
@@ -249,6 +284,7 @@ build_language_commands <- function(
 #' @param out_name Name of the output object (RDS/pickle file).
 #' @param path Input path (file or folder).
 #' @param user_functions Character vector of user function files.
+#' @param serialize_str Language-specific serializer identifier or NULL for default.
 #' @return A string with the build phase commands.
 #' @keywords internal
 build_phase <- function(
@@ -257,7 +293,8 @@ build_phase <- function(
   user_code,
   out_name,
   path,
-  user_functions = character(0)
+  user_functions = character(0),
+  serialize_str = NULL
 ) {
   if (is_remote_url(path)) {
     rel_name <- basename(path)
@@ -290,7 +327,8 @@ build_phase <- function(
     read_func,
     user_code,
     out_name,
-    rel_path
+    rel_path,
+    serialize_str
   )
   all_commands <- c(copy_line, lang_commands)
 
@@ -347,6 +385,61 @@ process_read_function <- function(
   )
 }
 
+#' Process serialize function for different languages
+#' @param serialize_function Function or character (language-dependent)
+#' @param lang Language string
+#' @param parent_env Environment from calling function for proper substitution
+#' @return Character string identifier for serializer, or NULL to use default
+#' @keywords internal
+process_serialize_function <- function(
+  serialize_function,
+  lang,
+  parent_env = parent.frame()
+) {
+  switch(
+    lang,
+    R = {
+      serialize_expr <- substitute(serialize_function, parent_env)
+      if (identical(serialize_expr, quote(NULL))) {
+        "saveRDS"
+      } else if (is.character(serialize_expr)) {
+        serialize_expr
+      } else {
+        deparse1(serialize_expr)
+      }
+    },
+    Py = {
+      if (is.null(serialize_function)) {
+        NULL
+      } else {
+        if (
+          !is.character(serialize_function) || length(serialize_function) != 1
+        ) {
+          stop(
+            "For Python, serialize_function must be a single character string or NULL"
+          )
+        }
+        serialize_function
+      }
+    },
+    Jl = {
+      if (is.null(serialize_function)) {
+        NULL
+      } else {
+        if (
+          !is.character(serialize_function) || length(serialize_function) != 1
+        ) {
+          stop(
+            "For Julia, serialize_function must be a single character string or NULL"
+          )
+        }
+        serialize_function
+      }
+    },
+    stop("Unsupported lang: ", lang)
+  )
+}
+
 #' Generic Nix expression builder for R, Python, and Julia data readers
 #'
 #' Creates a Nix derivation that reads a file or folder of data using R,
@@ -370,6 +463,11 @@ process_read_function <- function(
 #' @param env_var List, defaults to NULL. A named list of environment variables
 #'   to set before running the R script, e.g., c(VAR = "hello"). Each entry will
 #'   be added as an export statement in the build phase.
+#' @param serialize_function Function/character, defaults to NULL.
+#'   A language-specific serializer to write the loaded object to disk.
+#'   - R: function or symbol (e.g., `qs::qsave`) taking `(object, path)`. Defaults to `saveRDS`.
+#'   - Python: character name of a function taking `(object, path)`. Defaults to using `pickle.dump`.
+#'   - Julia: character name of a function taking `(object, path)`. Defaults to using `Serialization.serialize`.
 #' @return An object of class `rxp_derivation`.
 #' @keywords internal
 rxp_file <- function(
@@ -379,11 +477,17 @@ rxp_file <- function(
   read_function,
   user_functions = "",
   nix_env = "default.nix",
-  env_var = NULL
+  env_var = NULL,
+  serialize_function = NULL
 ) {
   out_name <- deparse1(substitute(name))
   user_functions <- clean_user_functions(user_functions)
   read_func_str <- process_read_function(read_function, lang, environment())
+  serialize_str <- process_serialize_function(
+    serialize_function,
+    lang,
+    environment()
+  )
 
   # Build components
   user_code <- build_user_code_cmd(user_functions, lang)
@@ -394,7 +498,8 @@ rxp_file <- function(
     user_code,
     out_name,
     path,
-    user_functions
+    user_functions,
+    serialize_str
   )
 
   # Add environment exports if present
@@ -410,8 +515,8 @@ rxp_file <- function(
     lang,
     "R" = "rxp_r",
     "Py" = "rxp_py",
-    "Jy" = "rxp_jl",
-    stop("Unknown derivation type: ", derivation_type)
+    "Jl" = "rxp_jl",
+    stop("Unknown derivation type for lang: ", lang)
   )
 
   snippet <- make_derivation_snippet(
@@ -422,13 +527,25 @@ rxp_file <- function(
     derivation_type = derivation_type
   )
 
+  default_serializer_label <- if (is.null(serialize_str)) {
+    switch(
+      lang,
+      R = "saveRDS",
+      Py = "pickle.dump",
+      Jl = "Serialization.serialize"
+    )
+  } else {
+    serialize_str
+  }
+
   create_rxp_derivation(
     out_name,
     snippet,
     lang,
     user_functions,
     nix_env,
-    env_var
+    env_var,
+    serialize_function = default_serializer_label
   )
 }
 
@@ -439,6 +556,7 @@ rxp_file <- function(
 #' @param user_functions Character vector
 #' @param nix_env Character nix environment
 #' @param env_var Named list of environment variables
+#' @param serialize_function Character serializer identifier (for display)
 #' @return rxp_derivation object
 #' @keywords internal
 create_rxp_derivation <- function(
@@ -447,7 +565,8 @@ create_rxp_derivation <- function(
   lang,
   user_functions,
   nix_env,
-  env_var
+  env_var,
+  serialize_function = NULL
 ) {
   structure(
     list(
@@ -457,7 +576,8 @@ create_rxp_derivation <- function(
       additional_files = "",
       user_functions = user_functions,
       nix_env = nix_env,
-      env_var = env_var
+      env_var = env_var,
+      serialize_function = serialize_function
     ),
     class = "rxp_derivation"
   )
@@ -467,7 +587,7 @@ create_rxp_derivation <- function(
 #'
 #' @family derivations
 #' @return An object of class `rxp_derivation`.
-#' @inheritDotParams rxp_file name:env_var
+#' @inheritDotParams rxp_file name:serialize_function
 #' @details The basic usage is to provide a path to a file, and the function
 #'   to read it. For example: `rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)`.
 #'   It is also possible instead to point to a folder that contains many
@@ -482,7 +602,7 @@ rxp_r_file <- function(...) rxp_file("R", ...)
 #'
 #' @family derivations
 #' @return An object of class `rxp_derivation`.
-#' @inheritDotParams rxp_file name:env_var
+#' @inheritDotParams rxp_file name:serialize_function
 #' @details The basic usage is to provide a path to a file, and the function
 #'   to read it. For example: `rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)`.
 #'   It is also possible instead to point to a folder that contains many
@@ -497,7 +617,7 @@ rxp_py_file <- function(...) rxp_file("Py", ...)
 #'
 #' @family derivations
 #' @return An object of class `rxp_derivation`.
-#' @inheritDotParams rxp_file name:env_var
+#' @inheritDotParams rxp_file name:serialize_function
 #' @details The basic usage is to provide a path to a file, and the function
 #'   to read it. For example: `rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)`.
 #'   It is also possible instead to point to a folder that contains many
