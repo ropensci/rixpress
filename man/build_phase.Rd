@@ -10,7 +10,8 @@ build_phase(
   user_code,
   out_name,
   path,
-  user_functions = character(0)
+  user_functions = character(0),
+  serialize_str = NULL
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ build_phase(
 \item{path}{Input path (file or folder).}
 
 \item{user_functions}{Character vector of user function files.}
+
+\item{serialize_str}{Language-specific serializer identifier or NULL for default.}
 }
 \value{
 A string with the build phase commands.

@@ -3,7 +3,7 @@ title: "Importing Data Files"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{importing-data}
-  %\VignetteEngine{knitr::rmmarkdown}
+  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 

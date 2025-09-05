@@ -11,7 +11,8 @@ rxp_file(
   read_function,
   user_functions = "",
   nix_env = "default.nix",
-  env_var = NULL
+  env_var = NULL,
+  serialize_function = NULL
 )
 }
 \arguments{
@@ -38,6 +39,14 @@ the derivation.}
 \item{env_var}{List, defaults to NULL. A named list of environment variables
 to set before running the R script, e.g., c(VAR = "hello"). Each entry will
 be added as an export statement in the build phase.}
+
+\item{serialize_function}{Function/character, defaults to NULL.
+A language-specific serializer to write the loaded object to disk.
+\itemize{
+\item R: function/symbol/character (e.g., \code{qs::qsave}) taking \verb{(object, path)}. Defaults to \code{saveRDS}.
+\item Python: character name of a function taking \verb{(object, path)}. Defaults to using \code{pickle.dump}.
+\item Julia: character name of a function taking \verb{(object, path)}. Defaults to using \code{Serialization.serialize}.
+}}
 }
 \value{
 An object of class \code{rxp_derivation}.

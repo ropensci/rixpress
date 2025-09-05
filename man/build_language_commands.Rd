@@ -4,7 +4,14 @@
 \alias{build_language_commands}
 \title{Build language-specific execution commands}
 \usage{
-build_language_commands(lang, read_func, user_code, out_name, rel_path)
+build_language_commands(
+  lang,
+  read_func,
+  user_code,
+  out_name,
+  rel_path,
+  serialize_str = NULL
+)
 }
 \arguments{
 \item{lang}{Language string}
@@ -16,6 +23,8 @@ build_language_commands(lang, read_func, user_code, out_name, rel_path)
 \item{out_name}{Name of the output object}
 
 \item{rel_path}{Relative path to input file}
+
+\item{serialize_str}{Language-specific serializer identifier or NULL for default}
 }
 \value{
 Character vector of commands
