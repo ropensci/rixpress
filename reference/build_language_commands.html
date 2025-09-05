@@ -59,7 +59,14 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">build_language_commands</span><span class="op">(</span><span class="va">lang</span>, <span class="va">read_func</span>, <span class="va">user_code</span>, <span class="va">out_name</span>, <span class="va">rel_path</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">build_language_commands</span><span class="op">(</span></span>
+<span>  <span class="va">lang</span>,</span>
+<span>  <span class="va">read_func</span>,</span>
+<span>  <span class="va">user_code</span>,</span>
+<span>  <span class="va">out_name</span>,</span>
+<span>  <span class="va">rel_path</span>,</span>
+<span>  serialize_str <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -84,6 +91,10 @@
 
 <dt id="arg-rel-path">rel_path<a class="anchor" aria-label="anchor" href="#arg-rel-path"></a></dt>
 <dd><p>Relative path to input file</p></dd>
+
+
+<dt id="arg-serialize-str">serialize_str<a class="anchor" aria-label="anchor" href="#arg-serialize-str"></a></dt>
+<dd><p>Language-specific serializer identifier or NULL for default</p></dd>
 
 </dl></div>
     <div class="section level2">
