@@ -50,6 +50,7 @@ build_user_code_cmd <- function(user_functions, lang) {
 
   files <- file.path("input_folder", user_functions)
   commands <- sprintf(LANG_CONFIG[[lang]]$source_cmd, files)
+
   paste(commands, collapse = "\n")
 }
 
@@ -247,7 +248,7 @@ build_language_commands <- function(
     },
     Jl = {
       # Escape double quotes within -e string
-      user_lines_jl <- gsub("\"", "\\\\\"", user_lines, fixed = TRUE)
+      user_lines_jl <- gsub("'", "\\\"", user_lines, fixed = TRUE)
       read_line <- sprintf("data = %s(\\\"%s\\\")", read_func, rel_path)
       ser_line <- if (is.null(serialize_str)) {
         paste0(
@@ -378,7 +379,7 @@ process_read_function <- function(
       } else {
         func_str <- deparse1(read_expr)
         func_str <- paste(func_str, collapse = " ")
-        gsub("\"", "'", func_str, fixed = TRUE)
+        gsub("\"", "", func_str, fixed = TRUE)
       }
     },
     stop("Unsupported lang: ", lang)
@@ -386,10 +387,16 @@ process_read_function <- function(
 }
 
 #' Process serialize function for different languages
-#' @param serialize_function Function or character (language-dependent)
+#'
+#' Mirrors the behaviour of rxp_r/rxp_py/rxp_jl:
+#' - R: supports bare symbol, character, or function; defaults to saveRDS
+#' - Python: character function name, defaults to pickle.dump via with-open
+#' - Julia: character function name, defaults to Serialization.serialize
+#'
+#' @param serialize_function Language-specific serializer (see above)
 #' @param lang Language string
-#' @param parent_env Environment from calling function for proper substitution
-#' @return Character string identifier for serializer, or NULL to use default
+#' @param parent_env Environment for proper substitution (R only)
+#' @return For R: function name string; For Py/Jl: NULL (use default) or function name string
 #' @keywords internal
 process_serialize_function <- function(
   serialize_function,
@@ -465,7 +472,7 @@ process_serialize_function <- function(
 #'   be added as an export statement in the build phase.
 #' @param serialize_function Function/character, defaults to NULL.
 #'   A language-specific serializer to write the loaded object to disk.
-#'   - R: function or symbol (e.g., `qs::qsave`) taking `(object, path)`. Defaults to `saveRDS`.
+#'   - R: function/symbol/character (e.g., `qs::qsave`) taking `(object, path)`. Defaults to `saveRDS`.
 #'   - Python: character name of a function taking `(object, path)`. Defaults to using `pickle.dump`.
 #'   - Julia: character name of a function taking `(object, path)`. Defaults to using `Serialization.serialize`.
 #' @return An object of class `rxp_derivation`.
@@ -527,7 +534,8 @@ rxp_file <- function(
     derivation_type = derivation_type
   )
 
-  default_serializer_label <- if (is.null(serialize_str)) {
+  # For display/debugging purposes, expose the effective serializer
+  effective_serializer <- if (is.null(serialize_str)) {
     switch(
       lang,
       R = "saveRDS",
@@ -545,7 +553,7 @@ rxp_file <- function(
     user_functions,
     nix_env,
     env_var,
-    serialize_function = default_serializer_label
+    serialize_function = effective_serializer
   )
 }
 
