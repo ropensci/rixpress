@@ -18,6 +18,7 @@ articles:
   contents:
   - polyglot
   - polyglot-julia
+  - encoding-decoding
 - title: Advanced topics
   navbar: Advanced topics
   contents:

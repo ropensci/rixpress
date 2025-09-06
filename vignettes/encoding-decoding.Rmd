@@ -1,0 +1,163 @@
+---
+title: "Encoding, Decoding, and Cross-Language Data Transfer"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{encoding-decoding}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+Data pipelines in `{rixpress}` often require controlling how objects are stored
+and restored, especially when dealing with:
+
+1. Non-standard R objects (e.g., machine learning models, large tables).
+2. Multiple file formats (CSV, `{qs}` compressed files, etc.).
+3. Cross-language workflows mixing R and Python.
+
+This vignette focuses on **encoding and decoding** in R, and on transferring
+data between R and Python using `rxp_py2r()` and `rxp_r2py()`.
+
+## Custom Encoding and Decoding in R
+
+By default, `{rixpress}` uses `saveRDS()` and `readRDS()`. You can override this
+to handle different formats or complex objects:
+
+```{r}
+library(rixpress)
+
+# Encode output as CSV instead of RDS
+d2 <- rxp_r(
+  mtcars_head,
+  my_head(mtcars_am, 100),
+  user_functions = "my_head.R",
+  nix_env = "default.nix",
+  encoder = write.csv
+)
+
+# Encode as qs, decode input from CSV
+d3 <- rxp_r(
+  mtcars_tail,
+  my_tail(mtcars_head),
+  user_functions = "my_tail.R",
+  nix_env = "default2.nix",
+  encoder = qs::qsave,
+  decoder = read.csv
+)
+
+# Decode multiple upstream objects with different decoders
+d4 <- rxp_r(
+  mtcars_mpg,
+  full_join(mtcars_tail, mtcars_head),
+  nix_env = "default2.nix",
+  decoder = c(
+    mtcars_tail = "qs::qread",
+    mtcars_head = "read.csv"
+  )
+)
+```
+
+**Key points:**
+
+- `encoder` controls how this step’s output is stored.
+- `decoder` specifies how to read inputs from upstream derivations.
+- You can assign different decoders per upstream object using a named vector.
+
+By encoding the object in a cross-language format, it is possible to pass it
+to another language. For example, read a csv file using Julia, encode it to Arrow
+and read it back in R:
+
+```r
+library(rixpress)
+
+list(
+  rxp_jl_file(
+    mtcars,
+    # Assume here that mtcars.csv is separated by "|" instead of ","
+    path = "data/mtcars.csv",
+    read_function = "read_csv",
+    user_functions = "functions.jl",
+    encoder = "write_arrow"
+    # read_csv and write_arrow are both
+    # defined in the functions.jl script
+    # and looks like this:
+
+    #function write_arrow(df::DataFrame, filename::String)
+    #    Arrow.write(filename, df)
+    #end
+
+    #function read_csv(path::String)
+    #    df = CSV.read(path, DataFrame; delim="|")
+    #return df
+    #end
+
+  ),
+
+  rxp_r(
+    mtcars2,
+    select(mtcars, am, cyl, mpg),
+    decoder = "read_feather"
+  )
+) |>
+  rxp_populate()
+
+```
+
+You can find this example [here](https://github.com/b-rodrigues/rixpress_demos/tree/master/jl_input).
+You can use the same approach to transfer data to Python (well, from and to any of the three
+supported languages).
+
+## Cross-Language Data Transfer: R ↔ Python
+
+In the specific case of transferring objects (data, lists, vectors, arrays, etc.)
+between R and Python, it also possible to use `{reticulate}`'s built-in
+conversion by using `rxp_py2r()` and `rxp_r2py()`. These functions enable
+seamless movement of objects between R and Python:
+
+```{r}
+library(rixpress)
+
+# Python step producing pandas DataFrame
+d1 <- rxp_py(
+  name = mtcars_pl_am,
+  py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()"
+)
+
+# Transfer Python -> R
+d2 <- rxp_py2r(
+  name = mtcars_am,
+  expr = mtcars_pl_am
+)
+
+# R step processing the data
+d3 <- rxp_r(
+  name = mtcars_head,
+  expr = my_head(mtcars_am),
+  user_functions = "functions.R"
+)
+
+# Transfer R -> Python
+d3_1 <- rxp_r2py(
+  name = mtcars_head_py,
+  expr = mtcars_head
+)
+```
+
+For this to work, you need to add `{reticulate}` to the pipeline's execution environment.
+
+## Summary
+
+- Use `encoder`/`decoder` for non-RDS objects (CSV, `{qs}`, Keras models) and to pass data
+  to and from different languages.
+- Explicitly set decoders per upstream object to avoid mismatches.
+- Use `rxp_py2r()` and `rxp_r2py()` if you want to re-use `{reticulate}`'s bulit-in conversion
+  (useful for more complex objects).
+

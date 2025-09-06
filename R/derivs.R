@@ -76,8 +76,8 @@ make_derivation_snippet <- function(
 #' @param nix_env Character, path to the Nix environment file, default is
 #'   "default.nix".
 #' @param encoder Function, defaults to NULL. A function used to
-#'   serialize objects for transfer between derivations. It must accept two
-#'   arguments: the object to serialize (first), and the target file path
+#'   encode (serialize) objects for transfer between derivations. It must accept two
+#'   arguments: the object to encode (first), and the target file path
 #'   (second). If your function has a different signature, wrap it to match this
 #'   interface. By default, `saveRDS()` is used, but this may yield unexpected
 #'   results, especially for complex objects like machine learning models. For
@@ -86,9 +86,9 @@ make_derivation_snippet <- function(
 #'   etc.).
 #' @param decoder Function, character, or named vector/list,
 #'   defaults to NULL. Can be:
-#'   - A single function/string to unserialize all upstream objects (e.g., `readRDS`)
+#'   - A single function/string to decode (unserialize) all upstream objects (e.g., `readRDS`)
 #'   - A named vector/list where names are upstream dependency names and values
-#'     are their specific unserialize functions (e.g.,
+#'     are their specific decoding functions (e.g.,
 #'     `c(mtcars_tail = "qs::qread", mtcars_head = "read.csv")`)
 #'   By default, `readRDS()` is used.
 #' @param env_var Character vector, defaults to NULL. A named vector of
