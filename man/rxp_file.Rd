@@ -52,6 +52,10 @@ A language-specific serializer to write the loaded object to disk.
 An object of class \code{rxp_derivation}.
 }
 \description{
+You should not call it directly, but instead use one of \code{rxp_r_file()},
+\code{rxp_py_file()} or \code{rxp_jl_file()}.
+}
+\details{
 Creates a Nix derivation that reads a file or folder of data using R,
 Python, or Julia. Handles user-defined functions, environment variables, and Nix
 environment specification.

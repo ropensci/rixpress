@@ -449,6 +449,9 @@ process_serialize_function <- function(
 
 #' Generic Nix expression builder for R, Python, and Julia data readers
 #'
+#' You should not call it directly, but instead use one of `rxp_r_file()`,
+#' `rxp_py_file()` or `rxp_jl_file()`.
+#'
 #' Creates a Nix derivation that reads a file or folder of data using R,
 #' Python, or Julia. Handles user-defined functions, environment variables, and Nix
 #' environment specification.
