@@ -3,14 +3,14 @@
     {
       "deriv_name": ["mtcars_head"],
       "depends": ["mtcars_am"],
-      "unserialize_function": ["readRDS"],
+      "decoder": ["readRDS"],
       "type": ["rxp_r"],
       "noop_build": [false]
     },
     {
       "deriv_name": ["mtcars_am"],
       "depends": [],
-      "unserialize_function": ["readRDS"],
+      "decoder": ["readRDS"],
       "type": ["rxp_r"],
       "noop_build": [false]
     }

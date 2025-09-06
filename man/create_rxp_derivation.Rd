@@ -11,7 +11,7 @@ create_rxp_derivation(
   user_functions,
   nix_env,
   env_var,
-  serialize_function = NULL
+  encoder = NULL
 )
 }
 \arguments{
@@ -27,7 +27,7 @@ create_rxp_derivation(
 
 \item{env_var}{Named list of environment variables}
 
-\item{serialize_function}{Character serializer identifier (for display)}
+\item{encoder}{Character serializer identifier (for display)}
 }
 \value{
 rxp_derivation object

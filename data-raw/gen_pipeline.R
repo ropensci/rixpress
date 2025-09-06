@@ -18,7 +18,7 @@ d2 <- rxp_r(
   my_head(mtcars_am, 100),
   user_functions = "my_head.R",
   nix_env = "default.nix",
-  serialize_function = write.csv
+  encoder = write.csv
 )
 
 d3 <- rxp_r(
@@ -26,15 +26,15 @@ d3 <- rxp_r(
   my_tail(mtcars_head),
   user_functions = "my_tail.R",
   nix_env = "default.nix",
-  serialize_function = qs::qsave,
-  unserialize_function = read.csv
+  encoder = qs::qsave,
+  decoder = read.csv
 )
 
 d4 <- rxp_r(
   mtcars_mpg,
   full_join(mtcars_tail, mtcars_head),
   nix_env = "default2.nix",
-  unserialize_function = c(mtcars_tail = "qs::qread", mtcars_head = "read.csv")
+  decoder = c(mtcars_tail = "qs::qread", mtcars_head = "read.csv")
 )
 
 doc <- rxp_qmd(

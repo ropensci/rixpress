@@ -3,37 +3,37 @@
     {
       "deriv_name": ["mtcars"],
       "depends": [],
-      "unserialize_function": {},
+      "decoder": {},
       "type": ["rxp_r"]
     },
     {
       "deriv_name": ["mtcars_am"],
       "depends": ["mtcars"],
-      "unserialize_function": ["readRDS"],
+      "decoder": ["readRDS"],
       "type": ["rxp_r"]
     },
     {
       "deriv_name": ["mtcars_head"],
       "depends": ["mtcars_am"],
-      "unserialize_function": ["readRDS"],
+      "decoder": ["readRDS"],
       "type": ["rxp_r"]
     },
     {
       "deriv_name": ["mtcars_tail"],
       "depends": ["mtcars_head"],
-      "unserialize_function": ["readRDS"],
+      "decoder": ["readRDS"],
       "type": ["rxp_r"]
     },
     {
       "deriv_name": ["mtcars_mpg"],
       "depends": ["mtcars_tail"],
-      "unserialize_function": ["readRDS"],
+      "decoder": ["readRDS"],
       "type": ["rxp_r"]
     },
     {
       "deriv_name": ["page"],
       "depends": ["mtcars_head", "mtcars_tail", "mtcars_mpg"],
-      "unserialize_function": {},
+      "decoder": {},
       "type": ["rxp_qmd"]
     }
   ]

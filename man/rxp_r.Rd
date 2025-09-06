@@ -10,8 +10,8 @@ rxp_r(
   additional_files = "",
   user_functions = "",
   nix_env = "default.nix",
-  serialize_function = NULL,
-  unserialize_function = NULL,
+  encoder = NULL,
+  decoder = NULL,
   env_var = NULL,
   noop_build = FALSE
 )
@@ -34,7 +34,7 @@ the derivation.}
 \item{nix_env}{Character, path to the Nix environment file, default is
 "default.nix".}
 
-\item{serialize_function}{Function, defaults to NULL. A function used to
+\item{encoder}{Function, defaults to NULL. A function used to
 serialize objects for transfer between derivations. It must accept two
 arguments: the object to serialize (first), and the target file path
 (second). If your function has a different signature, wrap it to match this
@@ -44,7 +44,7 @@ instance, for \code{{keras}} models, use \code{keras::save_model_hdf5()} to capt
 the full model (architecture, weights, training config, optimiser state,
 etc.).}
 
-\item{unserialize_function}{Function, character, or named vector/list,
+\item{decoder}{Function, character, or named vector/list,
 defaults to NULL. Can be:
 \itemize{
 \item A single function/string to unserialize all upstream objects (e.g., \code{readRDS})
@@ -94,13 +94,13 @@ paths.
   rxp_r(
    name = filtered_mtcars,
    expr = filter(mtcars, am == 1),
-   serialize_function = qs::qsave
+   encoder = qs::qsave
   )
   # Unerialize using qs::qread in the next derivation
   rxp_r(
    name = mtcars_mpg,
    expr = select(filtered_mtcars, mpg),
-   unserialize_function = qs::qread
+   decoder = qs::qread
   )
 }
 }

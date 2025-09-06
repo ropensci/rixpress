@@ -12,7 +12,7 @@ rxp_file(
   user_functions = "",
   nix_env = "default.nix",
   env_var = NULL,
-  serialize_function = NULL
+  encoder = NULL
 )
 }
 \arguments{
@@ -40,7 +40,7 @@ the derivation.}
 to set before running the R script, e.g., c(VAR = "hello"). Each entry will
 be added as an export statement in the build phase.}
 
-\item{serialize_function}{Function/character, defaults to NULL.
+\item{encoder}{Function/character, defaults to NULL.
 A language-specific serializer to write the loaded object to disk.
 \itemize{
 \item R: function/symbol/character (e.g., \code{qs::qsave}) taking \verb{(object, path)}. Defaults to \code{saveRDS}.

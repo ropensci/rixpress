@@ -444,15 +444,15 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
     deriv_name <- as.character(d$deriv_name[1])
     deps <- d$depends
     type <- d$type[1]
-    unserialize_function <- d$unserialize_function
+    decoder <- d$decoder
 
     # Helper function to get the unserialize function for a specific dependency
     get_unserialize_func_for_dep <- function(
       dep_name,
-      unserialize_function,
+      decoder,
       type
     ) {
-      if (is.null(unserialize_function) || length(unserialize_function) == 0) {
+      if (is.null(decoder) || length(decoder) == 0) {
         # Use default based on type
         return(switch(
           type,
@@ -463,14 +463,14 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
         ))
       }
 
-      # Check if unserialize_function is a list (from JSON)
-      if (is.list(unserialize_function)) {
+      # Check if decoder is a list (from JSON)
+      if (is.list(decoder)) {
         # Check if it has names (named list/vector case)
-        func_names <- names(unserialize_function)
+        func_names <- names(decoder)
         if (!is.null(func_names) && length(func_names) > 0) {
           # It's a named list - look up the specific dependency
           if (dep_name %in% func_names) {
-            return(as.character(unserialize_function[[dep_name]]))
+            return(as.character(decoder[[dep_name]]))
           } else {
             # Dependency not in the named list, use default
             return(switch(
@@ -483,11 +483,11 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
           }
         } else {
           # It's a single value in a list
-          return(as.character(unserialize_function[[1]]))
+          return(as.character(decoder[[1]]))
         }
       } else {
         # It's a single string value
-        return(as.character(unserialize_function[1]))
+        return(as.character(decoder[1]))
       }
     }
 
@@ -497,7 +497,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
       load_lines <- vapply(
         deps,
         function(dep) {
-          func <- get_unserialize_func_for_dep(dep, unserialize_function, type)
+          func <- get_unserialize_func_for_dep(dep, decoder, type)
           sprintf("%s <- %s('${%s}/%s')", dep, func, dep, dep)
         },
         character(1)
@@ -507,7 +507,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
       load_lines <- vapply(
         deps,
         function(dep) {
-          func <- get_unserialize_func_for_dep(dep, unserialize_function, type)
+          func <- get_unserialize_func_for_dep(dep, decoder, type)
           sprintf(
             "with open('${%s}/%s', 'rb') as f: %s = %s(f)",
             dep,
@@ -523,7 +523,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
       load_lines <- vapply(
         deps,
         function(dep) {
-          func <- get_unserialize_func_for_dep(dep, unserialize_function, type)
+          func <- get_unserialize_func_for_dep(dep, decoder, type)
           sprintf(
             "%s = open(\\\\\\\"%s\\\\\\\", \\\\\\\"r\\\\\\\") do io; %s(io); end",
             dep,

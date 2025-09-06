@@ -393,20 +393,20 @@ process_read_function <- function(
 #' - Python: character function name, defaults to pickle.dump via with-open
 #' - Julia: character function name, defaults to Serialization.serialize
 #'
-#' @param serialize_function Language-specific serializer (see above)
+#' @param encoder Language-specific serializer (see above)
 #' @param lang Language string
 #' @param parent_env Environment for proper substitution (R only)
 #' @return For R: function name string; For Py/Jl: NULL (use default) or function name string
 #' @keywords internal
-process_serialize_function <- function(
-  serialize_function,
+process_encoder <- function(
+  encoder,
   lang,
   parent_env = parent.frame()
 ) {
   switch(
     lang,
     R = {
-      serialize_expr <- substitute(serialize_function, parent_env)
+      serialize_expr <- substitute(encoder, parent_env)
       if (identical(serialize_expr, quote(NULL))) {
         "saveRDS"
       } else if (is.character(serialize_expr)) {
@@ -416,31 +416,27 @@ process_serialize_function <- function(
       }
     },
     Py = {
-      if (is.null(serialize_function)) {
+      if (is.null(encoder)) {
         NULL
       } else {
-        if (
-          !is.character(serialize_function) || length(serialize_function) != 1
-        ) {
+        if (!is.character(encoder) || length(encoder) != 1) {
           stop(
-            "For Python, serialize_function must be a single character string or NULL"
+            "For Python, encoder must be a single character string or NULL"
           )
         }
-        serialize_function
+        encoder
       }
     },
     Jl = {
-      if (is.null(serialize_function)) {
+      if (is.null(encoder)) {
         NULL
       } else {
-        if (
-          !is.character(serialize_function) || length(serialize_function) != 1
-        ) {
+        if (!is.character(encoder) || length(encoder) != 1) {
           stop(
-            "For Julia, serialize_function must be a single character string or NULL"
+            "For Julia, encoder must be a single character string or NULL"
           )
         }
-        serialize_function
+        encoder
       }
     },
     stop("Unsupported lang: ", lang)
@@ -473,7 +469,7 @@ process_serialize_function <- function(
 #' @param env_var List, defaults to NULL. A named list of environment variables
 #'   to set before running the R script, e.g., c(VAR = "hello"). Each entry will
 #'   be added as an export statement in the build phase.
-#' @param serialize_function Function/character, defaults to NULL.
+#' @param encoder Function/character, defaults to NULL.
 #'   A language-specific serializer to write the loaded object to disk.
 #'   - R: function/symbol/character (e.g., `qs::qsave`) taking `(object, path)`. Defaults to `saveRDS`.
 #'   - Python: character name of a function taking `(object, path)`. Defaults to using `pickle.dump`.
@@ -488,13 +484,13 @@ rxp_file <- function(
   user_functions = "",
   nix_env = "default.nix",
   env_var = NULL,
-  serialize_function = NULL
+  encoder = NULL
 ) {
   out_name <- deparse1(substitute(name))
   user_functions <- clean_user_functions(user_functions)
   read_func_str <- process_read_function(read_function, lang, environment())
-  serialize_str <- process_serialize_function(
-    serialize_function,
+  serialize_str <- process_encoder(
+    encoder,
     lang,
     environment()
   )
@@ -556,7 +552,7 @@ rxp_file <- function(
     user_functions,
     nix_env,
     env_var,
-    serialize_function = effective_serializer
+    encoder = effective_serializer
   )
 }
 
@@ -567,7 +563,7 @@ rxp_file <- function(
 #' @param user_functions Character vector
 #' @param nix_env Character nix environment
 #' @param env_var Named list of environment variables
-#' @param serialize_function Character serializer identifier (for display)
+#' @param encoder Character serializer identifier (for display)
 #' @return rxp_derivation object
 #' @keywords internal
 create_rxp_derivation <- function(
@@ -577,7 +573,7 @@ create_rxp_derivation <- function(
   user_functions,
   nix_env,
   env_var,
-  serialize_function = NULL
+  encoder = NULL
 ) {
   structure(
     list(
@@ -588,7 +584,7 @@ create_rxp_derivation <- function(
       user_functions = user_functions,
       nix_env = nix_env,
       env_var = env_var,
-      serialize_function = serialize_function
+      encoder = encoder
     ),
     class = "rxp_derivation"
   )
@@ -598,7 +594,7 @@ create_rxp_derivation <- function(
 #'
 #' @family derivations
 #' @return An object of class `rxp_derivation`.
-#' @inheritDotParams rxp_file name:serialize_function
+#' @inheritDotParams rxp_file name:encoder
 #' @details The basic usage is to provide a path to a file, and the function
 #'   to read it. For example: `rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)`.
 #'   It is also possible instead to point to a folder that contains many
@@ -613,7 +609,7 @@ rxp_r_file <- function(...) rxp_file("R", ...)
 #'
 #' @family derivations
 #' @return An object of class `rxp_derivation`.
-#' @inheritDotParams rxp_file name:serialize_function
+#' @inheritDotParams rxp_file name:encoder
 #' @details The basic usage is to provide a path to a file, and the function
 #'   to read it. For example: `rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)`.
 #'   It is also possible instead to point to a folder that contains many
@@ -628,7 +624,7 @@ rxp_py_file <- function(...) rxp_file("Py", ...)
 #'
 #' @family derivations
 #' @return An object of class `rxp_derivation`.
-#' @inheritDotParams rxp_file name:serialize_function
+#' @inheritDotParams rxp_file name:encoder
 #' @details The basic usage is to provide a path to a file, and the function
 #'   to read it. For example: `rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)`.
 #'   It is also possible instead to point to a folder that contains many

@@ -160,7 +160,7 @@ Now, we use this wrapper in our pipeline:
       seed = 22
     ),
     user_functions = "functions.R",
-    serialize_function = "save_model",
+    encoder = "save_model",
     env_var = c("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan")
   )
 ```
@@ -204,7 +204,7 @@ save_model <- function(fitted_model, path, ...) {
 }
 ```
 
-By specifying `serialize_function = "save_model"` in the `rxp_r()` call,
+By specifying `encoder = "save_model"` in the `rxp_r()` call,
 `{rixpress}` will use this function instead of the default `saveRDS()`. The fitted
 model can then be read using `rxp_read("model")`, which will internally use
 `readRDS()`.
@@ -231,7 +231,7 @@ Using `{cmdstanr}` with `{rixpress}` involves these key considerations:
 - Set the `CMDSTAN` environment variable for the `rxp_r()` step that runs the
   wrapper, pointing to the Nix store path of `cmdstan`.
 
-- Use `{cmdstanr}`'s `$save_object()` method via a custom `serialize_function`
+- Use `{cmdstanr}`'s `$save_object()` method via a custom `encoder`
   for robust saving of the fitted model.
 
 This approach ensures that `cmdstan` can operate correctly within the isolated

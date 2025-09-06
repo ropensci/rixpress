@@ -209,7 +209,7 @@ The package is called `pillow`, so `{rixpress}` will write the statement
 as `import pillow`, but this will simply not work.
 
 If you want to use JSON to transfer data between derivations, you should use
-the `serialize_function` and `unserialize_function` arguments respectively:
+the `encoder` and `decoder` arguments respectively:
 
 ```{r, eval = FALSE}
 library(rixpress)
@@ -226,14 +226,14 @@ list(
     name = mtcars_pl_am,
     py_expr = "mtcars_pl.filter(pl.col('am') == 1)",
     user_functions = "functions.py",
-    serialize_function = "serialize_to_json",
+    encoder = "serialize_to_json",
   ),
 
   rxp_r(
     name = mtcars_head,
     expr = my_head(mtcars_pl_am),
     user_functions = "functions.R",
-    unserialize_function = "jsonlite::fromJSON"
+    decoder = "jsonlite::fromJSON"
   ),
 
   rxp_r(
@@ -259,7 +259,7 @@ def serialize_to_json(pl_df, path):
         f.write(pl_df.write_json())
 ```
 
-The `serialize_function` and `unserialize_function` arguments can be used to
+The `encoder` and `decoder` arguments can be used to
 serialise objects using any function, for example `qs::save()` or machine
 learning-specific functions for specific models, such as those from `xgboost`.
 

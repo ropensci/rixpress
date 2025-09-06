@@ -10,8 +10,8 @@ test_that("rxp_r: generates correct list", {
         "additional_files" = "",
         "user_functions" = "",
         "nix_env" = "default.nix",
-        "serialize_function" = "saveRDS",
-        "unserialize_function" = "readRDS",
+        "encoder" = "saveRDS",
+        "decoder" = "readRDS",
         "env_var" = NULL,
         "noop_build" = FALSE
       ),
@@ -32,8 +32,8 @@ test_that("rxp_py: generates correct list", {
         "additional_files" = "",
         "user_functions" = "",
         "nix_env" = "default.nix",
-        "serialize_function" = "with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)",
-        "unserialize_function" = "pickle.load",
+        "encoder" = "with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)",
+        "decoder" = "pickle.load",
         "env_var" = NULL,
         "noop_build" = FALSE
       ),
@@ -46,8 +46,8 @@ test_that("rxp_py: custom serialization functions work", {
   d1 <- rxp_py(
     mtcars_pl_am,
     "mtcars_pl.filter(pl.col('am') == 1)",
-    serialize_function = "custom_save",
-    unserialize_function = "custom_load"
+    encoder = "custom_save",
+    decoder = "custom_load"
   )
 
   # Test the entire object
@@ -61,8 +61,8 @@ test_that("rxp_py: custom serialization functions work", {
         "additional_files" = "",
         "user_functions" = "",
         "nix_env" = "default.nix",
-        "serialize_function" = "custom_save(globals()['mtcars_pl_am'], 'mtcars_pl_am')",
-        "unserialize_function" = "custom_load",
+        "encoder" = "custom_save(globals()['mtcars_pl_am'], 'mtcars_pl_am')",
+        "decoder" = "custom_load",
         "env_var" = NULL,
         "noop_build" = FALSE
       ),
@@ -350,8 +350,8 @@ test_that("rxp_r: with additional files", {
         "additional_files" = "data.csv",
         "user_functions" = "functions.R",
         "nix_env" = "default.nix",
-        "serialize_function" = "saveRDS",
-        "unserialize_function" = "readRDS",
+        "encoder" = "saveRDS",
+        "decoder" = "readRDS",
         "env_var" = NULL,
         "noop_build" = FALSE
       ),
@@ -379,8 +379,8 @@ test_that("rxp_py: with additional files", {
         "additional_files" = "data.csv",
         "user_functions" = "functions.py",
         "nix_env" = "default.nix",
-        "serialize_function" = "with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)",
-        "unserialize_function" = "pickle.load",
+        "encoder" = "with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)",
+        "decoder" = "pickle.load",
         "env_var" = NULL,
         "noop_build" = FALSE
       ),
@@ -407,8 +407,8 @@ test_that("rxp_r: with env_var parameter", {
         "additional_files" = "",
         "user_functions" = "",
         "nix_env" = "default.nix",
-        "serialize_function" = "saveRDS",
-        "unserialize_function" = "readRDS",
+        "encoder" = "saveRDS",
+        "decoder" = "readRDS",
         "env_var" = c(MY_VAR = "test_value", ANOTHER_VAR = "123"),
         "noop_build" = FALSE
       ),
@@ -447,8 +447,8 @@ test_that("rxp_py: with env_var parameter", {
         "additional_files" = "",
         "user_functions" = "",
         "nix_env" = "default.nix",
-        "serialize_function" = "with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)",
-        "unserialize_function" = "pickle.load",
+        "encoder" = "with open('mtcars_pl_am', 'wb') as f: pickle.dump(globals()['mtcars_pl_am'], f)",
+        "decoder" = "pickle.load",
         "env_var" = c(PYTHON_ENV = "production", DEBUG = "0"),
         "noop_build" = FALSE
       ),

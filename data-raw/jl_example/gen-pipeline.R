@@ -16,13 +16,13 @@ list(
   rxp_jl(
     laplace_df,
     'DataFrame(data, :auto)',
-    serialize_function = 'arrow_write',
+    encoder = 'arrow_write',
     additional_files = "functions.jl"
   ),
   rxp_r(
     laplace_long_df,
     prepare_data(laplace_df),
-    unserialize_function = 'read_ipc_file',
+    decoder = 'read_ipc_file',
     additional_files = "functions.R"
   ),
   rxp_r(

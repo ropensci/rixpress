@@ -75,7 +75,7 @@ make_derivation_snippet <- function(
 #'   the derivation.
 #' @param nix_env Character, path to the Nix environment file, default is
 #'   "default.nix".
-#' @param serialize_function Function, defaults to NULL. A function used to
+#' @param encoder Function, defaults to NULL. A function used to
 #'   serialize objects for transfer between derivations. It must accept two
 #'   arguments: the object to serialize (first), and the target file path
 #'   (second). If your function has a different signature, wrap it to match this
@@ -84,7 +84,7 @@ make_derivation_snippet <- function(
 #'   instance, for `{keras}` models, use `keras::save_model_hdf5()` to capture
 #'   the full model (architecture, weights, training config, optimiser state,
 #'   etc.).
-#' @param unserialize_function Function, character, or named vector/list,
+#' @param decoder Function, character, or named vector/list,
 #'   defaults to NULL. Can be:
 #'   - A single function/string to unserialize all upstream objects (e.g., `readRDS`)
 #'   - A named vector/list where names are upstream dependency names and values
@@ -121,13 +121,13 @@ make_derivation_snippet <- function(
 #'   rxp_r(
 #'    name = filtered_mtcars,
 #'    expr = filter(mtcars, am == 1),
-#'    serialize_function = qs::qsave
+#'    encoder = qs::qsave
 #'   )
 #'   # Unerialize using qs::qread in the next derivation
 #'   rxp_r(
 #'    name = mtcars_mpg,
 #'    expr = select(filtered_mtcars, mpg),
-#'    unserialize_function = qs::qread
+#'    decoder = qs::qread
 #'   )
 #' }
 #' @export
@@ -137,8 +137,8 @@ rxp_r <- function(
   additional_files = "",
   user_functions = "",
   nix_env = "default.nix",
-  serialize_function = NULL,
-  unserialize_function = NULL,
+  encoder = NULL,
+  decoder = NULL,
   env_var = NULL,
   noop_build = FALSE
 ) {
@@ -149,7 +149,7 @@ rxp_r <- function(
 
   # Capture without evaluating promises; supports bare symbols (qs::qsave)
   # and character literals ("qs::qsave") without loading packages now.
-  serialize_expr <- substitute(serialize_function)
+  serialize_expr <- substitute(encoder)
   if (identical(serialize_expr, quote(NULL))) {
     serialize_str <- "saveRDS"
   } else if (is.character(serialize_expr)) {
@@ -159,8 +159,8 @@ rxp_r <- function(
     serialize_str <- deparse1(serialize_expr)
   }
 
-  # Handle unserialize_function - can be single value or named vector/list
-  unserialize_expr <- substitute(unserialize_function)
+  # Handle decoder - can be single value or named vector/list
+  unserialize_expr <- substitute(decoder)
   if (identical(unserialize_expr, quote(NULL))) {
     unserialize_str <- "readRDS"
   } else {
@@ -345,8 +345,8 @@ rxp_r <- function(
     additional_files = additional_files,
     user_functions = user_functions,
     nix_env = nix_env,
-    serialize_function = serialize_str,
-    unserialize_function = unserialize_str,
+    encoder = serialize_str,
+    decoder = unserialize_str,
     env_var = env_var,
     noop_build = noop_build
   ) |>
@@ -368,12 +368,12 @@ rxp_r <- function(
 #'   the derivation.
 #' @param nix_env Character, path to the Nix environment file, default is
 #'   "default.nix".
-#' @param serialize_function Character, defaults to NULL. The name of the Python
+#' @param encoder Character, defaults to NULL. The name of the Python
 #'   function used to serialize the object. It must accept two arguments: the
 #'   object to serialize (first), and the target file path (second). If NULL,
 #'   the default behaviour uses `pickle.dump`. Define this function in
 #'   `functions.py`.
-#' @param unserialize_function Character or named vector/list, defaults to NULL. Can be:
+#' @param decoder Character or named vector/list, defaults to NULL. Can be:
 #'   - A single string for the Python function to unserialize all upstream objects
 #'   - A named vector/list where names are upstream dependency names and values
 #'     are their specific unserialize functions
@@ -414,7 +414,7 @@ rxp_r <- function(
 #'     mtcars_pl_am,
 #'     py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()",
 #'     user_functions = "functions.py",
-#'     serialize_function = "serialize_model",
+#'     encoder = "serialize_model",
 #'     additional_files = "some_required_file.bin")
 #' }
 #' @export
@@ -424,35 +424,35 @@ rxp_py <- function(
   additional_files = "",
   user_functions = "",
   nix_env = "default.nix",
-  serialize_function = NULL,
-  unserialize_function = NULL,
+  encoder = NULL,
+  decoder = NULL,
   env_var = NULL,
   noop_build = FALSE
 ) {
   out_name <- deparse1(substitute(name))
   py_expr <- gsub("'", "\\'", py_expr, fixed = TRUE)
 
-  # Handle serialize_function for the build_phase
-  if (is.null(serialize_function)) {
+  # Handle encoder for the build_phase
+  if (is.null(encoder)) {
     serialize_str <- sprintf(
       "with open('%s', 'wb') as f: pickle.dump(globals()['%s'], f)",
       out_name,
       out_name
     )
   } else {
-    if (!is.character(serialize_function)) {
-      stop("serialize_function must be a character string or NULL")
+    if (!is.character(encoder)) {
+      stop("encoder must be a character string or NULL")
     }
     serialize_str <- sprintf(
       "%s(globals()['%s'], '%s')",
-      serialize_function,
+      encoder,
       out_name,
       out_name
     )
   }
 
-  # Handle unserialize_function - can be single value or named vector/list
-  unserialize_expr <- substitute(unserialize_function)
+  # Handle decoder - can be single value or named vector/list
+  unserialize_expr <- substitute(decoder)
   if (identical(unserialize_expr, quote(NULL))) {
     unserialize_str <- "pickle.load"
   } else {
@@ -647,8 +647,8 @@ rxp_py <- function(
     additional_files = additional_files,
     user_functions = user_functions,
     nix_env = nix_env,
-    serialize_function = serialize_str,
-    unserialize_function = unserialize_str,
+    encoder = serialize_str,
+    decoder = unserialize_str,
     env_var = env_var,
     noop_build = noop_build
   ) |>
@@ -669,12 +669,12 @@ rxp_py <- function(
 #'   the derivation.
 #' @param nix_env Character, path to the Nix environment file, default is
 #'   "default.nix".
-#' @param serialize_function Character, defaults to NULL. The name of the Julia
+#' @param encoder Character, defaults to NULL. The name of the Julia
 #'   function used to serialize the object. It must accept two arguments: the
 #'   object to serialize (first), and the target file path (second). If NULL,
 #'   the default behaviour uses the built‐in `Serialization.serialize` API. Define
 #'   any custom serializer in `functions.jl`.
-#' @param unserialize_function Character or named vector/list, defaults to NULL. Can be:
+#' @param decoder Character or named vector/list, defaults to NULL. Can be:
 #'   - A single string for the Julia function to unserialize all upstream objects
 #'   - A named vector/list where names are upstream dependency names and values
 #'     are their specific unserialize functions
@@ -714,7 +714,7 @@ rxp_py <- function(
 #' rxp_jl(
 #'   name = model_output,
 #'   jl_expr = "train_model(data)",
-#'   serialize_function = "save_my_obj",
+#'   encoder = "save_my_obj",
 #'   user_functions = "functions.jl"
 #' )
 #' }
@@ -726,8 +726,8 @@ rxp_jl <- function(
   additional_files = "",
   user_functions = "",
   nix_env = "default.nix",
-  serialize_function = NULL,
-  unserialize_function = NULL,
+  encoder = NULL,
+  decoder = NULL,
   env_var = NULL,
   noop_build = FALSE
 ) {
@@ -736,7 +736,7 @@ rxp_jl <- function(
   jl_expr_escaped <- gsub("\"", "\\\\\"", jl_expr)
 
   # Determine which serialize function to call
-  if (is.null(serialize_function)) {
+  if (is.null(encoder)) {
     # Default: use built-in Serialization.serialize
     serialize_str <- paste0(
       "using Serialization; ",
@@ -749,19 +749,19 @@ rxp_jl <- function(
       "close(io)"
     )
   } else {
-    if (!is.character(serialize_function) || length(serialize_function) != 1) {
-      stop("serialize_function must be a single character string or NULL")
+    if (!is.character(encoder) || length(encoder) != 1) {
+      stop("encoder must be a single character string or NULL")
     }
     serialize_str <- sprintf(
       "%s(%s, \\\"%s\\\")",
-      serialize_function,
+      encoder,
       out_name,
       out_name
     )
   }
 
-  # Handle unserialize_function - can be single value or named vector/list
-  unserialize_expr <- substitute(unserialize_function)
+  # Handle decoder - can be single value or named vector/list
+  unserialize_expr <- substitute(decoder)
   if (identical(unserialize_expr, quote(NULL))) {
     unserialize_str <- "Serialization.deserialize"
   } else {
@@ -957,12 +957,12 @@ rxp_jl <- function(
     additional_files = additional_files,
     user_functions = user_functions,
     nix_env = nix_env,
-    serialize_function = if (is.null(serialize_function)) {
+    encoder = if (is.null(encoder)) {
       "Serialization.serialize"
     } else {
-      serialize_function
+      encoder
     },
-    unserialize_function = unserialize_str,
+    decoder = unserialize_str,
     env_var = env_var,
     noop_build = noop_build
   ) |>
@@ -1396,11 +1396,11 @@ print.rxp_derivation <- function(x, ...) {
   cat("Name:", x$name, "\n")
   cat("Type:", x$type, "\n")
   cat("No-op Build:", x$noop_build, "\n")
-  if ("serialize_function" %in% names(x)) {
-    cat("Serialize function:", x$serialize_function, "\n")
+  if ("encoder" %in% names(x)) {
+    cat("Serialize function:", x$encoder, "\n")
   }
-  if ("unserialize_function" %in% names(x)) {
-    cat("Unserialize function:", x$unserialize_function, "\n")
+  if ("decoder" %in% names(x)) {
+    cat("Unserialize function:", x$decoder, "\n")
   }
   if (x$type == "rxp_qmd") {
     cat("QMD file:", x$qmd_file, "\n")

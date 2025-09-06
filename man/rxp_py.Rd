@@ -10,8 +10,8 @@ rxp_py(
   additional_files = "",
   user_functions = "",
   nix_env = "default.nix",
-  serialize_function = NULL,
-  unserialize_function = NULL,
+  encoder = NULL,
+  decoder = NULL,
   env_var = NULL,
   noop_build = FALSE
 )
@@ -34,13 +34,13 @@ the derivation.}
 \item{nix_env}{Character, path to the Nix environment file, default is
 "default.nix".}
 
-\item{serialize_function}{Character, defaults to NULL. The name of the Python
+\item{encoder}{Character, defaults to NULL. The name of the Python
 function used to serialize the object. It must accept two arguments: the
 object to serialize (first), and the target file path (second). If NULL,
 the default behaviour uses \code{pickle.dump}. Define this function in
 \code{functions.py}.}
 
-\item{unserialize_function}{Character or named vector/list, defaults to NULL. Can be:
+\item{decoder}{Character or named vector/list, defaults to NULL. Can be:
 \itemize{
 \item A single string for the Python function to unserialize all upstream objects
 \item A named vector/list where names are upstream dependency names and values
@@ -93,7 +93,7 @@ and output paths.
     mtcars_pl_am,
     py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()",
     user_functions = "functions.py",
-    serialize_function = "serialize_model",
+    encoder = "serialize_model",
     additional_files = "some_required_file.bin")
 }
 }

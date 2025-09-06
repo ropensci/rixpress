@@ -35,7 +35,7 @@ rxp_write_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
     deriv <- rxp_list[[i]]
     name <- deriv$name
     type <- deriv$type
-    unserialize_function <- deriv$unserialize_function
+    decoder <- deriv$decoder
     noop_build <- if (is.null(deriv$noop_build)) FALSE else deriv$noop_build
 
     # Extract dependencies based on derivation type
@@ -50,7 +50,7 @@ rxp_write_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
     dag[[i]] <- list(
       deriv_name = name,
       depends = deps,
-      unserialize_function = unserialize_function,
+      decoder = decoder,
       type = type,
       noop_build = noop_build
     )

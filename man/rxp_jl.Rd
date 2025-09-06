@@ -10,8 +10,8 @@ rxp_jl(
   additional_files = "",
   user_functions = "",
   nix_env = "default.nix",
-  serialize_function = NULL,
-  unserialize_function = NULL,
+  encoder = NULL,
+  decoder = NULL,
   env_var = NULL,
   noop_build = FALSE
 )
@@ -34,13 +34,13 @@ the derivation.}
 \item{nix_env}{Character, path to the Nix environment file, default is
 "default.nix".}
 
-\item{serialize_function}{Character, defaults to NULL. The name of the Julia
+\item{encoder}{Character, defaults to NULL. The name of the Julia
 function used to serialize the object. It must accept two arguments: the
 object to serialize (first), and the target file path (second). If NULL,
 the default behaviour uses the built‐in \code{Serialization.serialize} API. Define
 any custom serializer in \code{functions.jl}.}
 
-\item{unserialize_function}{Character or named vector/list, defaults to NULL. Can be:
+\item{decoder}{Character or named vector/list, defaults to NULL. Can be:
 \itemize{
 \item A single string for the Julia function to unserialize all upstream objects
 \item A named vector/list where names are upstream dependency names and values
@@ -92,7 +92,7 @@ rxp_jl(
 rxp_jl(
   name = model_output,
   jl_expr = "train_model(data)",
-  serialize_function = "save_my_obj",
+  encoder = "save_my_obj",
   user_functions = "functions.jl"
 )
 }
