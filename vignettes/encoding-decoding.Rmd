@@ -31,7 +31,7 @@ data between R and Python using `rxp_py2r()` and `rxp_r2py()`.
 By default, `{rixpress}` uses `saveRDS()` and `readRDS()`. You can override this
 to handle different formats or complex objects:
 
-```{r}
+```r
 library(rixpress)
 
 # Encode output as CSV instead of RDS
@@ -122,7 +122,7 @@ between R and Python, it also possible to use `{reticulate}`'s built-in
 conversion by using `rxp_py2r()` and `rxp_r2py()`. These functions enable
 seamless movement of objects between R and Python:
 
-```{r}
+```r
 library(rixpress)
 
 # Python step producing pandas DataFrame
