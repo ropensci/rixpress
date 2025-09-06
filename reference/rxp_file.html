@@ -70,7 +70,7 @@ rxp_py_file() or rxp_jl_file()."></head><body>
 <span>  user_functions <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  nix_env <span class="op">=</span> <span class="st">"default.nix"</span>,</span>
 <span>  env_var <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  serialize_function <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  encoder <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -116,7 +116,7 @@ to set before running the R script, e.g., c(VAR = "hello"). Each entry will
 be added as an export statement in the build phase.</p></dd>
 
 
-<dt id="arg-serialize-function">serialize_function<a class="anchor" aria-label="anchor" href="#arg-serialize-function"></a></dt>
+<dt id="arg-encoder">encoder<a class="anchor" aria-label="anchor" href="#arg-encoder"></a></dt>
 <dd><p>Function/character, defaults to NULL.
 A language-specific serializer to write the loaded object to disk.</p><ul><li><p>R: function/symbol/character (e.g., <code>qs::qsave</code>) taking <code>(object, path)</code>. Defaults to <code>saveRDS</code>.</p></li>
 <li><p>Python: character name of a function taking <code>(object, path)</code>. Defaults to using <code>pickle.dump</code>.</p></li>

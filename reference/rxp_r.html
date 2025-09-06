@@ -65,8 +65,8 @@
 <span>  additional_files <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  user_functions <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  nix_env <span class="op">=</span> <span class="st">"default.nix"</span>,</span>
-<span>  serialize_function <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  unserialize_function <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  encoder <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  decoder <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  env_var <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  noop_build <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -103,7 +103,7 @@ the derivation.</p></dd>
 "default.nix".</p></dd>
 
 
-<dt id="arg-serialize-function">serialize_function<a class="anchor" aria-label="anchor" href="#arg-serialize-function"></a></dt>
+<dt id="arg-encoder">encoder<a class="anchor" aria-label="anchor" href="#arg-encoder"></a></dt>
 <dd><p>Function, defaults to NULL. A function used to
 serialize objects for transfer between derivations. It must accept two
 arguments: the object to serialize (first), and the target file path
@@ -115,7 +115,7 @@ the full model (architecture, weights, training config, optimiser state,
 etc.).</p></dd>
 
 
-<dt id="arg-unserialize-function">unserialize_function<a class="anchor" aria-label="anchor" href="#arg-unserialize-function"></a></dt>
+<dt id="arg-decoder">decoder<a class="anchor" aria-label="anchor" href="#arg-decoder"></a></dt>
 <dd><p>Function, character, or named vector/list,
 defaults to NULL. Can be:</p><ul><li><p>A single function/string to unserialize all upstream objects (e.g., <code>readRDS</code>)</p></li>
 <li><p>A named vector/list where names are upstream dependency names and values
@@ -181,13 +181,13 @@ paths.</p>
 <span class="r-in"><span>  <span class="fu">rxp_r</span><span class="op">(</span></span></span>
 <span class="r-in"><span>   name <span class="op">=</span> <span class="va">filtered_mtcars</span>,</span></span>
 <span class="r-in"><span>   expr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">am</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>   serialize_function <span class="op">=</span> <span class="fu">qs</span><span class="fu">::</span><span class="va">qsave</span></span></span>
+<span class="r-in"><span>   encoder <span class="op">=</span> <span class="fu">qs</span><span class="fu">::</span><span class="va">qsave</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="co"># Unerialize using qs::qread in the next derivation</span></span></span>
 <span class="r-in"><span>  <span class="fu">rxp_r</span><span class="op">(</span></span></span>
 <span class="r-in"><span>   name <span class="op">=</span> <span class="va">mtcars_mpg</span>,</span></span>
 <span class="r-in"><span>   expr <span class="op">=</span> <span class="fu">select</span><span class="op">(</span><span class="va">filtered_mtcars</span>, <span class="va">mpg</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>   unserialize_function <span class="op">=</span> <span class="fu">qs</span><span class="fu">::</span><span class="va">qread</span></span></span>
+<span class="r-in"><span>   decoder <span class="op">=</span> <span class="fu">qs</span><span class="fu">::</span><span class="va">qread</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>

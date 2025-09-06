@@ -255,8 +255,8 @@ mandatory, for example if you want to import a package’s submodule:</p>
 will write the statement as <code>import pillow</code>, but this will
 simply not work.</p>
 <p>If you want to use JSON to transfer data between derivations, you
-should use the <code>serialize_function</code> and
-<code>unserialize_function</code> arguments respectively:</p>
+should use the <code>encoder</code> and <code>decoder</code> arguments
+respectively:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
@@ -272,14 +272,14 @@ should use the <code>serialize_function</code> and
 <span>    name <span class="op">=</span> <span class="va">mtcars_pl_am</span>,</span>
 <span>    py_expr <span class="op">=</span> <span class="st">"mtcars_pl.filter(pl.col('am') == 1)"</span>,</span>
 <span>    user_functions <span class="op">=</span> <span class="st">"functions.py"</span>,</span>
-<span>    serialize_function <span class="op">=</span> <span class="st">"serialize_to_json"</span>,</span>
+<span>    encoder <span class="op">=</span> <span class="st">"serialize_to_json"</span>,</span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
 <span>    name <span class="op">=</span> <span class="va">mtcars_head</span>,</span>
 <span>    expr <span class="op">=</span> <span class="fu">my_head</span><span class="op">(</span><span class="va">mtcars_pl_am</span><span class="op">)</span>,</span>
 <span>    user_functions <span class="op">=</span> <span class="st">"functions.R"</span>,</span>
-<span>    unserialize_function <span class="op">=</span> <span class="st">"jsonlite::fromJSON"</span></span>
+<span>    decoder <span class="op">=</span> <span class="st">"jsonlite::fromJSON"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
@@ -299,11 +299,10 @@ should use the <code>serialize_function</code> and
 <pre><code>def serialize_to_json(pl_df, path):
     with open(path, 'w') as f:
         f.write(pl_df.write_json())</code></pre>
-<p>The <code>serialize_function</code> and
-<code>unserialize_function</code> arguments can be used to serialise
-objects using any function, for example <code>qs::save()</code> or
-machine learning-specific functions for specific models, such as those
-from <code>xgboost</code>.</p>
+<p>The <code>encoder</code> and <code>decoder</code> arguments can be
+used to serialise objects using any function, for example
+<code>qs::save()</code> or machine learning-specific functions for
+specific models, such as those from <code>xgboost</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="building-a-quarto-or-r-markdown-document">Building a Quarto or R Markdown document<a class="anchor" aria-label="anchor" href="#building-a-quarto-or-r-markdown-document"></a>

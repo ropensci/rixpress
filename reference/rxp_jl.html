@@ -65,8 +65,8 @@
 <span>  additional_files <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  user_functions <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  nix_env <span class="op">=</span> <span class="st">"default.nix"</span>,</span>
-<span>  serialize_function <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  unserialize_function <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  encoder <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  decoder <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  env_var <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  noop_build <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -103,7 +103,7 @@ the derivation.</p></dd>
 "default.nix".</p></dd>
 
 
-<dt id="arg-serialize-function">serialize_function<a class="anchor" aria-label="anchor" href="#arg-serialize-function"></a></dt>
+<dt id="arg-encoder">encoder<a class="anchor" aria-label="anchor" href="#arg-encoder"></a></dt>
 <dd><p>Character, defaults to NULL. The name of the Julia
 function used to serialize the object. It must accept two arguments: the
 object to serialize (first), and the target file path (second). If NULL,
@@ -111,7 +111,7 @@ the default behaviour uses the built‐in <code>Serialization.serialize</code> A
 any custom serializer in <code>functions.jl</code>.</p></dd>
 
 
-<dt id="arg-unserialize-function">unserialize_function<a class="anchor" aria-label="anchor" href="#arg-unserialize-function"></a></dt>
+<dt id="arg-decoder">decoder<a class="anchor" aria-label="anchor" href="#arg-decoder"></a></dt>
 <dd><p>Character or named vector/list, defaults to NULL. Can be:</p><ul><li><p>A single string for the Julia function to unserialize all upstream objects</p></li>
 <li><p>A named vector/list where names are upstream dependency names and values
 are their specific unserialize functions
@@ -179,7 +179,7 @@ paths.</p>
 <span class="r-in"><span><span class="fu">rxp_jl</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  name <span class="op">=</span> <span class="va">model_output</span>,</span></span>
 <span class="r-in"><span>  jl_expr <span class="op">=</span> <span class="st">"train_model(data)"</span>,</span></span>
-<span class="r-in"><span>  serialize_function <span class="op">=</span> <span class="st">"save_my_obj"</span>,</span></span>
+<span class="r-in"><span>  encoder <span class="op">=</span> <span class="st">"save_my_obj"</span>,</span></span>
 <span class="r-in"><span>  user_functions <span class="op">=</span> <span class="st">"functions.jl"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
