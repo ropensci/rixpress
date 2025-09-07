@@ -64,7 +64,9 @@ make_derivation_snippet <- function(
 #' Create a Nix expression running an R function
 #' @family derivations
 #' @param name Symbol, name of the derivation.
-#' @param expr R code to generate the expression.
+#' @param expr R code to generate the expression. Ideally it should be a call
+#'   to a pure function, or a piped expression. Multi-line expressions are not
+#'   supported.
 #' @param additional_files Character vector, additional files to include
 #'   during the build process. For example, if a function expects a certain
 #'   file to be available, this is where you should include it.
@@ -357,7 +359,9 @@ rxp_r <- function(
 #'
 #' @family derivations
 #' @param name Symbol, name of the derivation.
-#' @param py_expr Character, Python code to generate the expression.
+#' @param expr Character, Python code to generate the expression. Ideally it
+#'   should be a call to a pure function. Multi-line expressions are not
+#'   supported.
 #' @param additional_files Character vector, additional files to include
 #'   during the build process. For example, if a function expects a certain
 #'   file to be available, this is where you should include it.
@@ -399,20 +403,20 @@ rxp_r <- function(
 #' \dontrun{
 #'   rxp_py(
 #'     mtcars_pl_am,
-#'     py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()"
+#'     expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()"
 #'   )
 #'
 #'   # Skip building this derivation
 #'   rxp_py(
 #'     data_prep,
-#'     py_expr = "preprocess_data(raw_data)",
+#'     expr = "preprocess_data(raw_data)",
 #'     noop_build = TRUE
 #'   )
 #'
 #'   # Custom serialization
 #'   rxp_py(
 #'     mtcars_pl_am,
-#'     py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()",
+#'     expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()",
 #'     user_functions = "functions.py",
 #'     encoder = "serialize_model",
 #'     additional_files = "some_required_file.bin")
@@ -420,7 +424,7 @@ rxp_r <- function(
 #' @export
 rxp_py <- function(
   name,
-  py_expr,
+  expr,
   additional_files = "",
   user_functions = "",
   nix_env = "default.nix",
@@ -430,7 +434,7 @@ rxp_py <- function(
   noop_build = FALSE
 ) {
   out_name <- deparse1(substitute(name))
-  py_expr <- gsub("'", "\\'", py_expr, fixed = TRUE)
+  expr <- gsub("'", "\\'", expr, fixed = TRUE)
 
   # Handle encoder for the build_phase
   if (is.null(encoder)) {
@@ -608,7 +612,7 @@ rxp_py <- function(
     "exec('",
     out_name,
     " = ",
-    py_expr,
+    expr,
     "')\n",
     serialize_str,
     "\n",
@@ -658,7 +662,9 @@ rxp_py <- function(
 #' Create a Nix expression running a Julia function
 #'
 #' @param name Symbol, name of the derivation.
-#' @param jl_expr Character, Julia code to generate the expression.
+#' @param expr Character, Julia code to generate the expression. Ideally it
+#'   should be a call to a pure function. Multi-line expressions are not
+#'   supported.
 #' @param additional_files Character vector, additional files to include
 #'   during the build process. For example, if a function expects a certain
 #'   file to be available, this is where you should include it.
@@ -700,20 +706,20 @@ rxp_py <- function(
 #' # Basic usage, no custom serializer
 #' rxp_jl(
 #'   name = filtered_df,
-#'   jl_expr = "filter(df, :col .> 10)"
+#'   expr = "filter(df, :col .> 10)"
 #' )
 #'
 #' # Skip building this derivation
 #' rxp_jl(
 #'   name = model_result,
-#'   jl_expr = "train_model(data)",
+#'   expr = "train_model(data)",
 #'   noop_build = TRUE
 #' )
 #'
 #' # Custom serialization: assume `save_my_obj(obj, path)` is defined in functions.jl
 #' rxp_jl(
 #'   name = model_output,
-#'   jl_expr = "train_model(data)",
+#'   expr = "train_model(data)",
 #'   encoder = "save_my_obj",
 #'   user_functions = "functions.jl"
 #' )
@@ -722,7 +728,7 @@ rxp_py <- function(
 #' @export
 rxp_jl <- function(
   name,
-  jl_expr,
+  expr,
   additional_files = "",
   user_functions = "",
   nix_env = "default.nix",
@@ -733,7 +739,7 @@ rxp_jl <- function(
 ) {
   out_name <- deparse1(substitute(name))
   # Escape double quotes for Julia one-liner
-  jl_expr_escaped <- gsub("\"", "\\\\\"", jl_expr)
+  expr_escaped <- gsub("\"", "\\\\\"", expr)
 
   # Determine which serialize function to call
   if (is.null(encoder)) {
@@ -918,7 +924,7 @@ rxp_jl <- function(
     user_include_cmd,
     out_name,
     " = ",
-    jl_expr_escaped,
+    expr_escaped,
     "; ",
     serialize_str,
     "\n",

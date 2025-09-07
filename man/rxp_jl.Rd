@@ -6,7 +6,7 @@
 \usage{
 rxp_jl(
   name,
-  jl_expr,
+  expr,
   additional_files = "",
   user_functions = "",
   nix_env = "default.nix",
@@ -19,7 +19,9 @@ rxp_jl(
 \arguments{
 \item{name}{Symbol, name of the derivation.}
 
-\item{jl_expr}{Character, Julia code to generate the expression.}
+\item{expr}{Character, Julia code to generate the expression. Ideally it
+should be a call to a pure function. Multi-line expressions are not
+supported.}
 
 \item{additional_files}{Character vector, additional files to include
 during the build process. For example, if a function expects a certain
@@ -78,20 +80,20 @@ paths.
 # Basic usage, no custom serializer
 rxp_jl(
   name = filtered_df,
-  jl_expr = "filter(df, :col .> 10)"
+  expr = "filter(df, :col .> 10)"
 )
 
 # Skip building this derivation
 rxp_jl(
   name = model_result,
-  jl_expr = "train_model(data)",
+  expr = "train_model(data)",
   noop_build = TRUE
 )
 
 # Custom serialization: assume `save_my_obj(obj, path)` is defined in functions.jl
 rxp_jl(
   name = model_output,
-  jl_expr = "train_model(data)",
+  expr = "train_model(data)",
   encoder = "save_my_obj",
   user_functions = "functions.jl"
 )

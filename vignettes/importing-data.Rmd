@@ -161,7 +161,7 @@ list(
 
   rxp_py(
     name = sa,
-    py_expr = "gdf.loc[gdf['Oceans'] == 'South Atlantic Ocean']['geometry'].loc[0]"
+    expr = "gdf.loc[gdf['Oceans'] == 'South Atlantic Ocean']['geometry'].loc[0]"
   )
 ) |>
   rxp_populate(project_path = ".")

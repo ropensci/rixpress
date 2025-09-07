@@ -6,7 +6,7 @@
 \usage{
 rxp_py(
   name,
-  py_expr,
+  expr,
   additional_files = "",
   user_functions = "",
   nix_env = "default.nix",
@@ -19,7 +19,9 @@ rxp_py(
 \arguments{
 \item{name}{Symbol, name of the derivation.}
 
-\item{py_expr}{Character, Python code to generate the expression.}
+\item{expr}{Character, Python code to generate the expression. Ideally it
+should be a call to a pure function. Multi-line expressions are not
+supported.}
 
 \item{additional_files}{Character vector, additional files to include
 during the build process. For example, if a function expects a certain
@@ -78,20 +80,20 @@ and output paths.
 \dontrun{
   rxp_py(
     mtcars_pl_am,
-    py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()"
+    expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()"
   )
 
   # Skip building this derivation
   rxp_py(
     data_prep,
-    py_expr = "preprocess_data(raw_data)",
+    expr = "preprocess_data(raw_data)",
     noop_build = TRUE
   )
 
   # Custom serialization
   rxp_py(
     mtcars_pl_am,
-    py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()",
+    expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()",
     user_functions = "functions.py",
     encoder = "serialize_model",
     additional_files = "some_required_file.bin")

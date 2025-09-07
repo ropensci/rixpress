@@ -19,7 +19,9 @@ rxp_r(
 \arguments{
 \item{name}{Symbol, name of the derivation.}
 
-\item{expr}{R code to generate the expression.}
+\item{expr}{R code to generate the expression. Ideally it should be a call
+to a pure function, or a piped expression. Multi-line expressions are not
+supported.}
 
 \item{additional_files}{Character vector, additional files to include
 during the build process. For example, if a function expects a certain
@@ -35,8 +37,8 @@ the derivation.}
 "default.nix".}
 
 \item{encoder}{Function, defaults to NULL. A function used to
-serialize objects for transfer between derivations. It must accept two
-arguments: the object to serialize (first), and the target file path
+encode (serialize) objects for transfer between derivations. It must accept two
+arguments: the object to encode (first), and the target file path
 (second). If your function has a different signature, wrap it to match this
 interface. By default, \code{saveRDS()} is used, but this may yield unexpected
 results, especially for complex objects like machine learning models. For
@@ -47,9 +49,9 @@ etc.).}
 \item{decoder}{Function, character, or named vector/list,
 defaults to NULL. Can be:
 \itemize{
-\item A single function/string to unserialize all upstream objects (e.g., \code{readRDS})
+\item A single function/string to decode (unserialize) all upstream objects (e.g., \code{readRDS})
 \item A named vector/list where names are upstream dependency names and values
-are their specific unserialize functions (e.g.,
+are their specific decoding functions (e.g.,
 \code{c(mtcars_tail = "qs::qread", mtcars_head = "read.csv")})
 By default, \code{readRDS()} is used.
 }}

@@ -128,7 +128,7 @@ library(rixpress)
 # Python step producing pandas DataFrame
 d1 <- rxp_py(
   name = mtcars_pl_am,
-  py_expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()"
+  expr = "mtcars_pl.filter(polars.col('am') == 1).to_pandas()"
 )
 
 # Transfer Python -> R

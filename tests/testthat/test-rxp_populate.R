@@ -27,7 +27,7 @@ test_that("rxp_populate generates expected assets", {
   derivs <- list(
     rxp_py(
       name = "mdl",
-      py_expr = "XGBClassifier()"
+      expr = "XGBClassifier()"
     )
   )
 
