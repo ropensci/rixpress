@@ -200,7 +200,7 @@ enable seamless movement of objects between R and Python:</p>
 <span><span class="co"># Python step producing pandas DataFrame</span></span>
 <span><span class="va">d1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_py.html">rxp_py</a></span><span class="op">(</span></span>
 <span>  name <span class="op">=</span> <span class="va">mtcars_pl_am</span>,</span>
-<span>  py_expr <span class="op">=</span> <span class="st">"mtcars_pl.filter(polars.col('am') == 1).to_pandas()"</span></span>
+<span>  expr <span class="op">=</span> <span class="st">"mtcars_pl.filter(polars.col('am') == 1).to_pandas()"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Transfer Python -&gt; R</span></span>

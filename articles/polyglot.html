@@ -186,7 +186,7 @@ interactively as usual. To learn more, check out <a href="https://docs.ropensci.
 <span>    <span class="co"># reticulate doesn't support polars DFs yet, so need to convert</span></span>
 <span>    <span class="co"># first to pandas DF</span></span>
 <span>    name <span class="op">=</span> <span class="va">mtcars_pl_am</span>,</span>
-<span>    py_expr <span class="op">=</span> <span class="st">"mtcars_pl.filter(pl.col('am') == 1).to_pandas()"</span></span>
+<span>    expr <span class="op">=</span> <span class="st">"mtcars_pl.filter(pl.col('am') == 1).to_pandas()"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="fu"><a href="../reference/rxp_py2r.html">rxp_py2r</a></span><span class="op">(</span></span>
@@ -207,7 +207,7 @@ interactively as usual. To learn more, check out <a href="https://docs.ropensci.
 <span></span>
 <span>  <span class="fu"><a href="../reference/rxp_py.html">rxp_py</a></span><span class="op">(</span></span>
 <span>    name <span class="op">=</span> <span class="va">mtcars_tail_py</span>,</span>
-<span>    py_expr <span class="op">=</span> <span class="st">'mtcars_head_py.tail()'</span></span>
+<span>    expr <span class="op">=</span> <span class="st">'mtcars_head_py.tail()'</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="fu"><a href="../reference/rxp_py2r.html">rxp_py2r</a></span><span class="op">(</span></span>
@@ -271,7 +271,7 @@ respectively:</p>
 <span></span>
 <span>  <span class="fu"><a href="../reference/rxp_py.html">rxp_py</a></span><span class="op">(</span></span>
 <span>    name <span class="op">=</span> <span class="va">mtcars_pl_am</span>,</span>
-<span>    py_expr <span class="op">=</span> <span class="st">"mtcars_pl.filter(pl.col('am') == 1)"</span>,</span>
+<span>    expr <span class="op">=</span> <span class="st">"mtcars_pl.filter(pl.col('am') == 1)"</span>,</span>
 <span>    user_functions <span class="op">=</span> <span class="st">"functions.py"</span>,</span>
 <span>    encoder <span class="op">=</span> <span class="st">"serialize_to_json"</span>,</span>
 <span>  <span class="op">)</span>,</span>
