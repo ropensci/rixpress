@@ -487,6 +487,7 @@ rxp_file <- function(
   encoder = NULL
 ) {
   out_name <- deparse1(substitute(name))
+  path <- gsub("/+$", "", path)
   user_functions <- clean_user_functions(user_functions)
   read_func_str <- process_read_function(read_function, lang, environment())
   serialize_str <- process_encoder(
