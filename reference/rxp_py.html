@@ -111,14 +111,14 @@ the derivation.</p></dd>
 function used to serialize the object. It must accept two arguments: the
 object to serialize (first), and the target file path (second). If NULL,
 the default behaviour uses <code>pickle.dump</code>. Define this function in
-<code>functions.py</code>.</p></dd>
+<code>functions.py</code>. See <code><a href="../articles/encoding-decoding.html">vignette("encoding-decoding")</a></code> for more details.</p></dd>
 
 
 <dt id="arg-decoder">decoder<a class="anchor" aria-label="anchor" href="#arg-decoder"></a></dt>
 <dd><p>Character or named vector/list, defaults to NULL. Can be:</p><ul><li><p>A single string for the Python function to unserialize all upstream objects</p></li>
 <li><p>A named vector/list where names are upstream dependency names and values
 are their specific unserialize functions
-If NULL, the default uses <code>pickle.load</code>.</p></li>
+If NULL, the default uses <code>pickle.load</code>. See <code><a href="../articles/encoding-decoding.html">vignette("encoding-decoding")</a></code> for more details.</p></li>
 </ul></dd>
 
 

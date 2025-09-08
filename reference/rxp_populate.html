@@ -129,7 +129,8 @@ _rixpress Python library files.</name></name></p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>Nothing, writes a file called <code>pipeline.nix</code> with the Nix code to
-build the pipeline.</p>
+build the pipeline, as well as folder called _rixpress with required
+internal files.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -140,12 +141,19 @@ the <code>rix</code> package;</p></li>
 between them when objects are passed from one language to another;</p></li>
 <li><p>correct loading of R and Python packages, or extra functions needed to build
 specific targets</p></li>
+</ul><p>The <code>_rixpress</code> folder contains:</p><ul><li><p>R, Python or Julia scripts to load the required packages that need to be
+available to the pipeline.</p></li>
+<li><p>a JSON file with the DAG of the pipeline, used for visualisation, and to
+allow <code>rxp_populate()</code> to generate the right dependencies between derivations.</p></li>
+<li><p><code>.rds</code> files with build logs, required for <code><a href="rxp_inspect.html">rxp_inspect()</a></code> and <code><a href="rxp_gc.html">rxp_gc()</a></code>.
+See <code><a href="../articles/debugging.html">vignette("debugging")</a></code> for more details.</p></li>
 </ul><p>Inline Python import adjustments
 In some cases, due to the automatic handling of Python packages, users might
 want to change import statements. By default if, say, <code>pandas</code> is needed to
 build a derivation, it will be imported with <code>import pandas</code>. However, Python
 programmers typically use <code>import pandas as pd</code>. You can either:</p><ul><li><p>use <code>py_imports</code> to rewrite these automatically during population, or</p></li>
-<li><p>use <code><a href="adjust_import.html">adjust_import()</a></code> for advanced/manual control.</p></li>
+<li><p>use <code><a href="adjust_import.html">adjust_import()</a></code> and <code><a href="add_import.html">add_import()</a></code> for advanced/manual control.
+See <code><a href="../articles/polyglot.html">vignette("polyglot")</a></code> for more details.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

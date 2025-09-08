@@ -255,6 +255,17 @@ mandatory, for example if you want to import a package’s submodule:</p>
 <p>The package is called <code>pillow</code>, so <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>
 will write the statement as <code>import pillow</code>, but this will
 simply not work.</p>
+<p>It is also possible to use <code><a href="../reference/adjust_import.html">adjust_import()</a></code> after the
+creation of the <code>pipeline.nix</code> but more importantly is
+<code><a href="../reference/add_import.html">add_import()</a></code>. This is required in cases where a built-in
+Python module needs to be loaded, such as <code>os</code>. Because the
+<code>os</code> module is not listed in the required Python packages in
+<code>rix(..., py_conf = ...)</code> to create the execution
+environment, it won’t get automatically loaded by
+<code><a href="../reference/rxp_populate.html">rxp_populate()</a></code>. Because of this, if <code>os</code> is
+needed for the pipeline, <code><a href="../reference/add_import.html">add_import()</a></code> is how you can add
+it. The <code><a href="../articles/importing-data.html">vignette("importing-data")</a></code> show such an
+example.</p>
 <p>If you want to use JSON to transfer data between derivations, you
 should use the <code>encoder</code> and <code>decoder</code> arguments
 respectively:</p>

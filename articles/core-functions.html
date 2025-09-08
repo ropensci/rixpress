@@ -101,18 +101,20 @@ pipeline is usually to import data. To include data in a
 <span>  path <span class="op">=</span> <span class="st">'data/mtcars.csv'</span>,</span>
 <span>  read_function <span class="op">=</span> \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span>file <span class="op">=</span> <span class="va">x</span>, sep <span class="op">=</span> <span class="st">"|"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code> requires an R function with a single
-argument: the path to the file to be read. In this example, we assume
-the columns in the <code>mtcars.csv</code> file are separated by the
-<code>|</code> symbol. We use an anonymous function to set the correct
-separator and create a temporary function with a single argument to read
-the file at <code>'data/mtcars.csv'</code>.</p>
+<p><code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code>’s <code>read_function</code> argument
+requires an R function with a single argument: the path to the file to
+be read. In this example, we assume the columns in the
+<code>mtcars.csv</code> file are separated by the <code>|</code> symbol.
+We use an anonymous function to set the correct separator and create a
+temporary function with a single argument to read the file at
+<code>'data/mtcars.csv'</code>.</p>
 <p>Important: This approach means that the <code>mtcars.csv</code> file
 <strong>will be copied</strong> to the <code>Nix</code> store. This is
 essential to how <code>Nix</code> works.</p>
 <p>Note that <code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code> is quite flexible: it works with
 any function that reads a file, regardless of the file type. The path to
-the file can also be a URL.</p>
+the file can also be a URL. See the
+<code><a href="../articles/importing-data.html">vignette("importing-data")</a></code> for more details.</p>
 </div>
 <div class="section level2">
 <h2 id="declaring-build-steps">Declaring build steps<a class="anchor" aria-label="anchor" href="#declaring-build-steps"></a>

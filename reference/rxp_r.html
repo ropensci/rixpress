@@ -107,7 +107,7 @@ the derivation.</p></dd>
 
 
 <dt id="arg-encoder">encoder<a class="anchor" aria-label="anchor" href="#arg-encoder"></a></dt>
-<dd><p>Function, defaults to NULL. A function used to
+<dd><p>Function or character defaults to NULL. A function used to
 encode (serialize) objects for transfer between derivations. It must accept two
 arguments: the object to encode (first), and the target file path
 (second). If your function has a different signature, wrap it to match this
@@ -115,7 +115,7 @@ interface. By default, <code><a href="https://rdrr.io/r/base/readRDS.html" class
 results, especially for complex objects like machine learning models. For
 instance, for <code>{keras}</code> models, use <code>keras::save_model_hdf5()</code> to capture
 the full model (architecture, weights, training config, optimiser state,
-etc.).</p></dd>
+etc.). See <code><a href="../articles/encoding-decoding.html">vignette("encoding-decoding")</a></code> for more details.</p></dd>
 
 
 <dt id="arg-decoder">decoder<a class="anchor" aria-label="anchor" href="#arg-decoder"></a></dt>
@@ -124,7 +124,7 @@ defaults to NULL. Can be:</p><ul><li><p>A single function/string to decode (unse
 <li><p>A named vector/list where names are upstream dependency names and values
 are their specific decoding functions (e.g.,
 <code>c(mtcars_tail = "qs::qread", mtcars_head = "read.csv")</code>)
-By default, <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code> is used.</p></li>
+By default, <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code> is used. See <code><a href="../articles/encoding-decoding.html">vignette("encoding-decoding")</a></code> for more details.</p></li>
 </ul></dd>
 
 
