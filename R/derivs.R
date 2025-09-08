@@ -77,7 +77,7 @@ make_derivation_snippet <- function(
 #'   the derivation.
 #' @param nix_env Character, path to the Nix environment file, default is
 #'   "default.nix".
-#' @param encoder Function, defaults to NULL. A function used to
+#' @param encoder Function or character defaults to NULL. A function used to
 #'   encode (serialize) objects for transfer between derivations. It must accept two
 #'   arguments: the object to encode (first), and the target file path
 #'   (second). If your function has a different signature, wrap it to match this
@@ -85,14 +85,14 @@ make_derivation_snippet <- function(
 #'   results, especially for complex objects like machine learning models. For
 #'   instance, for `{keras}` models, use `keras::save_model_hdf5()` to capture
 #'   the full model (architecture, weights, training config, optimiser state,
-#'   etc.).
+#'   etc.). See `vignette("encoding-decoding")` for more details.
 #' @param decoder Function, character, or named vector/list,
 #'   defaults to NULL. Can be:
 #'   - A single function/string to decode (unserialize) all upstream objects (e.g., `readRDS`)
 #'   - A named vector/list where names are upstream dependency names and values
 #'     are their specific decoding functions (e.g.,
 #'     `c(mtcars_tail = "qs::qread", mtcars_head = "read.csv")`)
-#'   By default, `readRDS()` is used.
+#'   By default, `readRDS()` is used. See `vignette("encoding-decoding")` for more details.
 #' @param env_var Character vector, defaults to NULL. A named vector of
 #'   environment variables to set before running the R script, e.g.,
 #'   `c("CMDSTAN" = "${defaultPkgs.cmdstan}/opt/cmdstan)"`.
@@ -376,12 +376,12 @@ rxp_r <- function(
 #'   function used to serialize the object. It must accept two arguments: the
 #'   object to serialize (first), and the target file path (second). If NULL,
 #'   the default behaviour uses `pickle.dump`. Define this function in
-#'   `functions.py`.
+#'   `functions.py`. See `vignette("encoding-decoding")` for more details.
 #' @param decoder Character or named vector/list, defaults to NULL. Can be:
 #'   - A single string for the Python function to unserialize all upstream objects
 #'   - A named vector/list where names are upstream dependency names and values
 #'     are their specific unserialize functions
-#'   If NULL, the default uses `pickle.load`.
+#'   If NULL, the default uses `pickle.load`. See `vignette("encoding-decoding")` for more details.
 #' @param env_var Character vector, defaults to NULL. A named vector of
 #'   environment variables
 #'   before running the Python script, e.g., c(PYTHONPATH = "/path/to/modules").
@@ -679,12 +679,12 @@ rxp_py <- function(
 #'   function used to serialize the object. It must accept two arguments: the
 #'   object to serialize (first), and the target file path (second). If NULL,
 #'   the default behaviour uses the built‐in `Serialization.serialize` API. Define
-#'   any custom serializer in `functions.jl`.
+#'   any custom serializer in `functions.jl`. See `vignette("encoding-decoding")` for more details.
 #' @param decoder Character or named vector/list, defaults to NULL. Can be:
 #'   - A single string for the Julia function to unserialize all upstream objects
 #'   - A named vector/list where names are upstream dependency names and values
 #'     are their specific unserialize functions
-#'   If NULL, the default is `Serialization.deserialize`.
+#'   If NULL, the default is `Serialization.deserialize`. See `vignette("encoding-decoding")` for more details.
 #' @param env_var Character vector, defaults to NULL. A named vector of
 #'   environment variables to set before running the Julia script, e.g.,
 #'   `c("JULIA_DEPOT_PATH" = "/path/to/depot")`. Each entry will be added as

@@ -40,14 +40,14 @@ the derivation.}
 function used to serialize the object. It must accept two arguments: the
 object to serialize (first), and the target file path (second). If NULL,
 the default behaviour uses \code{pickle.dump}. Define this function in
-\code{functions.py}.}
+\code{functions.py}. See \code{vignette("encoding-decoding")} for more details.}
 
 \item{decoder}{Character or named vector/list, defaults to NULL. Can be:
 \itemize{
 \item A single string for the Python function to unserialize all upstream objects
 \item A named vector/list where names are upstream dependency names and values
 are their specific unserialize functions
-If NULL, the default uses \code{pickle.load}.
+If NULL, the default uses \code{pickle.load}. See \code{vignette("encoding-decoding")} for more details.
 }}
 
 \item{env_var}{Character vector, defaults to NULL. A named vector of

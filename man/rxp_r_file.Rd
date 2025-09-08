@@ -15,7 +15,7 @@ rxp_r_file(...)
 a folder path (e.g., "data"). See details.}
     \item{\code{read_function}}{Function, an R function to read the data, taking one
 argument (the path). This can be a user-defined function that is made available
-using \code{user_functions}.}
+using \code{user_functions}. See details.}
     \item{\code{user_functions}}{Character vector, user-defined functions to include.
 This should be a script (or scripts) containing user-defined functions
 to include during the build process for this derivation. It is recommended
@@ -46,9 +46,8 @@ The basic usage is to provide a path to a file, and the function
 to read it. For example: \code{rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)}.
 It is also possible instead to point to a folder that contains many
 files that should all be read at once, for example:
-\verb{rxp_r_file(many_csvs, path = "data", read_function = \\(x)(readr::read_csv(list.files(x, full.names = TRUE, pattern = ".csv$"))))}
-or for a Python example that uses a user-defined function:
-\code{rxp_py_file(mtcars_py, path = 'data', "read_many_csvs", user_functions = "functions.py")}.
+\verb{rxp_r_file(many_csvs, path = "data", read_function = \\(x)(readr::read_csv(list.files(x, full.names = TRUE, pattern = ".csv$"))))}.
+See the \code{vignette("importing-data")} vignette for more detailed examples.
 }
 \seealso{
 Other derivations: 

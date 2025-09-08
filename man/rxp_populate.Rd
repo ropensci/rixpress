@@ -37,7 +37,8 @@ _rixpress Python library files.}
 }
 \value{
 Nothing, writes a file called \code{pipeline.nix} with the Nix code to
-build the pipeline.
+build the pipeline, as well as folder called _rixpress with required
+internal files.
 }
 \description{
 This function generates a \code{pipeline.nix} file based on a list of derivation
@@ -61,6 +62,16 @@ between them when objects are passed from one language to another;
 specific targets
 }
 
+The \verb{_rixpress} folder contains:
+\itemize{
+\item R, Python or Julia scripts to load the required packages that need to be
+available to the pipeline.
+\item a JSON file with the DAG of the pipeline, used for visualisation, and to
+allow \code{rxp_populate()} to generate the right dependencies between derivations.
+\item \code{.rds} files with build logs, required for \code{rxp_inspect()} and \code{rxp_gc()}.
+See \code{vignette("debugging")} for more details.
+}
+
 Inline Python import adjustments
 In some cases, due to the automatic handling of Python packages, users might
 want to change import statements. By default if, say, \code{pandas} is needed to
@@ -68,7 +79,8 @@ build a derivation, it will be imported with \verb{import pandas}. However, Pyth
 programmers typically use \verb{import pandas as pd}. You can either:
 \itemize{
 \item use \code{py_imports} to rewrite these automatically during population, or
-\item use \code{adjust_import()} for advanced/manual control.
+\item use \code{adjust_import()} and \code{add_import()} for advanced/manual control.
+See \code{vignette("polyglot")} for more details.
 }
 }
 \examples{

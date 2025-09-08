@@ -208,6 +208,15 @@ py_imports = c(pillow = "from PIL import Image")
 The package is called `pillow`, so `{rixpress}` will write the statement
 as `import pillow`, but this will simply not work.
 
+It is also possible to use `adjust_import()` after the creation of the
+`pipeline.nix` but more importantly is `add_import()`. This is required in cases
+where a built-in Python module needs to be loaded, such as `os`. Because the
+`os` module is not listed in the required Python packages in `rix(..., py_conf =
+...)` to create the execution environment, it won't get automatically loaded by
+`rxp_populate()`. Because of this, if `os` is needed for the pipeline,
+`add_import()` is how you can add it. The `vignette("importing-data")` show such
+an example.
+
 If you want to use JSON to transfer data between derivations, you should use
 the `encoder` and `decoder` arguments respectively:
 

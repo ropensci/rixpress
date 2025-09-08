@@ -458,7 +458,7 @@ process_encoder <- function(
 #'   a folder path (e.g., "data"). See details.
 #' @param read_function Function, an R function to read the data, taking one
 #'   argument (the path). This can be a user-defined function that is made available
-#'   using `user_functions`.
+#'   using `user_functions`. See details.
 #' @param user_functions Character vector, user-defined functions to include.
 #'   This should be a script (or scripts) containing user-defined functions
 #'   to include during the build process for this derivation. It is recommended
@@ -600,9 +600,8 @@ create_rxp_derivation <- function(
 #'   to read it. For example: `rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)`.
 #'   It is also possible instead to point to a folder that contains many
 #'   files that should all be read at once, for example:
-#'   `rxp_r_file(many_csvs, path = "data", read_function = \(x)(readr::read_csv(list.files(x, full.names = TRUE, pattern = ".csv$"))))`
-#'   or for a Python example that uses a user-defined function:
-#'   `rxp_py_file(mtcars_py, path = 'data', "read_many_csvs", user_functions = "functions.py")`.
+#'   `rxp_r_file(many_csvs, path = "data", read_function = \(x)(readr::read_csv(list.files(x, full.names = TRUE, pattern = ".csv$"))))`.
+#'   See the `vignette("importing-data")` vignette for more detailed examples.
 #' @export
 rxp_r_file <- function(...) rxp_file("R", ...)
 
@@ -616,8 +615,7 @@ rxp_r_file <- function(...) rxp_file("R", ...)
 #'   It is also possible instead to point to a folder that contains many
 #'   files that should all be read at once, for example:
 #'   `rxp_r_file(many_csvs, path = "data", read_function = \(x)(readr::read_csv(list.files(x, full.names = TRUE, pattern = ".csv$"))))`
-#'   or for a Python example that uses a user-defined function:
-#'   `rxp_py_file(mtcars_py, path = 'data', "read_many_csvs", user_functions = "functions.py")`.
+#'   See the `vignette("importing-data")` vignette for more detailed examples.
 #' @export
 rxp_py_file <- function(...) rxp_file("Py", ...)
 
@@ -630,9 +628,8 @@ rxp_py_file <- function(...) rxp_file("Py", ...)
 #'   to read it. For example: `rxp_r_file(mtcars, path = "data/mtcars.csv", read_function = read.csv)`.
 #'   It is also possible instead to point to a folder that contains many
 #'   files that should all be read at once, for example:
-#'   `rxp_r_file(many_csvs, path = "data", read_function = \(x)(readr::read_csv(list.files(x, full.names = TRUE, pattern = ".csv$"))))`
-#'   or for a Python example that uses a user-defined function:
-#'   `rxp_py_file(mtcars_py, path = 'data', "read_many_csvs", user_functions = "functions.py")`.
+#'   `rxp_r_file(many_csvs, path = "data", read_function = \(x)(readr::read_csv(list.files(x, full.names = TRUE, pattern = ".csv$"))))`.
+#'   See the `vignette("importing-data")` vignette for more detailed examples.
 #' @export
 rxp_jl_file <- function(...) rxp_file("Jl", ...)
 

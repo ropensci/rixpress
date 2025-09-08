@@ -36,7 +36,7 @@ the derivation.}
 \item{nix_env}{Character, path to the Nix environment file, default is
 "default.nix".}
 
-\item{encoder}{Function, defaults to NULL. A function used to
+\item{encoder}{Function or character defaults to NULL. A function used to
 encode (serialize) objects for transfer between derivations. It must accept two
 arguments: the object to encode (first), and the target file path
 (second). If your function has a different signature, wrap it to match this
@@ -44,7 +44,7 @@ interface. By default, \code{saveRDS()} is used, but this may yield unexpected
 results, especially for complex objects like machine learning models. For
 instance, for \code{{keras}} models, use \code{keras::save_model_hdf5()} to capture
 the full model (architecture, weights, training config, optimiser state,
-etc.).}
+etc.). See \code{vignette("encoding-decoding")} for more details.}
 
 \item{decoder}{Function, character, or named vector/list,
 defaults to NULL. Can be:
@@ -53,7 +53,7 @@ defaults to NULL. Can be:
 \item A named vector/list where names are upstream dependency names and values
 are their specific decoding functions (e.g.,
 \code{c(mtcars_tail = "qs::qread", mtcars_head = "read.csv")})
-By default, \code{readRDS()} is used.
+By default, \code{readRDS()} is used. See \code{vignette("encoding-decoding")} for more details.
 }}
 
 \item{env_var}{Character vector, defaults to NULL. A named vector of

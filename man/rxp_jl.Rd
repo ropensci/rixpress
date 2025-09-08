@@ -40,14 +40,14 @@ the derivation.}
 function used to serialize the object. It must accept two arguments: the
 object to serialize (first), and the target file path (second). If NULL,
 the default behaviour uses the built‐in \code{Serialization.serialize} API. Define
-any custom serializer in \code{functions.jl}.}
+any custom serializer in \code{functions.jl}. See \code{vignette("encoding-decoding")} for more details.}
 
 \item{decoder}{Character or named vector/list, defaults to NULL. Can be:
 \itemize{
 \item A single string for the Julia function to unserialize all upstream objects
 \item A named vector/list where names are upstream dependency names and values
 are their specific unserialize functions
-If NULL, the default is \code{Serialization.deserialize}.
+If NULL, the default is \code{Serialization.deserialize}. See \code{vignette("encoding-decoding")} for more details.
 }}
 
 \item{env_var}{Character vector, defaults to NULL. A named vector of

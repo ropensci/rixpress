@@ -25,7 +25,7 @@ a folder path (e.g., "data"). See details.}
 
 \item{read_function}{Function, an R function to read the data, taking one
 argument (the path). This can be a user-defined function that is made available
-using \code{user_functions}.}
+using \code{user_functions}. See details.}
 
 \item{user_functions}{Character vector, user-defined functions to include.
 This should be a script (or scripts) containing user-defined functions

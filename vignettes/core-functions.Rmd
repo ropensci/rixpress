@@ -35,18 +35,18 @@ d0 <- rxp_r_file(
 )
 ```
 
-`rxp_r_file()` requires an R function with a single argument: the path to the
-file to be read. In this example, we assume the columns in the `mtcars.csv` file
-are separated by the `|` symbol. We use an anonymous function to set the correct
-separator and create a temporary function with a single argument to read the
-file at `'data/mtcars.csv'`.
+`rxp_r_file()`'s `read_function` argument requires an R function with a single
+argument: the path to the file to be read. In this example, we assume the
+columns in the `mtcars.csv` file are separated by the `|` symbol. We use an
+anonymous function to set the correct separator and create a temporary function
+with a single argument to read the file at `'data/mtcars.csv'`.
 
 Important: This approach means that the `mtcars.csv` file **will be copied** to
 the `Nix` store. This is essential to how `Nix` works.
 
 Note that `rxp_r_file()` is quite flexible: it works with any function that
 reads a file, regardless of the file type. The path to the file can also be a
-URL.
+URL. See the `vignette("importing-data")` for more details.
 
 ## Declaring build steps
 

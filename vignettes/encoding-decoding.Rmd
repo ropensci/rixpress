@@ -71,6 +71,9 @@ d4 <- rxp_r(
 - `decoder` specifies how to read inputs from upstream derivations.
 - You can assign different decoders per upstream object using a named vector.
 
+As shown in the examples above, you can pass a function or a string
+representation of the function to `encoder` and `decoder`.
+
 By encoding the object in a cross-language format, it is possible to pass it
 to another language. For example, read a csv file using Julia, encode it to Arrow
 and read it back in R:

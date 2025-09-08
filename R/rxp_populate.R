@@ -39,7 +39,8 @@
 #'   `rxp_make()` for more details.
 #'
 #' @return Nothing, writes a file called `pipeline.nix` with the Nix code to
-#'   build the pipeline.
+#'   build the pipeline, as well as folder called _rixpress with required
+#'   internal files.
 #'
 #' @details
 #' The generated `pipeline.nix` expression includes:
@@ -51,13 +52,22 @@
 #' - correct loading of R and Python packages, or extra functions needed to build
 #'   specific targets
 #'
+#' The `_rixpress` folder contains:
+#' - R, Python or Julia scripts to load the required packages that need to be
+#' available to the pipeline.
+#' - a JSON file with the DAG of the pipeline, used for visualisation, and to
+#' allow `rxp_populate()` to generate the right dependencies between derivations.
+#' - `.rds` files with build logs, required for `rxp_inspect()` and `rxp_gc()`.
+#' See `vignette("debugging")` for more details.
+#'
 #' Inline Python import adjustments
 #' In some cases, due to the automatic handling of Python packages, users might
 #' want to change import statements. By default if, say, `pandas` is needed to
 #' build a derivation, it will be imported with `import pandas`. However, Python
 #' programmers typically use `import pandas as pd`. You can either:
 #' - use `py_imports` to rewrite these automatically during population, or
-#' - use `adjust_import()` for advanced/manual control.
+#' - use `adjust_import()` and `add_import()` for advanced/manual control.
+#' See `vignette("polyglot")` for more details.
 #'
 #' @examples
 #' \dontrun{
