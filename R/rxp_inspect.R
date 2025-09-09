@@ -23,10 +23,10 @@ rxp_list_logs <- function(project_path = ".") {
     stop("_rixpress directory not found. Did you initialise the project?")
   }
 
-  # Find all build log files
+  # Find all build log files (now JSON instead of RDS)
   log_files <- list.files(
     path = rixpress_dir,
-    pattern = "build_log.*\\.rds$",
+    pattern = "build_log.*\\.json$",
     full.names = TRUE
   )
 
@@ -119,5 +119,7 @@ rxp_inspect <- function(project_path = ".", which_log = NULL) {
     message("Using log file: ", basename(log_path))
   }
 
-  readRDS(log_path)
+  # Read JSON log and convert back into data frame
+  log_data <- jsonlite::read_json(log_path, simplifyVector = TRUE)
+  as.data.frame(log_data, stringsAsFactors = FALSE)
 }
