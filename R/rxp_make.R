@@ -350,14 +350,22 @@ rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
     }
   }
 
+  # choose filename with .json instead of .rds
   log_filename <- sprintf(
-    "_rixpress/build_log_%s%s.rds",
+    "_rixpress/build_log_%s%s.json",
     timestamp,
     ifelse(all_derivs_hash != "", paste0("_", all_derivs_hash), "")
   )
 
-  saveRDS(build_log, log_filename)
-
+  # save JSON instead of RDS
+  jsonlite::write_json(
+    x = build_log,
+    path = log_filename,
+    pretty = TRUE,
+    auto_unbox = TRUE,
+    dataframe = "rows"  # each row as a JSON object
+  )
+  
   failures <- subset(build_log, subset = !build_success)
   if (nrow(failures) > 0) {
     warning(
