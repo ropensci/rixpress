@@ -49,8 +49,14 @@ test_that("rxp_inspect correctly reads build log", {
     stringsAsFactors = FALSE
   )
 
-  # Save mock build log
-  saveRDS(mock_build_log, file.path(rixpress_dir, "build_log.rds"))
+  # Save mock build log as JSON
+  jsonlite::write_json(
+    mock_build_log,
+    file.path(rixpress_dir, "build_log.json"),
+    pretty = TRUE,
+    auto_unbox = TRUE,
+    dataframe = "rows"
+  )
 
   # Test that rxp_inspect returns the correct data frame
   expected <- rxp_inspect()
