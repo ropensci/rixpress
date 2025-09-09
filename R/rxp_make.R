@@ -363,9 +363,9 @@ rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
     path = log_filename,
     pretty = TRUE,
     auto_unbox = TRUE,
-    dataframe = "rows"  # each row as a JSON object
+    dataframe = "rows" # each row as a JSON object
   )
-  
+
   failures <- subset(build_log, subset = !build_success)
   if (nrow(failures) > 0) {
     warning(
