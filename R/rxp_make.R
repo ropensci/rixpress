@@ -451,7 +451,10 @@ rxp_export_artifacts <- function(
   }
 
   message("Using build log: ", basename(log_path))
-  store_paths <- readRDS(log_path)$path
+
+  # Read JSON instead of RDS
+  build_log <- jsonlite::read_json(log_path, simplifyVector = TRUE)
+  store_paths <- build_log$path
 
   message("Exporting store paths to ", archive_file)
   system2("nix-store", args = c("--export", store_paths), stdout = archive_file)
