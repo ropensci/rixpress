@@ -9,7 +9,8 @@ rxp_gc(
   project_path = ".",
   dry_run = FALSE,
   timeout_sec = 300,
-  verbose = FALSE
+  verbose = FALSE,
+  ask = TRUE
 )
 }
 \arguments{
@@ -24,7 +25,7 @@ Default is \code{"."} (current directory).}
 
 \item{dry_run}{Logical. If \code{TRUE}, shows what would be deleted without
 actually performing any deletions. Useful for previewing the cleanup
-operation. Default is \code{TRUE}.}
+operation. Default is \code{FALSE}.}
 
 \item{timeout_sec}{Numeric. Timeout in seconds for individual Nix commands.
 Also used for concurrency lock expiration. Default is 300 seconds.}
@@ -32,6 +33,9 @@ Also used for concurrency lock expiration. Default is 300 seconds.}
 \item{verbose}{Logical. If \code{TRUE}, provides detailed output including
 full paths, command outputs, and diagnostic information about references
 preventing deletion. Default is \code{FALSE}.}
+
+\item{ask}{Logical. If \code{TRUE}, ask for user confirmation before
+performing deleting artifacts. Default is \code{TRUE}.}
 }
 \value{
 Invisibly returns a list with cleanup summary information:
@@ -68,7 +72,7 @@ The function operates in two modes:
 \item Extracts store paths from old logs using \code{rxp_inspect()}
 \item Protects recent store paths by creating temporary GC roots
 \item Attempts to delete old store paths individually using \code{nix-store --delete}
-\item Deletes the corresponding build log \code{.rds} files from \code{_rixpress/}
+\item Deletes the corresponding build log \code{.json} files from \code{_rixpress/}
 \item Handles referenced paths gracefully (paths that cannot be deleted due to dependencies)
 }
 

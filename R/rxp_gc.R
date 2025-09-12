@@ -13,12 +13,14 @@
 #'   Default is \code{"."} (current directory).
 #' @param dry_run Logical. If \code{TRUE}, shows what would be deleted without
 #'   actually performing any deletions. Useful for previewing the cleanup
-#'   operation. Default is \code{TRUE}.
+#'   operation. Default is \code{FALSE}.
 #' @param timeout_sec Numeric. Timeout in seconds for individual Nix commands.
 #'   Also used for concurrency lock expiration. Default is 300 seconds.
 #' @param verbose Logical. If \code{TRUE}, provides detailed output including
 #'   full paths, command outputs, and diagnostic information about references
 #'   preventing deletion. Default is \code{FALSE}.
+#' @param ask Logical. If \code{TRUE}, ask for user confirmation before
+#'   performing deleting artifacts. Default is \code{TRUE}.
 #'
 #' @return Invisibly returns a list with cleanup summary information:
 #' \itemize{
@@ -49,7 +51,7 @@
 #'   \item Extracts store paths from old logs using \code{rxp_inspect()}
 #'   \item Protects recent store paths by creating temporary GC roots
 #'   \item Attempts to delete old store paths individually using \code{nix-store --delete}
-#'   \item Deletes the corresponding build log \code{.rds} files from \code{_rixpress/}
+#'   \item Deletes the corresponding build log \code{.json} files from \code{_rixpress/}
 #'   \item Handles referenced paths gracefully (paths that cannot be deleted due to dependencies)
 #' }
 #'
@@ -92,7 +94,8 @@ rxp_gc <- function(
   project_path = ".",
   dry_run = FALSE,
   timeout_sec = 300,
-  verbose = FALSE
+  verbose = FALSE,
+  ask = TRUE
 ) {
   nix_bin <- Sys.which("nix-store")
   if (!nzchar(nix_bin)) {
@@ -416,10 +419,11 @@ rxp_gc <- function(
   if (is.null(keep_since)) {
     # Full GC mode
     if (
-      !utils::askYesNo(
-        "Run full Nix garbage collection (delete all unreferenced artifacts)?",
-        default = FALSE
-      )
+      ask &&
+        !utils::askYesNo(
+          "Run full Nix garbage collection (delete all unreferenced artifacts)?",
+          default = FALSE
+        )
     ) {
       message("Operation cancelled.")
       return(invisible(NULL))
@@ -475,7 +479,7 @@ rxp_gc <- function(
     format(keep_since, "%Y-%m-%d"),
     ". Continue?"
   )
-  if (!utils::askYesNo(prompt, default = FALSE)) {
+  if (ask && !isTRUE(utils::askYesNo(prompt, default = FALSE))) {
     message("Operation cancelled.")
     return(invisible(NULL))
   }
