@@ -59,7 +59,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/b-rodrigues/rixpress/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/ropensci/rixpress/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -76,14 +76,14 @@
       <h1>Importing Data Files</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/b-rodrigues/rixpress/blob/main/vignettes/importing-data.Rmd" class="external-link"><code>vignettes/importing-data.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ropensci/rixpress/blob/main/vignettes/importing-data.Rmd" class="external-link"><code>vignettes/importing-data.Rmd</code></a></small>
       <div class="d-none name"><code>importing-data.Rmd</code></div>
     </div>
 
     
     
 <p>A crucial first step in any data analysis pipeline is importing data.
-The <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> package provides a flexible set of
+The <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> package provides a flexible set of
 functions, <code>rxp_r_file</code>, <code>rxp_py_file</code>, and
 <code>rxp_jl_file</code>, to handle various data import scenarios in a
 reproducible way. This vignette will guide you through the common use
@@ -122,7 +122,7 @@ environment.</li>
 <h2 id="importing-a-single-file-from-the-internet">Importing a single file from the internet<a class="anchor" aria-label="anchor" href="#importing-a-single-file-from-the-internet"></a>
 </h2>
 <p>You can also directly import a file from a URL. Simply provide the
-URL as the <code>path</code>. <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> handles the
+URL as the <code>path</code>. <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> handles the
 download and ensures reproducibility by caching the file using its
 cryptographic hash.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(rixpress)</span>
@@ -134,13 +134,13 @@ cryptographic hash.</p>
 <span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>    <span class="at">read_function =</span> \(x) (<span class="fu">read.csv</span>(<span class="at">file =</span> x, <span class="at">sep =</span> <span class="st">"|"</span>))</span>
 <span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  ),</span>
 <span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>...</span></code></pre></div>
-<p>Behind the scenes, <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> uses Nix to fetch the
+<p>Behind the scenes, <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> uses Nix to fetch the
 file, ensuring that the exact same version of the file is used every
 time the pipeline is run. This is the only time the build sandbox can
 access a remote file: it’s because the file actually gets downloaded by
 Nix ahead of time. If you need to access data in real-time from an API,
 then you’ll need to download the data yourself outside of
-<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> pipeline, and then import it in the pipeline
+<a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> pipeline, and then import it in the pipeline
 using <code><a href="../reference/rxp_r_file.html">rxp_r_file()</a></code>.</p>
 </div>
 <div class="section level2">
@@ -154,7 +154,7 @@ logic to handle all the files within.</p>
 <p>Here is an example in R that reads all files in the <code>data</code>
 directory:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/rxp_r_file.html">rxp_r_file</a></span><span class="op">(</span></span>
@@ -169,7 +169,7 @@ directory:</p>
 <p>And here’s a similar example using Python, which calls a user-defined
 function <code>read_many_csvs</code> from an external script:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/rxp_py_file.html">rxp_py_file</a></span><span class="op">(</span></span>
@@ -201,19 +201,19 @@ listing the files and reading them.</p>
 correctly. Even though you might only point the read function to the
 <code>.shp</code> file, the other component files need to be in the same
 directory.</p>
-<p><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> handles this by allowing you to specify a
+<p><a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> handles this by allowing you to specify a
 directory as the <code>path</code>. This ensures all necessary files are
 copied into the build environment. However, you must then provide the
 <em>full path to the main file inside the build environment</em> within
 your <code>read_function</code>.</p>
-<p>In a <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> pipeline, local files and directories
+<p>In a <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> pipeline, local files and directories
 specified in <code>path</code> are copied into a sub-directory called
 <code>input_folder</code>. Therefore, the path to your data inside the
 Nix sandbox will be <code>input_folder/YOUR_PATH</code>.</p>
 <p>The following example shows how to read a shapefile using Python and
 <code>geopandas</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/rxp_py_file.html">rxp_py_file</a></span><span class="op">(</span></span>
@@ -233,7 +233,7 @@ Nix sandbox will be <code>input_folder/YOUR_PATH</code>.</p>
 <p>Here’s what happens:</p>
 <ol style="list-style-type: decimal">
 <li>The <code>path = 'data'</code> argument tells
-<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> to copy the entire <code>data</code> directory
+<a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> to copy the entire <code>data</code> directory
 into the sandbox.</li>
 <li>Inside the sandbox, the shapefile is located at
 <code>input_folder/data/oceans.shp</code>.</li>
@@ -280,7 +280,7 @@ that folder for the shapefile, and pass its path to
 <div class="section level2">
 <h2 id="conclusion">Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>
 </h2>
-<p>The <code>rxp_*_file</code> functions in <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>
+<p>The <code>rxp_*_file</code> functions in <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a>
 offer a powerful and consistent interface for ingesting data into your
 reproducible pipelines, whether your data lives locally, on the web, as
 a single file, or as a collection of files. By understanding how to

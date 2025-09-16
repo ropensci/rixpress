@@ -59,7 +59,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/b-rodrigues/rixpress/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/ropensci/rixpress/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -76,7 +76,7 @@
       <h1>Polyglot pipelines with Julia and R</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/b-rodrigues/rixpress/blob/main/vignettes/polyglot-julia.Rmd" class="external-link"><code>vignettes/polyglot-julia.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ropensci/rixpress/blob/main/vignettes/polyglot-julia.Rmd" class="external-link"><code>vignettes/polyglot-julia.Rmd</code></a></small>
       <div class="d-none name"><code>polyglot-julia.Rmd</code></div>
     </div>
 
@@ -85,7 +85,7 @@
 <p>This vignette demonstrates how to build a polyglot pipeline using R
 and Julia. It assumes you’ve read
 <code><a href="../articles/core-functions.html">vignette("core-functions")</a></code> and are familiar with the basic
-concepts of <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>.</p>
+concepts of <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a>.</p>
 <p>For various examples of polyglot pipelines, check out the <a href="https://github.com/b-rodrigues/rixpress_demos/" class="external-link">rixpress_demos
 repository</a>.</p>
 <div class="section level2">
@@ -93,7 +93,7 @@ repository</a>.</p>
 using R<a class="anchor" aria-label="anchor" href="#generating-waveshaders-data-using-julia-and-plotting-it-using-r"></a>
 </h2>
 <p>This example was provided by Moritz Schauer (<span class="citation">@mschauer</span>). example adapted from: <a href="https://github.com/frankiethull/waveshaders/tree/main/experiments/simple_example" class="external-link uri">https://github.com/frankiethull/waveshaders/tree/main/experiments/simple_example</a></p>
-<p><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> makes it easy to write polyglot
+<p><a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> makes it easy to write polyglot
 (multilingual) data science pipelines with derivations that run R or
 Julia code. This vignette explains how you can easily set up such a
 pipeline.</p>
@@ -125,7 +125,7 @@ configuration:</p>
 <span>    <span class="op">)</span>,</span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>      package_name <span class="op">=</span> <span class="st">"rixpress"</span>,</span>
-<span>      repo_url <span class="op">=</span> <span class="st">"https://github.com/b-rodrigues/rixpress"</span>,</span>
+<span>      repo_url <span class="op">=</span> <span class="st">"https://github.com/ropensci/rixpress"</span>,</span>
 <span>      commit <span class="op">=</span> <span class="st">"HEAD"</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span>,</span>
@@ -162,7 +162,7 @@ interactively as usual. To learn more, check out <a href="https://docs.ropensci.
 <p>You can now edit the pipeline script in <code>gen-pipeline.R</code>.
 Here’s an example of a pipeline that uses both R and Julia:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -289,7 +289,7 @@ interchangeable format. From Julia, we save using
 <div class="section level2">
 <h2 id="conclusion">Conclusion<a class="anchor" aria-label="anchor" href="#conclusion"></a>
 </h2>
-<p><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> makes it easy to combine the strengths of R
+<p><a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> makes it easy to combine the strengths of R
 and Julia in a single pipeline. By using Nix to manage the environments
 and Arrow (or other formats) for data transfer, you can create
 reproducible polyglot pipelines that leverage the best of both

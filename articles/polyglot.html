@@ -59,7 +59,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/b-rodrigues/rixpress/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/ropensci/rixpress/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -76,7 +76,7 @@
       <h1>Polyglot pipelines and literate programming with Quarto or R Markdown</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/b-rodrigues/rixpress/blob/main/vignettes/polyglot.Rmd" class="external-link"><code>vignettes/polyglot.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ropensci/rixpress/blob/main/vignettes/polyglot.Rmd" class="external-link"><code>vignettes/polyglot.Rmd</code></a></small>
       <div class="d-none name"><code>polyglot.Rmd</code></div>
     </div>
 
@@ -95,7 +95,7 @@ repository</a>.</p>
 <div class="section level2">
 <h2 id="analysing-the-mtcars-dataset-using-r-and-python">Analysing the mtcars dataset using R and Python<a class="anchor" aria-label="anchor" href="#analysing-the-mtcars-dataset-using-r-and-python"></a>
 </h2>
-<p><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> makes it easy to write polyglot
+<p><a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> makes it easy to write polyglot
 (multilingual) data science pipelines with derivations that run R or
 Python code. This vignette explains how you can easily set up such a
 pipeline.</p>
@@ -113,14 +113,14 @@ following line in a terminal:</p>
 <p>There might be a message telling you to add your user to a
 configuration file by executing another command. If so, follow the
 instructions; you only need to do this once per machine you want to use
-<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> on. Many thanks to <a href="https://www.cachix.org/" class="external-link">Cachix</a> for sponsoring the
+<a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> on. Many thanks to <a href="https://www.cachix.org/" class="external-link">Cachix</a> for sponsoring the
 <code>rstats-on-nix</code> cache!</p>
 <p>Now that the cache is configured, it’s time to bootstrap your
 development environment. Run this line:</p>
 <pre><code>nix-shell --expr "$(curl -sl https://raw.githubusercontent.com/ropensci/rix/main/inst/extdata/default.nix)"</code></pre>
 <p>This will drop you into a temporary shell with R and both
-<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> and <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> available. Simply start R
-by typing <code>R</code>, and load <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> and call
+<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> and <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> available. Simply start R
+by typing <code>R</code>, and load <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> and call
 <code><a href="../reference/rxp_init.html">rxp_init()</a></code> which will generate two files,
 <code>gen-env.R</code> and <code>gen-pipeline.R</code>. You can open
 <code>gen-env.R</code> in your favourite text editor and define the
@@ -133,7 +133,7 @@ execution environment there:</p>
 <span>  r_pkgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dplyr"</span>, <span class="st">"igraph"</span>, <span class="st">"reticulate"</span>, <span class="st">"quarto"</span><span class="op">)</span>,</span>
 <span>  git_pkgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    package_name <span class="op">=</span> <span class="st">"rixpress"</span>,</span>
-<span>    repo_url <span class="op">=</span> <span class="st">"https://github.com/b-rodrigues/rixpress"</span>,</span>
+<span>    repo_url <span class="op">=</span> <span class="st">"https://github.com/ropensci/rixpress"</span>,</span>
 <span>    commit <span class="op">=</span> <span class="st">"HEAD"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  py_conf <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -172,7 +172,7 @@ interactively as usual. To learn more, check out <a href="https://docs.ropensci.
 <p>You can now edit the pipeline script in
 <code>gen-pipeline.R</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -252,7 +252,7 @@ name each time: <code>polars.read_csv()</code>. This is sometimes
 mandatory, for example if you want to import a package’s submodule:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">py_imports</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>pillow <span class="op">=</span> <span class="st">"from PIL import Image"</span><span class="op">)</span></span></code></pre></div>
-<p>The package is called <code>pillow</code>, so <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>
+<p>The package is called <code>pillow</code>, so <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a>
 will write the statement as <code>import pillow</code>, but this will
 simply not work.</p>
 <p>It is also possible to use <code><a href="../reference/adjust_import.html">adjust_import()</a></code> after the
@@ -270,7 +270,7 @@ example.</p>
 should use the <code>encoder</code> and <code>decoder</code> arguments
 respectively:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -385,7 +385,7 @@ packages in the call to <code><a href="https://docs.ropensci.org/rix/reference/r
 <span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>  <span class="at">git_pkgs =</span> <span class="fu">list</span>(...</span></code></pre></div>
 <p>For more examples, check out <a href="https://github.com/b-rodrigues/rixpress_demos" class="external-link">rixpress_demos
 repository</a>. These examples demonstrate additional features of
-<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>, including:</p>
+<a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a>, including:</p>
 <ul>
 <li><a href="https://github.com/b-rodrigues/rixpress_demos/tree/master/r_py_xgboost" class="external-link">Using
 the Python ‘xgboost’ library and transferring data to R</a></li>

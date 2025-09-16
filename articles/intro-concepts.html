@@ -59,7 +59,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/b-rodrigues/rixpress/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/ropensci/rixpress/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -76,7 +76,7 @@
       <h1>Introductory concepts</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/b-rodrigues/rixpress/blob/main/vignettes/intro-concepts.Rmd" class="external-link"><code>vignettes/intro-concepts.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ropensci/rixpress/blob/main/vignettes/intro-concepts.Rmd" class="external-link"><code>vignettes/intro-concepts.Rmd</code></a></small>
       <div class="d-none name"><code>intro-concepts.Rmd</code></div>
     </div>
 
@@ -84,7 +84,7 @@
     
 <p>For a video version of this tutorial, <a href="https://youtu.be/bMiNfXJdgXg" class="external-link">click here</a>.</p>
 <p>This vignette introduces key terminology and walks you through
-setting up a simple pipeline using <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>.
+setting up a simple pipeline using <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a>.
 Understanding the concepts presented here is helpful but not mandatory.
 I recommend reading through this vignette, but don’t worry if you don’t
 grasp everything immediately. You can try building a simple pipeline by
@@ -97,7 +97,7 @@ with <code>Nix</code> by using <a href="https://docs.ropensci.org/rix/" class="e
 <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, you’ll learn how to set up reproducible development
 environments for data science, which you can use for interactive data
 analysis work. Then, if you want to go one step further in the
-reproducibility spectrum/continuum<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;&lt;a href="https://doi.org/10.1126/science.1213847" class="external-link uri"&gt;https://doi.org/10.1126/science.1213847&lt;/a&gt;&lt;/p&gt;'><sup>1</sup></a>, this is where <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>
+reproducibility spectrum/continuum<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;&lt;a href="https://doi.org/10.1126/science.1213847" class="external-link uri"&gt;https://doi.org/10.1126/science.1213847&lt;/a&gt;&lt;/p&gt;'><sup>1</sup></a>, this is where <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a>
 comes in.</p>
 <div class="section level2">
 <h2 id="definitions">Definitions<a class="anchor" aria-label="anchor" href="#definitions"></a>
@@ -162,7 +162,7 @@ first generates a <em>derivation</em> from this expression, and only
 then builds it. For clarity in this document, I’ll refer to code like
 the example above as a <em>derivation</em> rather than an expression, to
 avoid confusion with the concept of <em>expression</em> in R.</p>
-<p>The goal of <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> is to help you write pipelines
+<p>The goal of <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> is to help you write pipelines
 like <code>mtcars |&gt; f |&gt; g</code> without needing to learn
 <code>Nix</code>, while still benefiting from its powerful
 reproducibility features.</p>
@@ -195,7 +195,7 @@ referenced that are missing on the target system.</p>
 <p>(<em>Nix: A Safe and Policy-Free System for Software Deployment</em>,
 Dolstra et al., 2004).</p>
 <p>The figure below, from the same paper, illustrates this idea:</p>
-<figure><img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/main/vignettes/figure_4.png" alt="Figure 4 of Dolstra et al. (2004)"><figcaption aria-hidden="true">
+<figure><img src="https://raw.githubusercontent.com/ropensci/rixpress/refs/heads/main/vignettes/figure_4.png" alt="Figure 4 of Dolstra et al. (2004)"><figcaption aria-hidden="true">
 Figure 4 of Dolstra et al. (2004)
 </figcaption></figure><p>In the figure, <code>subversion</code> depends on
 <code>openssl</code>, which itself depends on <code>glibc</code>.
@@ -214,7 +214,7 @@ defeating the purpose of reproducibility! (It should be noted, however,
 that there are sometimes good reasons to have a dependency that is not
 managed by <code>Nix</code>, in which case you might prefer to use
 <a href="https://docs.ropensci.org/targets/" class="external-link">targets</a> running inside a Nix shell instead of
-<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>, but these situations should be the exception
+<a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a>, but these situations should be the exception
 rather than the rule).</p>
 <p><code>Nix</code> distinguishes between different types of
 dependencies (<code>buildInputs</code>, <code>nativeBuildInputs</code>,
@@ -251,7 +251,7 @@ represents the same value.</p>
 <p>This mechanism is what makes it possible to import and export build
 artifacts between pipelines to avoid having to rebuild everything from
 scratch on different machines or on continuous integration platforms.
-<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> has two functions that allow this, called
+<a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> has two functions that allow this, called
 <code><a href="../reference/rxp_export_artifacts.html">rxp_export_artifacts()</a></code> and
 <code><a href="../reference/rxp_import_artifacts.html">rxp_import_artifacts()</a></code>.</p>
 <p>To ensure that building derivations always produces exactly the same
@@ -286,7 +286,7 @@ your study).</p>
 generates a derivation from a <code>Nix</code> expression through a
 process called instantiation. Writing a reproducible pipeline with
 <code>Nix</code> directly would require writing very long and complex
-<code>Nix</code> expressions. This is where <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>
+<code>Nix</code> expressions. This is where <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a>
 comes in - it handles this complexity for you.</p>
 <p>During instantiation, <code>Nix</code> processes your declarations,
 resolves all inputs (including source files, build scripts, and external
@@ -320,7 +320,7 @@ will result in a different hash, even though the resulting
 inputs was different.</p>
 <p>The key take-away is that <code>Nix</code> is a complex tool because
 it solves a complex problem: ensuring complete reproducibility across
-different environments and time. <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> and
+different environments and time. <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> and
 <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a> are packages designed to make <code>Nix</code> more
 accessible to R users, allowing you to benefit from <code>Nix</code>’s
 reproducibility without having to learn all its complexities.</p>

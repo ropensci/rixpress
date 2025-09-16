@@ -59,7 +59,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/b-rodrigues/rixpress/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/ropensci/rixpress/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -76,13 +76,13 @@
       <h1>Setting up a pipeline from scratch: a tutorial</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/b-rodrigues/rixpress/blob/main/vignettes/tutorial.Rmd" class="external-link"><code>vignettes/tutorial.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ropensci/rixpress/blob/main/vignettes/tutorial.Rmd" class="external-link"><code>vignettes/tutorial.Rmd</code></a></small>
       <div class="d-none name"><code>tutorial.Rmd</code></div>
     </div>
 
     
     
-<p>This vignette demonstrates how to build a <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>
+<p>This vignette demonstrates how to build a <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a>
 pipeline that only uses R derivations. For multilingual pipelines, read
 the next vignette <code><a href="../articles/polyglot.html">vignette("polyglot")</a></code>.</p>
 <p>If you are more of a visual learner, you can also watch <a href="https://www.youtube.com/watch?v=IXKd5ySzzSU" class="external-link">this video</a> which
@@ -90,7 +90,7 @@ will walk you through the contents of this vignette.</p>
 <div class="section level2">
 <h2 id="installing-the-required-software">Installing the required software<a class="anchor" aria-label="anchor" href="#installing-the-required-software"></a>
 </h2>
-<p>If you’re using <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>, you’re likely already
+<p>If you’re using <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a>, you’re likely already
 familiar with its sister package <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, which helps you set
 up reproducible development environments for R or Python using
 <code>Nix</code>. As such, you likely already have <code>Nix</code>
@@ -120,12 +120,12 @@ cache;</li>
 <p>If you’re already familiar with <a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, you likely know
 that you can use the following command in your project’s root directory
 to get access to a temporary <code>Nix</code> shell that provides R,
-<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, and <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a>:</p>
+<a href="https://docs.ropensci.org/rix/" class="external-link">rix</a>, and <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a>:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="ex">nix-shell</span> <span class="at">--expr</span> <span class="st">"</span><span class="va">$(</span><span class="ex">curl</span> <span class="at">-sl</span> https://raw.githubusercontent.com/ropensci/rix/main/inst/extdata/default.nix<span class="va">)</span><span class="st">"</span></span></code></pre></div>
 <p>This will start a <code>Nix</code> session. Type <code>R</code> to
 start an R session, and then type:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/rxp_init.html">rxp_init</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>This will write two files to the root of your project,
@@ -145,14 +145,14 @@ start an R session, and then type:</p>
 <span>  py_conf <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  git_pkgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    <span class="st">"package_name"</span> <span class="op">=</span> <span class="st">"rixpress"</span>,</span>
-<span>    <span class="st">"repo_url"</span> <span class="op">=</span> <span class="st">"https://github.com/b-rodrigues/rixpress"</span>,</span>
+<span>    <span class="st">"repo_url"</span> <span class="op">=</span> <span class="st">"https://github.com/ropensci/rixpress"</span>,</span>
 <span>    <span class="st">"commit"</span> <span class="op">=</span> <span class="st">"HEAD"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  ide <span class="op">=</span> <span class="st">"none"</span>,</span>
 <span>  project_path <span class="op">=</span> <span class="st">"."</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>To execute a <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> pipeline, the environment needs
-<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> to be available, but you likely require other
+<p>To execute a <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> pipeline, the environment needs
+<a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> to be available, but you likely require other
 packages. Let’s add <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a> and <a href="https://r.igraph.org/" class="external-link">igraph</a>
 (which is needed to view the graphical representation of the pipeline’s
 DAG). Open <code>gen-env.R</code> in any text editor and change it
@@ -166,7 +166,7 @@ to:</p>
 <span>  r_pkgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dplyr"</span>, <span class="st">"igraph"</span><span class="op">)</span>,</span>
 <span>  git_pkgs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    package_name <span class="op">=</span> <span class="st">"rixpress"</span>,</span>
-<span>    repo_url <span class="op">=</span> <span class="st">"https://github.com/b-rodrigues/rixpress"</span>,</span>
+<span>    repo_url <span class="op">=</span> <span class="st">"https://github.com/ropensci/rixpress"</span>,</span>
 <span>    commit <span class="op">=</span> <span class="st">"HEAD"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  ide <span class="op">=</span> <span class="st">"rstudio"</span>,</span>
@@ -187,7 +187,7 @@ or <code>exit</code>. Then I can build my development environment using
 <code>nix-shell</code> and launch RStudio (or whatever editor you want
 to use) and open <code>gen-pipeline.R</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -206,7 +206,7 @@ to use) and open <code>gen-pipeline.R</code>:</p>
 into a list and then passed to <code><a href="../reference/rxp_populate.html">rxp_populate()</a></code>. Let’s start
 by importing data and filtering it using <a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -252,7 +252,7 @@ everything went well, you will see the following in your R console:</p>
 source data set; <code>filtered_mtcars</code>, which is the filtered
 data; and an object you didn’t define called
 <code>all-derivations</code>. This last object is mostly for internal
-<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> use, and you can safely ignore it.</p>
+<a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> use, and you can safely ignore it.</p>
 <p>Let’s now use <code><a href="../reference/rxp_read.html">rxp_read()</a></code> to take a look at
 <code>filtered_mtcars</code>:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -282,7 +282,7 @@ missing values you need to handle somehow, or another such cleaning
 step), but once you know the next steps, you can write the next
 derivation:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r.igraph.org/" class="external-link">igraph</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -307,7 +307,7 @@ derivation:</p>
 already available in the <code>Nix</code> store. You can now start the
 <em>inspect -&gt; try stuff -&gt; define derivation -&gt; build
 pipeline</em> loop again for the next derivation.</p>
-<p>You now know the basics of using <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> to build a
+<p>You now know the basics of using <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> to build a
 simple pipeline.</p>
 <p>The next vignette <code><a href="../articles/polyglot.html">vignette("polyglot")</a></code> explains how to
 build a pipeline with both R and Python derivations, as well as

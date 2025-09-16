@@ -59,7 +59,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/b-rodrigues/rixpress/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/ropensci/rixpress/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -76,7 +76,7 @@
       <h1>Encoding, Decoding, and Cross-Language Data Transfer</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/b-rodrigues/rixpress/blob/main/vignettes/encoding-decoding.Rmd" class="external-link"><code>vignettes/encoding-decoding.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ropensci/rixpress/blob/main/vignettes/encoding-decoding.Rmd" class="external-link"><code>vignettes/encoding-decoding.Rmd</code></a></small>
       <div class="d-none name"><code>encoding-decoding.Rmd</code></div>
     </div>
 
@@ -85,7 +85,7 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>Data pipelines in <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> often require controlling
+<p>Data pipelines in <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> often require controlling
 how objects are stored and restored, especially when dealing with:</p>
 <ol style="list-style-type: decimal">
 <li>Non-standard R objects (e.g., machine learning models, large
@@ -101,11 +101,11 @@ and on transferring data between R and Python using
 <div class="section level2">
 <h2 id="custom-encoding-and-decoding-in-r">Custom Encoding and Decoding in R<a class="anchor" aria-label="anchor" href="#custom-encoding-and-decoding-in-r"></a>
 </h2>
-<p>By default, <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> uses <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS()</a></code> and
+<p>By default, <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> uses <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS()</a></code> and
 <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code>. You can override this to handle different
 formats or complex objects:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Encode output as CSV instead of RDS</span></span>
 <span><span class="va">d2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_r.html">rxp_r</a></span><span class="op">(</span></span>
@@ -153,7 +153,7 @@ representation of the function to <code>encoder</code> and
 pass it to another language. For example, read a csv file using Julia,
 encode it to Arrow and read it back in R:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/rxp_jl_file.html">rxp_jl_file</a></span><span class="op">(</span></span>
@@ -198,7 +198,7 @@ arrays, etc.) between R and Python, it also possible to use
 <code><a href="../reference/rxp_py2r.html">rxp_py2r()</a></code> and <code><a href="../reference/rxp_r2py.html">rxp_r2py()</a></code>. These functions
 enable seamless movement of objects between R and Python:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Python step producing pandas DataFrame</span></span>
 <span><span class="va">d1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rxp_py.html">rxp_py</a></span><span class="op">(</span></span>

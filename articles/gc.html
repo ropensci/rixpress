@@ -59,7 +59,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/b-rodrigues/rixpress/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/ropensci/rixpress/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -76,7 +76,7 @@
       <h1>Managing Cached Build Artifacts</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/b-rodrigues/rixpress/blob/main/vignettes/gc.Rmd" class="external-link"><code>vignettes/gc.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ropensci/rixpress/blob/main/vignettes/gc.Rmd" class="external-link"><code>vignettes/gc.Rmd</code></a></small>
       <div class="d-none name"><code>gc.Rmd</code></div>
     </div>
 
@@ -85,7 +85,7 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>Becuse <a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> uses Nix as its build engine, every
+<p>Becuse <a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> uses Nix as its build engine, every
 build artifact is cached in the Nix store (<code>/nix/store</code>).
 When you modify your pipeline, new artifacts are created, but the old
 ones remain. This is powerful because it allows you to access a complete
@@ -99,7 +99,7 @@ to garbage-collect old build artifacts.</p>
 <h2 id="build-logs-the-key-to-your-pipelines-history">Build Logs: The Key to Your Pipeline’s History<a class="anchor" aria-label="anchor" href="#build-logs-the-key-to-your-pipelines-history"></a>
 </h2>
 <p>Before we discuss cleaning up, it’s important to understand how
-<a href="https://github.com/b-rodrigues/rixpress/" class="external-link">rixpress</a> keeps track of artifacts. Every time you run
+<a href="https://docs.ropensci.org/rixpress" class="external-link">rixpress</a> keeps track of artifacts. Every time you run
 <code><a href="../reference/rxp_make.html">rxp_make()</a></code>, a detailed <strong>build log</strong> is saved
 in your project’s <code>_rixpress</code> directory. These logs record
 the outcome of each derivation and, crucially, the exact path to its
