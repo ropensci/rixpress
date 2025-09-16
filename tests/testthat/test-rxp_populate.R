@@ -16,7 +16,7 @@ test_that("rxp_populate generates expected assets", {
     ),
     git_pkgs = list(
       package_name = "rixpress",
-      repo_url = "https://github.com/b-rodrigues/rixpress",
+      repo_url = "https://github.com/ropensci/rixpress",
       commit = "HEAD"
     ),
     ide = "rstudio",

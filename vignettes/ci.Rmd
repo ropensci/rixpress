@@ -67,7 +67,7 @@ automatically to generate the `.dot` file and put it in the right spot.
 Here is what this looks like:
 
 <figure>
-<img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/main/vignettes/stacked-dag.png" alt="Text representation of the DAG." />
+<img src="https://raw.githubusercontent.com/ropensci/rixpress/refs/heads/main/vignettes/stacked-dag.png" alt="Text representation of the DAG." />
 <figcaption aria-hidden="true">
 Text representation of the DAG.
 </figcaption>

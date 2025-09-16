@@ -177,7 +177,7 @@ rix(
   r_pkgs = "dplyr",
   git_pkgs = list(
     package_name = "rixpress",
-    repo_url = "https://github.com/b-rodrigues/rixpress",
+    repo_url = "https://github.com/ropensci/rixpress",
     commit = "HEAD"
   ),
   ide = "rstudio",
@@ -252,7 +252,7 @@ new tab in your web browser displaying the pipeline's DAG, generated using the
   style="max-width: 100%; height: auto; display: block;"
 >
   <source
-    src="https://github.com/b-rodrigues/rixpress/raw/refs/heads/main/rxp_visnetwork.mp4"
+    src="https://github.com/ropensci/rixpress/raw/refs/heads/main/rxp_visnetwork.mp4"
     type="video/mp4"
   />
   <!-- Fallback message -->
@@ -265,7 +265,7 @@ For static documents, you can use `rxp_ggdag()` which uses `{ggdag}` under
 the hood:
 
 <figure>
-<img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/main/dag.png" alt="DAG" />
+<img src="https://raw.githubusercontent.com/ropensci/rixpress/refs/heads/main/dag.png" alt="DAG" />
 <figcaption aria-hidden="true">DAG</figcaption>
 </figure>
 

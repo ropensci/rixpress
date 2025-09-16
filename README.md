@@ -2,7 +2,7 @@
 # rixpress: Reproducible Analytical Pipelines with `Nix`
 
 [![R-hub
-v2](https://github.com/b-rodrigues/rixpress/actions/workflows/rhub.yaml/badge.svg)](https://github.com/b-rodrigues/rixpress/actions/workflows/rhub.yaml/)
+v2](https://github.com/ropensci/rixpress/actions/workflows/rhub.yaml/badge.svg)](https://github.com/ropensci/rixpress/actions/workflows/rhub.yaml/)
 [![Status at rOpenSci Software Peer
 Review](https://badges.ropensci.org/706_status.svg)](https://github.com/ropensci/software-review/issues/706)
 
@@ -10,7 +10,7 @@ If you want to watch a 2-Minute video introduction, click the image
 below:
 
 <a href="https://www.youtube.com/watch?v=a1eNG9TFZ_o" target="_blank" rel="noopener noreferrer">
-<img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/main/video_thumbnail.png" alt="Video Thumbnail" style="width:100%; max-width:560px; height:auto; display:block; margin:0 auto;">
+<img src="https://raw.githubusercontent.com/ropensci/rixpress/refs/heads/main/video_thumbnail.png" alt="Video Thumbnail" style="width:100%; max-width:560px; height:auto; display:block; margin:0 auto;">
 </a>
 
 `{rixpress}` provides a framework for building multilanguage
@@ -106,7 +106,7 @@ rxp_ggdag()
 
 <figure>
 
-<img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/main/dag.png" alt="DAG" />
+<img src="https://raw.githubusercontent.com/ropensci/rixpress/refs/heads/main/dag.png" alt="DAG" />
 <figcaption aria-hidden="true">
 
 DAG
@@ -170,7 +170,7 @@ it from GitHub directly (while it’s not on CRAN):
 if (!require("remotes")) install.packages("remotes")
 
 # Install the package from GitHub
-remotes::install_github("b-rodrigues/rixpress")
+remotes::install_github("ropensci/rixpress")
 ```
 
 ## Contributing

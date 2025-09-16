@@ -133,6 +133,6 @@ When you file an issue, please:
 
 # Links
 
-- README: https://github.com/b-rodrigues/rixpress#readme
-- Website: https://b-rodrigues.github.io/rixpress/
+- README: https://github.com/ropensci/rixpress#readme
+- Website: https://docs.ropensci.org/rixpress
 - Demos: https://github.com/b-rodrigues/rixpress_demos

@@ -82,7 +82,7 @@ in
 
 ## Component Closures
 
-<img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/main/vignettes/figure_4.png" alt="Figure 4 from rixpress vignette">
+<img src="https://raw.githubusercontent.com/ropensci/rixpress/refs/heads/main/vignettes/figure_4.png" alt="Figure 4 from rixpress vignette">
 
 # The Nix Store
 
@@ -115,5 +115,5 @@ in
   - Hermetic builds
 - Perfect for data science!
 - `{rix}` and `{rixpress}`: Nix power for R users
-- To know more: [rix's](https://docs.ropensci.org/rix/) and [rixpress's](https://b-rodrigues.github.io/rixpress/) website
+- To know more: [rix's](https://docs.ropensci.org/rix/) and [rixpress's](https://docs.ropensci.org/rixpress/) website
 - Next video [rix 5 minute intro](), [rixpress 5 minute intro]()

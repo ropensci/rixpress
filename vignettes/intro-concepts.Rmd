@@ -123,7 +123,7 @@ author, Eelco Dolstra, refers to as *component closures*:
 The figure below, from the same paper, illustrates this idea:
 
 <figure>
-<img src="https://raw.githubusercontent.com/b-rodrigues/rixpress/refs/heads/main/vignettes/figure_4.png" alt="Figure 4 of Dolstra et al. (2004)" />
+<img src="https://raw.githubusercontent.com/ropensci/rixpress/refs/heads/main/vignettes/figure_4.png" alt="Figure 4 of Dolstra et al. (2004)" />
 <figcaption aria-hidden="true">
 Figure 4 of Dolstra et al. (2004)
 </figcaption>
