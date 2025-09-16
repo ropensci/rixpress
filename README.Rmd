@@ -15,6 +15,10 @@ knitr::opts_chunk$set(
 
 [![R-hub
 v2](https://github.com/ropensci/rixpress/actions/workflows/rhub.yaml/badge.svg)](https://github.com/ropensci/rixpress/actions/workflows/rhub.yaml/)
+[![CRAN](https://www.r-pkg.org/badges/version/rixpress)](https://CRAN.R-project.org/package=rixpress)
+[![runiverse-package
+rix](https://ropensci.r-universe.dev/badges/rixpress?scale=1&color=pink&style=round)](https://ropensci.r-universe.dev/rixpress)
+[![Docs](https://img.shields.io/badge/docs-release-blue.svg)](https://docs.ropensci.org/rixpress/)
 [![Status at rOpenSci Software Peer
 Review](https://badges.ropensci.org/706_status.svg)](https://github.com/ropensci/software-review/issues/706)
 
