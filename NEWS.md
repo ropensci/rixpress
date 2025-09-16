@@ -1,3 +1,7 @@
+# rixpress 0.3.0 (2025-09-16)
+
+rixpress in now an RopenSci package!
+
 # rixpress 0.2.0 (2025-05-12)
 
 Submission for RopenSci review.
