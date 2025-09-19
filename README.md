@@ -12,6 +12,13 @@ rixpress](https://ropensci.r-universe.dev/badges/rixpress?scale=1&color=pink&sty
 [![Status at rOpenSci Software Peer
 Review](https://badges.ropensci.org/706_status.svg)](https://github.com/ropensci/software-review/issues/706)
 
+If you want to watch a 2-Minute video introduction, click the image
+below:
+
+<a href="https://www.youtube.com/watch?v=a1eNG9TFZ_o" target="_blank" rel="noopener noreferrer">
+<img src="https://raw.githubusercontent.com/ropensci/rixpress/refs/heads/main/video_thumbnail.png" alt="Video Thumbnail" style="width:100%; max-width:560px; height:auto; display:block; margin:0 auto;">
+</a>
+
 `rixpress` streamlines creation of *micropipelines* (small-to-medium,
 single–machine analytic pipelines) by expressing a pipeline in idiomatic
 R while delegating build orchestration, dependency management, and
@@ -28,6 +35,46 @@ Key ideas:
 - Visualize and inspect the DAG; selectively read, load, or copy
   outputs.
 - Export/import build artifacts to speed up CI or share results.
+
+Here is what a basic pipeline looks like:
+
+``` r
+library(rixpress)
+
+list(
+  rxp_r_file(
+    mtcars,
+    'mtcars.csv',
+    \(x) (read.csv(file = x, sep = "|"))
+  ),
+
+  rxp_r(
+    mtcars_am,
+    filter(mtcars, am == 1)
+  ),
+
+  rxp_r(
+    mtcars_head,
+    head(mtcars_am)
+  ),
+
+  rxp_r(
+    mtcars_tail,
+    tail(mtcars_head)
+  ),
+
+  rxp_r(
+    mtcars_mpg,
+    select(mtcars_tail, mpg)
+  ),
+
+  rxp_qmd(
+    page,
+    "page.qmd"
+  )
+) |>
+  rxp_populate()
+```
 
 ## Contents
 

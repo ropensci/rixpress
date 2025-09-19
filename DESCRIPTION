@@ -1,6 +1,6 @@
 Package: rixpress
 Title: Build Reproducible Analytical Pipelines with Nix
-Version: 0.3.0
+Version: 0.10.0
 Authors@R: c(
   person(given = "Bruno", family = "Rodrigues", email = "bruno@brodrigues.co", role = c("aut", "cre"),
          comment = c(ORCID = "0000-0002-3211-3689")),
@@ -23,7 +23,7 @@ Description: Streamlines the creation of reproducible analytical pipelines using
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-URL: https://github.com/ropensci/rixpress/, https://docs.ropensci.org/rixpress
+URL: https://github.com/ropensci/rixpress/, https://docs.ropensci.org/rixpress/
 BugReports: https://github.com/ropensci/rixpress/issues
 Depends:
     R (>= 4.1.0)

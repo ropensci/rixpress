@@ -1,3 +1,9 @@
+# rixpress 0.10.0 (2025-09-19)
+
+First CRAN release!
+
+- Better readme.
+
 # rixpress 0.3.0 (2025-09-16)
 
 rixpress in now an RopenSci package!
