@@ -1,38 +1,101 @@
 
-# rixpress: Reproducible Analytical Pipelines with `Nix`
+# rixpress: Build Reproducible Analytical Pipelines with ‘Nix’
+
+<!-- Badges -->
 
 [![R-hub
 v2](https://github.com/ropensci/rixpress/actions/workflows/rhub.yaml/badge.svg)](https://github.com/ropensci/rixpress/actions/workflows/rhub.yaml/)
 [![CRAN](https://www.r-pkg.org/badges/version/rixpress)](https://CRAN.R-project.org/package=rixpress)
 [![runiverse-package
-rix](https://ropensci.r-universe.dev/badges/rixpress?scale=1&color=pink&style=round)](https://ropensci.r-universe.dev/rixpress)
+rixpress](https://ropensci.r-universe.dev/badges/rixpress?scale=1&color=pink&style=round)](https://ropensci.r-universe.dev/rixpress)
 [![Docs](https://img.shields.io/badge/docs-release-blue.svg)](https://docs.ropensci.org/rixpress/)
 [![Status at rOpenSci Software Peer
 Review](https://badges.ropensci.org/706_status.svg)](https://github.com/ropensci/software-review/issues/706)
 
-If you want to watch a 2-Minute video introduction, click the image
-below:
+`rixpress` streamlines creation of *micropipelines* (small-to-medium,
+single–machine analytic pipelines) by expressing a pipeline in idiomatic
+R while delegating build orchestration, dependency management, and
+multi-language execution to the ‘Nix’ build system. It is inspired by
+the user experience of the `{targets}` package and builds on the `{rix}`
+package to obtain fully reproducible development/runtime environments.
 
-<a href="https://www.youtube.com/watch?v=a1eNG9TFZ_o" target="_blank" rel="noopener noreferrer">
-<img src="https://raw.githubusercontent.com/ropensci/rixpress/refs/heads/main/video_thumbnail.png" alt="Video Thumbnail" style="width:100%; max-width:560px; height:auto; display:block; margin:0 auto;">
-</a>
+Key ideas:
 
-`{rixpress}` provides a framework for building multilanguage
-reproducible analytical pipelines by leveraging Nix’s build automation
-capabilities. One of the design goals of `{rixpress}` is to mimic the
-user experience of the `{targets}` package, and it is heavily inspired
-by that workflow. It builds on the `{rix}` package, which provides
-helper functions to define reproducible development environments as code
-using Nix, ensuring the pipeline runs in a fully reproducible
-Nix-managed environment. `{rixpress}` only requires users to write the
-pipeline using familiar R code.
+- Define pipeline *derivations* with concise `rxp_*()` helper functions.
+- Seamlessly mix R, Python, Julia, Quarto / Markdown steps.
+- Reuse hermetic environments (pinned system + language dependencies)
+  defined via `{rix}` and a `default.nix`.
+- Visualize and inspect the DAG; selectively read, load, or copy
+  outputs.
+- Export/import build artifacts to speed up CI or share results.
 
-`rixpress` focuses on “micropipelines”: pipelines executed on a single
-machine for small-to-medium sized projects.
+## Contents
 
-For example, this R script defines a list of *derivations* defined by
-functions prefixed with `rxp_*()`, which is then passed to
-`rxp_populate()`:
+- [Motivation](#motivation)
+- [Feature Highlights](#feature-highlights)
+- [Examples](#examples)
+- [Getting started](#getting-started)
+- [Visualization](#visualization)
+- [Exporting / Importing Artifacts](#exporting--importing-artifacts)
+- [Contributing](#contributing)
+- [Scope](#scope)
+- [Acknowledgements](#acknowledgements)
+
+## Motivation
+
+Reproducibility involves two intertwined concerns: (1) the *environment*
+(system libraries, compilers, language interpreters, packages) and (2)
+the *execution graph* of analytic steps with their inputs and outputs.
+There are many tools to address both of these concerns, but
+orchestrating them is not always easy.
+
+Another developing trend, in my opinion, is that data science is
+becoming increasingly **polyglot**: teams rarely restrict themselves to
+a single language. Python dominates machine learning, R excels at
+statistical modeling and visualization, and Julia offers
+high-performance numerics with a syntax that feels familiar to both
+communities. Analysts and researchers often need to combine strengths
+from all three, moving data and results fluidly across tools.
+
+This trend makes a unifying foundation essential. Without it, people
+waste time stitching together environments, dealing with dependency
+conflicts, or struggling to reproduce results on different machines.
+**Nix** provides that foundation by declaratively describing
+environments which include system libraries, compilers, interpreters,
+and packages in a way that is reproducible down to exact versions and
+build instructions.
+
+The `{rix}` package brings this power into the R ecosystem. It makes it
+easy to generate declarative, date-pinned Nix expressions that work
+consistently across systems. This expressions can then be used to build
+reproducible development environments that include programming
+languages, packages and other tools. `{rixpress}` addresses the next
+part, the execution graph. With a concise R API, it lets users describe
+analytic steps, inputs, and outputs, while delegating execution to Nix
+for guaranteed determinism.
+
+Together, this means data scientists can orchestrate polyglot pipelines
+that combine R, Python, and Julia seamlessly, with environments and
+workflows that are portable, reproducible, and future-proof.
+
+If you are interested in a Python-first port of `{rixpress}`, check out
+[ryxpress](https://github.com/b-rodrigues/ryxpress/tree/main).
+
+## Feature Highlights
+
+- Uniform `rxp_*()` constructors for files, R functions, Python / Julia
+  code, and Quarto documents.
+- Cross-language object exchange via serialization helpers.
+- Pipelines as compositions of pure functions: derivations are
+  content-addressed and cached in the Nix store.
+- DAG visualization (e.g. `rxp_ggdag()`, `rxp_visnetwork()`).
+- Target introspection (`rxp_read()`, `rxp_load()`, `rxp_copy()`,
+  `rxp_trace()`).
+- Artifact export/import for CI acceleration.
+
+## Examples
+
+Here is what a basic pipeline looks like:
 
 ``` r
 library(rixpress)
@@ -100,23 +163,40 @@ example, `mtcars`, `mtcars_am`, `mtcars_head`, `mtcars_tail`,
 easier for R users, and {rixpress} makes it easy to use Nix as a build
 automation tool.
 
-When you run `rxp_populate()`, a folder called `_rixpress/` is created
-which contains a JSON representation of the pipeline’s DAG (Directed
-Acyclic Graph). You can visualize the pipeline using `rxp_ggdag()`:
+And this is what a polyglot pipeline, using both R and Python, looks
+like:
 
 ``` r
-rxp_ggdag()
+library(rixpress)
+
+list(
+  rxp_py_file(
+    name = mtcars_pl,
+    path = "data/mtcars.csv",
+    read_function = "lambda x: polars.read_csv(x, separator='|')"
+  ),
+
+  rxp_py(
+    name = mtcars_pl_am,
+    expr = "mtcars_pl.filter(polars.col('am') == 1)",
+    user_functions = "functions.py",
+    encoder = "serialize_to_json",
+  ),
+
+  rxp_r(
+    name = mtcars_head,
+    expr = my_head(mtcars_pl_am),
+    user_functions = "functions.R",
+    decoder = "jsonlite::fromJSON"
+  ),
+
+  rxp_r(
+    name = mtcars_mpg,
+    expr = dplyr::select(mtcars_head, mpg)
+  )
+) |>
+  rxp_populate(project_path = ".", build = FALSE)
 ```
-
-<figure>
-
-<img src="https://raw.githubusercontent.com/ropensci/rixpress/refs/heads/main/dag.png" alt="DAG" />
-<figcaption aria-hidden="true">
-
-DAG
-</figcaption>
-
-</figure>
 
 Because the pipeline is built using Nix, outputs are stored in the Nix
 store under `/nix/store/`. To make working with these outputs easier,
@@ -131,50 +211,79 @@ store under `/nix/store/`. To make working with these outputs easier,
   Nix store into the current working directory so you can open or
   inspect them there.
 
-For complex outputs such as documents (for example the Quarto document
-`page` above), `rxp_read("page")` returns the output file path; you can
-then open it with `browseURL()` or copy it into your working directory
-with `rxp_copy()`.
-
-You can export the cache into a file and import it on another machine
-(or in CI) to avoid rebuilding everything from scratch using
-`rxp_export_artifacts()` and `rxp_import_artifacts()` respectively.
+Python objects will be converted into their equivalent R objects if
+`{reticulate}` is available in the environment. For complex outputs such
+as documents (for example the Quarto document `page` above),
+`rxp_read("page")` returns the output file path; you can then open it
+with `browseURL()` or copy it into your working directory with
+`rxp_copy()`.
 
 `{rixpress}` is flexible; please consult the examples repository for
 many different patterns and complete demos:
 
 <https://github.com/b-rodrigues/rixpress_demos/tree/master>
 
-## Installation
+## Getting started
 
-### rix
+While `{rixpress}` is a regular R package, there is little point in
+using it without having Nix installed. If you are not familiar with Nix,
+I recommend you first start by checking out `{rix}`, which will teach
+you how to use Nix to set up reproducible development environments for
+your R projects!
 
-`{rixpress}` builds on `{rix}`, so we highly recommend you start by
-learning and using `{rix}` before trying your hand at `{rixpress}`. By
-learning how to use `{rix}`, you’ll learn more about `Nix`, how to
-install and use it, and will then be ready to use `{rixpress}`!
+We recommend you check out the following vignettes to get started:
 
-To install Nix, we recommend using the installer from [Determinate
-Systems](https://docs.determinate.systems/).
+- [Introductory
+  concepts](https://docs.ropensci.org/rixpress/articles/intro-concepts.html)
+- [Core rixpress Functions and
+  Usage](https://docs.ropensci.org/rixpress/articles/core-functions.html)
+- [Tutorial](https://docs.ropensci.org/rixpress/articles/tutorial.html)
 
-### Installing rixpress
+## Visualization
 
-Since there’s little point in installing `{rixpress}` if you don’t use
-`Nix`, the ideal way to install `{rixpress}` is instead to use `{rix}`
-to set up a reproducible environment that includes `{rixpress}` and the
-other required dependencies for your project. Take a look at the
-`vignette("intro-concepts")` and `vignette("core-functions")` to get
-started!
-
-That being said, `{rixpress}` is a regular R package, so you can install
-it from GitHub directly (while it’s not on CRAN):
+It is possible to visually inspect the pipeline:
 
 ``` r
-# Install remotes if you don’t have it
-if (!require("remotes")) install.packages("remotes")
+# ggdag-based static plot
+rxp_ggdag()
+```
 
-# Install the package from GitHub
-remotes::install_github("ropensci/rixpress")
+<figure>
+
+<img src="https://raw.githubusercontent.com/ropensci/rixpress/refs/heads/main/dag.png" alt="DAG" />
+<figcaption aria-hidden="true">
+
+DAG
+</figcaption>
+
+</figure>
+
+``` r
+# Interactive network (visNetwork)
+rxp_visnetwork()
+```
+
+To create an artifact suitable for CI, use:
+
+``` r
+rxp_dag_for_ci()
+```
+
+This will export the directed acyclic graph of the pipeline as a `dot`
+file, making it possible to visualize in CI (using
+[`stacked-dag`](https://hackage.haskell.org/package/stacked-dag) for
+example).
+
+## Exporting / Importing Artifacts
+
+Speed up continuous integration or move a cache between machines:
+
+``` r
+# Export build products
+rxp_export_artifacts()
+
+# Import elsewhere before building
+rxp_import_artifacts()
 ```
 
 ## Contributing
@@ -190,7 +299,19 @@ If you plan to contribute documentation or vignettes, please:
 - Document required system dependencies for the example (through a
   `default.nix`).
 
+Please note that this package is released with a [Contributor Code of
+Conduct](https://ropensci.org/code-of-conduct/). By contributing to this
+project, you agree to abide by its terms.
+
 ## Scope
 
 Please refer to the `vignette("scope")` to learn more about what
 `{rixpress}` will and will not support.
+
+## Acknowledgements
+
+- Inspired by the design and ergonomics of `{targets}`.
+- Built atop the reproducibility foundations provided by `{rix}` and the
+  ‘Nix’ ecosystem.
+- rOpenSci peer review contributors and reviewers for feedback that
+  shaped the interface.

@@ -7,18 +7,18 @@ Authors@R: c(
   person(given = c("William", "Michael"), family = "Landau", email = "will.landau.oss@gmail.com", role = "rev",
          comment = c("William reviewed the package (v. 0.2.0) for rOpenSci,
                       see <https://github.com/ropensci/software-review/issues/706>")),
-  person(given = "Anthony", family = "Martinez", , "ajmartinez@usgs.gov", role = "rev",
+  person(given = "Anthony", family = "Martinez", email = "ajmartinez@usgs.gov", role = "rev",
          comment = c(ORCID = "0000-0002-4295-0261", "Anthony reviewed the
                      package (v. 0.2.0) for rOpenSci,
                      see <https://github.com/ropensci/software-review/issues/625>"))
   )
 Description: Streamlines the creation of reproducible analytical pipelines using
-  `default.nix` expressions generated via `{rix}` for reproducibility. Define
+  'default.nix' expressions generated via 'rix' for reproducibility. Define
   derivations in R, Python or Julia, chain them into a composition of pure
-  functions and build the resulting pipeline using `Nix` as the underlying
+  functions and build the resulting pipeline using 'Nix' as the underlying
   end-to-end build tool. Functions to plot a DAG representation of the pipeline
   are included, as well as functions to load and inspect intermediary results
-  for interactive analysis. User experience heavily inspired by the `{targets}`
+  for interactive analysis. User experience heavily inspired by the 'targets'
   package.
 License: GPL (>= 3)
 Encoding: UTF-8
@@ -31,7 +31,8 @@ Imports:
     igraph,
     jsonlite,
     processx
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
+SystemRequirements: Nix
 Language: en-GB
 Suggests:
     dplyr,
