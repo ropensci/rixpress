@@ -6,7 +6,7 @@
   "name": "rixpress: Build Reproducible Analytical Pipelines with Nix",
   "relatedLink": "https://docs.ropensci.org/rixpress/",
   "codeRepository": "https://github.com/ropensci/rixpress/",
-  "issueTracker": "https://github.com/ropensci/rixpress/issues",
+  "issueTracker": "https://github.com/ropensci/rixpress/issues/",
   "license": "https://spdx.org/licenses/GPL-3.0",
   "version": "0.10.0",
   "programmingLanguage": {
@@ -213,7 +213,7 @@
     },
     "SystemRequirements": "Nix"
   },
-  "fileSize": "494.3KB",
+  "fileSize": "494.301KB",
   "releaseNotes": "https://github.com/ropensci/rixpress/blob/main/NEWS.md",
   "readme": "https://github.com/ropensci/rixpress/blob/main/README.md",
   "contIntegration": "https://github.com/ropensci/rixpress/actions/workflows/rhub.yaml/",
