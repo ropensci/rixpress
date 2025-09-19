@@ -2,25 +2,26 @@
   "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
   "@type": "SoftwareSourceCode",
   "identifier": "rixpress",
-  "description": "Streamlines the creation of reproducible analytical pipelines using `default.nix` expressions generated via `rix` for reproducibility. Define derivations in R or Python, chain them into a dependency-driven DAG, assemble complete workflows and build the pipeline using Nix as the underlying end-to-end build tool. Heavily inspired by the `targets` package.",
-  "name": "rixpress: Build Reproducible Analytical Pipelines With Nix",
-  "relatedLink": "https://b-rodrigues.github.io/rixpress/",
-  "codeRepository": "https://github.com/b-rodrigues/rixpress/",
-  "issueTracker": "https://github.com/b-rodrigues/rixpress/issues",
+  "description": "Streamlines the creation of reproducible analytical pipelines using 'default.nix' expressions generated via 'rix' for reproducibility. Define derivations in R, Python or Julia, chain them into a composition of pure functions and build the resulting pipeline using 'Nix' as the underlying end-to-end build tool. Functions to plot a DAG representation of the pipeline are included, as well as functions to load and inspect intermediary results for interactive analysis. User experience heavily inspired by the 'targets' package.",
+  "name": "rixpress: Build Reproducible Analytical Pipelines with Nix",
+  "relatedLink": "https://docs.ropensci.org/rixpress/",
+  "codeRepository": "https://github.com/ropensci/rixpress/",
+  "issueTracker": "https://github.com/ropensci/rixpress/issues",
   "license": "https://spdx.org/licenses/GPL-3.0",
-  "version": "0.1.0",
+  "version": "0.10.0",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
     "url": "https://r-project.org"
   },
-  "runtimePlatform": "R version 4.5.0 (2025-04-11)",
+  "runtimePlatform": "R version 4.5.1 (2025-06-13)",
   "author": [
     {
       "@type": "Person",
       "givenName": "Bruno",
       "familyName": "Rodrigues",
-      "email": "bruno@brodrigues.co"
+      "email": "bruno@brodrigues.co",
+      "@id": "https://orcid.org/0000-0002-3211-3689"
     }
   ],
   "maintainer": [
@@ -28,7 +29,8 @@
       "@type": "Person",
       "givenName": "Bruno",
       "familyName": "Rodrigues",
-      "email": "bruno@brodrigues.co"
+      "email": "bruno@brodrigues.co",
+      "@id": "https://orcid.org/0000-0002-3211-3689"
     }
   ],
   "softwareSuggestions": [
@@ -46,6 +48,30 @@
     },
     {
       "@type": "SoftwareApplication",
+      "identifier": "ggdag",
+      "name": "ggdag",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=ggdag"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "ggplot2",
+      "name": "ggplot2",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=ggplot2"
+    },
+    {
+      "@type": "SoftwareApplication",
       "identifier": "knitr",
       "name": "knitr",
       "provider": {
@@ -55,6 +81,18 @@
         "url": "https://cran.r-project.org"
       },
       "sameAs": "https://CRAN.R-project.org/package=knitr"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "mockery",
+      "name": "mockery",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=mockery"
     },
     {
       "@type": "SoftwareApplication",
@@ -104,6 +142,30 @@
         "url": "https://cran.r-project.org"
       },
       "sameAs": "https://CRAN.R-project.org/package=testthat"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "usethis",
+      "name": "usethis",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=usethis"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "visNetwork",
+      "name": "visNetwork",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=visNetwork"
     }
   ],
   "softwareRequirements": {
@@ -111,7 +173,7 @@
       "@type": "SoftwareApplication",
       "identifier": "R",
       "name": "R",
-      "version": ">= 2.10"
+      "version": ">= 4.1.0"
     },
     "2": {
       "@type": "SoftwareApplication",
@@ -149,9 +211,15 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=processx"
     },
-    "SystemRequirements": null
+    "SystemRequirements": "Nix"
   },
-  "fileSize": "2141.715KB",
-  "releaseNotes": "https://github.com/b-rodrigues/rixpress/blob/master/NEWS.md",
-  "readme": "https://github.com/b-rodrigues/rixpress/blob/main/README.md"
+  "fileSize": "494.3KB",
+  "releaseNotes": "https://github.com/ropensci/rixpress/blob/main/NEWS.md",
+  "readme": "https://github.com/ropensci/rixpress/blob/main/README.md",
+  "contIntegration": "https://github.com/ropensci/rixpress/actions/workflows/rhub.yaml/",
+  "review": {
+    "@type": "Review",
+    "url": "https://github.com/ropensci/software-review/issues/706",
+    "provider": "https://ropensci.org"
+  }
 }
