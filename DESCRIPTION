@@ -24,7 +24,7 @@ License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 URL: https://github.com/ropensci/rixpress/, https://docs.ropensci.org/rixpress/
-BugReports: https://github.com/ropensci/rixpress/issues
+BugReports: https://github.com/ropensci/rixpress/issues/
 Depends:
     R (>= 4.1.0)
 Imports:
