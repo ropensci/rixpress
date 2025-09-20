@@ -1,5 +1,5 @@
 
-# rixpress: Build Reproducible Analytical Pipelines with ‘Nix’
+# rixpress: Build Reproducible Analytical Pipelines with ‘Nix’ <a href="https://docs.ropensci.org/rixpress/"><img src="man/figures/logo.png" align="right" height="138" /></a>
 
 <!-- Badges -->
 
