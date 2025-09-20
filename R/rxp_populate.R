@@ -3,12 +3,12 @@
 #' @family pipeline functions
 #' @param derivs A list of derivation objects, where each object is a list of
 #'   five elements:
-#'     - `$name`, character, name of the derivation
-#'     - `$snippet`, character, the nix code snippet to build this derivation
-#'     - `$type`, character, can be R, Python or Quarto
-#'     - `$additional_files`, character vector of paths to files to make
+#'     - ``$name``, character, name of the derivation
+#'     - ``$snippet``, character, the nix code snippet to build this derivation
+#'     - ``$type``, character, can be R, Python or Quarto
+#'     - ``$additional_files``, character vector of paths to files to make
 #'        available to build sandbox
-#'     - `$nix_env`, character, path to Nix environment to build this derivation
+#'     - ``$nix_env``, character, path to Nix environment to build this derivation
 #'   A single deriv is the output of `rxp_r()`, `rxp_qmd()` or `rxp_py()`
 #'   function.
 #'
