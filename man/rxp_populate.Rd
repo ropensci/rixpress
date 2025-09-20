@@ -8,12 +8,16 @@ rxp_populate(derivs, project_path = ".", build = FALSE, py_imports = NULL, ...)
 }
 \arguments{
 \item{derivs}{A list of derivation objects, where each object is a list of
-five elements: \emph{name}, name of the derivation, \emph{snippet},
-the nix code snippet to build this derivation, \emph{type}, can be R, Python or Quarto,
-\emph{additional_files}, character vector of paths to files to make available to build sandbox,
-\emph{nix_env}, path to Nix environment to build this derivation.
+five elements:
+\itemize{
+\item \emph{name}, name of the derivation,
+\item \emph{snippet}, the nix code snippet to build this derivation,
+\item \emph{type}, can be R, Python or Quarto,
+\item \emph{additional_files}, character vector of paths to files to make available to build sandbox,
+\item \emph{nix_env}, path to Nix environment to build this derivation.
 A single deriv is the output of \code{rxp_r()}, \code{rxp_qmd()} or \code{rxp_py()}
-function.}
+function.
+}}
 
 \item{project_path}{Path to root of project, defaults to ".".}
 
@@ -22,10 +26,10 @@ after being generated? When FALSE, use \code{rxp_make()} to build the pipeline
 at a later stage.}
 
 \item{py_imports}{Named character vector of Python import rewrites. Names are
-the base modules that rixpress auto-imports as "import \if{html}{\out{<name>}}", and values
+the base modules that rixpress auto-imports as "import name", and values
 are the desired import lines. For example: c(numpy = "import numpy as np",
 xgboost = "from xgboost import XGBClassifier"). Each entry is applied by
-replacing "import \if{html}{\out{<name>}}" with the provided string across generated
+replacing "import name" with the provided string across generated
 _rixpress Python library files.}
 
 \item{...}{Further arguments passed down to methods. Use \code{max-jobs} and
