@@ -8,13 +8,10 @@ rxp_populate(derivs, project_path = ".", build = FALSE, py_imports = NULL, ...)
 }
 \arguments{
 \item{derivs}{A list of derivation objects, where each object is a list of
-five elements:
-- \emph{name}, character, name of the derivation
-- \emph{snippet}, character, the nix code snippet to build this derivation
-- \emph{type}, character, can be R, Python or Quarto
-- \emph{additional_files}, character vector of paths to files to make
-available to build sandbox
-- \emph{nix_env}, character, path to Nix environment to build this derivation
+five elements: \emph{name}, name of the derivation, \emph{snippet},
+the nix code snippet to build this derivation, \emph{type}, can be R, Python or Quarto,
+\emph{additional_files}, character vector of paths to files to make available to build sandbox,
+\emph{nix_env}, path to Nix environment to build this derivation.
 A single deriv is the output of \code{rxp_r()}, \code{rxp_qmd()} or \code{rxp_py()}
 function.}
 
