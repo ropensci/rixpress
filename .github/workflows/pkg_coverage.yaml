@@ -34,6 +34,7 @@ jobs:
         run: |
           # Run coverage and sink full output to file
           Rscript -e "
+          library(tinytable)
           cov <- covr::package_coverage()
           cov_list <- covr::coverage_to_list(cov)
           cov_df <- as.data.frame(cov_list['filecoverage'][[1]])
@@ -42,7 +43,7 @@ jobs:
           colnames(cov_df) <- c('file', 'coverage')
           total_cov <- cov_list['totalcoverage']
           sink('coverage.md')
-          cat(tinytable::save_tt(theme_markdown(tinytable::tt(cov_df), style = 'gfm'), 'markdown'))
+          cat(save_tt(theme_markdown(tt(cov_df), style = 'gfm'), 'markdown'))
           sink()
           # Append total coverage at end of markdown
           cat(sprintf('\n\n\nTotal coverage: %s', total_cov), file = 'coverage.md', append = TRUE)
