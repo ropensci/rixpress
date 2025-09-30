@@ -42,7 +42,7 @@ jobs:
           colnames(cov_df) <- c('file', 'coverage')
           total_cov <- cov_list['totalcoverage']
           sink('coverage.md')
-          cat(tinytable::save_tt(tinytable::tt(cov_df), 'gfm'))
+          cat(tinytable::save_tt(theme_markdown(tinytable::tt(cov_df), style = 'gfm'), 'markdown'))
           sink()
           # Append total coverage at end of markdown
           cat(sprintf('\n\n\nTotal coverage: %s', total_cov), file = 'coverage.md', append = TRUE)
