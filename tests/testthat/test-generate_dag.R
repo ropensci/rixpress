@@ -1,3 +1,5 @@
+testthat::skip_on_cran()
+
 test_that("rxp_write_dag: generate correct json of dag R derivs only", {
   d1 <- rxp_r(mtcars_am, dplyr::filter(mtcars, am == 1))
   d2 <- rxp_r(mtcars_head, head(mtcars_am))
