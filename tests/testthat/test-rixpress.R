@@ -22,6 +22,7 @@ test_that("rixpress: helper functions get_need_r/py work", {
 })
 
 test_that("rixpress: gen_flat_pipeline", {
+  testthat::skip_on_cran()
   d1 <- rxp_r(mtcars_am, dplyr::filter(mtcars, am == 1))
   d2 <- rxp_r(mtcars_head, head(mtcars_am))
   derivs <- list(d1, d2)
@@ -60,6 +61,7 @@ test_that("rixpress: gen_flat_pipeline", {
 })
 
 test_that("rixpress: several environments", {
+  testthat::skip_on_cran()
   path_tmpdir <- "tempdir"
   dir.create(path_tmpdir)
   on.exit(unlink(path_tmpdir, recursive = TRUE), add = TRUE, after = TRUE)
