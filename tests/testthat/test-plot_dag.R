@@ -52,6 +52,7 @@ test_that("get_nodes_edges processes dag.json correctly", {
 })
 
 test_that("rxp_dag_for_ci generates correct .dot file", {
+  testthat::skip_on_cran()
   test_dag_path <- "test-data/dag.json"
 
   nodes_and_edges <- get_nodes_edges(path_dag = test_dag_path)
