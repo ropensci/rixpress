@@ -13,13 +13,12 @@ Authors@R: c(
                      see <https://github.com/ropensci/software-review/issues/625>"))
   )
 Description: Streamlines the creation of reproducible analytical pipelines using
-  'default.nix' expressions generated via 'rix' for reproducibility. Define
-  derivations in R, Python or Julia, chain them into a composition of pure
+  'default.nix' expressions generated via the 'rix' package for reproducibility. Define
+  derivations in 'R', 'Python' or 'Julia', chain them into a composition of pure
   functions and build the resulting pipeline using 'Nix' as the underlying
-  end-to-end build tool. Functions to plot a DAG representation of the pipeline
-  are included, as well as functions to load and inspect intermediary results
-  for interactive analysis. User experience heavily inspired by the 'targets'
-  package.
+  end-to-end build tool. Functions to plot the pipeline as a directed acyclic
+  graph are included, as well as functions to load and inspect intermediary results
+  for interactive analysis. User experience heavily inspired by the 'targets' package.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
