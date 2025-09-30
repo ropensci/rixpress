@@ -1,5 +1,5 @@
 Package: rixpress
-Title: Build Reproducible Analytical Pipelines with Nix
+Title: Build Reproducible Analytical Pipelines with 'Nix'
 Version: 0.10.0
 Authors@R: c(
   person(given = "Bruno", family = "Rodrigues", email = "bruno@brodrigues.co", role = c("aut", "cre"),
