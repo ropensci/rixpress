@@ -20,6 +20,8 @@ test_that("parse_packages handles various formats and edge cases", {
     "in {}"
   )
   nix_file1 <- create_temp_nix(nix_content1, path_tmpdir)
+  on.exit(unlink(nix_file1))
+
   pkgs1 <- parse_packages(nix_file1, path_tmpdir, "rpkgs", transform_r)
   expect_equal(sort(pkgs1), c("dplyr", "tidyr"))
 
@@ -34,6 +36,8 @@ test_that("parse_packages handles various formats and edge cases", {
     "in {}"
   )
   nix_file2 <- create_temp_nix(nix_content2, path_tmpdir)
+  on.exit(unlink(nix_file2))
+
   pkgs2 <- parse_packages(nix_file2, path_tmpdir, "pyconf")
   expect_equal(sort(pkgs2), c("numpy", "pandas", "scikit-learn"))
 
@@ -44,9 +48,11 @@ test_that("parse_packages handles various formats and edge cases", {
     "let",
     "  rpkgs = builtins.attrValues {",
     "    dplyr"
-    # Missing "};"
+                                        # Missing "};"
   )
   nix_file4 <- create_temp_nix(nix_content4, path_tmpdir)
+  on.exit(unlink(nix_file4))
+
   expect_error(
     parse_packages(nix_file4, path_tmpdir, "rpkgs"),
     "Could not find the end of the rpkgs block"
@@ -60,6 +66,8 @@ test_that("parse_packages handles various formats and edge cases", {
     "in {}"
   )
   nix_file5 <- create_temp_nix(nix_content5, path_tmpdir)
+  on.exit(unlink(nix_file5))
+
   pkgs5 <- parse_packages(nix_file5, path_tmpdir, "rpkgs")
   expect_equal(pkgs5, character(0))
 })

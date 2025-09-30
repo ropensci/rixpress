@@ -27,10 +27,8 @@ whose base name matches the provided Nix environment.
 }
 \examples{
 \dontrun{
-# Assuming project is in current working directory
 add_import("import numpy as np", "default.nix")
-# If project is elsewhere:
-# add_import("import numpy as np", "default.nix", project_path = "path/to/project")
+add_import("import numpy as np", "default.nix", project_path = "path/to/project")
 }
 }
 \seealso{

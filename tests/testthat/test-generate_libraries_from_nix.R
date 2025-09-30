@@ -1,4 +1,5 @@
 test_that("generate_r_libraries_from_nix: generate R script by parsing default.nix", {
+  testthat::skip_on_cran()
   testthat::skip_if_not_installed("rix")
   path_tmpdir <- tempdir()
 
@@ -32,7 +33,9 @@ test_that("generate_r_libraries_from_nix: generate R script by parsing default.n
 
 
 test_that("generate_py_libraries_from_nix: generate Py script by parsing default.nix", {
+  testthat::skip_on_cran()
   testthat::skip_if_not_installed("rix")
+
   path_tmpdir <- tempdir()
 
   dir.create(paste0(path_tmpdir, "/", "_rixpress"))

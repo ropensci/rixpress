@@ -74,6 +74,7 @@ test_that("rxp_py: custom serialization functions work", {
 test_that("rxp_qmd: generates correct list", {
   # Create a temporary qmd file for testing
   qmd_file <- tempfile(fileext = ".qmd")
+  on.exit(unlink(qmd_file))
   writeLines(
     "---\ntitle: Test\n---\n\nThis is a test quarto document with rxp_read(\"test_data\").",
     qmd_file
@@ -112,18 +113,18 @@ test_that("rxp_qmd: generates correct list", {
     )
   )
 
-  # Cleanup
-  unlink(qmd_file)
 })
 
 test_that("rxp_r_file: single file reading works", {
   # Create a temporary CSV for testing
   csv_file <- tempfile(fileext = ".csv")
+  on.exit(unlink(csv_file))
+
   write.csv(mtcars[1:5, ], csv_file, row.names = FALSE)
 
   d1 <- rxp_r_file(mtcars_data, path = csv_file, read_function = read.csv)
 
-  # Create a subset of d1 with only the fields we want to test
+                                        # Create a subset of d1 with only the fields we want to test
   d1_subset <- list(
     "name" = d1$name,
     "type" = d1$type,
@@ -134,21 +135,19 @@ test_that("rxp_r_file: single file reading works", {
   class(d1_subset) <- "rxp_derivation"
 
   testthat::expect_equal(
-    d1_subset,
-    structure(
-      list(
-        "name" = "mtcars_data",
-        "type" = "rxp_r",
-        "path" = csv_file,
-        "read_function" = read.csv,
-        "nix_env" = "default.nix"
-      ),
-      class = "rxp_derivation"
-    )
-  )
+              d1_subset,
+              structure(
+                list(
+                  "name" = "mtcars_data",
+                  "type" = "rxp_r",
+                  "path" = csv_file,
+                  "read_function" = read.csv,
+                  "nix_env" = "default.nix"
+                ),
+                class = "rxp_derivation"
+              )
+            )
 
-  # Cleanup
-  unlink(csv_file)
 })
 
 test_that("rxp_r_file: folder reading works", {
@@ -156,6 +155,8 @@ test_that("rxp_r_file: folder reading works", {
   test_dir <- tempdir()
   test_data_dir <- file.path(test_dir, "test_data")
   dir.create(test_data_dir, showWarnings = FALSE)
+  # Cleanup
+  on.exit(unlink(test_data_dir, recursive = TRUE))
 
   write.csv(
     mtcars[1:5, ],
@@ -212,13 +213,12 @@ test_that("rxp_r_file: folder reading works", {
 
   testthat::expect_equal(d1_subset, expected)
 
-  # Cleanup
-  unlink(test_data_dir, recursive = TRUE)
 })
 
 test_that("rxp_py_file: basic functionality works", {
   # Create a temporary CSV for testing
   csv_file <- tempfile(fileext = ".csv")
+  on.exit(unlink(csv_file))
   write.csv(mtcars[1:5, ], csv_file, row.names = FALSE)
 
   d1 <- rxp_py_file(
@@ -251,8 +251,6 @@ test_that("rxp_py_file: basic functionality works", {
     )
   )
 
-  # Cleanup
-  unlink(csv_file)
 })
 
 # Mock reticulate package for testing
@@ -460,6 +458,8 @@ test_that("rxp_py: with env_var parameter", {
 test_that("rxp_qmd: with env_var parameter", {
   # Create a temporary qmd file for testing
   qmd_file <- tempfile(fileext = ".qmd")
+  on.exit(unlink(qmd_file))
+
   writeLines(
     "---\ntitle: Test\n---\n\nThis is a test quarto document with rxp_read(\"test_data\").",
     qmd_file
@@ -502,13 +502,13 @@ test_that("rxp_qmd: with env_var parameter", {
     )
   )
 
-  # Cleanup
-  unlink(qmd_file)
 })
 
 test_that("rxp_r_file: with env_var parameter", {
   # Create a temporary CSV for testing
   csv_file <- tempfile(fileext = ".csv")
+  on.exit(unlink(csv_file))
+
   write.csv(mtcars[1:5, ], csv_file, row.names = FALSE)
 
   d1 <- rxp_r_file(
@@ -524,13 +524,13 @@ test_that("rxp_r_file: with env_var parameter", {
     c(R_DATA_DIR = "/path/to/data", R_DEBUG = "TRUE")
   )
 
-  # Cleanup
-  unlink(csv_file)
 })
 
 test_that("rxp_py_file: with env_var parameter", {
   # Create a temporary CSV for testing
   csv_file <- tempfile(fileext = ".csv")
+  on.exit(unlink(csv_file))
+
   write.csv(mtcars[1:5, ], csv_file, row.names = FALSE)
 
   d1 <- rxp_py_file(
@@ -546,13 +546,13 @@ test_that("rxp_py_file: with env_var parameter", {
     c(PYTHONPATH = "/custom/modules", PYTHON_DEBUG = "1")
   )
 
-  # Cleanup
-  unlink(csv_file)
 })
 
 test_that("rxp_rmd: with env_var parameter", {
   # Create a temporary Rmd file for testing
   rmd_file <- tempfile(fileext = ".Rmd")
+  on.exit(unlink(rmd_file))
+
   writeLines(
     "---\ntitle: Test\n---\n\nThis is a test R Markdown document with rxp_read(\"test_data\").",
     rmd_file
@@ -598,6 +598,4 @@ test_that("rxp_rmd: with env_var parameter", {
     )
   )
 
-  # Cleanup
-  unlink(rmd_file)
 })

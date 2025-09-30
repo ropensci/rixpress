@@ -39,10 +39,8 @@ writes the modified content back to the file.
 }
 \examples{
 \dontrun{
-# Assuming your project is in the current working directory
 adjust_import("import pillow", "from PIL import Image")
-# If project is elsewhere:
-# adjust_import("import pillow", "from PIL import Image", project_path = "path/to/project")
+adjust_import("import pillow", "from PIL import Image", project_path = "path/to/project")
 }
 }
 \seealso{

@@ -1,4 +1,5 @@
 test_that("get_nodes_edges processes dag.json correctly", {
+  testthat::skip_on_cran()
   test_dag_path <- "test-data/dag.json"
 
   actual_output <- get_nodes_edges(path_dag = test_dag_path)
