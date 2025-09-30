@@ -423,7 +423,7 @@ generate_jl_libraries_from_nix <- function(
 #' Adjust Python import statements
 #'
 #' When calling `rxp_populate()`, a file containing Python import statements is
-#' automatically generated inside the `_rixpress` folder. For example, if the
+#' automatically generated inside the `_rixpress` folder. For , if the
 #' `numpy` package is needed, the file will include a line like
 #' `"import numpy"`. However, Python programmers often write
 #' `"import numpy as np"` instead.
@@ -449,10 +449,8 @@ generate_jl_libraries_from_nix <- function(
 #'
 #' @examples
 #' \dontrun{
-#' # Assuming your project is in the current working directory
 #' adjust_import("import pillow", "from PIL import Image")
-#' # If project is elsewhere:
-#' # adjust_import("import pillow", "from PIL import Image", project_path = "path/to/project")
+#' adjust_import("import pillow", "from PIL import Image", project_path = "path/to/project")
 #' }
 #' @export
 adjust_import <- function(old_import, new_import, project_path = ".") {
@@ -511,10 +509,8 @@ adjust_import <- function(old_import, new_import, project_path = ".") {
 #'
 #' @examples
 #' \dontrun{
-#' # Assuming project is in current working directory
 #' add_import("import numpy as np", "default.nix")
-#' # If project is elsewhere:
-#' # add_import("import numpy as np", "default.nix", project_path = "path/to/project")
+#' add_import("import numpy as np", "default.nix", project_path = "path/to/project")
 #' }
 #' @export
 add_import <- function(import_statement, nix_env, project_path = ".") {
