@@ -1,3 +1,5 @@
+testthat::skip_on_cran()
+
 test_that("rxp_ga creates expected GitHub Actions workflow file", {
   # Create a temporary directory for testing
   test_dir <- tempfile("rxp_ga_test")
