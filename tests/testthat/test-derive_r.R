@@ -112,7 +112,6 @@ test_that("rxp_qmd: generates correct list", {
       class = "rxp_derivation"
     )
   )
-
 })
 
 test_that("rxp_r_file: single file reading works", {
@@ -124,7 +123,7 @@ test_that("rxp_r_file: single file reading works", {
 
   d1 <- rxp_r_file(mtcars_data, path = csv_file, read_function = read.csv)
 
-                                        # Create a subset of d1 with only the fields we want to test
+  # Create a subset of d1 with only the fields we want to test
   d1_subset <- list(
     "name" = d1$name,
     "type" = d1$type,
@@ -135,19 +134,18 @@ test_that("rxp_r_file: single file reading works", {
   class(d1_subset) <- "rxp_derivation"
 
   testthat::expect_equal(
-              d1_subset,
-              structure(
-                list(
-                  "name" = "mtcars_data",
-                  "type" = "rxp_r",
-                  "path" = csv_file,
-                  "read_function" = read.csv,
-                  "nix_env" = "default.nix"
-                ),
-                class = "rxp_derivation"
-              )
-            )
-
+    d1_subset,
+    structure(
+      list(
+        "name" = "mtcars_data",
+        "type" = "rxp_r",
+        "path" = csv_file,
+        "read_function" = read.csv,
+        "nix_env" = "default.nix"
+      ),
+      class = "rxp_derivation"
+    )
+  )
 })
 
 test_that("rxp_r_file: folder reading works", {
@@ -212,7 +210,6 @@ test_that("rxp_r_file: folder reading works", {
   )
 
   testthat::expect_equal(d1_subset, expected)
-
 })
 
 test_that("rxp_py_file: basic functionality works", {
@@ -250,7 +247,6 @@ test_that("rxp_py_file: basic functionality works", {
       class = "rxp_derivation"
     )
   )
-
 })
 
 # Mock reticulate package for testing
@@ -343,7 +339,7 @@ test_that("rxp_r: with additional files", {
     structure(
       list(
         "name" = "mtcars_am",
-        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ./functions.R ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r ${./data.csv} data.csv\n      cp ${./functions.R} functions.R\n      Rscript -e "\n        source(\'libraries.R\')\n        # RIXPRESS_LOAD_DEPENDENCIES_HERE:mtcars_am\n        source(\'functions.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
+        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ./functions.R ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r $src/* .\n      Rscript -e "\n        source(\'libraries.R\')\n        # RIXPRESS_LOAD_DEPENDENCIES_HERE:mtcars_am\n        source(\'functions.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
         "type" = "rxp_r",
         "additional_files" = "data.csv",
         "user_functions" = "functions.R",
@@ -372,7 +368,7 @@ test_that("rxp_py: with additional files", {
     structure(
       list(
         "name" = "mtcars_pl_am",
-        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = "mtcars_pl_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ./functions.py ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r ${./data.csv} data.csv\n      cp ${./functions.py} functions.py\n      python -c "\nexec(open(\'libraries.py\').read())\n# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE:mtcars_pl_am\nexec(open(\'functions.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
+        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = "mtcars_pl_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ./functions.py ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r $src/* .\n      python -c "\nexec(open(\'libraries.py\').read())\n# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE:mtcars_pl_am\nexec(open(\'functions.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
         "type" = "rxp_py",
         "additional_files" = "data.csv",
         "user_functions" = "functions.py",
@@ -501,7 +497,6 @@ test_that("rxp_qmd: with env_var parameter", {
       class = "rxp_derivation"
     )
   )
-
 })
 
 test_that("rxp_r_file: with env_var parameter", {
@@ -523,7 +518,6 @@ test_that("rxp_r_file: with env_var parameter", {
     d1$env_var,
     c(R_DATA_DIR = "/path/to/data", R_DEBUG = "TRUE")
   )
-
 })
 
 test_that("rxp_py_file: with env_var parameter", {
@@ -545,7 +539,6 @@ test_that("rxp_py_file: with env_var parameter", {
     d1$env_var,
     c(PYTHONPATH = "/custom/modules", PYTHON_DEBUG = "1")
   )
-
 })
 
 test_that("rxp_rmd: with env_var parameter", {
@@ -597,5 +590,4 @@ test_that("rxp_rmd: with env_var parameter", {
       class = "rxp_derivation"
     )
   )
-
 })

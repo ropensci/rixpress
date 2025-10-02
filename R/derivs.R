@@ -249,35 +249,11 @@ rxp_r <- function(
   all_files <- c(additional_files, user_functions)
   fileset_parts <- all_files[nzchar(all_files)]
 
-  # build copy command for additional files only (not user_functions)
-  copy_cmd <- ""
-  if (length(additional_files) > 0) {
-    additional_files_clean <- additional_files[nzchar(additional_files)]
-    if (length(additional_files_clean) > 0) {
-      copy_lines <- vapply(
-        additional_files_clean,
-        function(f) sprintf("cp -r ${./%s} %s", f, f),
-        character(1)
-      )
-      copy_cmd <- paste0(paste(copy_lines, collapse = "\n      "), "\n      ")
-    }
-  }
-
-  # build copy command for user_functions
-  user_functions_copy_cmd <- ""
-  if (!is.null(user_functions) && length(user_functions) > 0) {
-    user_functions_clean <- user_functions[nzchar(user_functions)]
-    if (length(user_functions_clean) > 0) {
-      user_copy_lines <- vapply(
-        user_functions_clean,
-        function(f) sprintf("cp ${./%s} %s", f, f),
-        character(1)
-      )
-      user_functions_copy_cmd <- paste0(
-        paste(user_copy_lines, collapse = "\n      "),
-        "\n      "
-      )
-    }
+  # If there are any source files, copy them all into the build directory
+  copy_cmd <- if (length(fileset_parts) > 0) {
+    "cp -r $src/* .\n      "
+  } else {
+    ""
   }
 
   # Generate source commands for user_functions
@@ -304,10 +280,9 @@ rxp_r <- function(
   )
 
   build_phase <- sprintf(
-    "%s%s%sRscript -e \"\n        source('libraries.R')\n        %s\n        %s%s <- %s\n        %s(%s, '%s')\"",
+    "%s%sRscript -e \"\n        source('libraries.R')\n        %s\n        %s%s <- %s\n        %s(%s, '%s')\"",
     env_exports,
     copy_cmd,
-    user_functions_copy_cmd,
     unique_placeholder,
     source_cmd,
     out_name,
@@ -542,43 +517,14 @@ rxp_py <- function(
   }
 
   # Prepare the fileset for src
-  # Combine additional_files and user_functions for the fileset
-  fileset_parts <- c()
-  if (!is.null(additional_files) && any(nzchar(additional_files))) {
-    fileset_parts <- c(
-      fileset_parts,
-      additional_files[nzchar(additional_files)]
-    )
-  }
-  if (!is.null(user_functions) && any(nzchar(user_functions))) {
-    fileset_parts <- c(fileset_parts, user_functions[nzchar(user_functions)])
-  }
+  all_files <- c(additional_files, user_functions)
+  fileset_parts <- all_files[nzchar(all_files)]
 
-  # build copy command for additional files (excluding user_functions)
-  copy_cmd <- ""
-  if (!is.null(additional_files) && any(nzchar(additional_files))) {
-    additional_files_clean <- additional_files[nzchar(additional_files)]
-    copy_lines <- vapply(
-      additional_files_clean,
-      function(f) sprintf("cp -r ${./%s} %s", f, f),
-      character(1)
-    )
-    copy_cmd <- paste0(paste(copy_lines, collapse = "\n      "), "\n      ")
-  }
-
-  # build copy command for user_functions (explicit copy, not -r)
-  user_functions_copy_cmd <- ""
-  if (!is.null(user_functions) && any(nzchar(user_functions))) {
-    user_functions_clean <- user_functions[nzchar(user_functions)]
-    user_copy_lines <- vapply(
-      user_functions_clean,
-      function(f) sprintf("cp ${./%s} %s", f, f),
-      character(1)
-    )
-    user_functions_copy_cmd <- paste0(
-      paste(user_copy_lines, collapse = "\n      "),
-      "\n      "
-    )
+  # If there are any source files, copy them all into the build directory
+  copy_cmd <- if (length(fileset_parts) > 0) {
+    "cp -r $src/* .\n      "
+  } else {
+    ""
   }
 
   # Generate import commands for user_functions
@@ -603,7 +549,6 @@ rxp_py <- function(
   build_phase <- paste0(
     env_exports,
     copy_cmd,
-    user_functions_copy_cmd,
     "python -c \"\n",
     "exec(open('libraries.py').read())\n",
     unique_placeholder,
@@ -854,43 +799,15 @@ rxp_jl <- function(
     }
   }
 
-  # Prepare the fileset for src, INCLUDE user_functions as well
-  fileset_parts <- c()
-  if (!is.null(additional_files) && any(nzchar(additional_files))) {
-    fileset_parts <- c(
-      fileset_parts,
-      additional_files[nzchar(additional_files)]
-    )
-  }
-  if (!is.null(user_functions) && any(nzchar(user_functions))) {
-    fileset_parts <- c(fileset_parts, user_functions[nzchar(user_functions)])
-  }
+  # Prepare the fileset for src
+  all_files <- c(additional_files, user_functions)
+  fileset_parts <- all_files[nzchar(all_files)]
 
-  # Build copy command for additional files (not user_functions)
-  additional_files_clean <- additional_files[nzchar(additional_files)]
-  copy_cmd <- ""
-  if (length(additional_files_clean) > 0) {
-    copy_lines <- vapply(
-      additional_files_clean,
-      function(f) sprintf("cp -r ${./%s} %s", f, f),
-      character(1)
-    )
-    copy_cmd <- paste0(paste(copy_lines, collapse = "\n      "), "\n      ")
-  }
-
-  # Build copy command for user_functions (explicit copy, not -r)
-  user_functions_copy_cmd <- ""
-  if (!is.null(user_functions) && any(nzchar(user_functions))) {
-    user_functions_clean <- user_functions[nzchar(user_functions)]
-    user_copy_lines <- vapply(
-      user_functions_clean,
-      function(f) sprintf("cp ${./%s} %s", f, f),
-      character(1)
-    )
-    user_functions_copy_cmd <- paste0(
-      paste(user_copy_lines, collapse = "\n      "),
-      "\n      "
-    )
+  # If there are any source files, copy them all into the build directory
+  copy_cmd <- if (length(fileset_parts) > 0) {
+    "cp -r $src/* .\n      "
+  } else {
+    ""
   }
 
   # Generate include commands for user_functions
@@ -916,7 +833,6 @@ rxp_jl <- function(
   build_phase <- paste0(
     env_exports,
     copy_cmd,
-    user_functions_copy_cmd,
     "julia -e \"\n",
     "if isfile(\\\"libraries.jl\\\"); include(\\\"libraries.jl\\\"); end;\n",
     unique_placeholder,
