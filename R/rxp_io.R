@@ -743,4 +743,3 @@ rxp_r2py <- function(name, expr, nix_env = "default.nix") {
   expr_str <- deparse1(substitute(expr))
   rxp_common_setup(out_name, expr_str, nix_env, "r2py")
 }
-

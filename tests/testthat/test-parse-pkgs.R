@@ -48,7 +48,7 @@ test_that("parse_packages handles various formats and edge cases", {
     "let",
     "  rpkgs = builtins.attrValues {",
     "    dplyr"
-                                        # Missing "};"
+    # Missing "};"
   )
   nix_file4 <- create_temp_nix(nix_content4, path_tmpdir)
   on.exit(unlink(nix_file4))

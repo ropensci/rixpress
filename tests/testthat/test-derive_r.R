@@ -112,7 +112,6 @@ test_that("rxp_qmd: generates correct list", {
       class = "rxp_derivation"
     )
   )
-
 })
 
 test_that("rxp_r_file: single file reading works", {
@@ -124,7 +123,7 @@ test_that("rxp_r_file: single file reading works", {
 
   d1 <- rxp_r_file(mtcars_data, path = csv_file, read_function = read.csv)
 
-                                        # Create a subset of d1 with only the fields we want to test
+  # Create a subset of d1 with only the fields we want to test
   d1_subset <- list(
     "name" = d1$name,
     "type" = d1$type,
@@ -135,19 +134,18 @@ test_that("rxp_r_file: single file reading works", {
   class(d1_subset) <- "rxp_derivation"
 
   testthat::expect_equal(
-              d1_subset,
-              structure(
-                list(
-                  "name" = "mtcars_data",
-                  "type" = "rxp_r",
-                  "path" = csv_file,
-                  "read_function" = read.csv,
-                  "nix_env" = "default.nix"
-                ),
-                class = "rxp_derivation"
-              )
-            )
-
+    d1_subset,
+    structure(
+      list(
+        "name" = "mtcars_data",
+        "type" = "rxp_r",
+        "path" = csv_file,
+        "read_function" = read.csv,
+        "nix_env" = "default.nix"
+      ),
+      class = "rxp_derivation"
+    )
+  )
 })
 
 test_that("rxp_r_file: folder reading works", {
@@ -212,7 +210,6 @@ test_that("rxp_r_file: folder reading works", {
   )
 
   testthat::expect_equal(d1_subset, expected)
-
 })
 
 test_that("rxp_py_file: basic functionality works", {
@@ -250,7 +247,6 @@ test_that("rxp_py_file: basic functionality works", {
       class = "rxp_derivation"
     )
   )
-
 })
 
 # Mock reticulate package for testing
@@ -501,7 +497,6 @@ test_that("rxp_qmd: with env_var parameter", {
       class = "rxp_derivation"
     )
   )
-
 })
 
 test_that("rxp_r_file: with env_var parameter", {
@@ -523,7 +518,6 @@ test_that("rxp_r_file: with env_var parameter", {
     d1$env_var,
     c(R_DATA_DIR = "/path/to/data", R_DEBUG = "TRUE")
   )
-
 })
 
 test_that("rxp_py_file: with env_var parameter", {
@@ -545,7 +539,6 @@ test_that("rxp_py_file: with env_var parameter", {
     d1$env_var,
     c(PYTHONPATH = "/custom/modules", PYTHON_DEBUG = "1")
   )
-
 })
 
 test_that("rxp_rmd: with env_var parameter", {
@@ -597,5 +590,4 @@ test_that("rxp_rmd: with env_var parameter", {
       class = "rxp_derivation"
     )
   )
-
 })
