@@ -117,11 +117,8 @@ build_hybrid_src <- function(url, user_functions) {
     user_files_list
   )
 
-  # Create copy commands for user functions
-  user_files_cp <- paste(
-    sprintf("cp ${localSrc}/%s $out/", user_functions),
-    collapse = "\n      "
-  )
+  # Create a single robust copy command for all user functions
+  user_files_cp <- "cp -r ${localSrc}/* $out/"
 
   sprintf(
     "(let\n      %s;\n    in defaultPkgs.runCommand \"combined-src\" {} ''\n      mkdir -p $out\n      cp ${defaultPkgs.fetchurl {\n        url = \"%s\";\n        sha256 = \"%s\";\n      }} $out/%s\n      %s\n    '')",
@@ -746,3 +743,4 @@ rxp_r2py <- function(name, expr, nix_env = "default.nix") {
   expr_str <- deparse1(substitute(expr))
   rxp_common_setup(out_name, expr_str, nix_env, "r2py")
 }
+
