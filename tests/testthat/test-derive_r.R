@@ -339,7 +339,7 @@ test_that("rxp_r: with additional files", {
     structure(
       list(
         "name" = "mtcars_am",
-        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ./functions.R ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r ${./data.csv} data.csv\n      cp ${./functions.R} functions.R\n      Rscript -e "\n        source(\'libraries.R\')\n        # RIXPRESS_LOAD_DEPENDENCIES_HERE:mtcars_am\n        source(\'functions.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
+        "snippet" = '  mtcars_am = makeRDerivation {\n    name = "mtcars_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ./functions.R ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r $src/* .\n      Rscript -e "\n        source(\'libraries.R\')\n        # RIXPRESS_LOAD_DEPENDENCIES_HERE:mtcars_am\n        source(\'functions.R\')\n        mtcars_am <- dplyr::filter(mtcars, am == 1)\n        saveRDS(mtcars_am, \'mtcars_am\')"\n    \'\';\n  };',
         "type" = "rxp_r",
         "additional_files" = "data.csv",
         "user_functions" = "functions.R",
@@ -368,7 +368,7 @@ test_that("rxp_py: with additional files", {
     structure(
       list(
         "name" = "mtcars_pl_am",
-        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = "mtcars_pl_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ./functions.py ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r ${./data.csv} data.csv\n      cp ${./functions.py} functions.py\n      python -c "\nexec(open(\'libraries.py\').read())\n# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE:mtcars_pl_am\nexec(open(\'functions.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
+        "snippet" = '  mtcars_pl_am = makePyDerivation {\n    name = "mtcars_pl_am";\n     src = defaultPkgs.lib.fileset.toSource {\n      root = ./.;\n      fileset = defaultPkgs.lib.fileset.unions [ ./data.csv ./functions.py ];\n    };\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      cp -r $src/* .\n      python -c "\nexec(open(\'libraries.py\').read())\n# RIXPRESS_PY_LOAD_DEPENDENCIES_HERE:mtcars_pl_am\nexec(open(\'functions.py\').read())\nexec(\'mtcars_pl_am = mtcars_pl.filter(pl.col(\\\'am\\\') == 1)\')\nwith open(\'mtcars_pl_am\', \'wb\') as f: pickle.dump(globals()[\'mtcars_pl_am\'], f)\n"\n    \'\';\n  };',
         "type" = "rxp_py",
         "additional_files" = "data.csv",
         "user_functions" = "functions.py",
