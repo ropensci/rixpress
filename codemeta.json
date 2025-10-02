@@ -8,7 +8,7 @@
   "codeRepository": "https://github.com/ropensci/rixpress/",
   "issueTracker": "https://github.com/ropensci/rixpress/issues/",
   "license": "https://spdx.org/licenses/GPL-3.0",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
@@ -213,7 +213,7 @@
     },
     "SystemRequirements": "Nix"
   },
-  "fileSize": "1607.136KB",
+  "fileSize": "1586.94KB",
   "releaseNotes": "https://github.com/ropensci/rixpress/blob/main/NEWS.md",
   "readme": "https://github.com/ropensci/rixpress/blob/main/README.md",
   "contIntegration": "https://github.com/ropensci/rixpress/actions/workflows/rhub.yaml/",
