@@ -1,9 +1,9 @@
-# rixpress 0.10.1 (2025-10-02)
+# rixpress 0.10.1 (2025-10-07)
 
 Fixed bug: functions inside of arbitrary folder where not being
 imported into the build sandbox correctly.
 
-# rixpress 0.10.0 (2025-09-19)
+# rixpress 0.10.0 (2025-10-07)
 
 First CRAN release!
 
