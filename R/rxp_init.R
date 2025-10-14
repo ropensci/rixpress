@@ -66,7 +66,7 @@ rxp_init <- function(project_path = ".", skip_prompt = FALSE) {
     "  git_pkgs = list(",
     "    \"package_name\" = \"rixpress\",",
     "    \"repo_url\" = \"https://github.com/ropensci/rixpress\",",
-    "    \"commit\" = \"HEAD\",",
+    "    \"commit\" = \"4d5da094c2dc33d13f9b4966b9c502b328086714\",",
     "  ),",
     "  ide = \"none\",",
     "  project_path = \".\"",
