@@ -15,12 +15,12 @@ jobs:
       
       - name: Generate package context (R)
         run: |
-          nix run github:b-rodrigues/pkgctx -- r . > rix.ctx.yaml
+          nix run github:b-rodrigues/pkgctx -- r . > rixpress.ctx.yaml
       
       - name: Commit and push context
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add rix.ctx.yaml
+          git add rixpress.ctx.yaml
           git diff --staged --quiet || git commit -m "Update package context [skip ci]"
           git push
