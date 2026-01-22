@@ -1,8 +1,8 @@
 ---
-title: "Polyglot pipelines with Julia and R"
+title: "Polyglot Pipelines with Julia and R"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{polyglot-julia}
+  %\VignetteIndexEntry{Polyglot Pipelines with Julia and R}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

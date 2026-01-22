@@ -10,7 +10,7 @@
 #'   downstream derivations depending on a no-op build will themselves also
 #'   become no-op builds.
 #' @return Character string with the formatted Nix derivation
-#' @keywords internal
+#' @noRd
 make_derivation_snippet <- function(
   out_name,
   src_snippet,

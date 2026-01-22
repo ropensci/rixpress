@@ -1,8 +1,8 @@
 ---
-title: "Setting up a pipeline from scratch: a tutorial"
+title: "Setting Up a Pipeline From Scratch"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{tutorial}
+  %\VignetteIndexEntry{Setting Up a Pipeline From Scratch}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

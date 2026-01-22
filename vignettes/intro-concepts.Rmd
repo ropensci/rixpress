@@ -1,8 +1,8 @@
 ---
-title: "Introductory concepts"
+title: "Introductory Concepts"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{introductory-concepts}
+  %\VignetteIndexEntry{Introductory Concepts}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

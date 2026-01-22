@@ -23,7 +23,7 @@ LANG_CONFIG <- list(
 #'
 #' @param user_functions Character vector of user-defined function script paths.
 #' @return Character vector without empty strings.
-#' @keywords internal
+#' @noRd
 clean_user_functions <- function(user_functions) {
   if (is.null(user_functions)) {
     return(character(0))
@@ -38,7 +38,7 @@ clean_user_functions <- function(user_functions) {
 #' @param user_functions Character vector of script file names.
 #' @param lang Language string, `"R"`, `"Py"`, or `"Jl"`.
 #' @return A string of import/source statements.
-#' @keywords internal
+#' @noRd
 build_user_code_cmd <- function(user_functions, lang) {
   if (length(user_functions) == 0) {
     return("")
@@ -61,7 +61,7 @@ build_user_code_cmd <- function(user_functions, lang) {
 #'
 #' @param env_var Named list of environment variables.
 #' @return A string of `export` commands with line breaks, or `""` if none.
-#' @keywords internal
+#' @noRd
 build_env_exports <- function(env_var) {
   if (is.null(env_var) || length(env_var) == 0) {
     return("")
@@ -80,7 +80,7 @@ build_env_exports <- function(env_var) {
 #' @param path Character path to file or directory.
 #' @param user_functions Character vector of additional files to include.
 #' @return A string with the `src` Nix expression.
-#' @keywords internal
+#' @noRd
 build_src_part <- function(path, user_functions = character(0)) {
   if (is_remote_url(path)) {
     if (length(user_functions) > 0) {
@@ -97,7 +97,7 @@ build_src_part <- function(path, user_functions = character(0)) {
 #' @param url Character URL
 #' @param user_functions Character vector of additional files
 #' @return Character Nix expression
-#' @keywords internal
+#' @noRd
 build_hybrid_src <- function(url, user_functions) {
   hash <- tryCatch(
     system(paste("nix-prefetch-url", shQuote(url)), intern = TRUE),
@@ -133,7 +133,7 @@ build_hybrid_src <- function(url, user_functions) {
 #' Check if path is a remote URL
 #' @param path Character path
 #' @return Logical
-#' @keywords internal
+#' @noRd
 is_remote_url <- function(path) {
   grepl("^https?://", path)
 }
@@ -141,7 +141,7 @@ is_remote_url <- function(path) {
 #' Build remote source configuration
 #' @param url Character URL
 #' @return Character Nix expression
-#' @keywords internal
+#' @noRd
 build_remote_src <- function(url) {
   hash <- tryCatch(
     system(paste("nix-prefetch-url", shQuote(url)), intern = TRUE),
@@ -163,7 +163,7 @@ build_remote_src <- function(url) {
 #' @param path Character path
 #' @param user_functions Character vector of additional files
 #' @return Character Nix expression
-#' @keywords internal
+#' @noRd
 build_local_src <- function(path, user_functions) {
   all_files <- c(path, user_functions)
   all_files <- all_files[nzchar(all_files)]
@@ -182,7 +182,7 @@ build_local_src <- function(path, user_functions) {
 #'
 #' @param nix_env Character path to a Nix environment file (e.g., `"default.nix"`).
 #' @return Sanitized base string.
-#' @keywords internal
+#' @noRd
 sanitize_nix_env <- function(nix_env) {
   base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
   sub("_nix$", "", base)
@@ -196,7 +196,7 @@ sanitize_nix_env <- function(nix_env) {
 #' @param rel_path Relative path to input file
 #' @param serialize_str Language-specific serializer identifier or NULL for default
 #' @return Character vector of commands
-#' @keywords internal
+#' @noRd
 build_language_commands <- function(
   lang,
   read_func,
@@ -284,7 +284,7 @@ build_language_commands <- function(
 #' @param user_functions Character vector of user function files.
 #' @param serialize_str Language-specific serializer identifier or NULL for default.
 #' @return A string with the build phase commands.
-#' @keywords internal
+#' @noRd
 build_phase <- function(
   lang,
   read_func,
@@ -338,7 +338,7 @@ build_phase <- function(
 #' @param lang Language string
 #' @param parent_env Environment from calling function for proper substitution
 #' @return Character string
-#' @keywords internal
+#' @noRd
 process_read_function <- function(
   read_function,
   lang,
@@ -394,7 +394,7 @@ process_read_function <- function(
 #' @param lang Language string
 #' @param parent_env Environment for proper substitution (R only)
 #' @return For R: function name string; For Py/Jl: NULL (use default) or function name string
-#' @keywords internal
+#' @noRd
 process_encoder <- function(
   encoder,
   lang,
@@ -563,7 +563,7 @@ rxp_file <- function(
 #' @param env_var Named list of environment variables
 #' @param encoder Character serializer identifier (for display)
 #' @return rxp_derivation object
-#' @keywords internal
+#' @noRd
 create_rxp_derivation <- function(
   out_name,
   snippet,
@@ -642,7 +642,7 @@ rxp_jl_file <- function(...) rxp_file("Jl", ...)
 #'   Python).
 #' @return A list with elements: `name`, `snippet`, `type`, `additional_files`,
 #'   `nix_env`.
-#' @keywords internal
+#' @noRd
 rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
   expr_str <- gsub("\"", "'", expr_str)
   base <- sanitize_nix_env(nix_env)
@@ -675,7 +675,7 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
 #' @param expr_str Character expression string
 #' @param direction Character direction
 #' @return Character command
-#' @keywords internal
+#' @noRd
 build_transfer_command <- function(out_name, expr_str, direction) {
   switch(
     direction,
@@ -702,7 +702,7 @@ build_transfer_command <- function(out_name, expr_str, direction) {
 #' Build reticulate build phase
 #' @param r_command Character R command
 #' @return Character build phase
-#' @keywords internal
+#' @noRd
 build_reticulate_phase <- function(r_command) {
   sprintf(
     "export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python\n       Rscript -e \"\n         source('libraries.R')\n%s\"",
