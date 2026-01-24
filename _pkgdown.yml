@@ -22,6 +22,7 @@ articles:
 - title: Advanced topics
   navbar: Advanced topics
   contents:
+  - sub-pipelines
   - ci
   - cmdstanr
 
@@ -35,6 +36,13 @@ reference:
   desc: >
     Functions to generate and build the Nix pipeline
   contents: has_concept("pipeline functions")
+
+- title: Pipeline organization
+  desc: >
+    Functions for organizing derivations into named sub-pipelines with visual distinction in DAG visualizations.
+  contents:
+  - rxp_pipeline
+  - print.rxp_pipeline
 
 - title: Project utilities
   desc: >
