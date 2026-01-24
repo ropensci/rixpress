@@ -90,6 +90,7 @@ list(
 
 - [Motivation](#motivation)
 - [Feature Highlights](#feature-highlights)
+- [Organizing with Sub-Pipelines](#organizing-with-sub-pipelines)
 - [Examples](#examples)
 - [Getting started](#getting-started)
 - [Visualization](#visualization)
@@ -141,9 +142,35 @@ If you are interested in a Python-first port of `{rixpress}`, check out
   and Quarto documents.
 - Cross-language object exchange via serialization helpers.
 - Pipelines as compositions of pure functions: derivations are content-addressed and cached in the Nix store.
-- DAG visualization (e.g. `rxp_ggdag()`, `rxp_visnetwork()`).
+- **Sub-pipelines**: Organize large projects with `rxp_pipeline()` for logical grouping and colour-coded visualization.
+- DAG visualization (e.g. `rxp_ggdag()`, `rxp_visnetwork()`) with pipeline-aware colouring.
 - Target introspection (`rxp_read()`, `rxp_load()`, `rxp_copy()`, `rxp_trace()`).
 - Artifact export/import for CI acceleration.
+
+## Organizing with Sub-Pipelines
+
+For larger projects, you can organize derivations into named **sub-pipelines**
+using `rxp_pipeline()`. Each sub-pipeline can have its own colour for
+visual distinction:
+```r
+# Define sub-pipelines in separate files
+# pipelines/01_data_prep.R returns: list(rxp_r(...), rxp_r(...))
+# pipelines/02_analysis.R returns: list(rxp_r(...), rxp_r(...))
+
+# Master script combines them with colours
+pipe_prep <- rxp_pipeline("Data Prep", "pipelines/01_data_prep.R", color = "#E69F00")
+pipe_analysis <- rxp_pipeline("Analysis", "pipelines/02_analysis.R", color = "#56B4E9")
+
+rxp_populate(list(pipe_prep, pipe_analysis))
+```
+
+When visualized with `rxp_ggdag()`, nodes show:
+- **Fill colour**: Derivation type (R = blue, Python = yellow, etc.)
+- **Border colour**: Pipeline group (the colour you specify)
+
+This dual encoding lets you see both *what* each step does and *which logical
+group* it belongs to. See `vignette("sub-pipelines")` for details.
+
 
 ## Examples
 

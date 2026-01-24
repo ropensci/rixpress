@@ -23,6 +23,8 @@ test_that("get_nodes_edges processes dag.json correctly", {
         "page"
       ),
       group = c("rxp_r", "rxp_r", "rxp_r", "rxp_r", "rxp_r", "rxp_qmd"),
+      pipeline_group = rep("default", 6),
+      pipeline_color = rep(NA_character_, 6),
       stringsAsFactors = FALSE
     ),
     edges = data.frame(

@@ -1,7 +1,7 @@
 #' Trace lineage of derivations
 #'
 #' @family utilities
-#' @param name Charcter, defaults to NULL. Name of the derivation to inspect.
+#' @param name Character, defaults to NULL. Name of the derivation to inspect.
 #'   If NULL, the function prints the whole pipeline (inverted global view).
 #' @param dag_file Character, defaults to "_rixpress/dag.json". Path to dag.json.
 #' @param transitive Logical, defaults to TRUE. If TRUE, show transitive closure and
@@ -59,7 +59,20 @@ rxp_trace <- function(
     as.character(dn)
   }
 
+  extract_color <- function(d) {
+    pc <- d$pipeline_color
+    if (is.null(pc) || length(pc) == 0 || is.na(pc)) {
+      return(NA_character_)
+    }
+    # Handle list wrapping from jsonlite
+    if (is.list(pc)) pc <- unlist(pc)
+    as.character(pc)
+  }
+
   all_names <- vapply(derivs, extract_name, character(1))
+  all_colors <- vapply(derivs, extract_color, character(1))
+  names(all_colors) <- all_names
+
   if (anyNA(all_names)) {
     stop("Found derivations with missing or unparsable names in dag.json.")
   }
@@ -73,6 +86,19 @@ rxp_trace <- function(
       if (length(all_names) > 20) ", ..." else "",
       ")."
     )
+  }
+
+  # Helper to colorize text
+  colorize_name <- function(nm) {
+    col <- all_colors[nm]
+    if (!is.na(col) && requireNamespace("cli", quietly = TRUE)) {
+      tryCatch(
+        cli::make_ansi_style(col)(nm),
+        error = function(e) nm
+      )
+    } else {
+      nm
+    }
   }
 
   make_depends_map <- function(derivs, names) {
@@ -137,7 +163,7 @@ rxp_trace <- function(
   }
 
   print_single <- function(target) {
-    cat("==== Lineage for:", target, "====\n")
+    cat("==== Lineage for:", colorize_name(target), "====\n")
 
     cat("Dependencies (ancestors):\n")
     visited <- character(0)
@@ -150,8 +176,9 @@ rxp_trace <- function(
         return()
       }
       for (p in parents) {
-        label <- if (transitive && depth >= 1) paste0(p, "*") else p
-        cat(strrep("  ", depth + 1), "- ", label, "\n", sep = "")
+        cat(strrep("  ", depth + 1), "- ", colorize_name(p), sep = "")
+        if (transitive && depth >= 1) cat("*")
+        cat("\n")
         if (!(p %in% visited)) {
           visited <<- c(visited, p)
           rec_dep(p, depth + 1)
@@ -171,8 +198,9 @@ rxp_trace <- function(
         return()
       }
       for (k in kids) {
-        label <- if (transitive && depth >= 1) paste0(k, "*") else k
-        cat(strrep("  ", depth + 1), "- ", label, "\n", sep = "")
+        cat(strrep("  ", depth + 1), "- ", colorize_name(k), sep = "")
+        if (transitive && depth >= 1) cat("*")
+        cat("\n")
         if (!(k %in% visited)) {
           visited <<- c(visited, k)
           rec_rev(k, depth + 1)
@@ -190,8 +218,10 @@ rxp_trace <- function(
   print_forest_once <- function(roots, graph, transitive) {
     visited <- character(0)
     rec <- function(node, depth) {
-      label <- if (transitive && depth >= 2) paste0(node, "*") else node
-      cat(strrep("  ", depth), "- ", label, "\n", sep = "")
+      cat(strrep("  ", depth), "- ", colorize_name(node), sep = "")
+      if (transitive && depth >= 2) cat("*")
+      cat("\n")
+
       if (node %in% visited) {
         return()
       }

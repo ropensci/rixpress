@@ -46,13 +46,23 @@ rxp_write_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
       all_derivs_names
     )
 
+    # Extract pipeline metadata (defaults to "default" group if not set)
+    pipeline_group <- if (!is.null(deriv$pipeline_group)) {
+      deriv$pipeline_group
+    } else {
+      "default"
+    }
+    pipeline_color <- deriv$pipeline_color # Can be NULL
+
     # Add the derivation to the DAG
     dag[[i]] <- list(
       deriv_name = name,
       depends = deps,
       decoder = decoder,
       type = type,
-      noop_build = noop_build
+      noop_build = noop_build,
+      pipeline_group = pipeline_group,
+      pipeline_color = pipeline_color
     )
   }
 

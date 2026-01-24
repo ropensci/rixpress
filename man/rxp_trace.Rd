@@ -12,7 +12,7 @@ rxp_trace(
 )
 }
 \arguments{
-\item{name}{Charcter, defaults to NULL. Name of the derivation to inspect.
+\item{name}{Character, defaults to NULL. Name of the derivation to inspect.
 If NULL, the function prints the whole pipeline (inverted global view).}
 
 \item{dag_file}{Character, defaults to "_rixpress/dag.json". Path to dag.json.}

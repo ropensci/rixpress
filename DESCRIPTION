@@ -1,6 +1,6 @@
 Package: rixpress
 Title: Build Reproducible Analytical Pipelines with 'Nix'
-Version: 0.10.2
+Version: 0.11.0
 Authors@R: c(
   person(given = "Bruno", family = "Rodrigues", email = "bruno@brodrigues.co", role = c("aut", "cre"),
          comment = c(ORCID = "0000-0002-3211-3689")),
@@ -27,6 +27,7 @@ BugReports: https://github.com/ropensci/rixpress/issues/
 Depends:
     R (>= 4.1.0)
 Imports:
+    cli,
     igraph,
     jsonlite,
     processx

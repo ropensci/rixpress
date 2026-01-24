@@ -108,6 +108,7 @@ rxp_make()
 }
 \seealso{
 Other pipeline functions: 
-\code{\link{rxp_make}()}
+\code{\link{rxp_make}()},
+\code{\link{rxp_pipeline}()}
 }
 \concept{pipeline functions}
