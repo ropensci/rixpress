@@ -1,4 +1,3 @@
-
 #' Trace lineage of derivations
 #'
 #' @family utilities
