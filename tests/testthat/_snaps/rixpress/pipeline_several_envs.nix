@@ -51,8 +51,8 @@ let
 
   mtcars_head = makeRDerivation {
     name = "mtcars_head";
-    buildInputs = tempdir_default2BuildInputs;
-    configurePhase = tempdir_default2ConfigurePhase;
+    buildInputs = default2BuildInputs;
+    configurePhase = default2ConfigurePhase;
     buildPhase = ''
       Rscript -e "
         source('libraries.R')
