@@ -52,7 +52,7 @@ rxp_write_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
     } else {
       "default"
     }
-    pipeline_color <- deriv$pipeline_color  # Can be NULL
+    pipeline_color <- deriv$pipeline_color # Can be NULL
 
     # Add the derivation to the DAG
     dag[[i]] <- list(

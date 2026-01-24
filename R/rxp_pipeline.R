@@ -61,7 +61,9 @@ rxp_pipeline <- function(name, derivs, color = NULL, ...) {
 
   # Check if derivs is a single derivation (not a list of derivations)
   if (inherits(derivs, "rxp_derivation")) {
-    stop("'derivs' must be a list of derivation objects, not a single derivation. Use list(deriv) instead.")
+    stop(
+      "'derivs' must be a list of derivation objects, not a single derivation. Use list(deriv) instead."
+    )
   }
 
   if (!is.list(derivs)) {
@@ -72,7 +74,9 @@ rxp_pipeline <- function(name, derivs, color = NULL, ...) {
   for (i in seq_along(derivs)) {
     if (!inherits(derivs[[i]], "rxp_derivation")) {
       stop(
-        "Element ", i, " of 'derivs' is not an rxp_derivation object. ",
+        "Element ",
+        i,
+        " of 'derivs' is not an rxp_derivation object. ",
         "All elements must be created by rxp_r(), rxp_py(), etc."
       )
     }
@@ -81,7 +85,9 @@ rxp_pipeline <- function(name, derivs, color = NULL, ...) {
   # Validate color if provided
   if (!is.null(color)) {
     if (!is.character(color) || length(color) != 1) {
-      stop("'color' must be a single character string (CSS color name or hex code)")
+      stop(
+        "'color' must be a single character string (CSS color name or hex code)"
+      )
     }
   }
 
@@ -127,7 +133,7 @@ flatten_derivations <- function(derivs) {
         item$pipeline_group <- "default"
       }
       if (is.null(item$pipeline_color)) {
-        item$pipeline_color <- NULL  # Will be assigned a default in visualization
+        item$pipeline_color <- NULL # Will be assigned a default in visualization
       }
       result <- c(result, list(item))
     } else if (is.list(item)) {
