@@ -1,3 +1,32 @@
+# rixpress 0.11.0 (2025-01-24)
+
+## New Features
+
+- **Sub-pipelines with `rxp_pipeline()`**: New function to organize derivations
+  into named logical groups (e.g., "ETL", "Model", "Report"). Pipeline groups
+  are visually distinguished in DAG visualizations with custom colors.
+
+- **Pipeline-based DAG coloring**: `rxp_visnetwork()` and `rxp_ggdag()` now
+  support a `color_by` parameter. When set to "pipeline" (the default when
+  pipelines are defined), nodes are colored by their pipeline group rather
+  than derivation type.
+
+- **Master Script workflow**: Enables organizing large projects across multiple
+  R scripts, then combining them in a master script using `rxp_pipeline()`.
+
+## Internal Changes
+
+- `rxp_populate()` now flattens `rxp_pipeline` objects while preserving metadata.
+- `dag.json` schema extended with `pipeline_group` and `pipeline_color` fields.
+- `get_nodes_edges()` extracts pipeline metadata for visualization.
+
+## Bug Fixes
+
+- Relative paths for `nix_env` (e.g., `"../../default.nix"`) now work correctly.
+  Previously, path characters were converted to underscores, causing invalid
+  Nix variable names like `______defaultBuildInputs`. Now only the filename
+  is used, producing valid identifiers like `defaultBuildInputs`.
+
 # rixpress 0.10.2 (2025-01-24)
 
 Fixed bug: relative paths for `nix_env` (e.g., `"../../default.nix"`) now work

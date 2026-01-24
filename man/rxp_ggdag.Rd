@@ -5,10 +5,17 @@
 \title{Create a Directed Acyclic Graph (DAG) representing the pipeline
 using \code{{ggplot2}}}
 \usage{
-rxp_ggdag(nodes_and_edges = get_nodes_edges())
+rxp_ggdag(
+  nodes_and_edges = get_nodes_edges(),
+  color_by = c("pipeline", "type")
+)
 }
 \arguments{
 \item{nodes_and_edges}{List, output of \code{get_nodes_edges()}.}
+
+\item{color_by}{Character, either "pipeline" (default) or "type".
+When "pipeline", nodes are colored by their pipeline group (if defined).
+When "type", nodes are colored by their derivation type (rxp_r, rxp_py, etc.).}
 }
 \value{
 A \code{{ggplot2}} object.
@@ -16,11 +23,13 @@ A \code{{ggplot2}} object.
 \description{
 Uses \code{{ggdag}} to generate the plot. \code{{ggdag}} is a soft
 dependency of \code{{rixpress}} so you need to install it to use this
-function.
+function. When derivations are organized into pipelines using
+\code{rxp_pipeline()}, nodes can be colored by their pipeline groups.
 }
 \examples{
 \dontrun{
   rxp_ggdag()
+  rxp_ggdag(color_by = "type")  # Color by derivation type instead
 }
 }
 \seealso{

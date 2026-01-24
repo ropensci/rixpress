@@ -5,14 +5,18 @@
       "depends": ["mtcars_am"],
       "decoder": ["readRDS"],
       "type": ["rxp_r"],
-      "noop_build": [false]
+      "noop_build": [false],
+      "pipeline_group": ["default"],
+      "pipeline_color": {}
     },
     {
       "deriv_name": ["mtcars_am"],
       "depends": [],
       "decoder": ["readRDS"],
       "type": ["rxp_r"],
-      "noop_build": [false]
+      "noop_build": [false],
+      "pipeline_group": ["default"],
+      "pipeline_color": {}
     }
   ]
 }

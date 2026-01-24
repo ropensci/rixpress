@@ -5,14 +5,18 @@
       "depends": [],
       "decoder": ["pickle.load"],
       "type": ["rxp_py"],
-      "noop_build": [false]
+      "noop_build": [false],
+      "pipeline_group": ["default"],
+      "pipeline_color": {}
     },
     {
       "deriv_name": ["mtcars_head"],
       "depends": ["mtcars_am"],
       "decoder": ["pickle.load"],
       "type": ["rxp_py"],
-      "noop_build": [false]
+      "noop_build": [false],
+      "pipeline_group": ["default"],
+      "pipeline_color": {}
     }
   ]
 }

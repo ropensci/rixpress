@@ -95,6 +95,11 @@ rxp_populate <- function(
   py_imports = NULL,
   ...
 ) {
+  # Flatten any rxp_pipeline objects to get a flat list of derivations
+
+  # This supports hierarchical organization while preserving metadata
+  derivs <- flatten_derivations(derivs)
+
   rxp_write_dag(
     derivs,
     output_file = file.path(project_path, "_rixpress", "dag.json")
