@@ -1,23 +1,8 @@
+
 #' Trace lineage of derivations
 #'
 #' @family utilities
-#' @param name Charcter, defaults to NULL. Name of the derivation to inspect.
-#'   If NULL, the function prints the whole pipeline (inverted global view).
-#' @param dag_file Character, defaults to "_rixpress/dag.json". Path to dag.json.
-#' @param transitive Logical, defaults to TRUE. If TRUE, show transitive closure and
-#'   mark transitive-only nodes with "*". If FALSE, show immediate neighbours only.
-#' @param include_self Logical, defaults to FALSE. If TRUE, include `name` itself in the results.
-#' @importFrom utils head
-#' @return Invisibly, a named list mapping each inspected derivation name to a
-#'   list with elements:
-#'     - dependencies
-#'     - reverse_dependencies
-#'   The function also prints a tree representation to the console.
-#' @export
-#' Trace lineage of derivations
-#'
-#' @family utilities
-#' @param name Charcter, defaults to NULL. Name of the derivation to inspect.
+#' @param name Character, defaults to NULL. Name of the derivation to inspect.
 #'   If NULL, the function prints the whole pipeline (inverted global view).
 #' @param dag_file Character, defaults to "_rixpress/dag.json". Path to dag.json.
 #' @param transitive Logical, defaults to TRUE. If TRUE, show transitive closure and
