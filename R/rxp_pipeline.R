@@ -35,7 +35,7 @@
 #'   # pipelines/02_model.R returns: list(rxp_r(...), rxp_r(...))
 #'
 #'   # Master script (run.R):
-#'
+#'   
 #'   # Create named pipelines with colors by pointing to the files
 #'   pipe_etl <- rxp_pipeline("ETL", "pipelines/01_etl.R", color = "darkorange")
 #'   pipe_model <- rxp_pipeline("Model", "pipelines/02_model.R", color = "dodgerblue")
@@ -69,13 +69,11 @@ rxp_pipeline <- function(name, path, color = NULL, ...) {
     # and capture the return value (result of last expression)
     res <- source(path, local = new.env())
     derivs <- res$value
+  } else if (inherits(path, "rxp_derivation")) {
+    stop("'path' must be a list of derivation objects or a file path, not a single derivation.")
   } else if (is.list(path)) {
     # Accept a direct list for testing or specialized use cases
     derivs <- path
-  } else if (inherits(path, "rxp_derivation")) {
-    stop(
-      "'path' must be a list of derivation objects or a file path, not a single derivation."
-    )
   } else {
     stop("'path' must be a file path (character) or a list of derivations")
   }
@@ -91,9 +89,7 @@ rxp_pipeline <- function(name, path, color = NULL, ...) {
   for (i in seq_along(derivs)) {
     if (!inherits(derivs[[i]], "rxp_derivation")) {
       stop(
-        "Element ",
-        i,
-        " of pipeline derivations is not an rxp_derivation object. ",
+        "Element ", i, " of pipeline derivations is not an rxp_derivation object. ",
         "All elements must be created by rxp_r(), rxp_py(), etc."
       )
     }
@@ -102,9 +98,7 @@ rxp_pipeline <- function(name, path, color = NULL, ...) {
   # Validate color if provided
   if (!is.null(color)) {
     if (!is.character(color) || length(color) != 1) {
-      stop(
-        "'color' must be a single character string (CSS color name or hex code)"
-      )
+      stop("'color' must be a single character string (CSS color name or hex code)")
     }
   }
 
@@ -150,7 +144,7 @@ flatten_derivations <- function(derivs) {
         item$pipeline_group <- "default"
       }
       if (is.null(item$pipeline_color)) {
-        item$pipeline_color <- NULL # Will be assigned a default in visualization
+        item$pipeline_color <- NULL  # Will be assigned a default in visualization
       }
       result <- c(result, list(item))
     } else if (is.list(item)) {
