@@ -68,43 +68,29 @@ get_nodes_edges <- function(path_dag = "_rixpress/dag.json") {
   n_rows <- nrow(nn)
 
   # Extract pipeline_group (default to "default" if not present or null)
-  if (
-    "pipeline_group" %in%
-      names(derivations) &&
-      !is.null(derivations$pipeline_group)
-  ) {
-    pipeline_group <- vapply(
-      derivations$pipeline_group,
-      function(x) {
-        if (is.null(x) || length(x) == 0 || (length(x) == 1 && is.na(x))) {
-          "default"
-        } else {
-          as.character(x)
-        }
-      },
-      character(1)
-    )
+  if ("pipeline_group" %in% names(derivations) &&
+      !is.null(derivations$pipeline_group)) {
+    pipeline_group <- vapply(derivations$pipeline_group, function(x) {
+      if (is.null(x) || length(x) == 0 || (length(x) == 1 && is.na(x))) {
+        "default"
+      } else {
+        as.character(x)
+      }
+    }, character(1))
   } else {
     pipeline_group <- rep("default", n_rows)
   }
 
   # Extract pipeline_color (can be NULL)
-  if (
-    "pipeline_color" %in%
-      names(derivations) &&
-      !is.null(derivations$pipeline_color)
-  ) {
-    pipeline_color <- vapply(
-      derivations$pipeline_color,
-      function(x) {
-        if (is.null(x) || length(x) == 0 || (length(x) == 1 && is.na(x))) {
-          NA_character_
-        } else {
-          as.character(x)
-        }
-      },
-      character(1)
-    )
+  if ("pipeline_color" %in% names(derivations) &&
+      !is.null(derivations$pipeline_color)) {
+    pipeline_color <- vapply(derivations$pipeline_color, function(x) {
+      if (is.null(x) || length(x) == 0 || (length(x) == 1 && is.na(x))) {
+        NA_character_
+      } else {
+        as.character(x)
+      }
+    }, character(1))
   } else {
     pipeline_color <- rep(NA_character_, n_rows)
   }
@@ -179,19 +165,12 @@ rxp_ggdag <- function(
 
   # Default color palette for pipeline groups
   default_pipeline_colors <- c(
-    "#E69F00",
-    "#56B4E9",
-    "#009E73",
-    "#F0E442",
-    "#0072B2",
-    "#D55E00",
-    "#CC79A7",
-    "#999999"
+    "#E69F00", "#56B4E9", "#009E73", "#F0E442",
+    "#0072B2", "#D55E00", "#CC79A7", "#999999"
   )
 
   # Check if we have any non-default pipeline groups
-  has_pipelines <- "pipeline_group" %in%
-    names(nodes) &&
+  has_pipelines <- "pipeline_group" %in% names(nodes) &&
     any(nodes$pipeline_group != "default")
 
   if (color_by == "pipeline" && has_pipelines) {
@@ -204,9 +183,7 @@ rxp_ggdag <- function(
     for (grp in unique_groups) {
       # Get the first color specified for this group (if any)
       grp_nodes <- nodes[nodes$pipeline_group == grp, ]
-      explicit_color <- grp_nodes$pipeline_color[
-        !is.na(grp_nodes$pipeline_color)
-      ][1]
+      explicit_color <- grp_nodes$pipeline_color[!is.na(grp_nodes$pipeline_color)][1]
 
       if (!is.na(explicit_color)) {
         group_colors[grp] <- explicit_color
@@ -221,7 +198,7 @@ rxp_ggdag <- function(
 
     # Use pipeline_group for coloring
     nodes$color_group <- nodes$pipeline_group
-    nodes <- nodes[, c("name", "color_group", "group")] # Keep type for shape
+    nodes <- nodes[, c("name", "color_group", "group")]  # Keep type for shape
 
     edges <- nodes_and_edges$edges
     edges$name <- edges$from
@@ -249,11 +226,11 @@ rxp_ggdag <- function(
       name = "Type"
     )
 
-    ggplot2::ggplot(
+    p <- ggplot2::ggplot(
       dag_df,
       ggplot2::aes(x = x, y = y, xend = xend, yend = yend)
     ) +
-      ggdag::geom_dag_edges() +
+      ggdag::geom_dag_edges(ggplot2::aes(edge_colour = color_group)) +
       rxp_scale +
       rxp_shapes +
       ggdag::geom_dag_node(ggplot2::aes(fill = color_group, shape = group)) +
@@ -263,6 +240,17 @@ rxp_ggdag <- function(
         nudge_y = -.3
       ) +
       ggdag::theme_dag()
+
+    # Add edge color scale if ggraph is available (it should be as dependency of ggdag)
+    if (requireNamespace("ggraph", quietly = TRUE)) {
+      p <- p + ggraph::scale_edge_colour_manual(
+        values = group_colors,
+        name = "Pipeline"
+      )
+    }
+
+    p
+
   } else {
     # Color by derivation type (original behavior)
     nodes <- nodes[, c("name", "group")]
@@ -352,14 +340,8 @@ rxp_visnetwork <- function(
 
   # Default color palette for pipeline groups (used when no color specified)
   default_pipeline_colors <- c(
-    "#E69F00",
-    "#56B4E9",
-    "#009E73",
-    "#F0E442",
-    "#0072B2",
-    "#D55E00",
-    "#CC79A7",
-    "#999999"
+    "#E69F00", "#56B4E9", "#009E73", "#F0E442",
+    "#0072B2", "#D55E00", "#CC79A7", "#999999"
   )
 
   # Derivation type colors (original colors)
@@ -385,8 +367,7 @@ rxp_visnetwork <- function(
   )
 
   # Check if we have any non-default pipeline groups
-  has_pipelines <- "pipeline_group" %in%
-    names(nodes) &&
+  has_pipelines <- "pipeline_group" %in% names(nodes) &&
     any(nodes$pipeline_group != "default")
 
   if (color_by == "pipeline" && has_pipelines) {
@@ -399,9 +380,7 @@ rxp_visnetwork <- function(
     for (grp in unique_groups) {
       # Get the first color specified for this group (if any)
       grp_nodes <- nodes[nodes$pipeline_group == grp, ]
-      explicit_color <- grp_nodes$pipeline_color[
-        !is.na(grp_nodes$pipeline_color)
-      ][1]
+      explicit_color <- grp_nodes$pipeline_color[!is.na(grp_nodes$pipeline_color)][1]
 
       if (!is.na(explicit_color)) {
         group_colors[[grp]] <- explicit_color
@@ -415,22 +394,14 @@ rxp_visnetwork <- function(
     }
 
     # Assign colors to nodes based on their pipeline group
-    nodes$color <- vapply(
-      nodes$pipeline_group,
-      function(g) {
-        group_colors[[g]]
-      },
-      character(1)
-    )
+    nodes$color <- vapply(nodes$pipeline_group, function(g) {
+      group_colors[[g]]
+    }, character(1))
 
     # Use derivation type for shape
-    nodes$shape <- vapply(
-      nodes$group,
-      function(t) {
-        if (t %in% names(type_shapes)) type_shapes[[t]] else "dot"
-      },
-      character(1)
-    )
+    nodes$shape <- vapply(nodes$group, function(t) {
+      if (t %in% names(type_shapes)) type_shapes[[t]] else "dot"
+    }, character(1))
 
     # Change group to pipeline_group for legend
     nodes$group <- nodes$pipeline_group
@@ -463,6 +434,7 @@ rxp_visnetwork <- function(
       )
 
     return(net)
+
   } else {
     # Color by derivation type (original behavior)
     visNetwork::visNetwork(nodes, edges) |>

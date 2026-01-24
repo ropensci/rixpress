@@ -85,9 +85,10 @@ d1 <- rxp_r(name = raw_data, expr = mtcars)
 d2 <- rxp_r(name = clean_data, expr = dplyr::filter(raw_data, am == 1))
 
 # Wrap in a named pipeline with a color
+# You can pass the derivations objects directly:
 pipe <- rxp_pipeline(
   name = "Data Preparation",
-  derivs = list(d1, d2),
+  path = list(d1, d2),
   color = "#E69F00"
 )
 
@@ -106,7 +107,7 @@ cat('rixpress pipeline: Data Preparation
 The `rxp_pipeline()` function takes:
 
 - **name**: A descriptive name for this group of derivations
-- **derivs**: A list of derivation objects (from `rxp_r()`, `rxp_py()`, etc.)
+- **path**: Either a **file path** to an R script returning a list of derivations (recommended), or a list of derivation objects.
 - **color**: Optional CSS color name or hex code for DAG visualization
 
 ### Combining Multiple Pipelines
@@ -114,9 +115,9 @@ The `rxp_pipeline()` function takes:
 Multiple pipelines are simply passed as a list to `rxp_populate()`:
 
 ```{r combining-pipelines, eval = FALSE}
-# Define two pipelines
-pipe_etl <- rxp_pipeline("ETL", list(d1, d2), color = "darkorange")
-pipe_model <- rxp_pipeline("Model", list(d3, d4), color = "dodgerblue")
+# Define two pipelines (here assuming they are defined in scripts)
+pipe_etl <- rxp_pipeline("ETL", "pipelines/01_etl.R", color = "darkorange")
+pipe_model <- rxp_pipeline("Model", "pipelines/02_model.R", color = "dodgerblue")
 
 # Build combined pipeline
 rxp_populate(list(pipe_etl, pipe_model))
@@ -170,17 +171,24 @@ list(
 
 ### Master Script
 
+The master script becomes very clean, as `rxp_pipeline` handles sourcing the files:
+
 **gen-pipeline.R**
 ```{r master-script, eval = FALSE}
 library(rixpress)
 
-# Source sub-pipelines
-data_prep <- source("pipelines/01_data_prep.R")$value
-analysis <- source("pipelines/02_analysis.R")$value
+# Create named pipelines with colors by pointing to the files
+pipe_data_prep <- rxp_pipeline(
+  name = "Data Preparation",
+  path = "pipelines/01_data_prep.R",
+  color = "#E69F00"
+)
 
-# Create named pipelines with colors
-pipe_data_prep <- rxp_pipeline("Data Preparation", data_prep, color = "#E69F00")
-pipe_analysis <- rxp_pipeline("Statistical Analysis", analysis, color = "#56B4E9")
+pipe_analysis <- rxp_pipeline(
+  name = "Statistical Analysis",
+  path = "pipelines/02_analysis.R",
+  color = "#56B4E9"
+)
 
 # Build combined pipeline
 rxp_populate(list(pipe_data_prep, pipe_analysis), project_path = ".", build = FALSE)
@@ -226,7 +234,7 @@ analysis_derivs <- list(
   rxp_r(name = coefficients, expr = coef(linear_model))
 )
 
-# Wrap in Named Pipelines
+# Wrap in Named Pipelines (using list input here for demo simplicity)
 pipe_prep <- rxp_pipeline("Data Prep", data_prep_derivs, color = "#E69F00")
 pipe_analysis <- rxp_pipeline("Analysis", analysis_derivs, color = "#56B4E9")
 
@@ -256,19 +264,10 @@ cat('  deriv_name pipeline_group pipeline_color
 
 ## Visualizing Sub-Pipelines
 
-When sub-pipelines are defined, the DAG visualization functions automatically
-use pipeline groups for coloring:
-
-```{r visualization, eval = FALSE}
-# Interactive visualization with pipeline colors
-rxp_visnetwork()
-
-# Static ggplot visualization with pipeline colors
-rxp_ggdag()
-```
-
-The legend will show your pipeline names ("Data Prep", "Analysis") instead of
-derivation types.
+When sub-pipelines are defined, visualization tools automatically specific colors:
+1. **Interactive Network**: `rxp_visnetwork()` colors nodes and legend by pipeline.
+2. **Static DAG**: `rxp_ggdag()` colors nodes AND edges (arrows) by pipeline.
+3. **Trace**: `rxp_trace()` output in the console is colored by pipeline (if the `cli` package is available).
 
 ### Switching Between Color Modes
 

@@ -32,13 +32,41 @@ test_that("rxp_pipeline validates inputs", {
   expect_error(rxp_pipeline("", list(d1)), "non-empty character string")
 
   # Single derivation (not in list) should error with helpful message
-  expect_error(rxp_pipeline("Pipe", d1), "not a single derivation")
+  expect_error(
+    rxp_pipeline("Pipe", d1),
+    "'path' must be a list of derivation objects or a file path"
+  )
 
   # Non-derivation in list should error
   expect_error(
     rxp_pipeline("Pipe", list(d1, "not a deriv")),
     "not an rxp_derivation object"
   )
+})
+
+test_that("rxp_pipeline sources from file", {
+  testthat::skip_on_cran()
+  testthat::skip_if_not_installed("rix")
+
+  # Create a temporary R script defining a pipeline
+  temp_script <- tempfile(fileext = ".R")
+  writeLines(
+    'library(rixpress)
+     list(
+       rxp_r(name = d1, expr = 1 + 1),
+       rxp_r(name = d2, expr = 2 + 2)
+     )',
+    temp_script
+  )
+  on.exit(unlink(temp_script))
+
+  # Create pipeline from file
+  pipe <- rxp_pipeline("FilePipe", temp_script, color = "green")
+
+  expect_s3_class(pipe, "rxp_pipeline")
+  expect_equal(pipe$name, "FilePipe")
+  expect_length(pipe$derivs, 2)
+  expect_equal(pipe$derivs[[1]]$name, "d1")
 })
 
 test_that("flatten_derivations works correctly", {

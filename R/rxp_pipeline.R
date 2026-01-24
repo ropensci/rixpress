@@ -7,8 +7,8 @@
 #'
 #' @family pipeline functions
 #' @param name Character, the name of the pipeline (e.g., "ETL", "Model").
-#' @param derivs A list of derivation objects created by `rxp_r()`, `rxp_py()`,
-#'   etc.
+#' @param path Character path to an R script returning a list of derivations, OR
+#'   a list of derivation objects created by `rxp_r()`, `rxp_py()`, etc.
 #' @param color Character, optional. A CSS color name (e.g., "darkorange") or
 #'   hex code (e.g., "#FF5733") to use for this pipeline's nodes in DAG
 #'   visualizations. If NULL, a default color will be assigned.
@@ -19,15 +19,14 @@
 #'
 #' @details
 #' The `rxp_pipeline()` function is used to organize derivations into logical
-
 #' groups. When passed to `rxp_populate()`, the derivations are flattened but
 #' retain their group and color metadata, which is then used in DAG
 #' visualizations (`rxp_visnetwork()` and `rxp_ggdag()`) to distinguish
 #' different parts of your workflow.
 #'
-#' This pattern enables a "Master Script" workflow where you can source
-#' multiple R scripts that each return a list of derivations, then combine
-#' them into named pipelines:
+#' This pattern enables a "Master Script" workflow where you can define
+#' sub-pipelines in separate R scripts that each return a list of derivations.
+#' You then pass the paths to these scripts to `rxp_pipeline()`:
 #'
 #' @examples
 #' \dontrun{
@@ -36,12 +35,10 @@
 #'   # pipelines/02_model.R returns: list(rxp_r(...), rxp_r(...))
 #'
 #'   # Master script (run.R):
-#'   l_etl <- source("pipelines/01_etl.R")$value
-#'   l_model <- source("pipelines/02_model.R")$value
-#'
-#'   # Create named pipelines with colors
-#'   pipe_etl <- rxp_pipeline("ETL", l_etl, color = "darkorange")
-#'   pipe_model <- rxp_pipeline("Model", l_model, color = "dodgerblue")
+#'   
+#'   # Create named pipelines with colors by pointing to the files
+#'   pipe_etl <- rxp_pipeline("ETL", "pipelines/01_etl.R", color = "darkorange")
+#'   pipe_model <- rxp_pipeline("Model", "pipelines/02_model.R", color = "dodgerblue")
 #'
 #'   # Build the combined pipeline
 #'   rxp_populate(list(pipe_etl, pipe_model))
@@ -52,31 +49,47 @@
 #' }
 #'
 #' @export
-rxp_pipeline <- function(name, derivs, color = NULL, ...) {
+rxp_pipeline <- function(name, path, color = NULL, ...) {
   # Validate inputs
 
   if (!is.character(name) || length(name) != 1 || nchar(name) == 0) {
     stop("'name' must be a non-empty character string")
   }
 
-  # Check if derivs is a single derivation (not a list of derivations)
-  if (inherits(derivs, "rxp_derivation")) {
-    stop(
-      "'derivs' must be a list of derivation objects, not a single derivation. Use list(deriv) instead."
-    )
+  derivs <- NULL
+
+  if (is.character(path)) {
+    if (length(path) != 1) {
+      stop("'path' must be a single file path")
+    }
+    if (!file.exists(path)) {
+      stop("Pipeline file not found: ", path)
+    }
+    # Source the file in a new environment to avoid side effects
+    # and capture the return value (result of last expression)
+    res <- source(path, local = new.env())
+    derivs <- res$value
+  } else if (is.list(path)) {
+    # Accept a direct list for testing or specialized use cases
+    derivs <- path
+  } else if (inherits(path, "rxp_derivation")) {
+    stop("'path' must be a list of derivation objects or a file path, not a single derivation.")
+  } else {
+    stop("'path' must be a file path (character) or a list of derivations")
   }
 
   if (!is.list(derivs)) {
-    stop("'derivs' must be a list of derivation objects")
+    stop(
+      "The pipeline script must return a list of derivations, but returned: ",
+      class(derivs)[1]
+    )
   }
 
   # Validate that all elements are derivation objects
   for (i in seq_along(derivs)) {
     if (!inherits(derivs[[i]], "rxp_derivation")) {
       stop(
-        "Element ",
-        i,
-        " of 'derivs' is not an rxp_derivation object. ",
+        "Element ", i, " of pipeline derivations is not an rxp_derivation object. ",
         "All elements must be created by rxp_r(), rxp_py(), etc."
       )
     }
@@ -85,9 +98,7 @@ rxp_pipeline <- function(name, derivs, color = NULL, ...) {
   # Validate color if provided
   if (!is.null(color)) {
     if (!is.character(color) || length(color) != 1) {
-      stop(
-        "'color' must be a single character string (CSS color name or hex code)"
-      )
+      stop("'color' must be a single character string (CSS color name or hex code)")
     }
   }
 
@@ -133,7 +144,7 @@ flatten_derivations <- function(derivs) {
         item$pipeline_group <- "default"
       }
       if (is.null(item$pipeline_color)) {
-        item$pipeline_color <- NULL # Will be assigned a default in visualization
+        item$pipeline_color <- NULL  # Will be assigned a default in visualization
       }
       result <- c(result, list(item))
     } else if (is.list(item)) {

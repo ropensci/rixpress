@@ -27,6 +27,7 @@ BugReports: https://github.com/ropensci/rixpress/issues/
 Depends:
     R (>= 4.1.0)
 Imports:
+    cli,
     igraph,
     jsonlite,
     processx
