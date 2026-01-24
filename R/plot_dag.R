@@ -230,9 +230,20 @@ rxp_ggdag <- function(
     dag_df <- ggdag::as_tidy_dagitty(edges) |>
       merge(nodes, by = "name")
 
-    rxp_scale <- ggplot2::scale_fill_manual(
-      values = group_colors,
-      name = "Pipeline"
+    # Derivation type colors for nodes (original coloring)
+    type_colors <- c(
+      "rxp_r" = "#246ABF",
+      "rxp_r2py" = "#FFD343",
+      "rxp_py" = "#FFD343",
+      "rxp_py2r" = "#246ABF",
+      "rxp_jl" = "#9558b2",
+      "rxp_qmd" = "#4F789E",
+      "rxp_rmd" = "#4F789E"
+    )
+
+    rxp_fill_scale <- ggplot2::scale_fill_manual(
+      values = type_colors,
+      name = "Type"
     )
 
     # Use derivation type for shapes
@@ -254,9 +265,10 @@ rxp_ggdag <- function(
       ggplot2::aes(x = x, y = y, xend = xend, yend = yend)
     ) +
       ggdag::geom_dag_edges(ggplot2::aes(edge_colour = color_group)) +
-      rxp_scale +
+      rxp_fill_scale +
       rxp_shapes +
-      ggdag::geom_dag_node(ggplot2::aes(fill = color_group, shape = group)) +
+      # Nodes colored by derivation type (group), edges by pipeline (color_group)
+      ggdag::geom_dag_node(ggplot2::aes(fill = group, shape = group)) +
       ggdag::geom_dag_text(
         ggplot2::aes(label = name),
         col = "black",
