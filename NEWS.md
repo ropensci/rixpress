@@ -1,3 +1,10 @@
+# rixpress 0.10.2 (2025-01-24)
+
+Fixed bug: relative paths for `nix_env` (e.g., `"../../default.nix"`) now work
+correctly. Previously, path characters were converted to underscores, causing
+invalid Nix variable names like `______defaultBuildInputs`. Now only the
+filename is used, producing valid identifiers like `defaultBuildInputs`.
+
 # rixpress 0.10.1 (2025-10-07)
 
 Fixed bug: functions inside of arbitrary folder were not being

@@ -338,8 +338,8 @@ generate_r_or_py_libraries_from_nix <- function(
   packages <- config$adjust_func(packages)
   packages <- sort(packages)
 
-  # Create output filename
-  nix_file_name <- gsub("[^a-zA-Z0-9]", "_", nix_file)
+  # Create output filename (use basename to handle relative paths)
+  nix_file_name <- gsub("[^a-zA-Z0-9]", "_", basename(nix_file))
   nix_file_name <- sub("_nix$", "", nix_file_name)
   outfile_dir <- file.path(project_path, "_rixpress")
   outfile <- file.path(
