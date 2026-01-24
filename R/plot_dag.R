@@ -149,15 +149,17 @@ get_nodes_edges <- function(path_dag = "_rixpress/dag.json") {
 #' @description Uses `{ggdag}` to generate the plot. `{ggdag}` is a soft
 #'   dependency of `{rixpress}` so you need to install it to use this
 #'   function. When derivations are organized into pipelines using
-#'   `rxp_pipeline()`, nodes can be colored by their pipeline groups.
+#'   `rxp_pipeline()`, nodes use a dual-encoding approach: the interior fill
+#'   shows the derivation type (R, Python, etc.) while a thick border shows
+#'   the pipeline group colour.
 #' @param nodes_and_edges List, output of `get_nodes_edges()`.
 #' @param color_by Character, either "pipeline" (default) or "type".
-#'   When "pipeline", nodes are colored by their pipeline group (if defined).
-#'   When "type", nodes are colored by their derivation type (rxp_r, rxp_py, etc.).
+#'   When "pipeline", nodes show type as fill colour and pipeline as border.
+#'   When "type", nodes are coloured entirely by derivation type (rxp_r, rxp_py, etc.).
 #' @return A `{ggplot2}` object.
 #' @examples \dontrun{
-#'   rxp_ggdag()
-#'   rxp_ggdag(color_by = "type")  # Color by derivation type instead
+#'   rxp_ggdag()  # Dual encoding: fill = type, border = pipeline
+#'   rxp_ggdag(color_by = "type")  # Color entirely by derivation type
 #' }
 #' @export
 rxp_ggdag <- function(

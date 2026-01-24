@@ -4,13 +4,13 @@
 \alias{rxp_pipeline}
 \title{Create a named pipeline of derivations}
 \usage{
-rxp_pipeline(name, derivs, color = NULL, ...)
+rxp_pipeline(name, path, color = NULL, ...)
 }
 \arguments{
 \item{name}{Character, the name of the pipeline (e.g., "ETL", "Model").}
 
-\item{derivs}{A list of derivation objects created by \code{rxp_r()}, \code{rxp_py()},
-etc.}
+\item{path}{Character path to an R script returning a list of derivations, OR
+a list of derivation objects created by \code{rxp_r()}, \code{rxp_py()}, etc.}
 
 \item{color}{Character, optional. A CSS color name (e.g., "darkorange") or
 hex code (e.g., "#FF5733") to use for this pipeline's nodes in DAG
@@ -35,9 +35,9 @@ retain their group and color metadata, which is then used in DAG
 visualizations (\code{rxp_visnetwork()} and \code{rxp_ggdag()}) to distinguish
 different parts of your workflow.
 
-This pattern enables a "Master Script" workflow where you can source
-multiple R scripts that each return a list of derivations, then combine
-them into named pipelines:
+This pattern enables a "Master Script" workflow where you can define
+sub-pipelines in separate R scripts that each return a list of derivations.
+You then pass the paths to these scripts to \code{rxp_pipeline()}:
 }
 \examples{
 \dontrun{
@@ -46,12 +46,10 @@ them into named pipelines:
   # pipelines/02_model.R returns: list(rxp_r(...), rxp_r(...))
 
   # Master script (run.R):
-  l_etl <- source("pipelines/01_etl.R")$value
-  l_model <- source("pipelines/02_model.R")$value
 
-  # Create named pipelines with colors
-  pipe_etl <- rxp_pipeline("ETL", l_etl, color = "darkorange")
-  pipe_model <- rxp_pipeline("Model", l_model, color = "dodgerblue")
+  # Create named pipelines with colors by pointing to the files
+  pipe_etl <- rxp_pipeline("ETL", "pipelines/01_etl.R", color = "darkorange")
+  pipe_model <- rxp_pipeline("Model", "pipelines/02_model.R", color = "dodgerblue")
 
   # Build the combined pipeline
   rxp_populate(list(pipe_etl, pipe_model))

@@ -14,8 +14,8 @@ rxp_ggdag(
 \item{nodes_and_edges}{List, output of \code{get_nodes_edges()}.}
 
 \item{color_by}{Character, either "pipeline" (default) or "type".
-When "pipeline", nodes are colored by their pipeline group (if defined).
-When "type", nodes are colored by their derivation type (rxp_r, rxp_py, etc.).}
+When "pipeline", nodes show type as fill colour and pipeline as border.
+When "type", nodes are coloured entirely by derivation type (rxp_r, rxp_py, etc.).}
 }
 \value{
 A \code{{ggplot2}} object.
@@ -24,12 +24,14 @@ A \code{{ggplot2}} object.
 Uses \code{{ggdag}} to generate the plot. \code{{ggdag}} is a soft
 dependency of \code{{rixpress}} so you need to install it to use this
 function. When derivations are organized into pipelines using
-\code{rxp_pipeline()}, nodes can be colored by their pipeline groups.
+\code{rxp_pipeline()}, nodes use a dual-encoding approach: the interior fill
+shows the derivation type (R, Python, etc.) while a thick border shows
+the pipeline group colour.
 }
 \examples{
 \dontrun{
-  rxp_ggdag()
-  rxp_ggdag(color_by = "type")  # Color by derivation type instead
+  rxp_ggdag()  # Dual encoding: fill = type, border = pipeline
+  rxp_ggdag(color_by = "type")  # Color entirely by derivation type
 }
 }
 \seealso{

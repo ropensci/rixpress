@@ -264,19 +264,24 @@ cat('  deriv_name pipeline_group pipeline_color
 
 ## Visualizing Sub-Pipelines
 
-When sub-pipelines are defined, visualization tools automatically specific colors:
-1. **Interactive Network**: `rxp_visnetwork()` colors nodes and legend by pipeline.
-2. **Static DAG**: `rxp_ggdag()` colors nodes AND edges (arrows) by pipeline.
-3. **Trace**: `rxp_trace()` output in the console is colored by pipeline (if the `cli` package is available).
+When sub-pipelines are defined, visualization tools use pipeline colors:
+
+1. **Interactive Network**: `rxp_visnetwork()` colours nodes entirely by pipeline group.
+2. **Static DAG**: `rxp_ggdag()` uses a dual-encoding approach:
+   - **Node fill (interior)**: Derivation type colour (R = blue, Python = yellow, etc.)
+   - **Node border (thick stroke)**: Pipeline group colour
+   
+   This allows you to see both what *type* of computation each node is and which *pipeline* it belongs to.
+3. **Trace**: `rxp_trace()` output in the console is coloured by pipeline (if the `cli` package is available).
 
 ### Switching Between Color Modes
 
 ```{r color-modes, eval = FALSE}
-# Color by pipeline group (default when pipelines are defined)
-rxp_visnetwork(color_by = "pipeline")
+# Dual encoding: fill = type, border = pipeline (default when pipelines are defined)
+rxp_ggdag(color_by = "pipeline")
 
-# Color by derivation type (rxp_r, rxp_py, etc.) - original behavior
-rxp_visnetwork(color_by = "type")
+# Color entirely by derivation type (rxp_r, rxp_py, etc.) - original behavior
+rxp_ggdag(color_by = "type")
 ```
 
 ## How It Works Internally
