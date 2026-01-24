@@ -184,7 +184,8 @@ build_local_src <- function(path, user_functions) {
 #' @return Sanitized base string.
 #' @noRd
 sanitize_nix_env <- function(nix_env) {
-  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
+  # Use basename to handle relative paths (e.g., "../../default.nix" -> "default.nix")
+  base <- gsub("[^a-zA-Z0-9]", "_", basename(nix_env))
   sub("_nix$", "", base)
 }
 

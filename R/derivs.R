@@ -292,8 +292,8 @@ rxp_r <- function(
     out_name
   )
 
-  # Derive base from nix_env
-  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
+  # Derive base from nix_env (use basename to handle relative paths)
+  base <- gsub("[^a-zA-Z0-9]", "_", basename(nix_env))
   base <- sub("_nix$", "", base)
 
   if (length(fileset_parts) > 0) {
@@ -564,8 +564,8 @@ rxp_py <- function(
     "\""
   )
 
-  # Derive base from nix_env
-  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
+  # Derive base from nix_env (use basename to handle relative paths)
+  base <- gsub("[^a-zA-Z0-9]", "_", basename(nix_env))
   base <- sub("_nix$", "", base)
 
   # Prepare the src snippet with all files
@@ -847,8 +847,8 @@ rxp_jl <- function(
     "\""
   )
 
-  # Derive base variable from nix_env
-  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
+  # Derive base variable from nix_env (use basename to handle relative paths)
+  base <- gsub("[^a-zA-Z0-9]", "_", basename(nix_env))
   base <- sub("_nix$", "", base)
 
   # Prepare src snippet with all relevant files
@@ -1110,8 +1110,8 @@ rxp_qmd <- function(
   fileset_parts <- c(qmd_file, additional_files)
   fileset_nix <- paste0("./", fileset_parts, collapse = " ")
 
-  # Derive base from nix_env
-  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
+  # Derive base from nix_env (use basename to handle relative paths)
+  base <- gsub("[^a-zA-Z0-9]", "_", basename(nix_env))
   base <- sub("_nix$", "", base)
 
   # Generate the Nix derivation snippet with updated buildInputs and configurePhase
@@ -1273,8 +1273,8 @@ rxp_rmd <- function(
   fileset_parts <- c(rmd_file, additional_files)
   fileset_nix <- paste0("./", fileset_parts, collapse = " ")
 
-  # Derive base from nix_env
-  base <- gsub("[^a-zA-Z0-9]", "_", nix_env)
+  # Derive base from nix_env (use basename to handle relative paths)
+  base <- gsub("[^a-zA-Z0-9]", "_", basename(nix_env))
   base <- sub("_nix$", "", base)
 
   snippet <- make_derivation_snippet(
