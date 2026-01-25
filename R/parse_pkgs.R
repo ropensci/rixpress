@@ -38,15 +38,23 @@ parse_packages <- function(
   }
   start_idx <- start_idx[1]
 
-  # Find the end of the block ("};" or "];")
-  end_idxs <- grep("^\\s*(\\};|\\];)", lines, perl = TRUE)
+  # Find the end of the block ("};" or "];" or "} ++ [ ... ];")
+  # We look for a closing brace/bracket followed by optional ++ list, ending with ;
+  end_idxs <- grep("^\\s*(\\}|\\])(\\s*\\+\\+.*\\])?;\\s*$", lines, perl = TRUE)
   end_idx <- end_idxs[end_idxs > start_idx][1]
+  
   if (is.na(end_idx)) {
     stop(paste("Could not find the end of the", block_name, "block"))
   }
 
-  # Extract and clean lines within the block
-  block_lines <- lines[(start_idx + 1):(end_idx - 1)]
+  # Extract lines. If the end line contains packages (e.g. in ++ list), include it.
+  end_line <- lines[end_idx]
+  if (grepl("\\+\\+", end_line)) {
+      block_lines <- lines[(start_idx + 1):end_idx]
+  } else {
+      block_lines <- lines[(start_idx + 1):(end_idx - 1)]
+  }
+
   block_lines <- gsub("#.*", "", block_lines) # Remove comments
   block_lines <- trimws(block_lines) # Remove whitespace
   block_lines <- block_lines[block_lines != ""] # Remove empty lines
@@ -56,7 +64,16 @@ parse_packages <- function(
   inherit_pattern <- "inherit \\(pkgs\\.[a-zA-Z0-9]+\\)"
   block_lines <- gsub(inherit_pattern, "", block_lines)
 
-  block_lines <- gsub(";", "", block_lines) # Remove semicolons
+  # Clean up structural tokens
+  # Remove semicolons, braces, brackets, equals sign, builtins, ++, etc.
+  block_lines <- gsub(";", " ", block_lines, fixed = TRUE)
+  block_lines <- gsub("=", " ", block_lines, fixed = TRUE)
+  block_lines <- gsub("{", " ", block_lines, fixed = TRUE)
+  block_lines <- gsub("}", " ", block_lines, fixed = TRUE)
+  block_lines <- gsub("[", " ", block_lines, fixed = TRUE)
+  block_lines <- gsub("]", " ", block_lines, fixed = TRUE)
+  block_lines <- gsub("+", " ", block_lines, fixed = TRUE)
+  block_lines <- gsub("builtins\\.attrValues", " ", block_lines)
 
   # Split into package names and apply transformation
   packages <- unlist(strsplit(paste(block_lines, collapse = " "), "\\s+"))

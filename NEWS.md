@@ -1,3 +1,11 @@
+# rixpress 0.11.1 (2026-01-25)
+
+## Bug Fixes
+
+- Fixed parsing of default.nix files when Python packages are installed from git.
+  Previously, `rixpress` failed to parse the `pyconf` block correctly when it contained
+  the `} ++ [ ... ];` syntax used by `rix` for git packages.
+
 # rixpress 0.11.0 (2025-01-24)
 
 ## New Features

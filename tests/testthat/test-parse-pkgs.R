@@ -72,6 +72,114 @@ test_that("parse_packages handles various formats and edge cases", {
   expect_equal(pkgs5, character(0))
 })
 
+test_that("parse_packages handles pyconf with git packages (} ++ [ ... ];)", {
+  path_tmpdir <- tempdir()
+  dir.create(path_tmpdir, showWarnings = FALSE)
+  on.exit(unlink(path_tmpdir, recursive = TRUE), add = TRUE, after = TRUE)
+
+  nix_content <- c(
+    'let',
+    ' pkgs = import (fetchTarball "https://github.com/rstats-on-nix/nixpkgs/archive/2025-04-29.tar.gz") {};',
+    ' ',
+    '  rpkgs = builtins.attrValues {',
+    '    inherit (pkgs.rPackages) ',
+    '      dplyr',
+    '      ggplot2',
+    '      reticulate',
+    '      yardstick;',
+    '  };',
+    ' ',
+    '    rix = (pkgs.rPackages.buildRPackage {',
+    '      name = "rix";',
+    '      src = pkgs.fetchgit {',
+    '        url = "https://github.com/ropensci/rix/";',
+    '        rev = "HEAD";',
+    '        sha256 = "sha256-4cn9/BxpGljoS65FcsYrXAI2wMKzOLYvjevsct1/+Ik=";',
+    '      };',
+    '      propagatedBuildInputs = builtins.attrValues {',
+    '        inherit (pkgs.rPackages) ',
+    '          codetools',
+    '          curl',
+    '          jsonlite',
+    '          sys;',
+    '      };',
+    '    });',
+    '',
+    '    rixpress = (pkgs.rPackages.buildRPackage {',
+    '      name = "rixpress";',
+    '      src = pkgs.fetchgit {',
+    '        url = "https://github.com/ropensci/rixpress";',
+    '        rev = "HEAD";',
+    '        sha256 = "sha256-JmArZXrLsjj68e8Xo75lQ3j3i9oP5vsNnc+x/IgvspI=";',
+    '      };',
+    '      propagatedBuildInputs = builtins.attrValues {',
+    '        inherit (pkgs.rPackages) ',
+    '          cli',
+    '          igraph',
+    '          jsonlite',
+    '          processx;',
+    '      };',
+    '    });',
+    '   ',
+    '',
+    '    ryxpress = (pkgs.python313Packages.buildPythonPackage {',
+    '      pname = "ryxpress";',
+    '      version = "HEAD-git";',
+    '      src = pkgs.fetchgit {',
+    '        url = "https://github.com/b-rodrigues/ryxpress";',
+    '        rev = "HEAD";',
+    '        sha256 = "sha256-agDRYWC4wV3Oum8KhS78ZXCXPo/4X1OmNER+WWnbxBw=";',
+    '      };',
+    '      pyproject = true;',
+    '      build-system = [ pkgs.python313Packages.setuptools ];',
+    '      doCheck = false;',
+    '      propagatedBuildInputs = [ ];',
+    '    });',
+    ' ',
+    '  pyconf = builtins.attrValues {',
+    '    inherit (pkgs.python313Packages) ',
+    '      pip',
+    '      ipykernel',
+    '      numpy',
+    '      pandas',
+    '      scikit-learn',
+    '      xgboost;',
+    '  } ++ [ ryxpress ];',
+    '   ',
+    '  system_packages = builtins.attrValues {',
+    '    inherit (pkgs) ',
+    '      glibcLocales',
+    '      nix',
+    '      python313',
+    '      R;',
+    '  };',
+    '  ',
+    '  shell = pkgs.mkShell {',
+    '    LOCALE_ARCHIVE = if pkgs.stdenv.hostPlatform.system == "x86_64-linux" then "${pkgs.glibcLocales}/lib/locale/locale-archive" else "";',
+    '    LANG = "en_US.UTF-8";',
+    '    LC_ALL = "en_US.UTF-8";',
+    '    LC_TIME = "en_US.UTF-8";',
+    '    LC_MONETARY = "en_US.UTF-8";',
+    '    LC_PAPER = "en_US.UTF-8";',
+    '    LC_MEASUREMENT = "en_US.UTF-8";',
+    '    RETICULATE_PYTHON = "${pkgs.python313}/bin/python";',
+    '',
+    '    buildInputs = [ rix rixpress rpkgs pyconf system_packages ];',
+    '    ',
+    '  }; ',
+    'in',
+    '  {',
+    '    inherit pkgs shell;',
+    '  }'
+  )
+
+  nix_file <- create_temp_nix(nix_content, path_tmpdir)
+  pkgs <- parse_packages(nix_file, path_tmpdir, "pyconf")
+  
+  expected_pkgs <- c("pip", "ipykernel", "numpy", "pandas", "scikit-learn", "xgboost", "ryxpress")
+  expect_equal(sort(pkgs), sort(expected_pkgs))
+})
+
 test_that("generate_libraries_script handles additional files", {
   path_tmpdir <- tempdir()
   dir.create(path_tmpdir, showWarnings = FALSE)
