@@ -180,6 +180,57 @@ test_that("parse_packages handles pyconf with git packages (} ++ [ ... ];)", {
   expect_equal(sort(pkgs), sort(expected_pkgs))
 })
 
+test_that("parse_packages handles mixed python (git) and julia blocks", {
+  path_tmpdir <- tempdir()
+  dir.create(path_tmpdir, showWarnings = FALSE)
+  on.exit(unlink(path_tmpdir, recursive = TRUE), add = TRUE, after = TRUE)
+
+  nix_content <- c(
+    'let',
+    ' pkgs = import (fetchTarball "https://github.com/rstats-on-nix/nixpkgs/archive/2026-01-19.tar.gz") {};',
+    ' ',
+    '     ryxpress = (pkgs.python313Packages.buildPythonPackage {',
+    '       pname = "ryxpress";',
+    '       version = "HEAD-git";',
+    '       src = pkgs.fetchgit {',
+    '         url = "https://github.com/b-rodrigues/ryxpress";',
+    '         rev = "HEAD";',
+    '         sha256 = "sha256-agDRYWC4wV3Oum8KhS78ZXCXPo/4X1OmNER+WWnbxBw=";',
+    '       };',
+    '       pyproject = true;',
+    '       build-system = [ pkgs.python313Packages.setuptools ];',
+    '       doCheck = false;',
+    '       propagatedBuildInputs = [ ];',
+    '     });',
+    ' ',
+    '   pyconf = builtins.attrValues {',
+    '     inherit (pkgs.python313Packages) ',
+    '       pip',
+    '       ipykernel',
+    '       pandas',
+    '       pyarrow',
+    '       scikit-learn',
+    '       xgboost;',
+    '   } ++ [ ryxpress ];',
+    '  ',
+    '   jlconf = pkgs.julia-lts.withPackages [ ',
+    '       "Arrow"',
+    '       "DataFrames"',
+    '       "Distributions"',
+    '       "Random"',
+    '   ];',
+    '   ',
+    'in {}'
+  )
+
+  nix_file <- create_temp_nix(nix_content, path_tmpdir)
+  pkgs_py <- parse_packages(nix_file, path_tmpdir, "pyconf")
+  
+  # Should ONLY contain python packages + ryxpress, NOT julia packages
+  expected_py <- c("pip", "ipykernel", "pandas", "pyarrow", "scikit-learn", "xgboost", "ryxpress")
+  expect_equal(sort(pkgs_py), sort(expected_py))
+})
+
 test_that("generate_libraries_script handles additional files", {
   path_tmpdir <- tempdir()
   dir.create(path_tmpdir, showWarnings = FALSE)
