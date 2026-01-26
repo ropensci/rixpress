@@ -12,26 +12,6 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-
-# Detect if Nix is available
-nix_available <- tryCatch(
-  {
-    result <- system2("nix", "--version", stdout = TRUE, stderr = TRUE)
-    length(result) > 0 && !inherits(result, "try-error")
-  },
-  error = function(e) FALSE,
-  warning = function(w) FALSE
-)
-
-# Also check if we're in a Nix shell with rixpress available
-rixpress_available <- nix_available && requireNamespace("rixpress", quietly = TRUE)
-
-# Set up a temporary directory for the demo if we can run it
-if (rixpress_available) {
-  demo_dir <- tempfile("subpipelines_vignette_")
-  dir.create(demo_dir, recursive = TRUE)
-  original_wd <- getwd()
-}
 ```
 
 This vignette introduces `rxp_pipeline()`, a function for organizing large
@@ -40,17 +20,7 @@ working on complex projects with multiple phases (e.g., ETL, Modeling, Reporting
 or when collaborating in teams where different members work on different parts
 of the pipeline.
 
-```{r show-nix-status, echo = FALSE, results = "asis"}
-if (!nix_available) {
-  cat(
-    "> **Note:** Nix is not available on this system, so code chunks ",
-    "are shown but not evaluated. To run these examples, install Nix and ",
-    "execute this vignette inside a Nix shell with rixpress available.\n\n"
-  )
-}
-```
-
-## The Problem: Large Pipelines Become Unwieldy
+## Large Pipelines Become Unwieldy
 
 As pipelines grow, a single `gen-pipeline.R` file can become difficult to
 manage. Consider a data science project with:
@@ -67,9 +37,10 @@ Putting all derivations in one file makes it hard to:
 - Collaborate across team members
 - Reuse pipeline components in other projects
 
-## The Solution: rxp_pipeline()
+To solve this issue, you can define you project using sub-pipelines and 
+join them into a master pipeline using `rxp_pipeline()`.
 
-`rxp_pipeline()` allows you to:
+This allows you to:
 
 1. **Organize** derivations into named groups
 2. **Color-code** groups for visual distinction in DAG visualizations
@@ -77,58 +48,8 @@ Putting all derivations in one file makes it hard to:
 
 ### Basic Usage
 
-```{r basic-usage, eval = rixpress_available}
-library(rixpress)
+A project with sub-pipelines would look something like this:
 
-# Create derivations
-d1 <- rxp_r(name = raw_data, expr = mtcars)
-d2 <- rxp_r(name = clean_data, expr = dplyr::filter(raw_data, am == 1))
-
-# Wrap in a named pipeline with a color
-# You can pass the derivations objects directly:
-pipe <- rxp_pipeline(
-  name = "Data Preparation",
-  path = list(d1, d2),
-  color = "#E69F00"
-)
-
-# View the pipeline object
-print(pipe)
-```
-
-```{r basic-usage-fallback, eval = !rixpress_available, echo = FALSE}
-cat('rixpress pipeline: Data Preparation
-  Color: #E69F00
-  Derivations: 2
-    - raw_data
-    - clean_data')
-```
-
-The `rxp_pipeline()` function takes:
-
-- **name**: A descriptive name for this group of derivations
-- **path**: Either a **file path** to an R script returning a list of derivations (recommended), or a list of derivation objects.
-- **color**: Optional CSS color name or hex code for DAG visualization
-
-### Combining Multiple Pipelines
-
-Multiple pipelines are simply passed as a list to `rxp_populate()`:
-
-```{r combining-pipelines, eval = FALSE}
-# Define two pipelines (here assuming they are defined in scripts)
-pipe_etl <- rxp_pipeline("ETL", "pipelines/01_etl.R", color = "darkorange")
-pipe_model <- rxp_pipeline("Model", "pipelines/02_model.R", color = "dodgerblue")
-
-# Build combined pipeline
-rxp_populate(list(pipe_etl, pipe_model))
-```
-
-## The Master Script Pattern
-
-For larger projects, we recommend the **Master Script Pattern**: define each
-sub-pipeline in a separate R file, then combine them in a master script.
-
-### Project Structure
 
 ```
 my-project/
@@ -141,13 +62,11 @@ my-project/
     └── 03_reporting.R    # Reporting sub-pipeline
 ```
 
-### Sub-Pipeline Files
-
 Each sub-pipeline file returns a list of derivations:
 
-**pipelines/01_data_prep.R**
 ```{r sub-pipeline-1, eval = FALSE}
 # Data Preparation Sub-Pipeline
+# pipelines/01_data_prep.R
 library(rixpress)
 
 list(
@@ -157,9 +76,17 @@ list(
 )
 ```
 
-**pipelines/02_analysis.R**
+The `rxp_pipeline()` function takes:
+
+- **name**: A descriptive name for this group of derivations
+- **path**: Either a **file path** to an R script returning a list of derivations (recommended), or a list of derivation objects.
+- **color**: Optional CSS color name or hex code for DAG visualization
+
+The second sub-pipeline:
+
 ```{r sub-pipeline-2, eval = FALSE}
 # Analysis Sub-Pipeline
+# pipelines/02_analysis.R
 library(rixpress)
 
 list(
@@ -169,12 +96,10 @@ list(
 )
 ```
 
-### Master Script
-
 The master script becomes very clean, as `rxp_pipeline` handles sourcing the files:
 
-**gen-pipeline.R**
 ```{r master-script, eval = FALSE}
+# gen-pipeline.R
 library(rixpress)
 
 # Create named pipelines with colors by pointing to the files
@@ -191,88 +116,19 @@ pipe_analysis <- rxp_pipeline(
 )
 
 # Build combined pipeline
-rxp_populate(list(pipe_data_prep, pipe_analysis), project_path = ".", build = FALSE)
-rxp_dag_for_ci()
-```
-
-## Live Demo: Creating Sub-Pipelines
-
-Let's demonstrate the full workflow in a temporary directory:
-
-```{r live-demo-setup, eval = rixpress_available, echo = TRUE}
-# Set up demo in temporary directory
-setwd(demo_dir)
-
-# Create a minimal default.nix for the demo
-# (In real usage, you would use rix::rix() to generate this)
-writeLines('
-let
- pkgs = import (fetchTarball "https://github.com/rstats-on-nix/nixpkgs/archive/r-daily.tar.gz") {};
- rpkgs = builtins.attrValues { inherit (pkgs.rPackages) dplyr; };
- system_packages = builtins.attrValues { inherit (pkgs) R; };
-in
-pkgs.mkShell {
-  buildInputs = [ rpkgs system_packages ];
-}
-', "default.nix")
-
-library(rixpress)
-```
-
-```{r live-demo-pipelines, eval = rixpress_available, echo = TRUE}
-# Define Sub-Pipeline 1: Data Preparation
-data_prep_derivs <- list(
-  rxp_r(name = raw_data, expr = mtcars),
-  rxp_r(name = filtered_data, expr = dplyr::filter(raw_data, am == 1)),
-  rxp_r(name = selected_data, expr = dplyr::select(filtered_data, mpg, hp, wt))
-)
-
-# Define Sub-Pipeline 2: Analysis
-analysis_derivs <- list(
-  rxp_r(name = summary_stats, expr = summary(selected_data)),
-  rxp_r(name = linear_model, expr = lm(mpg ~ hp + wt, data = selected_data)),
-  rxp_r(name = coefficients, expr = coef(linear_model))
-)
-
-# Wrap in Named Pipelines (using list input here for demo simplicity)
-pipe_prep <- rxp_pipeline("Data Prep", data_prep_derivs, color = "#E69F00")
-pipe_analysis <- rxp_pipeline("Analysis", analysis_derivs, color = "#56B4E9")
-
-# Show the pipelines
-print(pipe_prep)
-print(pipe_analysis)
-```
-
-```{r live-demo-populate, eval = rixpress_available, echo = TRUE}
-# Build the Combined Pipeline (without actually running nix-build)
-rxp_populate(list(pipe_prep, pipe_analysis), project_path = ".", build = FALSE)
-
-# Check the generated dag.json for pipeline metadata
-dag_content <- jsonlite::fromJSON("_rixpress/dag.json")
-dag_content$derivations[, c("deriv_name", "pipeline_group", "pipeline_color")]
-```
-
-```{r live-demo-fallback, eval = !rixpress_available, echo = FALSE}
-cat('  deriv_name pipeline_group pipeline_color
-1     raw_data     Data Prep       #E69F00
-2 filtered_data     Data Prep       #E69F00
-3 selected_data     Data Prep       #E69F00
-4 summary_stats       Analysis       #56B4E9
-5  linear_model       Analysis       #56B4E9
-6  coefficients       Analysis       #56B4E9')
+rxp_populate(list(pipe_data_prep, pipe_analysis), project_path = ".", build = TRUE)
 ```
 
 ## Visualizing Sub-Pipelines
 
 When sub-pipelines are defined, visualization tools use pipeline colors:
 
-1. **Interactive Network**: `rxp_visnetwork()` colours nodes entirely by pipeline group.
+1. **Interactive Network**: `rxp_visnetwork()` colours nodes' borders entirely by pipeline group.
 2. **Static DAG**: `rxp_ggdag()` uses a dual-encoding approach:
    - **Node fill (interior)**: Derivation type colour (R = blue, Python = yellow, etc.)
    - **Node border (thick stroke)**: Pipeline group colour
-   
    This allows you to see both what *type* of computation each node is and which *pipeline* it belongs to.
-3. **Trace**: `rxp_trace()` output in the console is coloured by pipeline (if the `cli` package is available).
+3. **Trace**: `rxp_trace()` output in the console is coloured by pipeline (using the `cli` package).
 
 ### Switching Between Color Modes
 
@@ -293,25 +149,12 @@ When you call `rxp_populate()` with `rxp_pipeline` objects:
 3. **DAG Generation**: `dag.json` includes pipeline metadata
 4. **Visualization**: `rxp_visnetwork()` and `rxp_ggdag()` read this metadata
 
-## Backward Compatibility
-
-If you don't use `rxp_pipeline()`, everything works exactly as before:
-
-```{r backward-compat, eval = FALSE}
-# This still works - derivations get "default" as their pipeline group
-list(
-  rxp_r(name = a, expr = 1),
-  rxp_r(name = b, expr = a + 1)
-) |> rxp_populate()
-```
-
 ## Best Practices
 
 1. **Use descriptive pipeline names**: "Data Preparation" is better than "ETL"
 2. **Choose contrasting colors**: Use [ColorBrewer](https://colorbrewer2.org/) palettes
 3. **Keep sub-pipelines focused**: One logical phase per sub-pipeline
 4. **Order your files**: Use numeric prefixes (01_, 02_, etc.)
-5. **Document dependencies**: Note which sub-pipelines depend on others
 
 ## Conclusion
 
@@ -325,11 +168,3 @@ pipelines. By grouping derivations into logical units, you can:
 
 For a working example, see the `subpipelines` demo in the
 [rixpress_demos](https://github.com/b-rodrigues/rixpress_demos) repository.
-
-```{r cleanup, include = FALSE}
-# Clean up: restore working directory and remove temp files
-if (rixpress_available) {
-  setwd(original_wd)
-  unlink(demo_dir, recursive = TRUE)
-}
-```
