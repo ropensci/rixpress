@@ -380,6 +380,7 @@ signature: rxp_ggdag(nodes_and_edges = get_nodes_edges(),color_by = c("pipeline"
 purpose: Create a Directed Acyclic Graph (DAG) representing the pipeline using {ggplot2
 arguments:
   color_by: Character, either "pipeline" (default) or "type". When "pipeline", nodes show type as fill colour and pipeline as border. When "type", nodes are coloured entirely by derivation type (rxp_r, rxp_py, etc.).
+  colour_by: Character, alias for color_by.
   nodes_and_edges: List, output of get_nodes_edges().
 returns: A {ggplot2} object.
 examples:
@@ -394,6 +395,7 @@ signature: rxp_visnetwork(nodes_and_edges = get_nodes_edges(),color_by = c("pipe
 purpose: Create a Directed Acyclic Graph (DAG) representing the pipeline using {visNetwork
 arguments:
   color_by: Character, either "pipeline" (default) or "type". When "pipeline", nodes are colored by their pipeline group (if defined). When "type", nodes are colored by their derivation type (rxp_r, rxp_py, etc.).
+  colour_by: Character, alias for color_by.
   nodes_and_edges: List, output of get_nodes_edges().
 returns: Nothing, this function opens a new tab in your browser with the DAG generated using {visNetwork}.
 examples:
