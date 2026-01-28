@@ -5,7 +5,7 @@ llm_instructions: This is an LLM-optimized API specification for the R package '
 kind: package
 schema_version: '1.1'
 name: rixpress
-version: 0.11.1
+version: 0.11.2
 language: R
 description: Build Reproducible Analytical Pipelines with 'Nix'
 ---
@@ -376,7 +376,7 @@ examples:
 kind: function
 name: rxp_ggdag
 exported: true
-signature: rxp_ggdag(nodes_and_edges = get_nodes_edges(),color_by = c("pipeline", "type"))
+signature: rxp_ggdag(nodes_and_edges = get_nodes_edges(),color_by = c("pipeline", "type"),colour_by = NULL)
 purpose: Create a Directed Acyclic Graph (DAG) representing the pipeline using {ggplot2
 arguments:
   color_by: Character, either "pipeline" (default) or "type". When "pipeline", nodes show type as fill colour and pipeline as border. When "type", nodes are coloured entirely by derivation type (rxp_r, rxp_py, etc.).
@@ -390,7 +390,7 @@ examples:
 kind: function
 name: rxp_visnetwork
 exported: true
-signature: rxp_visnetwork(nodes_and_edges = get_nodes_edges(),color_by = c("pipeline", "type"))
+signature: rxp_visnetwork(nodes_and_edges = get_nodes_edges(),color_by = c("pipeline", "type"),colour_by = NULL)
 purpose: Create a Directed Acyclic Graph (DAG) representing the pipeline using {visNetwork
 arguments:
   color_by: Character, either "pipeline" (default) or "type". When "pipeline", nodes are colored by their pipeline group (if defined). When "type", nodes are colored by their derivation type (rxp_r, rxp_py, etc.).
