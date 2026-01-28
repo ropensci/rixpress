@@ -1,8 +1,8 @@
 ---
-title: "Polyglot pipelines and literate programming with Quarto or R Markdown"
+title: "Polyglot Pipelines and Literate Programming"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{polyglot}
+  %\VignetteIndexEntry{Polyglot Pipelines and Literate Programming}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

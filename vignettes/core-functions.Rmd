@@ -2,7 +2,7 @@
 title: "Core rixpress Functions and Usage"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{core-functions}
+  %\VignetteIndexEntry{Core rixpress Functions and Usage}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

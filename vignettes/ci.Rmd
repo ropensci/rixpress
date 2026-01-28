@@ -1,8 +1,8 @@
 ---
-title: "Running pipelines in CI"
+title: "Running Pipelines in CI"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{running-pipelines-in-ci}
+  %\VignetteIndexEntry{Running Pipelines in CI}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

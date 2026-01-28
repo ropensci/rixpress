@@ -2,7 +2,7 @@
 title: "Using {cmdstanr} with {rixpress}"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{cmdstanr}
+  %\VignetteIndexEntry{Using cmdstanr with rixpress}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

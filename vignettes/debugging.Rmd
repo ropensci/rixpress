@@ -1,8 +1,8 @@
 ---
-title: "Effective debugging"
+title: "Effective Debugging"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{debugging}
+  %\VignetteIndexEntry{Effective Debugging}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

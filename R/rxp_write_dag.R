@@ -83,7 +83,7 @@ rxp_write_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
 #' @param dag A list of derivation nodes with dependencies
 #' @return Updated DAG with propagated no-op flags
 #' @importFrom stats setNames
-#' @keywords internal
+#' @noRd
 propagate_noop_builds <- function(dag) {
   # Create a lookup for easier access
   dag_lookup <- setNames(dag, sapply(dag, function(x) x$deriv_name))
@@ -138,7 +138,7 @@ propagate_noop_builds <- function(dag) {
 #' @param name The name of the derivation
 #' @param all_derivs_names All derivation names
 #' @return A character vector of dependency names
-#' @keywords internal
+#' @noRd
 extract_dependencies <- function(
   deriv,
   type,
@@ -168,7 +168,7 @@ extract_dependencies <- function(
 #' @param name The name of the derivation
 #' @param all_derivs_names All derivation names
 #' @return A character vector of dependency names
-#' @keywords internal
+#' @noRd
 extract_r_dependencies <- function(deriv, name, all_derivs_names) {
   snippet <- deriv$snippet
 
@@ -200,7 +200,7 @@ extract_r_dependencies <- function(deriv, name, all_derivs_names) {
 #' @param name The name of the derivation
 #' @param all_derivs_names All derivation names
 #' @return A character vector of dependency names
-#' @keywords internal
+#' @noRd
 extract_markdown_dependencies <- function(deriv, type, name, all_derivs_names) {
   # Determine file path and extension based on type
   if (type == "rxp_qmd") {
@@ -269,7 +269,7 @@ extract_markdown_dependencies <- function(deriv, type, name, all_derivs_names) {
 #' @param name The name of the derivation
 #' @param all_derivs_names All derivation names
 #' @return A character vector of dependency names
-#' @keywords internal
+#' @noRd
 extract_python_dependencies <- function(deriv, name, all_derivs_names) {
   snippet <- deriv$snippet
 
@@ -300,7 +300,7 @@ extract_python_dependencies <- function(deriv, name, all_derivs_names) {
 #' @param name The name of the derivation
 #' @param all_derivs_names All derivation names
 #' @return A character vector of dependency names
-#' @keywords internal
+#' @noRd
 extract_julia_dependencies <- function(deriv, name, all_derivs_names) {
   snippet <- deriv$snippet
 

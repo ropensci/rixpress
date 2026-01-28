@@ -2,7 +2,7 @@
 title: "Encoding, Decoding, and Cross-Language Data Transfer"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{encoding-decoding}
+  %\VignetteIndexEntry{Encoding, Decoding, and Cross-Language Data Transfer}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
