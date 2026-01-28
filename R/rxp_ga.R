@@ -1,4 +1,4 @@
-#' Run a pipeline on GitHub Actions
+#' Run a Pipeline on GitHub Actions
 #' @family ci utilities
 #' @details This function puts a `.yaml` file inside the `.github/workflows/`
 #'   folder on the root of your project. This workflow file expects both

@@ -1,4 +1,4 @@
-#' Initialize rixpress project
+#' Initialize Rixpress Project
 #'
 #' @family utilities
 #' @description

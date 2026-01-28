@@ -1,4 +1,4 @@
-#' @title Export DAG of pipeline and prepare it for rendering on CI
+#' @title Export DAG of Pipeline and Prepare It for Rendering on CI
 
 #' @family ci utilities
 #' @description This function generates a DOT file representation of the
@@ -42,7 +42,7 @@ rxp_dag_for_ci <- function(
   igraph::write_graph(dag_obj, file = output_file, format = "dot")
 }
 
-#' @title Prepare data for plotting the DAG of the pipeline.
+#' @title Prepare Data for Plotting the DAG of the Pipeline
 #' @param path_dag Character, defaults to `"_rixpress/dag.json"`.
 #' @return A list of two datasets, `nodes` and `edges`.
 #' @examples \dontrun{
@@ -143,7 +143,7 @@ get_nodes_edges <- function(path_dag = "_rixpress/dag.json") {
 }
 
 
-#' @title Create a Directed Acyclic Graph (DAG) representing the pipeline
+#' @title Create a Directed Acyclic Graph (DAG) Representing the Pipeline
 #'   using `{ggplot2}`
 #' @family visualisation functions
 #' @description Uses `{ggdag}` to generate the plot. `{ggdag}` is a soft
@@ -345,7 +345,7 @@ rxp_ggdag <- function(
   }
 }
 
-#' @title Create a Directed Acyclic Graph (DAG) representing the pipeline
+#' @title Create a Directed Acyclic Graph (DAG) Representing the Pipeline
 #'   using `{visNetwork}`
 #' @family visualisation functions
 #' @description Uses `{visNetwork}` to generate the plot. `{visNetwork}` is a

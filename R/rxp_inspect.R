@@ -1,4 +1,4 @@
-#' @title List all available build logs
+#' @title List All Available Build Logs
 #' @family utilities
 #' @description Returns a data frame with information about all build logs
 #'     in the project's _rixpress directory.
@@ -58,7 +58,7 @@ rxp_list_logs <- function(project_path = ".") {
   logs_df
 }
 
-#' @title Inspect the build result of a pipeline.
+#' @title Inspect the Build Result of a Pipeline
 #' @family utilities
 #' @description Returns a data frame with four columns:
 #'     - derivation: the name of the derivation

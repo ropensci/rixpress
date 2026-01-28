@@ -1,4 +1,4 @@
-#' Trace lineage of derivations
+#' Trace Lineage of Derivations
 #'
 #' @family utilities
 #' @param name Character, defaults to NULL. Name of the derivation to inspect.

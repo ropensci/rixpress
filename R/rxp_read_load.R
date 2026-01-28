@@ -56,7 +56,7 @@ rxp_read_load_setup <- function(
   file_paths
 }
 
-#' Read output of a derivation
+#' Read Output of a Derivation
 #' @family utilities
 #' @description Reads the output of derivations in the current session,
 #'   returns a path if reading directly is not possible.
@@ -110,7 +110,7 @@ rxp_read <- function(derivation_name, which_log = NULL, project_path = ".") {
   )
 }
 
-#' Load output of a derivation
+#' Load Output of a Derivation
 
 #' @family utilities
 #' @description Loads the output of derivations in the parent frame of the

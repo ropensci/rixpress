@@ -1,4 +1,4 @@
-#' Generate a DAG from a list of derivations
+#' Generate a DAG From a List of Derivations
 #'
 #' Creates a JSON representation of a directed acyclic graph (DAG)
 #' based on dependencies between derivations. Is automatically called

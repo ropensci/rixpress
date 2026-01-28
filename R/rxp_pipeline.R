@@ -1,4 +1,4 @@
-#' Create a named pipeline of derivations
+#' Create a Named Pipeline of Derivations
 #'
 #' Groups multiple derivations into a named pipeline for organizational
 #' purposes. This allows you to structure large projects into logical
@@ -168,7 +168,7 @@ flatten_derivations <- function(derivs) {
 }
 
 
-#' Print method for rxp_pipeline objects
+#' Print Method for rxp_pipeline Objects
 #'
 #' @param x An object of class "rxp_pipeline"
 #' @param ... Additional arguments passed to print methods

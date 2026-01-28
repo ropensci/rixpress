@@ -589,7 +589,7 @@ create_rxp_derivation <- function(
   )
 }
 
-#' Creates a Nix expression that reads in a file (or folder of data) using R.
+#' Creates a Nix Expression That Reads in a File (or Folder of Data) Using R
 #'
 #' @family derivations
 #' @return An object of class `rxp_derivation`.
@@ -603,7 +603,7 @@ create_rxp_derivation <- function(
 #' @export
 rxp_r_file <- function(...) rxp_file("R", ...)
 
-#' Creates a Nix expression that reads in a file (or folder of data) using Python.
+#' Creates a Nix Expression That Reads in a File (or Folder of Data) Using Python
 #'
 #' @family derivations
 #' @return An object of class `rxp_derivation`.
@@ -617,7 +617,7 @@ rxp_r_file <- function(...) rxp_file("R", ...)
 #' @export
 rxp_py_file <- function(...) rxp_file("Py", ...)
 
-#' Creates a Nix expression that reads in a file (or folder of data) using Julia.
+#' Creates a Nix Expression That Reads in a File (or Folder of Data) Using Julia
 #'
 #' @family derivations
 #' @return An object of class `rxp_derivation`.
@@ -711,7 +711,7 @@ build_reticulate_phase <- function(r_command) {
   )
 }
 
-#' Transfer Python object into an R session.
+#' Transfer Python Object Into an R Session
 #'
 #' @family interop functions
 #' @param name Symbol, name of the derivation.
@@ -728,7 +728,7 @@ rxp_py2r <- function(name, expr, nix_env = "default.nix") {
   rxp_common_setup(out_name, expr_str, nix_env, "py2r")
 }
 
-#' Transfer R object into a Python session.
+#' Transfer R Object Into a Python Session
 #'
 #' @family interop functions
 #' @param name Symbol, name of the derivation.

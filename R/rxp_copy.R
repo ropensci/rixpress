@@ -1,4 +1,4 @@
-#' @title Copy derivations from the Nix store to current working directory
+#' @title Copy Derivations From the Nix Store to Current Working Directory
 #' @family utilities
 #' @description When Nix builds a derivation, its output is saved in the
 #'   Nix store located under `/nix/store/`. Even though you can import the

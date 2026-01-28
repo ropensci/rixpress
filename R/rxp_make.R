@@ -143,7 +143,7 @@
   c(args, drv_paths)
 }
 
-#' Build pipeline using Nix
+#' Build Pipeline Using Nix
 #'
 #' Runs `nix-build` with a quiet flag, outputting to `_rixpress/result`.
 #' @family pipeline functions
