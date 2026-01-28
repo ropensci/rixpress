@@ -107,7 +107,7 @@ also use `uv` to manage Python and Python packages. While this is not a pure Nix
 solution, it is still useful in cases you need a specific Python package that
 might not be available through Nix, as not all PyPI packages are available
 through Nix. In this case, refer to this
-[section](https://docs.ropensci.org/rix/articles/d1-installing-r-packages-in-a-nix-environment.html#installing-python-packages-not-available-via-nixpkgs-impure)
+[section](https://docs.ropensci.org/rix/articles/installing-r-packages.html#installing-python-packages-not-available-via-nixpkgs-impure)
 of the *Installing R and Python packages in a Nix environment* vignette from
 `{rix}`.
 

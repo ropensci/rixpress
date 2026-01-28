@@ -22,8 +22,8 @@ package `{rix}`, which helps you set up reproducible development environments
 for R or Python using `Nix`. As such, you likely already have `Nix` installed on your
 system. If not, read the following [`{rix}` vignette to learn
 how to set up `Nix` on Linux or
-Windows](https://docs.ropensci.org/rix/articles/b1-setting-up-and-using-rix-on-linux-and-windows.html),
-or [this one if you're on macOS](https://docs.ropensci.org/rix/articles/b2-setting-up-and-using-rix-on-macos.html).
+Windows](https://docs.ropensci.org/rix/articles/installing-r-packages.html),
+or [this one if you're on macOS](https://docs.ropensci.org/rix/articles/setting-up-macos.html).
 
 Once `Nix` is installed (as well as `cachix`, and the `rstats-on-nix` cache
 configured), you're ready to go.

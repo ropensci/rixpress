@@ -18,6 +18,8 @@
 #'   rxp_dag_for_ci()
 #'
 #' }
+utils::globalVariables("color_group")
+
 #' @export
 rxp_dag_for_ci <- function(
   nodes_and_edges = get_nodes_edges(),

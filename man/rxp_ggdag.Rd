@@ -7,7 +7,8 @@ using \code{{ggplot2}}}
 \usage{
 rxp_ggdag(
   nodes_and_edges = get_nodes_edges(),
-  color_by = c("pipeline", "type")
+  color_by = c("pipeline", "type"),
+  colour_by = NULL
 )
 }
 \arguments{
@@ -16,6 +17,8 @@ rxp_ggdag(
 \item{color_by}{Character, either "pipeline" (default) or "type".
 When "pipeline", nodes show type as fill colour and pipeline as border.
 When "type", nodes are coloured entirely by derivation type (rxp_r, rxp_py, etc.).}
+
+\item{colour_by}{Character, alias for \code{color_by}.}
 }
 \value{
 A \code{{ggplot2}} object.

@@ -7,7 +7,8 @@ using \code{{visNetwork}}}
 \usage{
 rxp_visnetwork(
   nodes_and_edges = get_nodes_edges(),
-  color_by = c("pipeline", "type")
+  color_by = c("pipeline", "type"),
+  colour_by = NULL
 )
 }
 \arguments{
@@ -16,6 +17,8 @@ rxp_visnetwork(
 \item{color_by}{Character, either "pipeline" (default) or "type".
 When "pipeline", nodes are colored by their pipeline group (if defined).
 When "type", nodes are colored by their derivation type (rxp_r, rxp_py, etc.).}
+
+\item{colour_by}{Character, alias for \code{color_by}.}
 }
 \value{
 Nothing, this function opens a new tab in your browser with

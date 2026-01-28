@@ -29,7 +29,7 @@ steps that happen:
 - required software is installed;
 - the execution environment is generated and built;
 - the `rstats-on-nix` cache is configured to decrease build times, see this
-  [documentation](https://docs.ropensci.org/rix/articles/b1-setting-up-and-using-rix-on-linux-and-windows.html#using-the-determinate-systems-installer)
+  [documentation](https://docs.ropensci.org/rix/articles/setting-up-linux-windows.html#using-the-determinate-systems-installer)
   (ignore the part about installing `Nix`);
 - the pipeline is generated (and potentially built, depending on whether you set
   `build` to `FALSE` in the `rxp_populate()` call);
