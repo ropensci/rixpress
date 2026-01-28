@@ -156,15 +156,17 @@ get_nodes_edges <- function(path_dag = "_rixpress/dag.json") {
 #' @param color_by Character, either "pipeline" (default) or "type".
 #'   When "pipeline", nodes show type as fill colour and pipeline as border.
 #'   When "type", nodes are coloured entirely by derivation type (rxp_r, rxp_py, etc.).
+#' @param colour_by Character, alias for `color_by`.
 #' @return A `{ggplot2}` object.
 #' @examples \dontrun{
 #'   rxp_ggdag()  # Dual encoding: fill = type, border = pipeline
-#'   rxp_ggdag(color_by = "type")  # Color entirely by derivation type
+#'   rxp_ggdag(colour_by = "type")  # Color entirely by derivation type
 #' }
 #' @export
 rxp_ggdag <- function(
   nodes_and_edges = get_nodes_edges(),
-  color_by = c("pipeline", "type")
+  color_by = c("pipeline", "type"),
+  colour_by = NULL
 ) {
   if (!requireNamespace("ggdag", quietly = TRUE)) {
     stop("You need to install {ggdag} to use this feature.")
@@ -172,6 +174,10 @@ rxp_ggdag <- function(
 
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     stop("You need to install {ggplot2} to use this feature.")
+  }
+
+  if (!is.null(colour_by)) {
+    color_by <- colour_by
   }
 
   color_by <- match.arg(color_by)
@@ -351,26 +357,33 @@ rxp_ggdag <- function(
 #' @description Uses `{visNetwork}` to generate the plot. `{visNetwork}` is a
 #'   soft dependency of `{rixpress}` so you need to install it to use this
 #'   function. When derivations are organized into pipelines using
-#'   `rxp_pipeline()`, nodes are colored according to their pipeline colors
-#'   and grouped by pipeline name in the legend.
+#'   `rxp_pipeline()`, nodes use a dual-encoding approach: the interior fill
+#'   shows the derivation type (R, Python, etc.) while the border shows
+#'   the pipeline group colour.
 #' @param nodes_and_edges List, output of `get_nodes_edges()`.
 #' @param color_by Character, either "pipeline" (default) or "type".
-#'   When "pipeline", nodes are colored by their pipeline group (if defined).
+#'   When "pipeline", nodes show type as fill colour and pipeline as border.
 #'   When "type", nodes are colored by their derivation type (rxp_r, rxp_py, etc.).
+#' @param colour_by Character, alias for `color_by`.
 #' @return Nothing, this function opens a new tab in your browser with
 #'   the DAG generated using `{visNetwork}`.
 #' @examples \dontrun{
 #'   rxp_visnetwork()
-#'   rxp_visnetwork(color_by = "type")  # Color by derivation type instead
+#'   rxp_visnetwork(colour_by = "type")  # Color by derivation type instead
 #' }
 #' @export
 #' @importFrom jsonlite fromJSON
 rxp_visnetwork <- function(
   nodes_and_edges = get_nodes_edges(),
-  color_by = c("pipeline", "type")
+  color_by = c("pipeline", "type"),
+  colour_by = NULL
 ) {
   if (!requireNamespace("visNetwork", quietly = TRUE)) {
     stop("You need to install {visNetwork} to use this feature.")
+  }
+
+  if (!is.null(colour_by)) {
+    color_by <- colour_by
   }
 
   color_by <- match.arg(color_by)
@@ -442,14 +455,38 @@ rxp_visnetwork <- function(
       }
     }
 
-    # Assign colors to nodes based on their pipeline group
-    nodes$color <- vapply(
-      nodes$pipeline_group,
-      function(g) {
-        group_colors[[g]]
-      },
-      character(1)
+    # Assign colors to nodes based on their pipeline group and derivation type
+    nodes$color <- lapply(
+      seq_len(nrow(nodes)),
+      function(i) {
+        pipeline_grp <- nodes$pipeline_group[i]
+        deriv_type <- nodes$group[i]
+        
+        border_col <- group_colors[[pipeline_grp]]
+        # Fallback for type color if not found
+        bg_col <- if (deriv_type %in% names(type_colors)) {
+          type_colors[[deriv_type]]
+        } else {
+          "#97C2FC" # Standard visNetwork blue
+        }
+
+        list(
+          background = bg_col,
+          border = border_col,
+          highlight = list(
+            background = bg_col,
+            border = border_col
+          ),
+          hover = list(
+            background = bg_col,
+            border = border_col
+          )
+        )
+      }
     )
+    
+    # Set border width to make it visible
+    nodes$borderWidth <- 3
 
     # Use derivation type for shape
     nodes$shape <- vapply(

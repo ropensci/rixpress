@@ -123,8 +123,7 @@ rxp_populate(list(pipe_data_prep, pipe_analysis), project_path = ".", build = TR
 
 When sub-pipelines are defined, visualisation tools use pipeline colours:
 
-1. **Interactive Network**: `rxp_visnetwork()` colours nodes' borders entirely by pipeline group.
-2. **Static DAG**: `rxp_ggdag()` uses a dual-encoding approach:
+1. **Interactive Network** (`rxp_visnetwork()`) and **Static DAG** (`rxp_ggdag()`) both use a dual-encoding approach:
    - **Node fill (interior)**: Derivation type colour (R = blue, Python = yellow, etc.)
    - **Node border (thick stroke)**: Pipeline group colour
    This allows you to see both what *type* of computation each node is and which *pipeline* it belongs to.

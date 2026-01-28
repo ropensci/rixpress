@@ -6,6 +6,13 @@
   Previously, `rixpress` failed to parse the `pyconf` block correctly when it contained
   the `} ++ [ ... ];` syntax used by `rix` for git packages.
 
+# rixpress 0.11.2 (2026-01-28)
+
+## Changes
+
+- Updated `rxp_visnetwork()` styling to use a dual-encoding approach (similar to `rxp_ggdag()`) when `color_by = "pipeline"`. Now, node interiors are colored by derivation type (e.g., R, Python) while node borders are colored by pipeline group.
+- Spellchecked `vignettes/sub-pipelines.Rmd` to British English.
+
 # rixpress 0.11.0 (2025-01-24)
 
 ## New Features
