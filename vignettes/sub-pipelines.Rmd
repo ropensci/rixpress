@@ -1,5 +1,5 @@
 ---
-title: "Organizing Large Projects with Sub-Pipelines"
+title: "Organising Large Projects with Sub-Pipelines"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{sub-pipelines}
@@ -14,9 +14,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-This vignette introduces `rxp_pipeline()`, a function for organizing large
+This vignette introduces `rxp_pipeline()`, a function for organising large
 projects into logical sub-pipelines. This feature is particularly useful when
-working on complex projects with multiple phases (e.g., ETL, Modeling, Reporting)
+working on complex projects with multiple phases (e.g., ETL, Modelling, Reporting)
 or when collaborating in teams where different members work on different parts
 of the pipeline.
 
@@ -37,14 +37,14 @@ Putting all derivations in one file makes it hard to:
 - Collaborate across team members
 - Reuse pipeline components in other projects
 
-To solve this issue, you can define you project using sub-pipelines and 
-join them into a master pipeline using `rxp_pipeline()`.
+To solve this issue, you can define your project using sub-pipelines and join
+them into a master pipeline using `rxp_pipeline()`.
 
 This allows you to:
 
-1. **Organize** derivations into named groups
-2. **Color-code** groups for visual distinction in DAG visualizations
-3. **Modularize** your code across multiple R scripts
+1. **Organise** derivations into named groups
+2. **Colour-code** groups for visual distinction in DAG visualisations
+3. **Modularise** your code across multiple R scripts
 
 ### Basic Usage
 
@@ -80,7 +80,7 @@ The `rxp_pipeline()` function takes:
 
 - **name**: A descriptive name for this group of derivations
 - **path**: Either a **file path** to an R script returning a list of derivations (recommended), or a list of derivation objects.
-- **color**: Optional CSS color name or hex code for DAG visualization
+- **color**: Optional CSS color name or hex code for DAG visualisation
 
 The second sub-pipeline:
 
@@ -102,7 +102,7 @@ The master script becomes very clean, as `rxp_pipeline` handles sourcing the fil
 # gen-pipeline.R
 library(rixpress)
 
-# Create named pipelines with colors by pointing to the files
+# Create named pipelines with colours by pointing to the files
 pipe_data_prep <- rxp_pipeline(
   name = "Data Preparation",
   path = "pipelines/01_data_prep.R",
@@ -119,24 +119,39 @@ pipe_analysis <- rxp_pipeline(
 rxp_populate(list(pipe_data_prep, pipe_analysis), project_path = ".", build = TRUE)
 ```
 
-## Visualizing Sub-Pipelines
+## Visualising Sub-Pipelines
 
-When sub-pipelines are defined, visualization tools use pipeline colors:
+When sub-pipelines are defined, visualisation tools use pipeline colours:
 
 1. **Interactive Network**: `rxp_visnetwork()` colours nodes' borders entirely by pipeline group.
 2. **Static DAG**: `rxp_ggdag()` uses a dual-encoding approach:
    - **Node fill (interior)**: Derivation type colour (R = blue, Python = yellow, etc.)
    - **Node border (thick stroke)**: Pipeline group colour
    This allows you to see both what *type* of computation each node is and which *pipeline* it belongs to.
+
+<figure>
+<img src="https://raw.githubusercontent.com/ropensci/rixpress/refs/heads/main/vignettes/subpipelines.png" alt="Subpipelines are coloured." />
+<figcaption aria-hidden="true">
+Subpipelines are coloured.
+</figcaption>
+</figure>
+
 3. **Trace**: `rxp_trace()` output in the console is coloured by pipeline (using the `cli` package).
 
-### Switching Between Color Modes
+<figure>
+<img src="https://raw.githubusercontent.com/ropensci/rixpress/refs/heads/main/vignettes/subpipelines_trace.png" alt="If your terminal supports it, derivation names are coloured according to the chosen sub-pipeline colour." />
+<figcaption aria-hidden="true">
+If your terminal supports it, derivation names are coloured according to the chosen sub-pipeline colour.
+</figcaption>
+</figure>
+
+### Switching Between Colour Modes
 
 ```{r color-modes, eval = FALSE}
 # Dual encoding: fill = type, border = pipeline (default when pipelines are defined)
 rxp_ggdag(color_by = "pipeline")
 
-# Color entirely by derivation type (rxp_r, rxp_py, etc.) - original behavior
+# Colour entirely by derivation type (rxp_r, rxp_py, etc.) - original behaviour
 rxp_ggdag(color_by = "type")
 ```
 
@@ -147,23 +162,23 @@ When you call `rxp_populate()` with `rxp_pipeline` objects:
 1. **Flattening**: Pipelines are flattened to a single list of derivations
 2. **Metadata Preservation**: Each derivation retains `pipeline_group` and `pipeline_color`
 3. **DAG Generation**: `dag.json` includes pipeline metadata
-4. **Visualization**: `rxp_visnetwork()` and `rxp_ggdag()` read this metadata
+4. **Visualisation**: `rxp_visnetwork()` and `rxp_ggdag()` read this metadata
 
 ## Best Practices
 
 1. **Use descriptive pipeline names**: "Data Preparation" is better than "ETL"
-2. **Choose contrasting colors**: Use [ColorBrewer](https://colorbrewer2.org/) palettes
+2. **Choose contrasting colours**: Use [ColorBrewer](https://colorbrewer2.org/) palettes
 3. **Keep sub-pipelines focused**: One logical phase per sub-pipeline
 4. **Order your files**: Use numeric prefixes (01_, 02_, etc.)
 
 ## Conclusion
 
-`rxp_pipeline()` provides a simple yet powerful way to organize complex
+`rxp_pipeline()` provides a simple yet powerful way to organise complex
 pipelines. By grouping derivations into logical units, you can:
 
-- Keep your code organized and maintainable
+- Keep your code organised and maintainable
 - Enable team collaboration on different parts of the pipeline
-- Visualize the structure of your workflow with meaningful colors
+- Visualise the structure of your workflow with meaningful colours
 - Reuse sub-pipelines across projects
 
 For a working example, see the `subpipelines` demo in the
