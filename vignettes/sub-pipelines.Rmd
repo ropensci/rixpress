@@ -135,7 +135,7 @@ Subpipelines are coloured.
 </figcaption>
 </figure>
 
-3. **Trace**: `rxp_trace()` output in the console is coloured by pipeline (using the `cli` package).
+2. **Trace**: `rxp_trace()` output in the console is coloured by pipeline (using the `cli` package).
 
 <figure>
 <img src="https://raw.githubusercontent.com/ropensci/rixpress/refs/heads/main/vignettes/subpipelines_trace.png" alt="If your terminal supports it, derivation names are coloured according to the chosen sub-pipeline colour." />
