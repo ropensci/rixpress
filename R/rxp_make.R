@@ -397,7 +397,15 @@ rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
           return(NULL)
         }
         path <- successful$path[i]
-        output_files <- successful$output[[i]]
+        # Get output files - handle both list and character vector cases
+        output_files <- if (is.list(successful$output)) {
+          successful$output[[i]]
+        } else {
+          successful$output[i]
+        }
+        if (is.null(output_files) || length(output_files) == 0) {
+          return(NULL)
+        }
         # Find RDS files
         rds_files <- output_files[grepl("\\.rds$", output_files)]
         if (length(rds_files) == 0) {
@@ -418,7 +426,16 @@ rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
       })
       chronicle_results <- Filter(Negate(is.null), chronicle_results)
 
+      # Show status for all chronicles found
       if (length(chronicle_results) > 0) {
+        cat("\nChronicle status:\n")
+        for (res in chronicle_results) {
+          cat(
+            .rxp_format_chronicle_message(res$derivation, res$status),
+            "\n"
+          )
+        }
+
         n_nothing <- sum(vapply(
           chronicle_results,
           function(x) x$status$is_nothing,
@@ -429,25 +446,20 @@ rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
           function(x) x$status$has_warnings,
           logical(1)
         ))
+        n_success <- length(chronicle_results) - n_nothing - n_warning
 
-        if (n_nothing > 0 || n_warning > 0) {
-          cat("\nChronicle status:\n")
-          for (res in chronicle_results) {
-            cat(
-              .rxp_format_chronicle_message(res$derivation, res$status),
-              "\n"
-            )
-          }
-          if (n_nothing > 0) {
-            warning(
-              sprintf(
-                "\n%d derivation(s) contain chronicle Nothing values!",
-                n_nothing
-              ),
-              "\nRun `rxp_check_chronicles()` for details.",
-              call. = FALSE
-            )
-          }
+        cat(sprintf(
+          "\nSummary: %d success, %d with warnings, %d nothing\n",
+          n_success,
+          n_warning,
+          n_nothing
+        ))
+
+        if (n_nothing > 0) {
+          warning(
+            sprintf("%d derivation(s) contain Nothing values!", n_nothing),
+            call. = FALSE
+          )
         }
       }
     }
