@@ -25,6 +25,7 @@ articles:
   - sub-pipelines
   - ci
   - cmdstanr
+  - chronicler
 
 reference:
 - title: Declaring derivations
