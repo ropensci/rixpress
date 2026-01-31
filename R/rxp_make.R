@@ -209,31 +209,6 @@ rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
     cb_stdout <- function(line, proc) cat(line, "\n")
     cb_stderr <- function(line, proc) cat(line, "\n")
   } else {
-    # Helper to check chronicle status and return appropriate symbol
-    get_chronicle_symbol <- function(deriv_name, store_path) {
-      if (!.rxp_has_chronicler()) {
-        return("\u2713") # default checkmark
-      }
-      # Try to find and read RDS file
-      rds_files <- tryCatch(
-        list.files(store_path, pattern = "\\.rds$", full.names = TRUE),
-        error = function(e) character(0)
-      )
-      if (length(rds_files) == 0) {
-        return("\u2713") # default checkmark for non-RDS outputs
-      }
-      obj <- tryCatch(readRDS(rds_files[1]), error = function(e) NULL)
-      if (is.null(obj)) {
-        return("\u2713")
-      }
-      status <- .rxp_chronicle_status(obj)
-      if (is.null(status)) {
-        return("\u2713") # not a chronicle
-      }
-      # Return appropriate symbol based on state
-      .rxp_chronicle_symbol(status$state)
-    }
-
     # verbose == 0: show progress only
     cb_stdout <- function(line, proc) {
       # Skip the garbage collector warning
@@ -244,10 +219,7 @@ rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
       parsed <- .rxp_parse_build_line(line, derivation_names)
       if (!is.null(parsed)) {
         if (parsed$status == "completed" && parsed$from_store) {
-          # Extract store path from the line
-          store_path <- trimws(line)
-          symbol <- get_chronicle_symbol(parsed$derivation, store_path)
-          cat(paste0(symbol, " ", parsed$derivation, " built\n"))
+          cat(paste0("\u2713 ", parsed$derivation, " built\n"))
           build_status[[parsed$derivation]] <<- "completed"
         }
       }
@@ -266,27 +238,7 @@ rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
           build_status[[parsed$derivation]] <<- "dispatched"
           currently_building <<- parsed$derivation # Track current build
         } else if (parsed$status == "completed" && !parsed$from_store) {
-          # For freshly built derivations, need to query the store path
-          drv_path <- grep(
-            paste0("-", parsed$derivation, "\\.drv$"),
-            drv_paths,
-            value = TRUE
-          )
-          if (length(drv_path) > 0) {
-            output_result <- tryCatch(
-              processx::run(
-                "nix-store",
-                c("-q", "--outputs", drv_path[1]),
-                error_on_status = FALSE
-              ),
-              error = function(e) list(stdout = "")
-            )
-            store_path <- trimws(strsplit(output_result$stdout, "\n")[[1]][1])
-            symbol <- get_chronicle_symbol(parsed$derivation, store_path)
-            cat(paste0(symbol, " ", parsed$derivation, " built\n"))
-          } else {
-            cat(paste0("\u2713 ", parsed$derivation, " built\n"))
-          }
+          cat(paste0("\u2713 ", parsed$derivation, " built\n"))
           build_status[[parsed$derivation]] <<- "completed"
           currently_building <<- NULL
         } else if (parsed$status == "errored") {
