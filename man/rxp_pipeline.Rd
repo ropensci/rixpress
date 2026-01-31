@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_pipeline.R
 \name{rxp_pipeline}
 \alias{rxp_pipeline}
-\title{Create a named pipeline of derivations}
+\title{Create a Named Pipeline of Derivations}
 \usage{
 rxp_pipeline(name, path, color = NULL, ...)
 }

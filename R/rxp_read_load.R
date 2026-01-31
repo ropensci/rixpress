@@ -93,7 +93,7 @@ rxp_read <- function(derivation_name, which_log = NULL, project_path = ".") {
   path <- files
 
   # Try RDS, then pickle (checking for reticulate), else return the path
-  tryCatch(
+  obj <- tryCatch(
     readRDS(path),
     error = function(e1) {
       if (!requireNamespace("reticulate", quietly = TRUE)) {
@@ -108,6 +108,31 @@ rxp_read <- function(derivation_name, which_log = NULL, project_path = ".") {
       )
     }
   )
+
+  # Check for chronicle status (only if chronicler is available)
+  status <- .rxp_chronicle_status(obj)
+  if (!is.null(status)) {
+    if (status$state == "nothing") {
+      warning(
+        sprintf(
+          "Derivation '%s' contains a chronicle with Nothing value!\n%s",
+          derivation_name,
+          "  Use chronicler::read_log() on this object for details."
+        ),
+        call. = FALSE
+      )
+    } else if (status$state == "warning") {
+      message(
+        sprintf(
+          "Note: Derivation '%s' is a chronicle with captured warnings.\n%s",
+          derivation_name,
+          "  Use chronicler::read_log() on this object for details."
+        )
+      )
+    }
+  }
+
+  obj
 }
 
 #' Load Output of a Derivation
@@ -176,6 +201,29 @@ rxp_load <- function(derivation_name, which_log = NULL, project_path = ".") {
   if (is.character(value) && length(value) == 1 && value == path) {
     message("Note: Returning file path instead of loaded object.")
     return(path)
+  }
+
+  # Check for chronicle status (only if chronicler is available)
+  status <- .rxp_chronicle_status(value)
+  if (!is.null(status)) {
+    if (status$state == "nothing") {
+      warning(
+        sprintf(
+          "Derivation '%s' contains a chronicle with Nothing value!\n%s",
+          derivation_name,
+          "  Use chronicler::read_log() on this object for details."
+        ),
+        call. = FALSE
+      )
+    } else if (status$state == "warning") {
+      message(
+        sprintf(
+          "Note: Derivation '%s' is a chronicle with captured warnings.\n%s",
+          derivation_name,
+          "  Use chronicler::read_log() on this object for details."
+        )
+      )
+    }
   }
 
   assign(derivation_name, value, envir = parent.frame())

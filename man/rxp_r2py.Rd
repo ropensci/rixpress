@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_io.R
 \name{rxp_r2py}
 \alias{rxp_r2py}
-\title{Transfer R object into a Python session.}
+\title{Transfer R Object Into a Python Session}
 \usage{
 rxp_r2py(name, expr, nix_env = "default.nix")
 }
@@ -18,7 +18,7 @@ rxp_r2py(name, expr, nix_env = "default.nix")
 An object of class \code{rxp_derivation}.
 }
 \description{
-Transfer R object into a Python session.
+Transfer R Object Into a Python Session
 }
 \details{
 \code{rxp_r2py(my_obj, my_r_object)} saves an R object to a Python pickle

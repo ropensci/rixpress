@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_io.R
 \name{rxp_py2r}
 \alias{rxp_py2r}
-\title{Transfer Python object into an R session.}
+\title{Transfer Python Object Into an R Session}
 \usage{
 rxp_py2r(name, expr, nix_env = "default.nix")
 }
@@ -18,7 +18,7 @@ rxp_py2r(name, expr, nix_env = "default.nix")
 An object of class \code{rxp_derivation}.
 }
 \description{
-Transfer Python object into an R session.
+Transfer Python Object Into an R Session
 }
 \details{
 \code{rxp_py2r(my_obj, my_python_object)} loads a serialized Python

@@ -25,6 +25,7 @@ Print method for derivation objects
 }
 \seealso{
 Other utilities: 
+\code{\link{rxp_check_chronicles}()},
 \code{\link{rxp_copy}()},
 \code{\link{rxp_gc}()},
 \code{\link{rxp_init}()},

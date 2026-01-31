@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_pipeline.R
 \name{print.rxp_pipeline}
 \alias{print.rxp_pipeline}
-\title{Print method for rxp_pipeline objects}
+\title{Print Method for rxp_pipeline Objects}
 \usage{
 \method{print}{rxp_pipeline}(x, ...)
 }
@@ -15,5 +15,5 @@
 Nothing, prints a summary of the pipeline object to the console.
 }
 \description{
-Print method for rxp_pipeline objects
+Print Method for rxp_pipeline Objects
 }

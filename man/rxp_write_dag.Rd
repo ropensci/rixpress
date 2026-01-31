@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_write_dag.R
 \name{rxp_write_dag}
 \alias{rxp_write_dag}
-\title{Generate a DAG from a list of derivations}
+\title{Generate a DAG From a List of Derivations}
 \usage{
 rxp_write_dag(rxp_list, output_file = "_rixpress/dag.json")
 }

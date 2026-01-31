@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_copy.R
 \name{rxp_copy}
 \alias{rxp_copy}
-\title{Copy derivations from the Nix store to current working directory}
+\title{Copy Derivations From the Nix Store to Current Working Directory}
 \usage{
 rxp_copy(derivation_name = NULL, dir_mode = "0755", file_mode = "0644")
 }
@@ -47,6 +47,7 @@ input, as is the case for \code{html} output.
 \seealso{
 Other utilities: 
 \code{\link{print.rxp_derivation}()},
+\code{\link{rxp_check_chronicles}()},
 \code{\link{rxp_gc}()},
 \code{\link{rxp_init}()},
 \code{\link{rxp_inspect}()},
