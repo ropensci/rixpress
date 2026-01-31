@@ -5,7 +5,7 @@ llm_instructions: This is an LLM-optimized API specification for the R package '
 kind: package
 schema_version: '1.1'
 name: rixpress
-version: 0.11.2
+version: 0.12.0
 language: R
 description: Build Reproducible Analytical Pipelines with 'Nix'
 ---
@@ -377,7 +377,7 @@ kind: function
 name: rxp_ggdag
 exported: true
 signature: rxp_ggdag(nodes_and_edges = get_nodes_edges(),color_by = c("pipeline", "type"),colour_by = NULL)
-purpose: Create a Directed Acyclic Graph (DAG) representing the pipeline using {ggplot2
+purpose: Create a Directed Acyclic Graph (DAG) Representing the Pipeline using {ggplot2
 arguments:
   color_by: Character, either "pipeline" (default) or "type". When "pipeline", nodes show type as fill colour and pipeline as border. When "type", nodes are coloured entirely by derivation type (rxp_r, rxp_py, etc.).
   colour_by: Character, alias for color_by.
@@ -386,21 +386,21 @@ returns: A {ggplot2} object.
 examples:
 - code: |-
     rxp_ggdag()  # Dual encoding: fill = type, border = pipeline
-    rxp_ggdag(color_by = "type")  # Color entirely by derivation type
+    rxp_ggdag(colour_by = "type")  # Color entirely by derivation type
 ---
 kind: function
 name: rxp_visnetwork
 exported: true
 signature: rxp_visnetwork(nodes_and_edges = get_nodes_edges(),color_by = c("pipeline", "type"),colour_by = NULL)
-purpose: Create a Directed Acyclic Graph (DAG) representing the pipeline using {visNetwork
+purpose: Create a Directed Acyclic Graph (DAG) Representing the Pipeline using {visNetwork
 arguments:
-  color_by: Character, either "pipeline" (default) or "type". When "pipeline", nodes are colored by their pipeline group (if defined). When "type", nodes are colored by their derivation type (rxp_r, rxp_py, etc.).
+  color_by: Character, either "pipeline" (default) or "type". When "pipeline", nodes show type as fill colour and pipeline as border. When "type", nodes are colored by their derivation type (rxp_r, rxp_py, etc.).
   colour_by: Character, alias for color_by.
   nodes_and_edges: List, output of get_nodes_edges().
 returns: Nothing, this function opens a new tab in your browser with the DAG generated using {visNetwork}.
 examples:
 - code: rxp_visnetwork()
-- code: 'rxp_visnetwork(color_by = "type")  # Color by derivation type instead'
+- code: 'rxp_visnetwork(colour_by = "type")  # Color by derivation type instead'
 ---
 kind: function
 name: rxp_populate
@@ -417,6 +417,18 @@ examples:
 - code: d1 <- rxp_r(mtcars_am, filter(mtcars, am == 1))
 - code: d2 <- rxp_r(mtcars_head, head(mtcars_am))
 - code: list_derivs <- list(d1, d2)
+---
+kind: function
+name: rxp_check_chronicles
+exported: true
+signature: rxp_check_chronicles(project_path = ".", which_log = NULL)
+arguments:
+  project_path: Character, defaults to ".". Path to the root directory of the project.
+  which_log: Character, defaults to NULL. If NULL the most recent build log is used. If a string is provided, it's used as a regular expression to match against available log files.
+returns: 'A data frame with columns: derivation, chronicle_state, num_operations, num_failed, failed_functions, messages. Returns NULL invisibly if chronicler is not installed or no chronicle objects are found.'
+examples:
+- code: rxp_check_chronicles()
+- code: rxp_check_chronicles(which_log = "20250131")
 ---
 kind: function
 name: rxp_init
