@@ -464,7 +464,7 @@ rxp_visnetwork <- function(
       function(i) {
         pipeline_grp <- nodes$pipeline_group[i]
         deriv_type <- nodes$group[i]
-        
+
         border_col <- group_colors[[pipeline_grp]]
         # Fallback for type color if not found
         bg_col <- if (deriv_type %in% names(type_colors)) {
@@ -487,7 +487,7 @@ rxp_visnetwork <- function(
         )
       }
     )
-    
+
     # Set border width to make it visible
     nodes$borderWidth <- 3
 

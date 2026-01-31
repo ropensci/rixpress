@@ -175,8 +175,16 @@ test_that("parse_packages handles pyconf with git packages (} ++ [ ... ];)", {
 
   nix_file <- create_temp_nix(nix_content, path_tmpdir)
   pkgs <- parse_packages(nix_file, path_tmpdir, "pyconf")
-  
-  expected_pkgs <- c("pip", "ipykernel", "numpy", "pandas", "scikit-learn", "xgboost", "ryxpress")
+
+  expected_pkgs <- c(
+    "pip",
+    "ipykernel",
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "xgboost",
+    "ryxpress"
+  )
   expect_equal(sort(pkgs), sort(expected_pkgs))
 })
 
@@ -225,9 +233,17 @@ test_that("parse_packages handles mixed python (git) and julia blocks", {
 
   nix_file <- create_temp_nix(nix_content, path_tmpdir)
   pkgs_py <- parse_packages(nix_file, path_tmpdir, "pyconf")
-  
+
   # Should ONLY contain python packages + ryxpress, NOT julia packages
-  expected_py <- c("pip", "ipykernel", "pandas", "pyarrow", "scikit-learn", "xgboost", "ryxpress")
+  expected_py <- c(
+    "pip",
+    "ipykernel",
+    "pandas",
+    "pyarrow",
+    "scikit-learn",
+    "xgboost",
+    "ryxpress"
+  )
   expect_equal(sort(pkgs_py), sort(expected_py))
 })
 

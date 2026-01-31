@@ -42,7 +42,7 @@ parse_packages <- function(
   # We look for a closing brace/bracket followed by optional ++ list, ending with ;
   end_idxs <- grep("^\\s*(\\}|\\])(\\s*\\+\\+.*\\])?;\\s*$", lines, perl = TRUE)
   end_idx <- end_idxs[end_idxs > start_idx][1]
-  
+
   if (is.na(end_idx)) {
     stop(paste("Could not find the end of the", block_name, "block"))
   }
@@ -50,9 +50,9 @@ parse_packages <- function(
   # Extract lines. If the end line contains packages (e.g. in ++ list), include it.
   end_line <- lines[end_idx]
   if (grepl("\\+\\+", end_line)) {
-      block_lines <- lines[(start_idx + 1):end_idx]
+    block_lines <- lines[(start_idx + 1):end_idx]
   } else {
-      block_lines <- lines[(start_idx + 1):(end_idx - 1)]
+    block_lines <- lines[(start_idx + 1):(end_idx - 1)]
   }
 
   block_lines <- gsub("#.*", "", block_lines) # Remove comments
