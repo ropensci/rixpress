@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_dag.R
 \name{rxp_ggdag}
 \alias{rxp_ggdag}
-\title{Create a Directed Acyclic Graph (DAG) representing the pipeline
+\title{Create a Directed Acyclic Graph (DAG) Representing the Pipeline
 using \code{{ggplot2}}}
 \usage{
 rxp_ggdag(
@@ -34,7 +34,7 @@ the pipeline group colour.
 \examples{
 \dontrun{
   rxp_ggdag()  # Dual encoding: fill = type, border = pipeline
-  rxp_ggdag(color_by = "type")  # Color entirely by derivation type
+  rxp_ggdag(colour_by = "type")  # Color entirely by derivation type
 }
 }
 \seealso{

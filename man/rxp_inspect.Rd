@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_inspect.R
 \name{rxp_inspect}
 \alias{rxp_inspect}
-\title{Inspect the build result of a pipeline.}
+\title{Inspect the Build Result of a Pipeline}
 \usage{
 rxp_inspect(project_path = ".", which_log = NULL)
 }
@@ -46,6 +46,7 @@ safely ignore it.
 \seealso{
 Other utilities: 
 \code{\link{print.rxp_derivation}()},
+\code{\link{rxp_check_chronicles}()},
 \code{\link{rxp_copy}()},
 \code{\link{rxp_gc}()},
 \code{\link{rxp_init}()},

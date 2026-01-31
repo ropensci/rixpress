@@ -1,3 +1,6 @@
+# Suppress R CMD check notes for non-standard evaluation
+utils::globalVariables("color_group")
+
 #' @title Export DAG of Pipeline and Prepare It for Rendering on CI
 
 #' @family ci utilities
@@ -18,8 +21,6 @@
 #'   rxp_dag_for_ci()
 #'
 #' }
-utils::globalVariables("color_group")
-
 #' @export
 rxp_dag_for_ci <- function(
   nodes_and_edges = get_nodes_edges(),

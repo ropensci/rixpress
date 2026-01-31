@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_ga.R
 \name{rxp_ga}
 \alias{rxp_ga}
-\title{Run a pipeline on GitHub Actions}
+\title{Run a Pipeline on GitHub Actions}
 \usage{
 rxp_ga()
 }
@@ -10,7 +10,7 @@ rxp_ga()
 Nothing, copies file to a directory.
 }
 \description{
-Run a pipeline on GitHub Actions
+Run a Pipeline on GitHub Actions
 }
 \details{
 This function puts a \code{.yaml} file inside the \verb{.github/workflows/}

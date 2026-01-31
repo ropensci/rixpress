@@ -6,6 +6,7 @@ let
       codemetar
       codetools
       covr
+      chronicler
       devtools
       diffviewer
       ellmer

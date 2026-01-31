@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_io.R
 \name{rxp_r_file}
 \alias{rxp_r_file}
-\title{Creates a Nix expression that reads in a file (or folder of data) using R.}
+\title{Creates a Nix Expression That Reads in a File (or Folder of Data) Using R}
 \usage{
 rxp_r_file(...)
 }
@@ -39,7 +39,7 @@ A language-specific serializer to write the loaded object to disk.
 An object of class \code{rxp_derivation}.
 }
 \description{
-Creates a Nix expression that reads in a file (or folder of data) using R.
+Creates a Nix Expression That Reads in a File (or Folder of Data) Using R
 }
 \details{
 The basic usage is to provide a path to a file, and the function

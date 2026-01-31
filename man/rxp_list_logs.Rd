@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_inspect.R
 \name{rxp_list_logs}
 \alias{rxp_list_logs}
-\title{List all available build logs}
+\title{List All Available Build Logs}
 \usage{
 rxp_list_logs(project_path = ".")
 }
@@ -29,6 +29,7 @@ in the project's _rixpress directory.
 \seealso{
 Other utilities: 
 \code{\link{print.rxp_derivation}()},
+\code{\link{rxp_check_chronicles}()},
 \code{\link{rxp_copy}()},
 \code{\link{rxp_gc}()},
 \code{\link{rxp_init}()},

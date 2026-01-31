@@ -111,6 +111,7 @@ rxp_gc(keep_since = Sys.Date() - 30)
 
 Other utilities: 
 \code{\link{print.rxp_derivation}()},
+\code{\link{rxp_check_chronicles}()},
 \code{\link{rxp_copy}()},
 \code{\link{rxp_init}()},
 \code{\link{rxp_inspect}()},

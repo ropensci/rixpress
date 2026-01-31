@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_dag.R
 \name{rxp_visnetwork}
 \alias{rxp_visnetwork}
-\title{Create a Directed Acyclic Graph (DAG) representing the pipeline
+\title{Create a Directed Acyclic Graph (DAG) Representing the Pipeline
 using \code{{visNetwork}}}
 \usage{
 rxp_visnetwork(
@@ -15,7 +15,7 @@ rxp_visnetwork(
 \item{nodes_and_edges}{List, output of \code{get_nodes_edges()}.}
 
 \item{color_by}{Character, either "pipeline" (default) or "type".
-When "pipeline", nodes are colored by their pipeline group (if defined).
+When "pipeline", nodes show type as fill colour and pipeline as border.
 When "type", nodes are colored by their derivation type (rxp_r, rxp_py, etc.).}
 
 \item{colour_by}{Character, alias for \code{color_by}.}
@@ -28,13 +28,14 @@ the DAG generated using \code{{visNetwork}}.
 Uses \code{{visNetwork}} to generate the plot. \code{{visNetwork}} is a
 soft dependency of \code{{rixpress}} so you need to install it to use this
 function. When derivations are organized into pipelines using
-\code{rxp_pipeline()}, nodes are colored according to their pipeline colors
-and grouped by pipeline name in the legend.
+\code{rxp_pipeline()}, nodes use a dual-encoding approach: the interior fill
+shows the derivation type (R, Python, etc.) while the border shows
+the pipeline group colour.
 }
 \examples{
 \dontrun{
   rxp_visnetwork()
-  rxp_visnetwork(color_by = "type")  # Color by derivation type instead
+  rxp_visnetwork(colour_by = "type")  # Color by derivation type instead
 }
 }
 \seealso{

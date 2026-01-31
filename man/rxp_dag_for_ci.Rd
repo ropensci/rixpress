@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_dag.R
 \name{rxp_dag_for_ci}
 \alias{rxp_dag_for_ci}
-\title{Export DAG of pipeline and prepare it for rendering on CI}
+\title{Export DAG of Pipeline and Prepare It for Rendering on CI}
 \usage{
 rxp_dag_for_ci(
   nodes_and_edges = get_nodes_edges(),

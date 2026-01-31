@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_make.R
 \name{rxp_make}
 \alias{rxp_make}
-\title{Build pipeline using Nix}
+\title{Build Pipeline Using Nix}
 \usage{
 rxp_make(verbose = 0L, max_jobs = 1, cores = 1)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_read_load.R
 \name{rxp_load}
 \alias{rxp_load}
-\title{Load output of a derivation}
+\title{Load Output of a Derivation}
 \usage{
 rxp_load(derivation_name, which_log = NULL, project_path = ".")
 }
@@ -49,6 +49,7 @@ loading fails, the path to the object is returned instead.
 \seealso{
 Other utilities: 
 \code{\link{print.rxp_derivation}()},
+\code{\link{rxp_check_chronicles}()},
 \code{\link{rxp_copy}()},
 \code{\link{rxp_gc}()},
 \code{\link{rxp_init}()},

@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_init.R
 \name{rxp_init}
 \alias{rxp_init}
-\title{Initialize rixpress project}
+\title{Initialize Rixpress Project}
 \usage{
 rxp_init(project_path = ".", skip_prompt = FALSE)
 }
@@ -38,6 +38,7 @@ Creates (overwriting if they already exist):
 \seealso{
 Other utilities: 
 \code{\link{print.rxp_derivation}()},
+\code{\link{rxp_check_chronicles}()},
 \code{\link{rxp_copy}()},
 \code{\link{rxp_gc}()},
 \code{\link{rxp_inspect}()},

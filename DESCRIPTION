@@ -35,10 +35,12 @@ RoxygenNote: 7.3.3
 SystemRequirements: Nix
 Language: en-GB
 Suggests:
+    chronicler,
     dplyr,
     ggdag,
     ggplot2,
     knitr,
+    maybe,
     mockery,
     reticulate,
     rix,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_read_load.R
 \name{rxp_read}
 \alias{rxp_read}
-\title{Read output of a derivation}
+\title{Read Output of a Derivation}
 \usage{
 rxp_read(derivation_name, which_log = NULL, project_path = ".")
 }
@@ -45,6 +45,7 @@ returned instead.
 \seealso{
 Other utilities: 
 \code{\link{print.rxp_derivation}()},
+\code{\link{rxp_check_chronicles}()},
 \code{\link{rxp_copy}()},
 \code{\link{rxp_gc}()},
 \code{\link{rxp_init}()},

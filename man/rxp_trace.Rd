@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_trace.R
 \name{rxp_trace}
 \alias{rxp_trace}
-\title{Trace lineage of derivations}
+\title{Trace Lineage of Derivations}
 \usage{
 rxp_trace(
   name = NULL,
@@ -30,11 +30,12 @@ list with elements:
 The function also prints a tree representation to the console.
 }
 \description{
-Trace lineage of derivations
+Trace Lineage of Derivations
 }
 \seealso{
 Other utilities: 
 \code{\link{print.rxp_derivation}()},
+\code{\link{rxp_check_chronicles}()},
 \code{\link{rxp_copy}()},
 \code{\link{rxp_gc}()},
 \code{\link{rxp_init}()},
