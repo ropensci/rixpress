@@ -387,6 +387,70 @@ rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
       "Use `rxp_read(\"derivation_name\")` to read objects or\n",
       "`rxp_load(\"derivation_name\")` to load them into the global environment."
     )
+
+    # Check for chronicle Nothing values if chronicler is available
+    if (.rxp_has_chronicler()) {
+      successful <- build_log[build_log$build_success, ]
+      chronicle_results <- lapply(seq_len(nrow(successful)), function(i) {
+        deriv_name <- successful$derivation[i]
+        if (deriv_name == "all-derivations") {
+          return(NULL)
+        }
+        path <- successful$path[i]
+        output_files <- successful$output[[i]]
+        # Find RDS files
+        rds_files <- output_files[grepl("\\.rds$", output_files)]
+        if (length(rds_files) == 0) {
+          return(NULL)
+        }
+        obj <- tryCatch(
+          readRDS(file.path(path, rds_files[1])),
+          error = function(e) NULL
+        )
+        if (is.null(obj)) {
+          return(NULL)
+        }
+        status <- .rxp_chronicle_status(obj)
+        if (is.null(status)) {
+          return(NULL)
+        }
+        list(derivation = deriv_name, status = status)
+      })
+      chronicle_results <- Filter(Negate(is.null), chronicle_results)
+
+      if (length(chronicle_results) > 0) {
+        n_nothing <- sum(vapply(
+          chronicle_results,
+          function(x) x$status$is_nothing,
+          logical(1)
+        ))
+        n_warning <- sum(vapply(
+          chronicle_results,
+          function(x) x$status$has_warnings,
+          logical(1)
+        ))
+
+        if (n_nothing > 0 || n_warning > 0) {
+          cat("\nChronicle status:\n")
+          for (res in chronicle_results) {
+            cat(
+              .rxp_format_chronicle_message(res$derivation, res$status),
+              "\n"
+            )
+          }
+          if (n_nothing > 0) {
+            warning(
+              sprintf(
+                "\n%d derivation(s) contain chronicle Nothing values!",
+                n_nothing
+              ),
+              "\nRun `rxp_check_chronicles()` for details.",
+              call. = FALSE
+            )
+          }
+        }
+      }
+    }
   }
 
   invisible(build_log)
