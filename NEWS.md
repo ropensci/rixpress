@@ -1,3 +1,33 @@
+# rixpress 0.12.0 (2026-01-31)
+
+## New Features
+
+- **Chronicler integration**: Added support for detecting `{chronicler}` package
+  `Nothing` values in pipeline outputs. When using `chronicler`'s `record()`
+  decorated functions, errors and warnings are captured as `Nothing` values
+  instead of failing the build. This can mask pipeline failures.
+
+- **`rxp_check_chronicles()`**: New function to scan all pipeline outputs for
+  chronicle objects and report their status:
+  - ✓ Success: `Just` value, no warnings or errors
+  - ⚠ Warning: `Just` value, but warnings were captured
+  - ✗ Nothing: Failed computation, errors captured
+
+- **Enhanced `rxp_read()` and `rxp_load()`**: Now automatically warn when
+  reading chronicle objects that contain `Nothing` values, and inform about
+  chronicles with captured warnings.
+
+## Internal Changes
+
+- Added `chronicler` as an optional dependency (Suggests).
+- New internal helper functions for chronicle state detection.
+
+# rixpress 0.11.2 (2026-01-28)
+
+## Changes
+
+- Updated `rxp_visnetwork()` styling to use a dual-encoding approach (similar to `rxp_ggdag()`) when `color_by = "pipeline"`. Now, node interiors are colored by derivation type (e.g., R, Python) while node borders are colored by pipeline group.
+- Spellchecked `vignettes/sub-pipelines.Rmd` to British English.
 # rixpress 0.11.1 (2026-01-25)
 
 ## Bug Fixes
@@ -6,12 +36,7 @@
   Previously, `rixpress` failed to parse the `pyconf` block correctly when it contained
   the `} ++ [ ... ];` syntax used by `rix` for git packages.
 
-# rixpress 0.11.2 (2026-01-28)
 
-## Changes
-
-- Updated `rxp_visnetwork()` styling to use a dual-encoding approach (similar to `rxp_ggdag()`) when `color_by = "pipeline"`. Now, node interiors are colored by derivation type (e.g., R, Python) while node borders are colored by pipeline group.
-- Spellchecked `vignettes/sub-pipelines.Rmd` to British English.
 
 # rixpress 0.11.0 (2025-01-24)
 
