@@ -154,6 +154,12 @@
 #'   Each level adds one --verbose flag to nix-store command.
 #' @param max_jobs Integer, number of derivations to be built in parallel.
 #' @param cores Integer, number of cores a derivation can use during build.
+#' @details
+#' When the `{chronicler}` package is available, `rxp_make()` automatically
+#' calls `rxp_check_chronicles()` after a successful build to check for
+#' `Nothing` values in chronicle objects. This helps detect silent failures
+#' in pipelines that use chronicler's `record()` decorated functions.
+#' See `vignette("chronicler")` for more details.
 #' @importFrom processx run
 #' @importFrom utils capture.output
 #' @return A character vector of paths to the built outputs.
@@ -387,6 +393,15 @@ rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
       "Use `rxp_read(\"derivation_name\")` to read objects or\n",
       "`rxp_load(\"derivation_name\")` to load them into the global environment."
     )
+
+    # Automatically check for chronicle Nothing values if chronicler is available
+    if (.rxp_has_chronicler()) {
+      message(
+        "\nThis pipeline uses {chronicler}. ",
+        "Here is a summary of chronicle results:"
+      )
+      rxp_check_chronicles()
+    }
   }
 
   invisible(build_log)

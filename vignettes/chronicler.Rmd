@@ -80,20 +80,18 @@ When you run `rxp_make()`, the build succeeds! But `result` contains `Nothing`,
 meaning the computation actually failed. Without checking, you might think
 your pipeline worked perfectly.
 
-## The Solution: rxp_check_chronicles()
+## The Solution: Automatic Chronicle Checking
 
-`{rixpress}` provides the `rxp_check_chronicles()` function to scan your
-pipeline outputs and detect `Nothing` values:
+When `{chronicler}` is available, `{rixpress}` automatically checks your
+pipeline outputs for `Nothing` values after every successful build.
+The `rxp_check_chronicles()` function is called automatically by `rxp_make()`:
 
 ```{r, eval = FALSE}
-# After building
+# Build the pipeline - chronicle status is checked automatically!
 rxp_make()
-
-# Check for Nothing values
-rxp_check_chronicles()
 ```
 
-This displays status for each chronicle object found:
+After the build, you'll see the status for each chronicle object:
 
 ```
 Chronicle status:
@@ -187,11 +185,13 @@ list(
   rxp_populate(build = FALSE)
 ```
 
-Build and check:
+Build the pipeline (chronicle status is checked automatically):
 
 ```{r, eval = FALSE}
 rxp_make()
-rxp_check_chronicles()
+
+# You can also manually check chronicles at any time:
+# rxp_check_chronicles()
 ```
 
 ## Automatic Warnings
@@ -210,8 +210,9 @@ This helps catch silent failures even during interactive exploration.
 
 ## Best Practices
 
-1. **Always run `rxp_check_chronicles()` after building** pipelines that use
-   chronicler. Consider adding it to your CI workflow.
+1. **Chronicle status is checked automatically** after every successful build
+   when `{chronicler}` is available. You can also run `rxp_check_chronicles()`
+   manually at any time.
 
 2. **Use `chronicler::read_log()` for debugging**. When a chronicle contains
    `Nothing`, the log shows exactly where and why it failed:
