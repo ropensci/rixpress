@@ -282,7 +282,7 @@ document. Here is what the source of the document looks like:
 ````text
 
 ---
-title: "Loading derivations outputs in a quarto doc"
+title: "Loading Derivations Outputs in a Quarto Doc"
 format:
   html:
     embed-resources: true

@@ -1,5 +1,5 @@
 ---
-title: "Core rixpress Functions and Usage"
+title: "Core Rixpress Functions and Usage"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Core rixpress Functions and Usage}
