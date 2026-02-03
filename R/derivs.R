@@ -1,4 +1,4 @@
-#' Helper function to generate a Nix derivation snippet
+#' Helper Function to Generate a Nix Derivation Snippet
 #'
 #' @param out_name Character, name of the derivation
 #' @param src_snippet Character, the src part of the derivation
@@ -61,7 +61,7 @@ make_derivation_snippet <- function(
   )
 }
 
-#' Create a Nix expression running an R function
+#' Create a Nix Expression Running an R Function
 #' @family derivations
 #' @param name Symbol, name of the derivation.
 #' @param expr R code to generate the expression. Ideally it should be a call
@@ -330,7 +330,7 @@ rxp_r <- function(
     structure(class = "rxp_derivation")
 }
 
-#' Create a Nix expression running a Python function
+#' Create a Nix Expression Running a Python Function
 #'
 #' @family derivations
 #' @param name Symbol, name of the derivation.
@@ -604,7 +604,7 @@ rxp_py <- function(
     structure(class = "rxp_derivation")
 }
 
-#' Create a Nix expression running a Julia function
+#' Create a Nix Expression Running a Julia Function
 #'
 #' @param name Symbol, name of the derivation.
 #' @param expr Character, Julia code to generate the expression. Ideally it
@@ -892,7 +892,7 @@ rxp_jl <- function(
 }
 
 
-#' Render a Quarto document as a Nix derivation
+#' Render a Quarto Document as a Nix Derivation
 #'
 #' @family derivations
 #' @param name Symbol, derivation name.
@@ -1141,7 +1141,7 @@ rxp_qmd <- function(
     structure(class = "rxp_derivation")
 }
 
-#' Render an R Markdown document as a Nix derivation
+#' Render an R Markdown Document as a Nix Derivation
 #'
 #' @family derivations
 #' @param name Symbol, derivation name.
@@ -1303,7 +1303,7 @@ rxp_rmd <- function(
     structure(class = "rxp_derivation")
 }
 
-#' Print method for derivation objects
+#' Print Method for Derivation Objects
 #' @param x An object of class "rxp_derivation"
 #' @param ... Additional arguments passed to print methods
 #' @return Nothing, prints a summary of the derivation object to the console.

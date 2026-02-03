@@ -1,4 +1,4 @@
-#' Check if chronicler/maybe packages are available
+#' Check If chronicler/maybe Packages Are Available
 #'
 #' @return Logical, TRUE if both packages are available
 #' @noRd
@@ -7,7 +7,7 @@
     requireNamespace("maybe", quietly = TRUE)
 }
 
-#' Determine chronicle status: "success", "warning", or "nothing"
+#' Determine Chronicle Status: "success", "warning", or "nothing"
 #'
 #' @param x Object to check
 #' @return Character: "success", "warning", "nothing", or NULL if not a chronicle
@@ -37,7 +37,7 @@
   "success"
 }
 
-#' Get detailed chronicle status information
+#' Get Detailed Chronicle Status Information
 #'
 #' @param x A chronicle object
 #' @return List with status information, or NULL if not a chronicle
@@ -74,7 +74,7 @@
   )
 }
 
-#' Get the display symbol for a chronicle state
+#' Get the Display Symbol for a Chronicle State
 #'
 #' @param state Character: "success", "warning", or "nothing"
 #' @return Character: the display symbol
@@ -89,7 +89,7 @@
   )
 }
 
-#' Format chronicle status message for display
+#' Format Chronicle Status Message for Display
 #'
 #' @param derivation_name Name of the derivation
 #' @param status Output from .rxp_chronicle_status()

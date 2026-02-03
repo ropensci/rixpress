@@ -570,7 +570,7 @@ gen_pipeline <- function(dag_file, flat_pipeline) {
 }
 
 
-#' Generate an R or Py script with library calls from a default.nix file
+#' Generate an R or Py Script with Library Calls from a default.nix File
 #'
 #' @param nix_env Nix environment where the derivation runs
 #' @param additional_files Character vector, additional files to include. These

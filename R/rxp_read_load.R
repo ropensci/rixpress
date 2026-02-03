@@ -1,4 +1,4 @@
-#' Core setup function for rxp_read() and rxp_load()
+#' Core Setup Function for rxp_read() and rxp_load()
 #' @param derivation_name The name of the derivation.
 #' @param which_log Character, defaults to NULL. If NULL the most recent
 #'   build log is used. If a string is provided, it's used as a

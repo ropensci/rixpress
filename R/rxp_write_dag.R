@@ -78,7 +78,7 @@ rxp_write_dag <- function(rxp_list, output_file = "_rixpress/dag.json") {
   }
 }
 
-#' Propagate no-op builds to dependent derivations
+#' Propagate No-Op Builds to Dependent Derivations
 #'
 #' @param dag A list of derivation nodes with dependencies
 #' @return Updated DAG with propagated no-op flags
@@ -131,7 +131,7 @@ propagate_noop_builds <- function(dag) {
   dag
 }
 
-#' Extract dependencies for a derivation
+#' Extract Dependencies for a Derivation
 #'
 #' @param deriv The derivation object
 #' @param type The type of derivation
@@ -162,7 +162,7 @@ extract_dependencies <- function(
   setdiff(all_deps, name)
 }
 
-#' Extract dependencies from R script derivations
+#' Extract Dependencies from R Script Derivations
 #'
 #' @param deriv The derivation object
 #' @param name The name of the derivation
@@ -193,7 +193,7 @@ extract_r_dependencies <- function(deriv, name, all_derivs_names) {
   names(deps)
 }
 
-#' Extract dependencies from markdown (Quarto/RMarkdown) derivations
+#' Extract Dependencies from Markdown (Quarto/RMarkdown) Derivations
 #'
 #' @param deriv The derivation object
 #' @param type The type of derivation ("rxp_qmd" or "rxp_rmd")
@@ -263,7 +263,7 @@ extract_markdown_dependencies <- function(deriv, type, name, all_derivs_names) {
   deps
 }
 
-#' Extract dependencies from Python script derivations
+#' Extract Dependencies from Python Script Derivations
 #'
 #' @param deriv The derivation object
 #' @param name The name of the derivation
@@ -294,7 +294,7 @@ extract_python_dependencies <- function(deriv, name, all_derivs_names) {
   names(deps)
 }
 
-#' Extract dependencies from Julia script derivations
+#' Extract Dependencies from Julia Script Derivations
 #'
 #' @param deriv The derivation object
 #' @param name The name of the derivation

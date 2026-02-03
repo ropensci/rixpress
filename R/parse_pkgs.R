@@ -1,4 +1,4 @@
-#' Extract packages from a specified block in a default.nix file
+#' Extract Packages from a Specified Block in a default.nix File
 #'
 #' @param nix_file Path to the default.nix file
 #' @param project_path Path to root of project, typically "."
@@ -154,7 +154,7 @@ parse_rpkgs_git <- function(
 }
 
 
-#' Generate a script with import statements and optional additional content
+#' Generate a Script with Import Statements and Optional Additional Content
 #'
 #' @param packages List of package names
 #' @param additional_files Character vector of additional files to include
@@ -258,7 +258,7 @@ import_formatter_jl <- function(package) {
   paste0("using ", package)
 }
 
-#' Configuration for supported languages
+#' Configuration for Supported Languages
 #'
 #' This list defines the configuration for each supported language,
 #' including block names, file patterns, and function references.
@@ -293,7 +293,7 @@ language_configs <- list(
   )
 )
 
-#' Generate a script with import statements from a default.nix file
+#' Generate a Script with Import Statements from a default.nix File
 #'
 #' @param nix_file Path to the default.nix file
 #' @param additional_files Character vector of additional files to include
@@ -376,7 +376,7 @@ generate_r_or_py_libraries_from_nix <- function(
   return(outfile)
 }
 
-#' Generate language-specific library scripts from a Nix file
+#' Generate Language-Specific Library Scripts from a Nix File
 #'
 #' These are convenience wrappers around generate_r_or_py_libraries_from_nix
 #' for specific languages.
@@ -507,7 +507,7 @@ adjust_import <- function(old_import, new_import, project_path = ".") {
   invisible(NULL)
 }
 
-#' Add an import statement to Python files in the _rixpress folder matching a
+#' Add an Import Statement to Python Files in the _rixpress Folder Matching a
 #' Nix environment name
 #'
 #' This function appends a specified import statement to the end of each Python

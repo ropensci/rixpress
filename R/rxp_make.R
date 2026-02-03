@@ -1,4 +1,4 @@
-#' Validate verbose parameter and handle backward compatibility
+#' Validate Verbose Parameter and Handle Backward Compatibility
 #'
 #' @param verbose The verbose parameter value to validate
 #' @return A single non-negative integer
@@ -29,7 +29,7 @@
   verbose
 }
 
-#' Parse Nix build output to track derivation progress
+#' Parse Nix Build Output to Track Derivation Progress
 #'
 #' @param line Output line from nix-store
 #' @param derivation_names Vector of derivation names to track
@@ -114,7 +114,7 @@
   return(NULL)
 }
 
-#' Prepare nix-store command arguments
+#' Prepare nix-store Command Arguments
 #'
 #' @param max_jobs Integer, number of derivations to be built in parallel
 #' @param cores Integer, number of cores a derivation can use during build
@@ -407,7 +407,7 @@ rxp_make <- function(verbose = 0L, max_jobs = 1, cores = 1) {
   invisible(build_log)
 }
 
-#' Export Nix store paths to an archive
+#' Export Nix Store Paths to an Archive
 #'
 #' Creates a single archive file containing the specified Nix store paths
 #'   and their dependencies.
@@ -476,7 +476,7 @@ rxp_export_artifacts <- function(
   message("Export completed")
 }
 
-#' Import Nix store paths from an archive
+#' Import Nix Store Paths from an Archive
 #'
 #' Imports the store paths contained in an archive file into the local Nix store.
 #' Useful for transferring built outputs between machines.
