@@ -4,17 +4,23 @@
   "identifier": "rixpress",
   "description": "Streamlines the creation of reproducible analytical pipelines using 'default.nix' expressions generated via the 'rix' package for reproducibility. Define derivations in 'R', 'Python' or 'Julia', chain them into a composition of pure functions and build the resulting pipeline using 'Nix' as the underlying end-to-end build tool. Functions to plot the pipeline as a directed acyclic graph are included, as well as functions to load and inspect intermediary results for interactive analysis. User experience heavily inspired by the 'targets' package.",
   "name": "rixpress: Build Reproducible Analytical Pipelines with 'Nix'",
-  "relatedLink": "https://docs.ropensci.org/rixpress/",
+  "relatedLink": ["https://docs.ropensci.org/rixpress/", "https://CRAN.R-project.org/package=rixpress"],
   "codeRepository": "https://github.com/ropensci/rixpress/",
   "issueTracker": "https://github.com/ropensci/rixpress/issues/",
   "license": "https://spdx.org/licenses/GPL-3.0",
-  "version": "0.10.1",
+  "version": "0.12.1",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
     "url": "https://r-project.org"
   },
-  "runtimePlatform": "R version 4.5.1 (2025-06-13)",
+  "runtimePlatform": "R version 4.5.2 (2025-10-31)",
+  "provider": {
+    "@id": "https://cran.r-project.org",
+    "@type": "Organization",
+    "name": "Comprehensive R Archive Network (CRAN)",
+    "url": "https://cran.r-project.org"
+  },
   "author": [
     {
       "@type": "Person",
@@ -34,6 +40,18 @@
     }
   ],
   "softwareSuggestions": [
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "chronicler",
+      "name": "chronicler",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=chronicler"
+    },
     {
       "@type": "SoftwareApplication",
       "identifier": "dplyr",
@@ -177,6 +195,18 @@
     },
     "2": {
       "@type": "SoftwareApplication",
+      "identifier": "cli",
+      "name": "cli",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=cli"
+    },
+    "3": {
+      "@type": "SoftwareApplication",
       "identifier": "igraph",
       "name": "igraph",
       "provider": {
@@ -187,7 +217,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=igraph"
     },
-    "3": {
+    "4": {
       "@type": "SoftwareApplication",
       "identifier": "jsonlite",
       "name": "jsonlite",
@@ -199,7 +229,7 @@
       },
       "sameAs": "https://CRAN.R-project.org/package=jsonlite"
     },
-    "4": {
+    "5": {
       "@type": "SoftwareApplication",
       "identifier": "processx",
       "name": "processx",
@@ -213,7 +243,7 @@
     },
     "SystemRequirements": "Nix"
   },
-  "fileSize": "1586.94KB",
+  "fileSize": "666.126KB",
   "releaseNotes": "https://github.com/ropensci/rixpress/blob/main/NEWS.md",
   "readme": "https://github.com/ropensci/rixpress/blob/main/README.md",
   "contIntegration": "https://github.com/ropensci/rixpress/actions/workflows/rhub.yaml/",
