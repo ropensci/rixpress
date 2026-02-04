@@ -3,7 +3,7 @@
 \name{rxp_ggdag}
 \alias{rxp_ggdag}
 \title{Create a Directed Acyclic Graph (DAG) Representing the Pipeline
-using \code{{ggplot2}}}
+Using \code{{ggplot2}}}
 \usage{
 rxp_ggdag(
   nodes_and_edges = get_nodes_edges(),

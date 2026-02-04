@@ -3,7 +3,7 @@
 \name{rxp_visnetwork}
 \alias{rxp_visnetwork}
 \title{Create a Directed Acyclic Graph (DAG) Representing the Pipeline
-using \code{{visNetwork}}}
+Using \code{{visNetwork}}}
 \usage{
 rxp_visnetwork(
   nodes_and_edges = get_nodes_edges(),

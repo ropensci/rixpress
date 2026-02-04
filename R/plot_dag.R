@@ -147,7 +147,7 @@ get_nodes_edges <- function(path_dag = "_rixpress/dag.json") {
 
 
 #' @title Create a Directed Acyclic Graph (DAG) Representing the Pipeline
-#'   using `{ggplot2}`
+#'   Using `{ggplot2}`
 #' @family visualisation functions
 #' @description Uses `{ggdag}` to generate the plot. `{ggdag}` is a soft
 #'   dependency of `{rixpress}` so you need to install it to use this
@@ -355,7 +355,7 @@ rxp_ggdag <- function(
 }
 
 #' @title Create a Directed Acyclic Graph (DAG) Representing the Pipeline
-#'   using `{visNetwork}`
+#'   Using `{visNetwork}`
 #' @family visualisation functions
 #' @description Uses `{visNetwork}` to generate the plot. `{visNetwork}` is a
 #'   soft dependency of `{rixpress}` so you need to install it to use this

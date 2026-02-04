@@ -3,7 +3,10 @@
 \name{add_import}
 \alias{add_import}
 \title{Add an Import Statement to Python Files in the _rixpress Folder Matching a
-Nix environment name}
+Nix Environment Name
+This function appends a specified import statement to the end of each Python
+file within the \verb{_rixpress} folder and its subdirectories, but only for files
+whose base name matches the provided Nix environment.}
 \usage{
 add_import(import_statement, nix_env, project_path = ".")
 }
@@ -21,6 +24,8 @@ No return value; the function performs in-place modifications of the
 files.
 }
 \description{
+Add an Import Statement to Python Files in the _rixpress Folder Matching a
+Nix Environment Name
 This function appends a specified import statement to the end of each Python
 file within the \verb{_rixpress} folder and its subdirectories, but only for files
 whose base name matches the provided Nix environment.

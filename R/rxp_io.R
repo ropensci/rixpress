@@ -589,7 +589,7 @@ create_rxp_derivation <- function(
   )
 }
 
-#' Creates a Nix Expression That Reads in a File (or Folder of Data) Using R
+#' Creates a Nix Expression That Reads In a File (or Folder of Data) Using R
 #'
 #' @family derivations
 #' @return An object of class `rxp_derivation`.
@@ -603,7 +603,7 @@ create_rxp_derivation <- function(
 #' @export
 rxp_r_file <- function(...) rxp_file("R", ...)
 
-#' Creates a Nix Expression That Reads in a File (or Folder of Data) Using Python
+#' Creates a Nix Expression That Reads In a File (or Folder of Data) Using Python
 #'
 #' @family derivations
 #' @return An object of class `rxp_derivation`.
@@ -617,7 +617,7 @@ rxp_r_file <- function(...) rxp_file("R", ...)
 #' @export
 rxp_py_file <- function(...) rxp_file("Py", ...)
 
-#' Creates a Nix Expression That Reads in a File (or Folder of Data) Using Julia
+#' Creates a Nix Expression That Reads In a File (or Folder of Data) Using Julia
 #'
 #' @family derivations
 #' @return An object of class `rxp_derivation`.

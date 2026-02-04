@@ -2,7 +2,7 @@
 % Please edit documentation in R/parse_pkgs.R
 \name{adjust_import}
 \alias{adjust_import}
-\title{Adjust Python import statements}
+\title{Adjust Python Import Statements}
 \usage{
 adjust_import(old_import, new_import, project_path = ".")
 }

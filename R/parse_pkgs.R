@@ -437,7 +437,7 @@ generate_jl_libraries_from_nix <- function(
   )
 }
 
-#' Adjust Python import statements
+#' Adjust Python Import Statements
 #'
 #' When calling `rxp_populate()`, a file containing Python import statements is
 #' automatically generated inside the `_rixpress` folder. For example, if the
@@ -508,8 +508,7 @@ adjust_import <- function(old_import, new_import, project_path = ".") {
 }
 
 #' Add an Import Statement to Python Files in the _rixpress Folder Matching a
-#' Nix environment name
-#'
+#' Nix Environment Name
 #' This function appends a specified import statement to the end of each Python
 #' file within the `_rixpress` folder and its subdirectories, but only for files
 #' whose base name matches the provided Nix environment.
