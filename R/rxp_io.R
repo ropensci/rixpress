@@ -644,12 +644,25 @@ rxp_jl_file <- function(...) rxp_file("Jl", ...)
 #' @return A list with elements: `name`, `snippet`, `type`, `additional_files`,
 #'   `nix_env`.
 #' @noRd
-rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
+rxp_common_setup <- function(out_name, expr_str, nix_env, direction, env_var = NULL) {
   expr_str <- gsub("\"", "'", expr_str)
   base <- sanitize_nix_env(nix_env)
 
+  # Always set RETICULATE_AUTOCONFIGURE=0 to prevent reticulate from
+  # modifying PYTHONPATH in Nix's hermetic build environment
+  default_env <- c(RETICULATE_AUTOCONFIGURE = "0")
+
+  # Merge with user-provided env_var if present (user values take precedence)
+  if (!is.null(env_var) && length(env_var) > 0) {
+    env_var <- c(default_env[!names(default_env) %in% names(env_var)], env_var)
+  } else {
+    env_var <- default_env
+  }
+
+  env_exports <- build_env_exports(env_var)
+
   r_command <- build_transfer_command(out_name, expr_str, direction)
-  build_phase <- build_reticulate_phase(r_command)
+  build_phase <- build_reticulate_phase(r_command, env_exports)
 
   snippet <- make_derivation_snippet(
     out_name = out_name,
@@ -665,7 +678,8 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
       snippet = snippet,
       type = paste0("rxp_", direction),
       additional_files = "",
-      nix_env = nix_env
+      nix_env = nix_env,
+      env_var = env_var # Store for potential inspection/debugging
     ),
     class = "rxp_derivation"
   )
@@ -704,9 +718,10 @@ build_transfer_command <- function(out_name, expr_str, direction) {
 #' @param r_command Character R command
 #' @return Character build phase
 #' @noRd
-build_reticulate_phase <- function(r_command) {
+build_reticulate_phase <- function(r_command, env_exports = "") {
   sprintf(
-    "export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python\n       Rscript -e \"\n         source('libraries.R')\n%s\"",
+    "export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python\n       %sRscript -e \"\n         source('libraries.R')\n%s\"",
+    env_exports,
     r_command
   )
 }
@@ -718,14 +733,16 @@ build_reticulate_phase <- function(r_command) {
 #' @param expr Symbol, Python object to be loaded into R.
 #' @param nix_env Character, path to the Nix environment file, default is
 #'   "default.nix".
+#' @param env_var Named list of environment variables to set. RETICULATE_AUTOCONFIGURE=0
+#'   is set by default to prevent reticulate from modifying PYTHONPATH in Nix builds.
 #' @details `rxp_py2r(my_obj, my_python_object)` loads a serialized Python
 #'   object and saves it as an RDS file using `reticulate::py_load_object()`.
 #' @return An object of class `rxp_derivation`.
 #' @export
-rxp_py2r <- function(name, expr, nix_env = "default.nix") {
+rxp_py2r <- function(name, expr, nix_env = "default.nix", env_var = NULL) {
   out_name <- deparse1(substitute(name))
   expr_str <- deparse1(substitute(expr))
-  rxp_common_setup(out_name, expr_str, nix_env, "py2r")
+  rxp_common_setup(out_name, expr_str, nix_env, "py2r", env_var)
 }
 
 #' Transfer R Object into a Python Session
@@ -735,12 +752,14 @@ rxp_py2r <- function(name, expr, nix_env = "default.nix") {
 #' @param expr Symbol, R object to be saved into a Python pickle.
 #' @param nix_env Character, path to the Nix environment file, default is
 #'   "default.nix".
+#' @param env_var Named list of environment variables to set. RETICULATE_AUTOCONFIGURE=0
+#'   is set by default to prevent reticulate from modifying PYTHONPATH in Nix builds.
 #' @details `rxp_r2py(my_obj, my_r_object)` saves an R object to a Python pickle
 #'   using `reticulate::py_save_object()`.
 #' @return An object of class `rxp_derivation`.
 #' @export
-rxp_r2py <- function(name, expr, nix_env = "default.nix") {
+rxp_r2py <- function(name, expr, nix_env = "default.nix", env_var = NULL) {
   out_name <- deparse1(substitute(name))
   expr_str <- deparse1(substitute(expr))
-  rxp_common_setup(out_name, expr_str, nix_env, "r2py")
+  rxp_common_setup(out_name, expr_str, nix_env, "r2py", env_var)
 }

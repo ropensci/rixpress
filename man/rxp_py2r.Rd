@@ -4,7 +4,7 @@
 \alias{rxp_py2r}
 \title{Transfer Python Object into an R Session}
 \usage{
-rxp_py2r(name, expr, nix_env = "default.nix")
+rxp_py2r(name, expr, nix_env = "default.nix", env_var = NULL)
 }
 \arguments{
 \item{name}{Symbol, name of the derivation.}
@@ -13,6 +13,9 @@ rxp_py2r(name, expr, nix_env = "default.nix")
 
 \item{nix_env}{Character, path to the Nix environment file, default is
 "default.nix".}
+
+\item{env_var}{Named list of environment variables to set. RETICULATE_AUTOCONFIGURE=0
+is set by default to prevent reticulate from modifying PYTHONPATH in Nix builds.}
 }
 \value{
 An object of class \code{rxp_derivation}.
