@@ -266,7 +266,8 @@ test_that("rxp_py2r: generates correct list", {
   d1_subset <- list(
     "name" = d1$name,
     "type" = d1$type,
-    "nix_env" = d1$nix_env
+    "nix_env" = d1$nix_env,
+    "env_var" = d1$env_var
   )
   class(d1_subset) <- "rxp_derivation"
 
@@ -276,7 +277,8 @@ test_that("rxp_py2r: generates correct list", {
       list(
         "name" = "r_data",
         "type" = "rxp_py2r",
-        "nix_env" = "default.nix"
+        "nix_env" = "default.nix",
+        "env_var" = c(RETICULATE_AUTOCONFIGURE = "0")
       ),
       class = "rxp_derivation"
     )
@@ -294,13 +296,29 @@ test_that("rxp_r2py: generates correct list", {
     structure(
       list(
         "name" = "py_data",
-        "snippet" = '  py_data = makeRDerivation {\n    name = "py_data";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python\n       Rscript -e "\n         source(\'libraries.R\')\n         r_data <- readRDS(\'${r_data}/r_data\')\n         reticulate::py_save_object(r_data, \'py_data\', pickle = \'pickle\')"\n    \'\';\n  };',
+        "snippet" = '  py_data = makeRDerivation {\n    name = "py_data";\n    buildInputs = defaultBuildInputs;\n    configurePhase = defaultConfigurePhase;\n    buildPhase = \'\'\n      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python\n       export RETICULATE_AUTOCONFIGURE=0\n       Rscript -e "\n         source(\'libraries.R\')\n         r_data <- readRDS(\'${r_data}/r_data\')\n         reticulate::py_save_object(r_data, \'py_data\', pickle = \'pickle\')"\n    \'\';\n  };',
         "type" = "rxp_r2py",
         "additional_files" = "",
-        "nix_env" = "default.nix"
+        "nix_env" = "default.nix",
+        "env_var" = c(RETICULATE_AUTOCONFIGURE = "0")
       ),
       class = "rxp_derivation"
     )
+  )
+})
+
+test_that("rxp_py2r: env_var override keeps user values", {
+  mockReticulate()
+
+  d1 <- rxp_py2r(
+    r_data,
+    py_data,
+    env_var = c(RETICULATE_AUTOCONFIGURE = "1", CUSTOM = "yes")
+  )
+
+  testthat::expect_equal(
+    d1$env_var,
+    c(RETICULATE_AUTOCONFIGURE = "1", CUSTOM = "yes")
   )
 })
 

@@ -156,6 +156,11 @@ d3_1 <- rxp_r2py(
 
 For this to work, you need to add `{reticulate}` to the pipeline's execution environment.
 
+**Note:** rixpress automatically sets `RETICULATE_AUTOCONFIGURE=0` in
+`rxp_py2r()` and `rxp_r2py()` derivations to keep reticulate from modifying
+`PYTHONPATH` inside hermetic Nix builds. You can override this by supplying
+`env_var` explicitly.
+
 ## Summary
 
 - Use `encoder`/`decoder` for non-RDS objects (CSV, `{qs}`, Keras models) and to pass data
@@ -163,4 +168,3 @@ For this to work, you need to add `{reticulate}` to the pipeline's execution env
 - Explicitly set decoders per upstream object to avoid mismatches.
 - Use `rxp_py2r()` and `rxp_r2py()` if you want to re-use `{reticulate}`'s bulit-in conversion
   (useful for more complex objects).
-

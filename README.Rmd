@@ -223,6 +223,11 @@ default, calling `rxp_populate()` also builds the pipeline, but it’s
 possible to only generate the `pipeline.nix` file and build the pipeline
 later using:
 
+**Note:** For Python/R interoperability, rixpress automatically sets
+`RETICULATE_AUTOCONFIGURE=0` in `rxp_py2r()` and `rxp_r2py()` derivations so
+reticulate does not modify `PYTHONPATH` in Nix builds. You can override this
+by supplying `env_var` explicitly.
+
 ``` r
 rxp_make()
 ```

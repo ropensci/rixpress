@@ -36,21 +36,23 @@ returns: An object of class rxp_derivation.
 kind: function
 name: rxp_py2r
 exported: true
-signature: rxp_py2r(name, expr, nix_env = "default.nix")
-arguments:
-  expr: Symbol, Python object to be loaded into R.
-  name: Symbol, name of the derivation.
-  nix_env: Character, path to the Nix environment file, default is "default.nix".
+  signature: rxp_py2r(name, expr, nix_env = "default.nix", env_var = NULL)
+  arguments:
+    expr: Symbol, Python object to be loaded into R.
+    name: Symbol, name of the derivation.
+    nix_env: Character, path to the Nix environment file, default is "default.nix".
+    env_var: Named list of environment variables to set. RETICULATE_AUTOCONFIGURE=0 is set by default to prevent reticulate from modifying PYTHONPATH in Nix builds.
 returns: An object of class rxp_derivation.
 ---
 kind: function
 name: rxp_r2py
 exported: true
-signature: rxp_r2py(name, expr, nix_env = "default.nix")
-arguments:
-  expr: Symbol, R object to be saved into a Python pickle.
-  name: Symbol, name of the derivation.
-  nix_env: Character, path to the Nix environment file, default is "default.nix".
+  signature: rxp_r2py(name, expr, nix_env = "default.nix", env_var = NULL)
+  arguments:
+    expr: Symbol, R object to be saved into a Python pickle.
+    name: Symbol, name of the derivation.
+    nix_env: Character, path to the Nix environment file, default is "default.nix".
+    env_var: Named list of environment variables to set. RETICULATE_AUTOCONFIGURE=0 is set by default to prevent reticulate from modifying PYTHONPATH in Nix builds.
 returns: An object of class rxp_derivation.
 ---
 kind: function
