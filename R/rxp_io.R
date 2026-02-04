@@ -720,7 +720,7 @@ build_transfer_command <- function(out_name, expr_str, direction) {
 #' @noRd
 build_reticulate_phase <- function(r_command, env_exports = "") {
   sprintf(
-    "export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python\n       %sRscript -e \"\n         source('libraries.R')\n%s\"",
+    "# Clear any inherited PYTHONPATH\n       unset PYTHONPATH || true\n       # Dynamically determine Python version and set PYTHONPATH\n       PYTHON_VERSION=$(${defaultPkgs.python3}/bin/python3 -c 'import sys; print(f\"{sys.version_info.major}.{sys.version_info.minor}\")')\n       export PYTHONPATH=${defaultPkgs.python3}/lib/python$PYTHON_VERSION/site-packages\n       export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python\n       export RETICULATE_AUTOCONFIGURE=0\n       %sRscript -e \"\n         source('libraries.R')\n%s\"",
     env_exports,
     r_command
   )
