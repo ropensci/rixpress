@@ -1089,10 +1089,13 @@ rxp_qmd <- function(
     }
   }
 
+  # Extract Python version from nix_env
+  python_version <- extract_python_version(nix_env, project_path = ".")
+
   build_phase <- paste(
     "      mkdir home",
     "      export HOME=$PWD/home",
-    "      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python",
+    sprintf("      export RETICULATE_PYTHON=${defaultPkgs.%s}/bin/python", python_version),
     env_exports,
     if (length(sub_cmds) > 0) {
       paste("      ", sub_cmds, sep = "", collapse = "\n")
@@ -1102,6 +1105,7 @@ rxp_qmd <- function(
     sprintf("      quarto render %s %s --output-dir $out", qmd_file, args),
     sep = "\n"
   )
+
 
   # Prepare the fileset for src
   if (identical(additional_files, "")) {
@@ -1255,10 +1259,13 @@ rxp_rmd <- function(
     }
   }
 
+  # Extract Python version from nix_env
+  python_version <- extract_python_version(nix_env, project_path = ".")
+
   build_phase <- paste(
     "      mkdir home",
     "      export HOME=$PWD/home",
-    "      export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python",
+    sprintf("      export RETICULATE_PYTHON=${defaultPkgs.%s}/bin/python", python_version),
     env_exports,
     if (length(sub_cmds) > 0) {
       paste("      ", sub_cmds, sep = "", collapse = "\n")
@@ -1268,6 +1275,7 @@ rxp_rmd <- function(
     sprintf("      Rscript -e \"rmd_file <- '%s'; %s\"", rmd_file, render_args),
     sep = "\n"
   )
+
 
   # Prepare the fileset for src
   fileset_parts <- c(rmd_file, additional_files)
