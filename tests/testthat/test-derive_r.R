@@ -87,7 +87,6 @@ test_that("rxp_qmd: generates correct list", {
     args = "--to pdf"
   ))
 
-
   testthat::expect_equal(
     d1,
     structure(
@@ -263,7 +262,6 @@ test_that("rxp_py2r: generates correct list", {
 
   d1 <- suppressWarnings(rxp_py2r(r_data, py_data))
 
-
   # Create a subset of d1 with only the fields we want to test
   d1_subset <- list(
     "name" = d1$name,
@@ -289,7 +287,6 @@ test_that("rxp_r2py: generates correct list", {
   mockReticulate()
 
   d1 <- suppressWarnings(rxp_r2py(py_data, r_data))
-
 
   # Test the entire object
   testthat::expect_equal(
@@ -472,7 +469,6 @@ test_that("rxp_qmd: with env_var parameter", {
     env_var = c(QUARTO_PROFILE = "production", QUARTO_RENDER_TOKEN = "abc123")
   ))
 
-
   testthat::expect_equal(
     d1,
     structure(
@@ -564,7 +560,6 @@ test_that("rxp_rmd: with env_var parameter", {
       R_LIBS_USER = "/custom/r/libs"
     )
   ))
-
 
   # Test the entire object
   testthat::expect_equal(

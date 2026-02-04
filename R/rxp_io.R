@@ -54,7 +54,10 @@ extract_python_version <- function(nix_file, project_path = ".") {
   # Look for python<version>Packages pattern
   # Matches: python39Packages, python310Packages, python311Packages, etc.
   pattern <- "python(\\d+)Packages"
-  matches <- regmatches(pyconf_text, gregexpr(pattern, pyconf_text, perl = TRUE))[[1]]
+  matches <- regmatches(
+    pyconf_text,
+    gregexpr(pattern, pyconf_text, perl = TRUE)
+  )[[1]]
 
   if (length(matches) == 0) {
     # No specific version found, use default
@@ -698,7 +701,13 @@ rxp_jl_file <- function(...) rxp_file("Jl", ...)
 #' @return A list with elements: `name`, `snippet`, `type`, `additional_files`,
 #'   `nix_env`.
 #' @noRd
-rxp_common_setup <- function(out_name, expr_str, nix_env, direction, project_path = ".") {
+rxp_common_setup <- function(
+  out_name,
+  expr_str,
+  nix_env,
+  direction,
+  project_path = "."
+) {
   expr_str <- gsub("\"", "'", expr_str)
   base <- sanitize_nix_env(nix_env)
 
@@ -761,7 +770,11 @@ build_transfer_command <- function(out_name, expr_str, direction) {
 #' @param project_path Character project path
 #' @return Character build phase
 #' @noRd
-build_reticulate_phase <- function(r_command, nix_env = "default.nix", project_path = ".") {
+build_reticulate_phase <- function(
+  r_command,
+  nix_env = "default.nix",
+  project_path = "."
+) {
   # Extract the Python version from the nix file
   python_version <- extract_python_version(nix_env, project_path)
 
@@ -809,4 +822,3 @@ rxp_r2py <- function(name, expr, nix_env = "default.nix", project_path = ".") {
   expr_str <- deparse1(substitute(expr))
   rxp_common_setup(out_name, expr_str, nix_env, "r2py", project_path)
 }
-
