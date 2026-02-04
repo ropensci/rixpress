@@ -2,7 +2,7 @@
 % Please edit documentation in R/derivs.R
 \name{rxp_rmd}
 \alias{rxp_rmd}
-\title{Render an R Markdown document as a Nix derivation}
+\title{Render an R Markdown Document as a Nix Derivation}
 \usage{
 rxp_rmd(
   name,
@@ -43,7 +43,7 @@ become no-op builds.}
 An object of class derivation which inherits from lists.
 }
 \description{
-Render an R Markdown document as a Nix derivation
+Render an R Markdown Document as a Nix Derivation
 }
 \details{
 To include objects built in the pipeline,

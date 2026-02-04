@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_make.R
 \name{rxp_import_artifacts}
 \alias{rxp_import_artifacts}
-\title{Import Nix store paths from an archive}
+\title{Import Nix Store Paths from an Archive}
 \usage{
 rxp_import_artifacts(archive_file = "_rixpress/pipeline_outputs.nar")
 }

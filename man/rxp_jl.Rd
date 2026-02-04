@@ -2,7 +2,7 @@
 % Please edit documentation in R/derivs.R
 \name{rxp_jl}
 \alias{rxp_jl}
-\title{Create a Nix expression running a Julia function}
+\title{Create a Nix Expression Running a Julia Function}
 \usage{
 rxp_jl(
   name,
@@ -64,7 +64,7 @@ become no-op builds.}
 An object of class derivation which inherits from lists.
 }
 \description{
-Create a Nix expression running a Julia function
+Create a Nix Expression Running a Julia Function
 }
 \details{
 At a basic level,

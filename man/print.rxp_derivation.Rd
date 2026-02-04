@@ -2,7 +2,7 @@
 % Please edit documentation in R/derivs.R
 \name{print.rxp_derivation}
 \alias{print.rxp_derivation}
-\title{Print method for derivation objects}
+\title{Print Method for Derivation Objects}
 \usage{
 \method{print}{rxp_derivation}(x, ...)
 }
@@ -15,7 +15,7 @@
 Nothing, prints a summary of the derivation object to the console.
 }
 \description{
-Print method for derivation objects
+Print Method for Derivation Objects
 }
 \examples{
 \dontrun{

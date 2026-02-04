@@ -2,7 +2,7 @@
 % Please edit documentation in R/derivs.R
 \name{rxp_r}
 \alias{rxp_r}
-\title{Create a Nix expression running an R function}
+\title{Create a Nix Expression Running an R Function}
 \usage{
 rxp_r(
   name,
@@ -70,7 +70,7 @@ become no-op builds.}
 An object of class derivation which inherits from lists.
 }
 \description{
-Create a Nix expression running an R function
+Create a Nix Expression Running an R Function
 }
 \details{
 At a basic level, \code{rxp_r(mtcars_am, filter(mtcars, am == 1))} is

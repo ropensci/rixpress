@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_make.R
 \name{rxp_export_artifacts}
 \alias{rxp_export_artifacts}
-\title{Export Nix store paths to an archive}
+\title{Export Nix Store Paths to an Archive}
 \usage{
 rxp_export_artifacts(
   archive_file = "_rixpress/pipeline_outputs.nar",

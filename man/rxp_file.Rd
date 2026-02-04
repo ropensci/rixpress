@@ -2,7 +2,7 @@
 % Please edit documentation in R/rxp_io.R
 \name{rxp_file}
 \alias{rxp_file}
-\title{Generic Nix expression builder for R, Python, and Julia data readers}
+\title{Generic Nix Expression Builder for R, Python, and Julia Data Readers}
 \usage{
 rxp_file(
   lang,

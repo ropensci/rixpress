@@ -2,7 +2,7 @@
 % Please edit documentation in R/parse_pkgs.R
 \name{add_import}
 \alias{add_import}
-\title{Add an import statement to Python files in the _rixpress folder matching a
+\title{Add an Import Statement to Python Files in the _rixpress Folder Matching a
 Nix environment name}
 \usage{
 add_import(import_statement, nix_env, project_path = ".")

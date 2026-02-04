@@ -2,7 +2,7 @@
 % Please edit documentation in R/derivs.R
 \name{rxp_qmd}
 \alias{rxp_qmd}
-\title{Render a Quarto document as a Nix derivation}
+\title{Render a Quarto Document as a Nix Derivation}
 \usage{
 rxp_qmd(
   name,
@@ -42,7 +42,7 @@ become no-op builds.}
 An object of class derivation which inherits from lists.
 }
 \description{
-Render a Quarto document as a Nix derivation
+Render a Quarto Document as a Nix Derivation
 }
 \details{
 To include built derivations in the document,
