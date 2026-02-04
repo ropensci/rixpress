@@ -1,4 +1,5 @@
 # Constants for language configuration
+# Constants for language configuration
 LANG_CONFIG <- list(
   R = list(
     source_cmd = "source('%s')",
@@ -16,6 +17,61 @@ LANG_CONFIG <- list(
     output_ext = "jld2"
   )
 )
+
+extract_python_version <- function(nix_file, project_path = ".") {
+  file_path <- file.path(project_path, nix_file)
+
+  if (!file.exists(file_path)) {
+    warning(paste("File not found:", file_path, "- using python3 as fallback"))
+    return("python3")
+  }
+
+  lines <- readLines(file_path)
+
+  # Find the pyconf block
+  pyconf_start <- grep("^\\s*pyconf\\s*=", lines)
+
+  if (length(pyconf_start) == 0) {
+    # No pyconf found, return default
+    return("python3")
+  }
+
+  pyconf_start <- pyconf_start[1]
+
+  # Find the end of the pyconf block (closing };)
+  end_idxs <- grep("^\\s*\\};\\s*$", lines)
+  pyconf_end <- end_idxs[end_idxs > pyconf_start][1]
+
+  if (is.na(pyconf_end)) {
+    warning("Could not find end of pyconf block - using python3 as fallback")
+    return("python3")
+  }
+
+  # Extract the pyconf block
+  pyconf_lines <- lines[pyconf_start:pyconf_end]
+  pyconf_text <- paste(pyconf_lines, collapse = "\n")
+
+  # Look for python<version>Packages pattern
+  # Matches: python39Packages, python310Packages, python311Packages, etc.
+  pattern <- "python(\\d+)Packages"
+  matches <- regmatches(
+    pyconf_text,
+    gregexpr(pattern, pyconf_text, perl = TRUE)
+  )[[1]]
+
+  if (length(matches) == 0) {
+    # No specific version found, use default
+    return("python3")
+  }
+
+  # Extract the version number from the first match
+  version_match <- regmatches(matches[1], regexec(pattern, matches[1]))[[1]]
+  version_num <- version_match[2]
+
+  # Return pythonXYZ format (e.g., python312, python313)
+  return(paste0("python", version_num))
+}
+
 
 #' Clean User Functions Vector
 #'
@@ -641,15 +697,22 @@ rxp_jl_file <- function(...) rxp_file("Jl", ...)
 #' @param nix_env Character, path to the Nix environment file.
 #' @param direction Character, either "py2r" (Python to R) or "r2py" (R to
 #'   Python).
+#' @param project_path Character, path to the project root.
 #' @return A list with elements: `name`, `snippet`, `type`, `additional_files`,
 #'   `nix_env`.
 #' @noRd
-rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
+rxp_common_setup <- function(
+  out_name,
+  expr_str,
+  nix_env,
+  direction,
+  project_path = "."
+) {
   expr_str <- gsub("\"", "'", expr_str)
   base <- sanitize_nix_env(nix_env)
 
   r_command <- build_transfer_command(out_name, expr_str, direction)
-  build_phase <- build_reticulate_phase(r_command)
+  build_phase <- build_reticulate_phase(r_command, nix_env, project_path)
 
   snippet <- make_derivation_snippet(
     out_name = out_name,
@@ -670,6 +733,7 @@ rxp_common_setup <- function(out_name, expr_str, nix_env, direction) {
     class = "rxp_derivation"
   )
 }
+
 
 #' Build Transfer Command for py2r or r2py
 #' @param out_name Character output name
@@ -702,14 +766,25 @@ build_transfer_command <- function(out_name, expr_str, direction) {
 
 #' Build Reticulate Build Phase
 #' @param r_command Character R command
+#' @param nix_env Character nix environment file
+#' @param project_path Character project path
 #' @return Character build phase
 #' @noRd
-build_reticulate_phase <- function(r_command) {
+build_reticulate_phase <- function(
+  r_command,
+  nix_env = "default.nix",
+  project_path = "."
+) {
+  # Extract the Python version from the nix file
+  python_version <- extract_python_version(nix_env, project_path)
+
   sprintf(
-    "export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python\n       Rscript -e \"\n         source('libraries.R')\n%s\"",
+    "export RETICULATE_PYTHON=${defaultPkgs.%s}/bin/python\n       Rscript -e \"\n         source('libraries.R')\n%s\"",
+    python_version,
     r_command
   )
 }
+
 
 #' Transfer Python Object into an R Session
 #'
@@ -718,15 +793,17 @@ build_reticulate_phase <- function(r_command) {
 #' @param expr Symbol, Python object to be loaded into R.
 #' @param nix_env Character, path to the Nix environment file, default is
 #'   "default.nix".
+#' @param project_path Character, path to the project root, default is ".".
 #' @details `rxp_py2r(my_obj, my_python_object)` loads a serialized Python
 #'   object and saves it as an RDS file using `reticulate::py_load_object()`.
 #' @return An object of class `rxp_derivation`.
 #' @export
-rxp_py2r <- function(name, expr, nix_env = "default.nix") {
+rxp_py2r <- function(name, expr, nix_env = "default.nix", project_path = ".") {
   out_name <- deparse1(substitute(name))
   expr_str <- deparse1(substitute(expr))
-  rxp_common_setup(out_name, expr_str, nix_env, "py2r")
+  rxp_common_setup(out_name, expr_str, nix_env, "py2r", project_path)
 }
+
 
 #' Transfer R Object into a Python Session
 #'
@@ -735,12 +812,13 @@ rxp_py2r <- function(name, expr, nix_env = "default.nix") {
 #' @param expr Symbol, R object to be saved into a Python pickle.
 #' @param nix_env Character, path to the Nix environment file, default is
 #'   "default.nix".
+#' @param project_path Character, path to the project root, default is ".".
 #' @details `rxp_r2py(my_obj, my_r_object)` saves an R object to a Python pickle
 #'   using `reticulate::py_save_object()`.
 #' @return An object of class `rxp_derivation`.
 #' @export
-rxp_r2py <- function(name, expr, nix_env = "default.nix") {
+rxp_r2py <- function(name, expr, nix_env = "default.nix", project_path = ".") {
   out_name <- deparse1(substitute(name))
   expr_str <- deparse1(substitute(expr))
-  rxp_common_setup(out_name, expr_str, nix_env, "r2py")
+  rxp_common_setup(out_name, expr_str, nix_env, "r2py", project_path)
 }

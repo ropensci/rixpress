@@ -80,12 +80,12 @@ test_that("rxp_qmd: generates correct list", {
     qmd_file
   )
 
-  d1 <- rxp_qmd(
+  d1 <- suppressWarnings(rxp_qmd(
     report,
     qmd_file,
     additional_files = "images",
     args = "--to pdf"
-  )
+  ))
 
   testthat::expect_equal(
     d1,
@@ -260,7 +260,7 @@ mockReticulate <- function() {
 test_that("rxp_py2r: generates correct list", {
   mockReticulate()
 
-  d1 <- rxp_py2r(r_data, py_data)
+  d1 <- suppressWarnings(rxp_py2r(r_data, py_data))
 
   # Create a subset of d1 with only the fields we want to test
   d1_subset <- list(
@@ -286,7 +286,7 @@ test_that("rxp_py2r: generates correct list", {
 test_that("rxp_r2py: generates correct list", {
   mockReticulate()
 
-  d1 <- rxp_r2py(py_data, r_data)
+  d1 <- suppressWarnings(rxp_r2py(py_data, r_data))
 
   # Test the entire object
   testthat::expect_equal(
@@ -461,13 +461,13 @@ test_that("rxp_qmd: with env_var parameter", {
     qmd_file
   )
 
-  d1 <- rxp_qmd(
+  d1 <- suppressWarnings(rxp_qmd(
     report,
     qmd_file,
     additional_files = "images",
     args = "--to pdf",
     env_var = c(QUARTO_PROFILE = "production", QUARTO_RENDER_TOKEN = "abc123")
-  )
+  ))
 
   testthat::expect_equal(
     d1,
@@ -551,7 +551,7 @@ test_that("rxp_rmd: with env_var parameter", {
     rmd_file
   )
 
-  d1 <- rxp_rmd(
+  d1 <- suppressWarnings(rxp_rmd(
     report,
     rmd_file,
     additional_files = "images",
@@ -559,7 +559,7 @@ test_that("rxp_rmd: with env_var parameter", {
       RSTUDIO_PANDOC = "/usr/local/bin/pandoc",
       R_LIBS_USER = "/custom/r/libs"
     )
-  )
+  ))
 
   # Test the entire object
   testthat::expect_equal(

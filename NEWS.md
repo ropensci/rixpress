@@ -1,3 +1,9 @@
+# rixpress 0.12.1 (2026-02-04)
+
+## Improvements
+
+- **Python Version Detection**: `rixpress` now correctly detects the Python version specified in `default.nix` (e.g., `python311Packages`, `python312Packages`) and uses the corresponding interpreter (e.g., `${defaultPkgs.python311}/bin/python`) instead of defaulting to `python3`. This prevents ABI version mismatch errors when using compiled Python packages like `numpy`.
+
 # rixpress 0.12.0 (2026-01-31)
 
 ## New Features
