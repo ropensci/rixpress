@@ -337,7 +337,7 @@ kind: function
 name: add_import
 exported: true
 signature: add_import(import_statement, nix_env, project_path = ".")
-purpose: Add an import statement to Python files in the _rixpress folder matching a Nix environment name
+purpose: Add an Import Statement to Python Files in the _rixpress Folder Matching a Nix environment name
 arguments:
   import_statement: A character string representing the import statement to be added. For example, "import numpy as np".
   nix_env: A character string naming the Nix environment file (e.g. "default.nix" or "py-env.nix" or similar).
