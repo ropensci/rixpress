@@ -166,5 +166,5 @@ For this to work, you need to add `{reticulate}` to the pipeline's execution env
 - Use `encoder`/`decoder` for non-RDS objects (CSV, `{qs}`, Keras models) and to pass data
   to and from different languages.
 - Explicitly set decoders per upstream object to avoid mismatches.
-- Use `rxp_py2r()` and `rxp_r2py()` if you want to re-use `{reticulate}`'s bulit-in conversion
+- Use `rxp_py2r()` and `rxp_r2py()` if you want to re-use `{reticulate}`'s built-in conversion
   (useful for more complex objects).

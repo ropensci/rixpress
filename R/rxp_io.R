@@ -641,7 +641,7 @@ rxp_jl_file <- function(...) rxp_file("Jl", ...)
 #' @param nix_env Character, path to the Nix environment file.
 #' @param direction Character, either "py2r" (Python to R) or "r2py" (R to
 #'   Python).
-#' @param env_var Named list of environment variables (optional, for future use).
+#' @param env_var Named list of environment variables to set during the transfer.
 #' @return A list with elements: `name`, `snippet`, `type`, `additional_files`,
 #'   `nix_env`.
 #' @noRd
@@ -719,13 +719,14 @@ build_transfer_command <- function(out_name, expr_str, direction) {
 #' @return Character build phase
 #' @noRd
 build_reticulate_phase <- function(r_command, env_exports = "") {
-  if (nzchar(env_exports)) {
-    env_exports <- gsub("\n$", "", env_exports)
-    env_exports <- paste0("       ", gsub("\n", "\n       ", env_exports), "\n")
+  exports <- env_exports
+  if (nzchar(exports)) {
+    exports <- gsub("\n$", "", exports)
+    exports <- paste0("       ", gsub("\n", "\n       ", exports), "\n")
   }
   sprintf(
     "export RETICULATE_PYTHON=${defaultPkgs.python3}/bin/python\n%s       Rscript -e \"\n         source('libraries.R')\n%s\"",
-    env_exports,
+    exports,
     r_command
   )
 }
