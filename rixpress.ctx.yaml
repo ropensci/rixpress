@@ -337,7 +337,7 @@ kind: function
 name: add_import
 exported: true
 signature: add_import(import_statement, nix_env, project_path = ".")
-purpose: Add an Import Statement to Python Files in the _rixpress Folder Matching a Nix environment name
+purpose: Add an Import Statement to Python Files in the _rixpress Folder Matching a Nix Environment Name This function appends a specified import statement to the end of each Python file within the _rixpress folder and its subdirectories, but only for files whose base name matches the provided Nix environment.
 arguments:
   import_statement: A character string representing the import statement to be added. For example, "import numpy as np".
   nix_env: A character string naming the Nix environment file (e.g. "default.nix" or "py-env.nix" or similar).
@@ -377,7 +377,7 @@ kind: function
 name: rxp_ggdag
 exported: true
 signature: rxp_ggdag(nodes_and_edges = get_nodes_edges(),color_by = c("pipeline", "type"),colour_by = NULL)
-purpose: Create a Directed Acyclic Graph (DAG) Representing the Pipeline using {ggplot2
+purpose: Create a Directed Acyclic Graph (DAG) Representing the Pipeline Using {ggplot2
 arguments:
   color_by: Character, either "pipeline" (default) or "type". When "pipeline", nodes show type as fill colour and pipeline as border. When "type", nodes are coloured entirely by derivation type (rxp_r, rxp_py, etc.).
   colour_by: Character, alias for color_by.
@@ -392,7 +392,7 @@ kind: function
 name: rxp_visnetwork
 exported: true
 signature: rxp_visnetwork(nodes_and_edges = get_nodes_edges(),color_by = c("pipeline", "type"),colour_by = NULL)
-purpose: Create a Directed Acyclic Graph (DAG) Representing the Pipeline using {visNetwork
+purpose: Create a Directed Acyclic Graph (DAG) Representing the Pipeline Using {visNetwork
 arguments:
   color_by: Character, either "pipeline" (default) or "type". When "pipeline", nodes show type as fill colour and pipeline as border. When "type", nodes are colored by their derivation type (rxp_r, rxp_py, etc.).
   colour_by: Character, alias for color_by.
