@@ -400,6 +400,7 @@ generate_r_libraries_from_nix <- function(
 }
 
 #' Generate Python library script from a Nix file
+#'
 #' @param nix_file Path to the default.nix file
 #' @param additional_files Character vector of additional files to include
 #' @param project_path Path to root of project, typically "."
@@ -509,6 +510,7 @@ adjust_import <- function(old_import, new_import, project_path = ".") {
 
 #' Add an Import Statement to Python Files in the _rixpress Folder Matching a
 #' Nix Environment Name
+#'
 #' This function appends a specified import statement to the end of each Python
 #' file within the `_rixpress` folder and its subdirectories, but only for files
 #' whose base name matches the provided Nix environment.
