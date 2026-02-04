@@ -644,7 +644,13 @@ rxp_jl_file <- function(...) rxp_file("Jl", ...)
 #' @return A list with elements: `name`, `snippet`, `type`, `additional_files`,
 #'   `nix_env`.
 #' @noRd
-rxp_common_setup <- function(out_name, expr_str, nix_env, direction, env_var = NULL) {
+rxp_common_setup <- function(
+  out_name,
+  expr_str,
+  nix_env,
+  direction,
+  env_var = NULL
+) {
   expr_str <- gsub("\"", "'", expr_str)
   base <- sanitize_nix_env(nix_env)
 
