@@ -5,9 +5,83 @@ llm_instructions: This is an LLM-optimized API specification for the R package '
 kind: package
 schema_version: '1.1'
 name: rixpress
-version: 0.12.0
+version: 0.12.1
 language: R
 description: Build Reproducible Analytical Pipelines with 'Nix'
+---
+kind: function
+name: rxp_check_chronicles
+exported: true
+signature: rxp_check_chronicles(project_path = ".", which_log = NULL)
+arguments:
+  project_path: Character, defaults to ".". Path to the root directory of the project.
+  which_log: Character, defaults to NULL. If NULL the most recent build log is used. If a string is provided, it's used as a regular expression to match against available log files.
+returns: 'A data frame with columns: derivation, chronicle_state, num_operations, num_failed, failed_functions, messages. Returns NULL invisibly if chronicler is not installed or no chronicle objects are found.'
+examples:
+- code: rxp_check_chronicles()
+- code: rxp_check_chronicles(which_log = "20250131")
+---
+kind: function
+name: adjust_import
+exported: true
+signature: adjust_import(old_import, new_import, project_path = ".")
+arguments:
+  new_import: A character string representing the new import statement to replace with. For example, "from PIL import Image".
+  old_import: A character string representing the import statement to be replaced. For example, "import pillow".
+  project_path: Path to root of project, typically ".".
+returns: No return value; the function performs in-place modifications of the files.
+examples:
+- code: adjust_import("import pillow", "from PIL import Image")
+- code: adjust_import("import pillow", "from PIL import Image", project_path = "path/to/project")
+---
+kind: function
+name: add_import
+exported: true
+signature: add_import(import_statement, nix_env, project_path = ".")
+purpose: Add an Import Statement to Python Files in the _rixpress Folder Matching a Nix Environment Name
+arguments:
+  import_statement: A character string representing the import statement to be added. For example, "import numpy as np".
+  nix_env: A character string naming the Nix environment file (e.g. "default.nix" or "py-env.nix" or similar).
+  project_path: Path to root of project, typically ".".
+returns: No return value; the function performs in-place modifications of the files.
+examples:
+- code: add_import("import numpy as np", "default.nix")
+- code: add_import("import numpy as np", "default.nix", project_path = "path/to/project")
+---
+kind: function
+name: rxp_list_logs
+exported: true
+signature: rxp_list_logs(project_path = ".")
+arguments:
+  project_path: Character, defaults to ".". Path to the root directory of the project.
+returns: A data frame with log filenames, modification times, and file sizes.
+examples:
+- code: logs <- rxp_list_logs()
+- code: logs <- rxp_list_logs("path/to/project")
+---
+kind: function
+name: rxp_inspect
+exported: true
+signature: rxp_inspect(project_path = ".", which_log = NULL)
+arguments:
+  project_path: Character, defaults to ".". Path to the root directory of the project.
+  which_log: Character, defaults to NULL. If NULL the most recent build log is used. If a string is provided, it's used as a regular expression to match against available log files.
+returns: A data frame with derivation names, if their build was successful, their paths in the /nix/store, and their build outputs.
+examples:
+- code: build_results <- rxp_inspect()
+- code: build_results <- rxp_inspect(which_log = "20250510")
+- code: failed <- subset(build_results, !build_success)
+---
+kind: function
+name: rxp_write_dag
+exported: true
+signature: rxp_write_dag(rxp_list, output_file = "_rixpress/dag.json")
+arguments:
+  output_file: Path to the output JSON file. Defaults to "_rixpress/dag.json".
+  rxp_list: A list of derivations.
+returns: Nothing, writes a JSON file representing the DAG.
+examples:
+- code: rxp_write_dag(rxp_list)
 ---
 kind: function
 name: rxp_r_file
@@ -36,36 +110,80 @@ returns: An object of class rxp_derivation.
 kind: function
 name: rxp_py2r
 exported: true
-signature: rxp_py2r(name, expr, nix_env = "default.nix")
+signature: rxp_py2r(name, expr, nix_env = "default.nix", project_path = ".")
 arguments:
   expr: Symbol, Python object to be loaded into R.
   name: Symbol, name of the derivation.
   nix_env: Character, path to the Nix environment file, default is "default.nix".
+  project_path: Character, path to the project root, default is ".".
 returns: An object of class rxp_derivation.
 ---
 kind: function
 name: rxp_r2py
 exported: true
-signature: rxp_r2py(name, expr, nix_env = "default.nix")
+signature: rxp_r2py(name, expr, nix_env = "default.nix", project_path = ".")
 arguments:
   expr: Symbol, R object to be saved into a Python pickle.
   name: Symbol, name of the derivation.
   nix_env: Character, path to the Nix environment file, default is "default.nix".
+  project_path: Character, path to the project root, default is ".".
 returns: An object of class rxp_derivation.
 ---
 kind: function
-name: rxp_copy
+name: rxp_dag_for_ci
 exported: true
-signature: rxp_copy(derivation_name = NULL,dir_mode = "0755",file_mode = "0644")
+signature: rxp_dag_for_ci(nodes_and_edges = get_nodes_edges(),output_file = "_rixpress/dag.dot")
 arguments:
-  derivation_name: The name of the derivation to copy. If empty, then all the derivations are copied.
-  dir_mode: Character, default "0755". POSIX permission mode to apply to directories under the copied output (including the top-level output directory).
-  file_mode: Character, default "0644". POSIX permission mode to apply to files under the copied output.
-returns: Nothing, the contents of the Nix store are copied to the current working directory.
+  nodes_and_edges: List, output of get_nodes_edges(). Defaults to calling get_nodes_edges().
+  output_file: Character, the path where the DOT file should be saved. Defaults to "_rixpress/dag.dot". The directory will be created if it doesn't exist.
+returns: Nothing, writes the DOT file to the specified output_file.
 examples:
-- code: rxp_copy()
-- code: rxp_copy("mtcars")
-- code: rxp_copy("my_deriv", dir_mode = "0755", file_mode = "0644")
+- code: rxp_dag_for_ci()
+---
+kind: function
+name: rxp_ggdag
+exported: true
+signature: rxp_ggdag(nodes_and_edges = get_nodes_edges(),color_by = c("pipeline", "type"),colour_by = NULL)
+purpose: Create a Directed Acyclic Graph (DAG) Representing the Pipeline Using {ggplot2
+arguments:
+  color_by: Character, either "pipeline" (default) or "type". When "pipeline", nodes show type as fill colour and pipeline as border. When "type", nodes are coloured entirely by derivation type (rxp_r, rxp_py, etc.).
+  colour_by: Character, alias for color_by.
+  nodes_and_edges: List, output of get_nodes_edges().
+returns: A {ggplot2} object.
+examples:
+- code: |-
+    rxp_ggdag()  # Dual encoding: fill = type, border = pipeline
+    rxp_ggdag(colour_by = "type")  # Color entirely by derivation type
+---
+kind: function
+name: rxp_visnetwork
+exported: true
+signature: rxp_visnetwork(nodes_and_edges = get_nodes_edges(),color_by = c("pipeline", "type"),colour_by = NULL)
+purpose: Create a Directed Acyclic Graph (DAG) Representing the Pipeline Using {visNetwork
+arguments:
+  color_by: Character, either "pipeline" (default) or "type". When "pipeline", nodes show type as fill colour and pipeline as border. When "type", nodes are colored by their derivation type (rxp_r, rxp_py, etc.).
+  colour_by: Character, alias for color_by.
+  nodes_and_edges: List, output of get_nodes_edges().
+returns: Nothing, this function opens a new tab in your browser with the DAG generated using {visNetwork}.
+examples:
+- code: rxp_visnetwork()
+- code: 'rxp_visnetwork(colour_by = "type")  # Color by derivation type instead'
+---
+kind: function
+name: rxp_populate
+exported: true
+signature: rxp_populate(derivs,project_path = ".",build = FALSE,py_imports = NULL,...)
+arguments:
+  '...': Further arguments passed down to methods. Use max-jobs and cores to set parallelism during build. See the documentation of rxp_make() for more details.
+  build: Logical, defaults to FALSE. Should the pipeline get built right after being generated? When FALSE, use rxp_make() to build the pipeline at a later stage.
+  derivs: 'A list of derivation objects, where each object is a list of five elements: name, name of the derivation, snippet, the nix code snippet to build this derivation, type, can be R, Python or Quarto, additional_files, character vector of paths to files to make available to build sandbox, nix_env, path to Nix environment to build this derivation. A single deriv is the output of rxp_r(), rxp_qmd() or rxp_py() function.'
+  project_path: Path to root of project, defaults to ".".
+  py_imports: 'Named character vector of Python import rewrites. Names are the base modules that rixpress auto-imports as "import name", and values are the desired import lines. For example: c(numpy = "import numpy as np", xgboost = "from xgboost import XGBClassifier"). Each entry is applied by replacing "import name" with the provided string across generated _rixpress Python library files.'
+returns: Nothing, writes a file called pipeline.nix with the Nix code to build the pipeline, as well as folder called _rixpress with required internal files.
+examples:
+- code: d1 <- rxp_r(mtcars_am, filter(mtcars, am == 1))
+- code: d2 <- rxp_r(mtcars_head, head(mtcars_am))
+- code: list_derivs <- list(d1, d2)
 ---
 kind: function
 name: rxp_gc
@@ -83,6 +201,120 @@ examples:
 - code: rxp_gc(keep_since = "2025-08-01", dry_run = TRUE, verbose = TRUE)
 - code: rxp_gc(keep_since = "2025-08-01")
 - code: rxp_gc()
+---
+kind: function
+name: rxp_read
+exported: true
+signature: rxp_read(derivation_name, which_log = NULL, project_path = ".")
+arguments:
+  derivation_name: Character, the name of the derivation.
+  project_path: Character, defaults to ".". Path to the root directory of the project.
+  which_log: Character, defaults to NULL. If NULL the most recent build log is used. If a string is provided, it's used as a regular expression to match against available log files.
+returns: The derivation's output.
+examples:
+- code: mtcars <- rxp_read("mtcars")
+- code: mtcars <- rxp_read("mtcars", which_log = "2025-05-10")
+---
+kind: function
+name: rxp_load
+exported: true
+signature: rxp_load(derivation_name, which_log = NULL, project_path = ".")
+arguments:
+  derivation_name: Character, the name of the derivation.
+  project_path: Character, defaults to ".". Path to the root directory of the project.
+  which_log: Character, defaults to NULL. If NULL the most recent build log is used. If a string is provided, it's used as a regular expression to match against available log files.
+returns: Nothing, this function has the side effect of loading objects into the parent frame.
+examples:
+- code: rxp_load("mtcars")
+- code: rxp_load("my_python_model")
+- code: rxp_load("mtcars", which_log = "2025-05-10")
+---
+kind: function
+name: rxp_ga
+exported: true
+signature: rxp_ga()
+returns: Nothing, copies file to a directory.
+examples:
+- code: rxp_ga()
+---
+kind: function
+name: rxp_trace
+exported: true
+signature: rxp_trace(name = NULL,dag_file = file.path("_rixpress", "dag.json"),transitive = TRUE,include_self = FALSE)
+arguments:
+  dag_file: Character, defaults to "_rixpress/dag.json". Path to dag.json.
+  include_self: Logical, defaults to FALSE. If TRUE, include name itself in the results.
+  name: Character, defaults to NULL. Name of the derivation to inspect. If NULL, the function prints the whole pipeline (inverted global view).
+  transitive: Logical, defaults to TRUE. If TRUE, show transitive closure and mark transitive-only nodes with "*". If FALSE, show immediate neighbours only.
+returns: 'Invisibly, a named list mapping each inspected derivation name to a list with elements: - dependencies - reverse_dependencies The function also prints a tree representation to the console.'
+---
+kind: function
+name: rxp_init
+exported: true
+signature: rxp_init(project_path = ".", skip_prompt = FALSE)
+arguments:
+  project_path: Character string specifying the project's path.
+  skip_prompt: Logical. If TRUE, skips all confirmation prompts and proceeds with initialization, useful on continuous integration. Defaults to FALSE.
+returns: Logical. Returns TRUE if initialization was successful, FALSE if the operation was cancelled by the user.
+examples:
+- code: rxp_init()
+---
+kind: function
+name: rxp_pipeline
+exported: true
+signature: rxp_pipeline(name, path, color = NULL, ...)
+arguments:
+  '...': Additional arguments (currently unused, reserved for future use).
+  color: Character, optional. A CSS color name (e.g., "darkorange") or hex code (e.g., "#FF5733") to use for this pipeline's nodes in DAG visualizations. If NULL, a default color will be assigned.
+  name: Character, the name of the pipeline (e.g., "ETL", "Model").
+  path: Character path to an R script returning a list of derivations, OR a list of derivation objects created by rxp_r(), rxp_py(), etc.
+returns: An object of class rxp_pipeline containing the derivations with pipeline metadata attached.
+examples:
+- code: pipe_etl <- rxp_pipeline("ETL", "pipelines/01_etl.R", color = "darkorange")
+- code: pipe_model <- rxp_pipeline("Model", "pipelines/02_model.R", color = "dodgerblue")
+- code: rxp_populate(list(pipe_etl, pipe_model))
+---
+kind: function
+name: rxp_make
+exported: true
+signature: rxp_make(verbose = 0L, max_jobs = 1, cores = 1)
+arguments:
+  cores: Integer, number of cores a derivation can use during build.
+  max_jobs: Integer, number of derivations to be built in parallel.
+  verbose: 'Integer, defaults to 0L. Verbosity level: 0 = show progress indicators only, 1+ = show nix output with increasing verbosity. 0: "Progress only", 1: "Informational", 2: "Talkative", 3: "Chatty", 4: "Debug", 5: "Vomit". Values higher than 5 are capped to 5. Each level adds one --verbose flag to nix-store command.'
+returns: A character vector of paths to the built outputs.
+examples:
+- code: rxp_make()
+- code: rxp_make(verbose = 2, max_jobs = 4, cores = 2)
+- code: rxp_make(verbose = 3)
+---
+kind: function
+name: rxp_export_artifacts
+exported: true
+signature: rxp_export_artifacts(archive_file = "_rixpress/pipeline_outputs.nar",which_log = NULL,project_path = ".")
+arguments:
+  archive_file: Character, path to the archive, defaults to "_rixpress/pipeline-outputs.nar"
+  project_path: Character, defaults to ".". Path to the root directory of the project.
+  which_log: Character or NULL, regex pattern to match a specific log file. If NULL (default), the most recent log file will be used.
+returns: Nothing, creates an archive file at the specified location.
+examples:
+- code: rxp_export_artifacts()
+- code: |-
+    rxp_export_artifacts(
+    archive_file = "my_archive.nar",
+    which_log = "20250510"
+    )
+---
+kind: function
+name: rxp_import_artifacts
+exported: true
+signature: rxp_import_artifacts(archive_file = "_rixpress/pipeline_outputs.nar")
+arguments:
+  archive_file: Character, path to the archive, defaults to "_rixpress/pipeline-outputs.nar"
+returns: Nothing, imports the archive contents into the local Nix store.
+examples:
+- code: rxp_import_artifacts()
+- code: rxp_import_artifacts("path/to/my_archive.nar")
 ---
 kind: function
 name: rxp_r
@@ -240,245 +472,15 @@ examples:
     )
 ---
 kind: function
-name: rxp_write_dag
+name: rxp_copy
 exported: true
-signature: rxp_write_dag(rxp_list, output_file = "_rixpress/dag.json")
+signature: rxp_copy(derivation_name = NULL,dir_mode = "0755",file_mode = "0644")
 arguments:
-  output_file: Path to the output JSON file. Defaults to "_rixpress/dag.json".
-  rxp_list: A list of derivations.
-returns: Nothing, writes a JSON file representing the DAG.
+  derivation_name: The name of the derivation to copy. If empty, then all the derivations are copied.
+  dir_mode: Character, default "0755". POSIX permission mode to apply to directories under the copied output (including the top-level output directory).
+  file_mode: Character, default "0644". POSIX permission mode to apply to files under the copied output.
+returns: Nothing, the contents of the Nix store are copied to the current working directory.
 examples:
-- code: rxp_write_dag(rxp_list)
----
-kind: function
-name: rxp_trace
-exported: true
-signature: rxp_trace(name = NULL,dag_file = file.path("_rixpress", "dag.json"),transitive = TRUE,include_self = FALSE)
-arguments:
-  dag_file: Character, defaults to "_rixpress/dag.json". Path to dag.json.
-  include_self: Logical, defaults to FALSE. If TRUE, include name itself in the results.
-  name: Character, defaults to NULL. Name of the derivation to inspect. If NULL, the function prints the whole pipeline (inverted global view).
-  transitive: Logical, defaults to TRUE. If TRUE, show transitive closure and mark transitive-only nodes with "*". If FALSE, show immediate neighbours only.
-returns: 'Invisibly, a named list mapping each inspected derivation name to a list with elements: - dependencies - reverse_dependencies The function also prints a tree representation to the console.'
----
-kind: function
-name: rxp_list_logs
-exported: true
-signature: rxp_list_logs(project_path = ".")
-arguments:
-  project_path: Character, defaults to ".". Path to the root directory of the project.
-returns: A data frame with log filenames, modification times, and file sizes.
-examples:
-- code: logs <- rxp_list_logs()
-- code: logs <- rxp_list_logs("path/to/project")
----
-kind: function
-name: rxp_inspect
-exported: true
-signature: rxp_inspect(project_path = ".", which_log = NULL)
-arguments:
-  project_path: Character, defaults to ".". Path to the root directory of the project.
-  which_log: Character, defaults to NULL. If NULL the most recent build log is used. If a string is provided, it's used as a regular expression to match against available log files.
-returns: A data frame with derivation names, if their build was successful, their paths in the /nix/store, and their build outputs.
-examples:
-- code: build_results <- rxp_inspect()
-- code: build_results <- rxp_inspect(which_log = "20250510")
-- code: failed <- subset(build_results, !build_success)
----
-kind: function
-name: rxp_ga
-exported: true
-signature: rxp_ga()
-returns: Nothing, copies file to a directory.
-examples:
-- code: rxp_ga()
----
-kind: function
-name: rxp_read
-exported: true
-signature: rxp_read(derivation_name, which_log = NULL, project_path = ".")
-arguments:
-  derivation_name: Character, the name of the derivation.
-  project_path: Character, defaults to ".". Path to the root directory of the project.
-  which_log: Character, defaults to NULL. If NULL the most recent build log is used. If a string is provided, it's used as a regular expression to match against available log files.
-returns: The derivation's output.
-examples:
-- code: mtcars <- rxp_read("mtcars")
-- code: mtcars <- rxp_read("mtcars", which_log = "2025-05-10")
----
-kind: function
-name: rxp_load
-exported: true
-signature: rxp_load(derivation_name, which_log = NULL, project_path = ".")
-arguments:
-  derivation_name: Character, the name of the derivation.
-  project_path: Character, defaults to ".". Path to the root directory of the project.
-  which_log: Character, defaults to NULL. If NULL the most recent build log is used. If a string is provided, it's used as a regular expression to match against available log files.
-returns: Nothing, this function has the side effect of loading objects into the parent frame.
-examples:
-- code: rxp_load("mtcars")
-- code: rxp_load("my_python_model")
-- code: rxp_load("mtcars", which_log = "2025-05-10")
----
-kind: function
-name: adjust_import
-exported: true
-signature: adjust_import(old_import, new_import, project_path = ".")
-arguments:
-  new_import: A character string representing the new import statement to replace with. For example, "from PIL import Image".
-  old_import: A character string representing the import statement to be replaced. For example, "import pillow".
-  project_path: Path to root of project, typically ".".
-returns: No return value; the function performs in-place modifications of the files.
-examples:
-- code: adjust_import("import pillow", "from PIL import Image")
-- code: adjust_import("import pillow", "from PIL import Image", project_path = "path/to/project")
----
-kind: function
-name: add_import
-exported: true
-signature: add_import(import_statement, nix_env, project_path = ".")
-purpose: Add an Import Statement to Python Files in the _rixpress Folder Matching a Nix Environment Name This function appends a specified import statement to the end of each Python file within the _rixpress folder and its subdirectories, but only for files whose base name matches the provided Nix environment.
-arguments:
-  import_statement: A character string representing the import statement to be added. For example, "import numpy as np".
-  nix_env: A character string naming the Nix environment file (e.g. "default.nix" or "py-env.nix" or similar).
-  project_path: Path to root of project, typically ".".
-returns: No return value; the function performs in-place modifications of the files.
-examples:
-- code: add_import("import numpy as np", "default.nix")
-- code: add_import("import numpy as np", "default.nix", project_path = "path/to/project")
----
-kind: function
-name: rxp_pipeline
-exported: true
-signature: rxp_pipeline(name, path, color = NULL, ...)
-arguments:
-  '...': Additional arguments (currently unused, reserved for future use).
-  color: Character, optional. A CSS color name (e.g., "darkorange") or hex code (e.g., "#FF5733") to use for this pipeline's nodes in DAG visualizations. If NULL, a default color will be assigned.
-  name: Character, the name of the pipeline (e.g., "ETL", "Model").
-  path: Character path to an R script returning a list of derivations, OR a list of derivation objects created by rxp_r(), rxp_py(), etc.
-returns: An object of class rxp_pipeline containing the derivations with pipeline metadata attached.
-examples:
-- code: pipe_etl <- rxp_pipeline("ETL", "pipelines/01_etl.R", color = "darkorange")
-- code: pipe_model <- rxp_pipeline("Model", "pipelines/02_model.R", color = "dodgerblue")
-- code: rxp_populate(list(pipe_etl, pipe_model))
----
-kind: function
-name: rxp_dag_for_ci
-exported: true
-signature: rxp_dag_for_ci(nodes_and_edges = get_nodes_edges(),output_file = "_rixpress/dag.dot")
-arguments:
-  nodes_and_edges: List, output of get_nodes_edges(). Defaults to calling get_nodes_edges().
-  output_file: Character, the path where the DOT file should be saved. Defaults to "_rixpress/dag.dot". The directory will be created if it doesn't exist.
-returns: Nothing, writes the DOT file to the specified output_file.
-examples:
-- code: rxp_dag_for_ci()
----
-kind: function
-name: rxp_ggdag
-exported: true
-signature: rxp_ggdag(nodes_and_edges = get_nodes_edges(),color_by = c("pipeline", "type"),colour_by = NULL)
-purpose: Create a Directed Acyclic Graph (DAG) Representing the Pipeline Using {ggplot2
-arguments:
-  color_by: Character, either "pipeline" (default) or "type". When "pipeline", nodes show type as fill colour and pipeline as border. When "type", nodes are coloured entirely by derivation type (rxp_r, rxp_py, etc.).
-  colour_by: Character, alias for color_by.
-  nodes_and_edges: List, output of get_nodes_edges().
-returns: A {ggplot2} object.
-examples:
-- code: |-
-    rxp_ggdag()  # Dual encoding: fill = type, border = pipeline
-    rxp_ggdag(colour_by = "type")  # Color entirely by derivation type
----
-kind: function
-name: rxp_visnetwork
-exported: true
-signature: rxp_visnetwork(nodes_and_edges = get_nodes_edges(),color_by = c("pipeline", "type"),colour_by = NULL)
-purpose: Create a Directed Acyclic Graph (DAG) Representing the Pipeline Using {visNetwork
-arguments:
-  color_by: Character, either "pipeline" (default) or "type". When "pipeline", nodes show type as fill colour and pipeline as border. When "type", nodes are colored by their derivation type (rxp_r, rxp_py, etc.).
-  colour_by: Character, alias for color_by.
-  nodes_and_edges: List, output of get_nodes_edges().
-returns: Nothing, this function opens a new tab in your browser with the DAG generated using {visNetwork}.
-examples:
-- code: rxp_visnetwork()
-- code: 'rxp_visnetwork(colour_by = "type")  # Color by derivation type instead'
----
-kind: function
-name: rxp_populate
-exported: true
-signature: rxp_populate(derivs,project_path = ".",build = FALSE,py_imports = NULL,...)
-arguments:
-  '...': Further arguments passed down to methods. Use max-jobs and cores to set parallelism during build. See the documentation of rxp_make() for more details.
-  build: Logical, defaults to FALSE. Should the pipeline get built right after being generated? When FALSE, use rxp_make() to build the pipeline at a later stage.
-  derivs: 'A list of derivation objects, where each object is a list of five elements: name, name of the derivation, snippet, the nix code snippet to build this derivation, type, can be R, Python or Quarto, additional_files, character vector of paths to files to make available to build sandbox, nix_env, path to Nix environment to build this derivation. A single deriv is the output of rxp_r(), rxp_qmd() or rxp_py() function.'
-  project_path: Path to root of project, defaults to ".".
-  py_imports: 'Named character vector of Python import rewrites. Names are the base modules that rixpress auto-imports as "import name", and values are the desired import lines. For example: c(numpy = "import numpy as np", xgboost = "from xgboost import XGBClassifier"). Each entry is applied by replacing "import name" with the provided string across generated _rixpress Python library files.'
-returns: Nothing, writes a file called pipeline.nix with the Nix code to build the pipeline, as well as folder called _rixpress with required internal files.
-examples:
-- code: d1 <- rxp_r(mtcars_am, filter(mtcars, am == 1))
-- code: d2 <- rxp_r(mtcars_head, head(mtcars_am))
-- code: list_derivs <- list(d1, d2)
----
-kind: function
-name: rxp_check_chronicles
-exported: true
-signature: rxp_check_chronicles(project_path = ".", which_log = NULL)
-arguments:
-  project_path: Character, defaults to ".". Path to the root directory of the project.
-  which_log: Character, defaults to NULL. If NULL the most recent build log is used. If a string is provided, it's used as a regular expression to match against available log files.
-returns: 'A data frame with columns: derivation, chronicle_state, num_operations, num_failed, failed_functions, messages. Returns NULL invisibly if chronicler is not installed or no chronicle objects are found.'
-examples:
-- code: rxp_check_chronicles()
-- code: rxp_check_chronicles(which_log = "20250131")
----
-kind: function
-name: rxp_init
-exported: true
-signature: rxp_init(project_path = ".", skip_prompt = FALSE)
-arguments:
-  project_path: Character string specifying the project's path.
-  skip_prompt: Logical. If TRUE, skips all confirmation prompts and proceeds with initialization, useful on continuous integration. Defaults to FALSE.
-returns: Logical. Returns TRUE if initialization was successful, FALSE if the operation was cancelled by the user.
-examples:
-- code: rxp_init()
----
-kind: function
-name: rxp_make
-exported: true
-signature: rxp_make(verbose = 0L, max_jobs = 1, cores = 1)
-arguments:
-  cores: Integer, number of cores a derivation can use during build.
-  max_jobs: Integer, number of derivations to be built in parallel.
-  verbose: 'Integer, defaults to 0L. Verbosity level: 0 = show progress indicators only, 1+ = show nix output with increasing verbosity. 0: "Progress only", 1: "Informational", 2: "Talkative", 3: "Chatty", 4: "Debug", 5: "Vomit". Values higher than 5 are capped to 5. Each level adds one --verbose flag to nix-store command.'
-returns: A character vector of paths to the built outputs.
-examples:
-- code: rxp_make()
-- code: rxp_make(verbose = 2, max_jobs = 4, cores = 2)
-- code: rxp_make(verbose = 3)
----
-kind: function
-name: rxp_export_artifacts
-exported: true
-signature: rxp_export_artifacts(archive_file = "_rixpress/pipeline_outputs.nar",which_log = NULL,project_path = ".")
-arguments:
-  archive_file: Character, path to the archive, defaults to "_rixpress/pipeline-outputs.nar"
-  project_path: Character, defaults to ".". Path to the root directory of the project.
-  which_log: Character or NULL, regex pattern to match a specific log file. If NULL (default), the most recent log file will be used.
-returns: Nothing, creates an archive file at the specified location.
-examples:
-- code: rxp_export_artifacts()
-- code: |-
-    rxp_export_artifacts(
-    archive_file = "my_archive.nar",
-    which_log = "20250510"
-    )
----
-kind: function
-name: rxp_import_artifacts
-exported: true
-signature: rxp_import_artifacts(archive_file = "_rixpress/pipeline_outputs.nar")
-arguments:
-  archive_file: Character, path to the archive, defaults to "_rixpress/pipeline-outputs.nar"
-returns: Nothing, imports the archive contents into the local Nix store.
-examples:
-- code: rxp_import_artifacts()
-- code: rxp_import_artifacts("path/to/my_archive.nar")
+- code: rxp_copy()
+- code: rxp_copy("mtcars")
+- code: rxp_copy("my_deriv", dir_mode = "0755", file_mode = "0644")
