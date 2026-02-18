@@ -30,6 +30,7 @@ Imports:
     cli,
     igraph,
     jsonlite,
+    maybe,
     processx
 RoxygenNote: 7.3.3
 SystemRequirements: Nix
