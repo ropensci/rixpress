@@ -231,6 +231,18 @@
     },
     "5": {
       "@type": "SoftwareApplication",
+      "identifier": "maybe",
+      "name": "maybe",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=maybe"
+    },
+    "6": {
+      "@type": "SoftwareApplication",
       "identifier": "processx",
       "name": "processx",
       "provider": {
@@ -243,7 +255,7 @@
     },
     "SystemRequirements": "Nix"
   },
-  "fileSize": "666.126KB",
+  "fileSize": "665.968KB",
   "releaseNotes": "https://github.com/ropensci/rixpress/blob/main/NEWS.md",
   "readme": "https://github.com/ropensci/rixpress/blob/main/README.md",
   "contIntegration": "https://github.com/ropensci/rixpress/actions/workflows/rhub.yaml/",
