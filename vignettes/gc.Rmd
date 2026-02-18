@@ -2,7 +2,7 @@
 title: "Managing Cached Build Artifacts"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{managing-cache}
+  %\VignetteIndexEntry{Managing Cached Build Artifacts}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

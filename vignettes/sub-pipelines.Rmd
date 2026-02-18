@@ -2,7 +2,7 @@
 title: "Organising Large Projects with Sub-Pipelines"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{sub-pipelines}
+  %\VignetteIndexEntry{Organising Large Projects with Sub-Pipelines}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

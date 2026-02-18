@@ -82,7 +82,7 @@ parse_packages <- function(
   transform(packages)
 }
 
-#' Extract R packages defined via pkgs.rPackages.buildRPackage from git sources
+#' Extract R Packages Defined via pkgs.rPackages.buildRPackage from Git Sources
 #'
 #' @param nix_file Path to the default.nix file
 #' @param project_path Path to root of project, typically "."

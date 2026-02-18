@@ -4,7 +4,7 @@
 \alias{rxp_r2py}
 \title{Transfer R Object into a Python Session}
 \usage{
-rxp_r2py(name, expr, nix_env = "default.nix")
+rxp_r2py(name, expr, nix_env = "default.nix", project_path = ".")
 }
 \arguments{
 \item{name}{Symbol, name of the derivation.}
@@ -13,6 +13,8 @@ rxp_r2py(name, expr, nix_env = "default.nix")
 
 \item{nix_env}{Character, path to the Nix environment file, default is
 "default.nix".}
+
+\item{project_path}{Character, path to the project root, default is ".".}
 }
 \value{
 An object of class \code{rxp_derivation}.

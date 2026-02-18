@@ -236,7 +236,7 @@ rxp_populate <- function(
 }
 
 
-#' parse_nix_envs Parses the nix_env element of a deriv object
+#' Parse Nix Environment Element of a Derivation Object
 #' @param derivs A list of derivation objects, where each object is a list of
 #'   five elements:
 #'     - `$name`, character, name of the derivation
@@ -319,7 +319,7 @@ parse_nix_envs <- function(derivs) {
   paste(nix_lines, collapse = "\n\n  ")
 }
 
-#' gen_flat_pipeline Internal function used to generate most of the boilerplate in pipeline.nix
+#' Generate Flat Pipeline Boilerplate for pipeline.nix
 #' @param derivs A list of derivation objects, where each object is a list of
 #'   five elements:
 #'     - `$name`, character, name of the derivation
@@ -439,7 +439,7 @@ escape_regex <- function(x) {
   gsub("([][{}()+*^$|\\\\.?])", "\\\\\\1", x)
 }
 
-#' gen_pipeline Internal function used to finalise a flat pipeline
+#' Finalise a Flat Pipeline
 #' @param dag_file A json file giving the names and relationships between derivations.
 #' @param flat_pipeline A flat pipeline, output of `gen_flat_elements()`.
 #' @noRd
