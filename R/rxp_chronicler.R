@@ -3,16 +3,18 @@
 #' @return Logical, TRUE if package is available
 #' @noRd
 .rxp_has_chronicler <- function() {
-  requireNamespace("chronicler", quietly = TRUE)
+  requireNamespace("chronicler", quietly = TRUE) &&
+    requireNamespace("maybe", quietly = TRUE)
 }
+
 
 #' Determine Chronicle Status: "success", "warning", or "nothing"
 #'
 #' @param x Object to check
-#' @importFrom maybe is_nothing
 #' @return Character: "success", "warning", "nothing", or NULL if not a chronicle
 #' @noRd
 .rxp_chronicle_state <- function(x) {
+
   if (!.rxp_has_chronicler()) {
     return(NULL)
   }
@@ -21,12 +23,10 @@
     return(NULL)
   }
 
-  # Check if value is Nothing
-  if (is_nothing(x$value)) {
+  if (maybe::is_nothing(x$value)) {
     return("nothing")
   }
 
-  # Value is Just - check log for warnings/errors (NOK entries)
   log_df <- x$log_df
   has_nok <- any(grepl("NOK", log_df$outcome))
 
@@ -36,6 +36,7 @@
 
   "success"
 }
+
 
 #' Get Detailed Chronicle Status Information
 #'

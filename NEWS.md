@@ -1,3 +1,7 @@
+# rixpress 0.12.2 (2026-02-19)
+
+- Quick fix: added maybe to Suggests
+
 # rixpress 0.12.1 (2026-02-04)
 
 ## Improvements

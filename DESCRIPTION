@@ -1,6 +1,6 @@
 Package: rixpress
 Title: Build Reproducible Analytical Pipelines with 'Nix'
-Version: 0.12.1
+Version: 0.12.2
 Authors@R: c(
   person(given = "Bruno", family = "Rodrigues", email = "bruno@brodrigues.co", role = c("aut", "cre"),
          comment = c(ORCID = "0000-0002-3211-3689")),
@@ -30,7 +30,6 @@ Imports:
     cli,
     igraph,
     jsonlite,
-    maybe,
     processx
 RoxygenNote: 7.3.3
 SystemRequirements: Nix
@@ -41,6 +40,7 @@ Suggests:
     ggdag,
     ggplot2,
     knitr,
+    maybe,
     mockery,
     reticulate,
     rix,
