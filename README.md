@@ -391,3 +391,4 @@ Please refer to the `vignette("scope")` to learn more about what
   ‘Nix’ ecosystem.
 - rOpenSci peer review contributors and reviewers for feedback that
   shaped the interface.
+
