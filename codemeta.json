@@ -8,7 +8,7 @@
   "codeRepository": "https://github.com/ropensci/rixpress/",
   "issueTracker": "https://github.com/ropensci/rixpress/issues/",
   "license": "https://spdx.org/licenses/GPL-3.0",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
@@ -99,6 +99,18 @@
         "url": "https://cran.r-project.org"
       },
       "sameAs": "https://CRAN.R-project.org/package=knitr"
+    },
+    {
+      "@type": "SoftwareApplication",
+      "identifier": "maybe",
+      "name": "maybe",
+      "provider": {
+        "@id": "https://cran.r-project.org",
+        "@type": "Organization",
+        "name": "Comprehensive R Archive Network (CRAN)",
+        "url": "https://cran.r-project.org"
+      },
+      "sameAs": "https://CRAN.R-project.org/package=maybe"
     },
     {
       "@type": "SoftwareApplication",
@@ -231,18 +243,6 @@
     },
     "5": {
       "@type": "SoftwareApplication",
-      "identifier": "maybe",
-      "name": "maybe",
-      "provider": {
-        "@id": "https://cran.r-project.org",
-        "@type": "Organization",
-        "name": "Comprehensive R Archive Network (CRAN)",
-        "url": "https://cran.r-project.org"
-      },
-      "sameAs": "https://CRAN.R-project.org/package=maybe"
-    },
-    "6": {
-      "@type": "SoftwareApplication",
       "identifier": "processx",
       "name": "processx",
       "provider": {
@@ -255,7 +255,7 @@
     },
     "SystemRequirements": "Nix"
   },
-  "fileSize": "665.968KB",
+  "fileSize": "665.942KB",
   "releaseNotes": "https://github.com/ropensci/rixpress/blob/main/NEWS.md",
   "readme": "https://github.com/ropensci/rixpress/blob/main/README.md",
   "contIntegration": "https://github.com/ropensci/rixpress/actions/workflows/rhub.yaml/",
