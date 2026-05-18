@@ -1,3 +1,7 @@
+# rixpress 0.12.3 (2026-05-19)
+
+- Quick fix: fixed a bug that prevented user defined decoders and encoder to work in Python nodes.
+
 # rixpress 0.12.2 (2026-02-19)
 
 - Quick fix: added maybe to Suggests

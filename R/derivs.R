@@ -280,11 +280,11 @@ rxp_r <- function(
   )
 
   build_phase <- sprintf(
-    "%s%sRscript -e \"\n        source('libraries.R')\n        %s\n        %s%s <- %s\n        %s(%s, '%s')\"",
+    "%s%sRscript -e \"\n        source('libraries.R')\n        %s%s\n        %s <- %s\n        %s(%s, '%s')\"",
     env_exports,
     copy_cmd,
-    unique_placeholder,
     source_cmd,
+    unique_placeholder,
     out_name,
     expr_str,
     serialize_str,
@@ -551,9 +551,9 @@ rxp_py <- function(
     copy_cmd,
     "python -c \"\n",
     "exec(open('libraries.py').read())\n",
+    user_import_cmd,
     unique_placeholder,
     "\n",
-    user_import_cmd,
     "exec('",
     out_name,
     " = ",
@@ -828,6 +828,13 @@ rxp_jl <- function(
     out_name
   )
 
+  # Ensure there is a newline after user_include_cmd if it is non-empty
+  user_include_cmd_nl <- if (nzchar(user_include_cmd)) {
+    paste0(user_include_cmd, "\n")
+  } else {
+    ""
+  }
+
   # Construct the Julia build phase: include libraries.jl if present,
   # include user_functions, run expression, then serialize
   build_phase <- paste0(
@@ -835,9 +842,9 @@ rxp_jl <- function(
     copy_cmd,
     "julia -e \"\n",
     "if isfile(\\\"libraries.jl\\\"); include(\\\"libraries.jl\\\"); end;\n",
+    user_include_cmd_nl,
     unique_placeholder,
     "\n",
-    user_include_cmd,
     out_name,
     " = ",
     expr_escaped,

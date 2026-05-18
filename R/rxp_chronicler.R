@@ -14,7 +14,6 @@
 #' @return Character: "success", "warning", "nothing", or NULL if not a chronicle
 #' @noRd
 .rxp_chronicle_state <- function(x) {
-
   if (!.rxp_has_chronicler()) {
     return(NULL)
   }
